@@ -59,6 +59,16 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-ink: var(--ink);
+  --color-ink-foreground: var(--ink-foreground);
+  --color-slot-blue: var(--slot-blue);
+  --color-slot-blue-foreground: var(--slot-blue-foreground);
+  --color-slot-amber: var(--slot-amber);
+  --color-slot-amber-foreground: var(--slot-amber-foreground);
+  --color-slot-pink: var(--slot-pink);
+  --color-slot-pink-foreground: var(--slot-pink-foreground);
+  --color-slot-mint: var(--slot-mint);
+  --color-slot-mint-foreground: var(--slot-mint-foreground);
 }
 
 :root {
@@ -99,6 +109,17 @@
     "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --shadow-card: 0 1px 2px oklch(0.22 0.03 240 / 0.06), 0 8px 24px -12px oklch(0.22 0.03 240 / 0.18);
   --gradient-brand: linear-gradient(135deg, oklch(0.52 0.11 214), oklch(0.62 0.1 190));
+  --ink: oklch(0.16 0.01 250);
+  --ink-foreground: oklch(0.99 0 0);
+  --slot-blue: oklch(0.9 0.05 230);
+  --slot-blue-foreground: oklch(0.35 0.07 240);
+  --slot-amber: oklch(0.87 0.09 75);
+  --slot-amber-foreground: oklch(0.38 0.09 60);
+  --slot-pink: oklch(0.86 0.08 5);
+  --slot-pink-foreground: oklch(0.38 0.1 10);
+  --slot-mint: oklch(0.87 0.07 175);
+  --slot-mint-foreground: oklch(0.36 0.07 180);
+  --gradient-halo: radial-gradient(60% 55% at 50% 0%, oklch(0.93 0.05 300 / 0.55), transparent 70%);
 }
 
 
@@ -135,6 +156,16 @@
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
+  --ink: oklch(0.98 0 0);
+  --ink-foreground: oklch(0.16 0.01 250);
+  --slot-blue: oklch(0.42 0.06 235);
+  --slot-blue-foreground: oklch(0.93 0.02 235);
+  --slot-amber: oklch(0.45 0.08 70);
+  --slot-amber-foreground: oklch(0.95 0.02 80);
+  --slot-pink: oklch(0.44 0.08 10);
+  --slot-pink-foreground: oklch(0.95 0.02 10);
+  --slot-mint: oklch(0.42 0.06 178);
+  --slot-mint-foreground: oklch(0.94 0.02 178);
 }
 
 @layer base {
@@ -158,6 +189,10 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
+}
+
+@utility halo-bg {
+  background-image: var(--gradient-halo);
 }
 
 @utility text-gradient-brand {
