@@ -74,13 +74,7 @@ const hours = ["8:00 am", "9:00 am", "10:00 am", "11:00 am"];
 
 function Landing() {
   return (
-    <div
-      className="min-h-screen overflow-x-hidden bg-background"
-      style={{
-        fontFamily:
-          '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-      }}
-    >
+    <div className="min-h-screen overflow-x-hidden bg-background">
       <header className="mx-auto flex w-full max-w-7xl items-center justify-between gap-6 px-6 py-6">
         <div className="flex items-center gap-10">
           <Link to="/" className="flex items-center gap-2">
