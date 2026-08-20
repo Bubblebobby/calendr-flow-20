@@ -202,6 +202,29 @@
   color: transparent;
 }
 
+@keyframes fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+    filter: blur(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@utility animate-fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up {
+    animation: none;
+  }
+}
+
 @layer base {
   body {
     font-family: var(--font-sans);
