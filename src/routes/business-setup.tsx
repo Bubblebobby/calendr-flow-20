@@ -127,7 +127,30 @@ function BusinessSetupPage() {
     categories.length > 0 && (!categories.includes("other") || otherLabel.trim().length > 1);
   const canContinue = step === 1 ? parsed.success : step === 2 ? categoriesValid : true;
 
+  async function handleCategoriesContinue() {
+    if (!businessId || !categoriesValid) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("businesses")
+      .update({
+        categories,
+        other_category: categories.includes("other") ? otherLabel.trim() : null,
+        setup_step: 3,
+      })
+      .eq("id", businessId);
+    setSaving(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setStep(3);
+  }
+
   async function handleContinue() {
+    if (step === 2) {
+      await handleCategoriesContinue();
+      return;
+    }
     if (step !== 1) return;
     const result = nameSchema.safeParse({ name, website });
     if (!result.success) {
