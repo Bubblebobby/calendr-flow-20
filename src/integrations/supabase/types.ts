@@ -24,6 +24,7 @@ export type Database = {
           name: string
           other_category: string | null
           owner_id: string | null
+          service_locations: Json
           setup_step: number
           team_size: string | null
           timezone: string | null
@@ -38,6 +39,7 @@ export type Database = {
           name: string
           other_category?: string | null
           owner_id?: string | null
+          service_locations?: Json
           setup_step?: number
           team_size?: string | null
           timezone?: string | null
@@ -52,6 +54,7 @@ export type Database = {
           name?: string
           other_category?: string | null
           owner_id?: string | null
+          service_locations?: Json
           setup_step?: number
           team_size?: string | null
           timezone?: string | null
