@@ -15,7 +15,7 @@ export default defineTool({
     const { data, error } = await supabase
       .from("businesses")
       .select(
-        "id, name, website, country, currency, timezone, categories, other_category, team_size, service_locations, setup_step, created_at",
+        "id, name, website, country, currency, timezone, categories, other_category, team_size, service_locations, migration_source, setup_step, created_at",
       )
       .eq("owner_id", ctx.getUserId()!)
       .maybeSingle();
