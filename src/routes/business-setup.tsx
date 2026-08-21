@@ -8,6 +8,7 @@ import { BusinessCategoriesStep } from "@/components/business-categories-step";
 import { ServiceLocationStep } from "@/components/service-location-step";
 import { VenueLocationStep } from "@/components/venue-location-step";
 import { EXAMPLE_EMPLOYEE_NAME, TeamSizeStep } from "@/components/team-size-step";
+import { MigrationSourceStep, MIGRATION_SOURCES } from "@/components/migration-source-step";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,7 +39,8 @@ export const Route = createFileRoute("/business-setup")({
   component: BusinessSetupPage,
 });
 
-const TOTAL_STEPS = 5;
+const PROGRESS_SEGMENTS = 5;
+const MAX_STEP = 7;
 
 const nameSchema = z.object({
   name: z.string().trim().min(2, "Enter your business name").max(120),
@@ -52,14 +54,15 @@ const nameSchema = z.object({
 });
 
 function ProgressBar({ step }: { step: number }) {
+  const active = Math.min(step, PROGRESS_SEGMENTS);
   return (
     <div className="flex gap-3">
-      {Array.from({ length: TOTAL_STEPS }, (_, i) => (
+      {Array.from({ length: PROGRESS_SEGMENTS }, (_, i) => (
         <span
           key={i}
           className={cn(
             "h-1 flex-1 rounded-full transition-colors",
-            i < step ? "bg-primary" : "bg-border",
+            i < active ? "bg-primary" : "bg-border",
           )}
         />
       ))}
@@ -84,6 +87,8 @@ function BusinessSetupPage() {
   const [businessCountry, setBusinessCountry] = useState<string | null>(null);
   const [venueAddress, setVenueAddress] = useState<BusinessAddress>(EMPTY_ADDRESS);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [migrationSource, setMigrationSource] = useState<string | null>(null);
+  const [otherMigrationSource, setOtherMigrationSource] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -112,7 +117,7 @@ function BusinessSetupPage() {
         const { data: business } = await supabase
           .from("businesses")
           .select(
-            "id, name, website, setup_step, categories, other_category, team_size, service_locations, country, location, latitude, longitude",
+            "id, name, website, setup_step, categories, other_category, team_size, service_locations, country, location, latitude, longitude, migration_source",
           )
           .eq("id", profile.business_id)
           .maybeSingle();
@@ -136,7 +141,13 @@ function BusinessSetupPage() {
               ? (business.service_locations as string[])
               : [],
           );
-          setStep(Math.min(Math.max(business.setup_step ?? 1, 1), TOTAL_STEPS));
+          const savedMigration = (business.migration_source as string | null) ?? null;
+          setMigrationSource(savedMigration);
+          if (savedMigration && !MIGRATION_SOURCES.some((s) => s.value === savedMigration)) {
+            setOtherMigrationSource(savedMigration);
+            setMigrationSource("other");
+          }
+          setStep(Math.min(Math.max(business.setup_step ?? 1, 1), MAX_STEP));
         }
       }
       setReady(true);
@@ -149,6 +160,8 @@ function BusinessSetupPage() {
   const parsed = nameSchema.safeParse({ name, website });
   const categoriesValid =
     categories.length > 0 && (!categories.includes("other") || otherLabel.trim().length > 1);
+  const migrationSourceValid =
+    migrationSource !== "other" || otherMigrationSource.trim().length > 1;
   const canContinue =
     step === 1
       ? parsed.success
@@ -160,7 +173,9 @@ function BusinessSetupPage() {
             ? serviceLocations.length > 0
             : step === 5
               ? Boolean(coords)
-              : true;
+              : step === 6
+                ? migrationSourceValid
+                : true;
 
   async function handleTeamSizeContinue() {
     if (!businessId || !teamSize) return;
@@ -249,6 +264,27 @@ function BusinessSetupPage() {
     setStep(6);
   }
 
+  async function handleMigrationSourceContinue() {
+    if (!businessId) return;
+    setSaving(true);
+    const value =
+      migrationSource === "other"
+        ? otherMigrationSource.trim() || null
+        : migrationSource === "none"
+          ? null
+          : migrationSource;
+    const { error } = await supabase
+      .from("businesses")
+      .update({ migration_source: value, setup_step: 7 })
+      .eq("id", businessId);
+    setSaving(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setStep(7);
+  }
+
   async function handleContinue() {
     if (step === 2) {
       await handleCategoriesContinue();
@@ -264,6 +300,10 @@ function BusinessSetupPage() {
     }
     if (step === 5) {
       await handleVenueLocationContinue();
+      return;
+    }
+    if (step === 6) {
+      await handleMigrationSourceContinue();
       return;
     }
     if (step !== 1) return;
@@ -331,7 +371,7 @@ function BusinessSetupPage() {
       </div>
 
       <div className="flex items-center justify-between px-6 pt-4 sm:px-10">
-        {step > 1 && step < 6 ? (
+        {step > 1 && step < MAX_STEP ? (
           <Button
             type="button"
             variant="outline"
@@ -363,7 +403,7 @@ function BusinessSetupPage() {
       </div>
 
       <main className="mx-auto w-full max-w-[820px] px-6 pb-24 pt-6">
-        {step >= 6 ? (
+        {step >= MAX_STEP ? (
           <div className="pt-10">
             <p className="text-base text-muted-foreground">Account setup</p>
             <h1 className="mt-2 text-4xl font-bold tracking-tight text-foreground">
@@ -437,7 +477,7 @@ function BusinessSetupPage() {
               <TeamSizeStep value={teamSize} onChange={setTeamSize} />
             ) : step === 4 ? (
               <ServiceLocationStep selected={serviceLocations} onChange={setServiceLocations} />
-            ) : (
+            ) : step === 5 ? (
               <VenueLocationStep
                 countryCode={businessCountry ?? ownerCountry}
                 address={venueAddress}
@@ -445,11 +485,17 @@ function BusinessSetupPage() {
                 coords={coords}
                 onCoordsChange={setCoords}
               />
+            ) : (
+              <MigrationSourceStep
+                value={migrationSource}
+                otherValue={otherMigrationSource}
+                onChange={setMigrationSource}
+                onOtherValueChange={setOtherMigrationSource}
+              />
             )}
           </form>
         )}
       </main>
-
     </div>
   );
 }

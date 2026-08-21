@@ -24,6 +24,7 @@ export type Database = {
           latitude: number | null
           location: Json | null
           longitude: number | null
+          migration_source: string | null
           name: string
           other_category: string | null
           owner_id: string | null
@@ -42,6 +43,7 @@ export type Database = {
           latitude?: number | null
           location?: Json | null
           longitude?: number | null
+          migration_source?: string | null
           name: string
           other_category?: string | null
           owner_id?: string | null
@@ -60,6 +62,7 @@ export type Database = {
           latitude?: number | null
           location?: Json | null
           longitude?: number | null
+          migration_source?: string | null
           name?: string
           other_category?: string | null
           owner_id?: string | null
