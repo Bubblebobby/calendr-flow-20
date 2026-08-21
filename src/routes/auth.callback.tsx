@@ -1,8 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+
+function safeNext(value: unknown): string | null {
+  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) return null;
+  return value;
+}
 
 export const Route = createFileRoute("/auth/callback")({
   ssr: false,
@@ -20,6 +25,11 @@ export const Route = createFileRoute("/auth/callback")({
 
 function AuthCallback() {
   const navigate = useNavigate();
+  const [next] = useState(() =>
+    typeof window === "undefined"
+      ? null
+      : safeNext(new URLSearchParams(window.location.search).get("next")),
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -28,7 +38,14 @@ function AuthCallback() {
       const { data } = await supabase.auth.getSession();
       if (cancelled) return;
       if (!data.session) {
-        navigate({ to: "/auth", replace: true });
+        window.location.replace(next ? `/auth?next=${encodeURIComponent(next)}` : "/auth");
+        return;
+      }
+
+      // A pending OAuth consent (or any preserved destination) wins over the
+      // normal post-sign-in routing.
+      if (next) {
+        window.location.replace(next);
         return;
       }
 
@@ -53,7 +70,7 @@ function AuthCallback() {
       cancelled = true;
       sub.subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, next]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
