@@ -32,15 +32,17 @@ function AuthCallback() {
         return;
       }
 
-      // New accounts have no profile row yet -> onboarding comes next.
+      // Profiles are created by a trigger on signup, so completeness is the
+      // onboarding timestamp, not the row's existence.
       const { data: profile } = await supabase
         .from("profiles")
-        .select("business_id")
+        .select("onboarded_at")
         .eq("id", data.session.user.id)
         .maybeSingle();
 
       if (cancelled) return;
-      navigate({ to: profile?.business_id ? "/dashboard" : "/dashboard", replace: true });
+      navigate({ to: profile?.onboarded_at ? "/dashboard" : "/onboarding", replace: true });
+
     }
 
     resolve();

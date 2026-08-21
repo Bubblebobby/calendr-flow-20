@@ -1,12 +1,13 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { CalendarCheck, Loader2, MailCheck } from "lucide-react";
+import { Loader2, MailCheck } from "lucide-react";
 import { toast } from "sonner";
 
+import { AuthShell } from "@/components/auth-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import authPreview from "@/assets/auth-preview.jpg";
+
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -97,116 +98,83 @@ function AuthPage() {
   }
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
-      {/* Left: everything centre-aligned */}
-      <div className="flex flex-col items-center px-6 py-10 lg:px-16">
-        <Link to="/" className="flex items-center gap-2.5">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <CalendarCheck className="size-5" />
+    <AuthShell
+      title={
+        <>
+          Your bookings,
+          <br />
+          handled
+        </>
+      }
+      subtitle="Scheduling, clients and sales for your business — in one calm workspace."
+    >
+      {sentTo ? (
+        <div className="flex flex-col items-center gap-3">
+          <span className="flex size-11 items-center justify-center rounded-full bg-accent text-accent-foreground">
+            <MailCheck className="size-5" />
           </span>
-          <span className="text-lg font-semibold tracking-tight text-foreground">Bookly</span>
-        </Link>
-
-        <div className="flex w-full max-w-[420px] flex-1 flex-col justify-center text-center">
-          <h1 className="text-4xl font-semibold leading-[1.12] tracking-tight text-foreground sm:text-[2.85rem]">
-            Your bookings,
-            <br />
-            handled
-          </h1>
-          <p className="mt-3.5 text-base text-muted-foreground">
-            Scheduling, clients and sales for your business — in one calm workspace.
+          <h2 className="text-base font-semibold text-foreground">Check your email</h2>
+          <p className="text-sm text-muted-foreground">
+            We sent a secure link to <span className="font-medium text-foreground">{sentTo}</span>. Open it to
+            continue.
           </p>
-
-          <div className="surface-card mt-9 p-7 text-center">
-            {sentTo ? (
-              <div className="flex flex-col items-center gap-3">
-                <span className="flex size-11 items-center justify-center rounded-full bg-accent text-accent-foreground">
-                  <MailCheck className="size-5" />
-                </span>
-                <h2 className="text-base font-semibold text-foreground">Check your email</h2>
-                <p className="text-sm text-muted-foreground">
-                  We sent a secure link to <span className="font-medium text-foreground">{sentTo}</span>. Open it to
-                  continue.
-                </p>
-                <Button variant="ghost" size="sm" onClick={() => setSentTo(null)}>
-                  Use a different email
-                </Button>
-              </div>
-            ) : (
-              <>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="h-11 w-full"
-                  onClick={handleGoogle}
-                  disabled={googleLoading}
-                >
-                  {googleLoading ? <Loader2 className="size-4 animate-spin" /> : <GoogleMark />}
-                  Continue with Google
-                </Button>
-
-                <div className="my-4 flex items-center gap-2.5">
-                  <span className="h-px flex-1 bg-border" />
-                  <span className="text-xs text-muted-foreground">or</span>
-                  <span className="h-px flex-1 bg-border" />
-                </div>
-
-                <form onSubmit={handleEmail} className="space-y-3">
-                  <label htmlFor="auth-email" className="sr-only">
-                    Email address
-                  </label>
-                  <Input
-                    id="auth-email"
-                    type="email"
-                    inputMode="email"
-                    autoComplete="email"
-                    required
-                    placeholder="Enter your personal or work email"
-                    className="h-11 text-center"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                  <Button type="submit" className="h-11 w-full" disabled={loading}>
-                    {loading ? <Loader2 className="size-4 animate-spin" /> : "Continue with email"}
-                  </Button>
-                </form>
-
-                <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
-                  By continuing, you agree to our{" "}
-                  <Link to="/" className="underline underline-offset-2">
-                    Terms
-                  </Link>{" "}
-                  and acknowledge our{" "}
-                  <Link to="/" className="underline underline-offset-2">
-                    Privacy Policy
-                  </Link>
-                  .
-                </p>
-              </>
-            )}
-          </div>
+          <Button variant="ghost" size="sm" onClick={() => setSentTo(null)}>
+            Use a different email
+          </Button>
         </div>
-      </div>
+      ) : (
+        <>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-11 w-full"
+            onClick={handleGoogle}
+            disabled={googleLoading}
+          >
+            {googleLoading ? <Loader2 className="size-4 animate-spin" /> : <GoogleMark />}
+            Continue with Google
+          </Button>
 
-      {/* Right: centred showcase card (one for now, room for a set later) */}
-      <div className="hidden items-center justify-center bg-secondary px-10 py-12 lg:flex">
-        <figure className="surface-card w-full max-w-md overflow-hidden text-center">
-          <img
-            src={authPreview}
-            alt="Bright, modern salon reception area"
-            width={1024}
-            height={1280}
-            loading="lazy"
-            className="h-[420px] w-full object-cover"
-          />
-          <figcaption className="space-y-1 px-6 py-5">
-            <p className="text-sm font-semibold text-foreground">Built for service businesses</p>
-            <p className="text-sm text-muted-foreground">
-              Salons, spas, barbers and studios run their day on Bookly.
-            </p>
-          </figcaption>
-        </figure>
-      </div>
-    </div>
+          <div className="my-4 flex items-center gap-2.5">
+            <span className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground">or</span>
+            <span className="h-px flex-1 bg-border" />
+          </div>
+
+          <form onSubmit={handleEmail} className="space-y-3">
+            <label htmlFor="auth-email" className="sr-only">
+              Email address
+            </label>
+            <Input
+              id="auth-email"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              required
+              placeholder="Enter your personal or work email"
+              className="h-11 text-center"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <Button type="submit" className="h-11 w-full" disabled={loading}>
+              {loading ? <Loader2 className="size-4 animate-spin" /> : "Continue with email"}
+            </Button>
+          </form>
+
+          <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
+            By continuing, you agree to our{" "}
+            <Link to="/" className="underline underline-offset-2">
+              Terms
+            </Link>{" "}
+            and acknowledge our{" "}
+            <Link to="/" className="underline underline-offset-2">
+              Privacy Policy
+            </Link>
+            .
+          </p>
+        </>
+      )}
+    </AuthShell>
   );
 }
+
