@@ -6,11 +6,13 @@ import { z } from "zod";
 
 import { BusinessCategoriesStep } from "@/components/business-categories-step";
 import { ServiceLocationStep } from "@/components/service-location-step";
+import { VenueLocationStep } from "@/components/venue-location-step";
 import { EXAMPLE_EMPLOYEE_NAME, TeamSizeStep } from "@/components/team-size-step";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { countryByCode } from "@/lib/countries";
+import { EMPTY_ADDRESS, type BusinessAddress } from "@/lib/google-maps";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -79,6 +81,9 @@ function BusinessSetupPage() {
   const [otherLabel, setOtherLabel] = useState("");
   const [teamSize, setTeamSize] = useState<string | null>(null);
   const [serviceLocations, setServiceLocations] = useState<string[]>([]);
+  const [businessCountry, setBusinessCountry] = useState<string | null>(null);
+  const [venueAddress, setVenueAddress] = useState<BusinessAddress>(EMPTY_ADDRESS);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -106,7 +111,9 @@ function BusinessSetupPage() {
       if (profile.business_id) {
         const { data: business } = await supabase
           .from("businesses")
-          .select("id, name, website, setup_step, categories, other_category, team_size, service_locations")
+          .select(
+            "id, name, website, setup_step, categories, other_category, team_size, service_locations, country, location, latitude, longitude",
+          )
           .eq("id", profile.business_id)
           .maybeSingle();
         if (cancelled) return;
@@ -117,6 +124,13 @@ function BusinessSetupPage() {
           setCategories(Array.isArray(business.categories) ? (business.categories as string[]) : []);
           setOtherLabel(business.other_category ?? "");
           setTeamSize(business.team_size ?? null);
+          setBusinessCountry(business.country ?? null);
+          if (business.location) {
+            setVenueAddress({ ...EMPTY_ADDRESS, ...(business.location as BusinessAddress) });
+          }
+          if (business.latitude != null && business.longitude != null) {
+            setCoords({ lat: business.latitude, lng: business.longitude });
+          }
           setServiceLocations(
             Array.isArray(business.service_locations)
               ? (business.service_locations as string[])
@@ -144,7 +158,9 @@ function BusinessSetupPage() {
           ? Boolean(teamSize)
           : step === 4
             ? serviceLocations.length > 0
-            : true;
+            : step === 5
+              ? Boolean(coords)
+              : true;
 
   async function handleTeamSizeContinue() {
     if (!businessId || !teamSize) return;
@@ -213,6 +229,26 @@ function BusinessSetupPage() {
     setStep(5);
   }
 
+  async function handleVenueLocationContinue() {
+    if (!businessId || !coords) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("businesses")
+      .update({
+        location: venueAddress,
+        latitude: coords.lat,
+        longitude: coords.lng,
+        setup_step: 6,
+      })
+      .eq("id", businessId);
+    setSaving(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setStep(6);
+  }
+
   async function handleContinue() {
     if (step === 2) {
       await handleCategoriesContinue();
@@ -224,6 +260,10 @@ function BusinessSetupPage() {
     }
     if (step === 4) {
       await handleServiceLocationsContinue();
+      return;
+    }
+    if (step === 5) {
+      await handleVenueLocationContinue();
       return;
     }
     if (step !== 1) return;
@@ -291,7 +331,7 @@ function BusinessSetupPage() {
       </div>
 
       <div className="flex items-center justify-between px-6 pt-4 sm:px-10">
-        {step > 1 && step < 5 ? (
+        {step > 1 && step < 6 ? (
           <Button
             type="button"
             variant="outline"
@@ -323,7 +363,7 @@ function BusinessSetupPage() {
       </div>
 
       <main className="mx-auto w-full max-w-[820px] px-6 pb-24 pt-6">
-        {step >= 5 ? (
+        {step >= 6 ? (
           <div className="pt-10">
             <p className="text-base text-muted-foreground">Account setup</p>
             <h1 className="mt-2 text-4xl font-bold tracking-tight text-foreground">
@@ -395,8 +435,16 @@ function BusinessSetupPage() {
               />
             ) : step === 3 ? (
               <TeamSizeStep value={teamSize} onChange={setTeamSize} />
-            ) : (
+            ) : step === 4 ? (
               <ServiceLocationStep selected={serviceLocations} onChange={setServiceLocations} />
+            ) : (
+              <VenueLocationStep
+                countryCode={businessCountry ?? ownerCountry}
+                address={venueAddress}
+                onAddressChange={setVenueAddress}
+                coords={coords}
+                onCoordsChange={setCoords}
+              />
             )}
           </form>
         )}
