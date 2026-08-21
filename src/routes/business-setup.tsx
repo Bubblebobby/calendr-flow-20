@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { BusinessCategoriesStep } from "@/components/business-categories-step";
+import { EXAMPLE_EMPLOYEE_NAME, TeamSizeStep } from "@/components/team-size-step";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -75,6 +76,7 @@ function BusinessSetupPage() {
   const [website, setWebsite] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
   const [otherLabel, setOtherLabel] = useState("");
+  const [teamSize, setTeamSize] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -102,7 +104,7 @@ function BusinessSetupPage() {
       if (profile.business_id) {
         const { data: business } = await supabase
           .from("businesses")
-          .select("id, name, website, setup_step, categories, other_category")
+          .select("id, name, website, setup_step, categories, other_category, team_size")
           .eq("id", profile.business_id)
           .maybeSingle();
         if (cancelled) return;
@@ -112,6 +114,7 @@ function BusinessSetupPage() {
           setWebsite(business.website ?? "");
           setCategories(Array.isArray(business.categories) ? (business.categories as string[]) : []);
           setOtherLabel(business.other_category ?? "");
+          setTeamSize(business.team_size ?? null);
           setStep(Math.min(Math.max(business.setup_step ?? 1, 1), TOTAL_STEPS));
         }
       }
@@ -125,7 +128,41 @@ function BusinessSetupPage() {
   const parsed = nameSchema.safeParse({ name, website });
   const categoriesValid =
     categories.length > 0 && (!categories.includes("other") || otherLabel.trim().length > 1);
-  const canContinue = step === 1 ? parsed.success : step === 2 ? categoriesValid : true;
+  const canContinue =
+    step === 1 ? parsed.success : step === 2 ? categoriesValid : step === 3 ? Boolean(teamSize) : true;
+
+  async function handleTeamSizeContinue() {
+    if (!businessId || !teamSize) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("businesses")
+      .update({ team_size: teamSize, setup_step: 4 })
+      .eq("id", businessId);
+
+    if (!error && teamSize !== "independent") {
+      const { data: existing } = await supabase
+        .from("employees")
+        .select("id")
+        .eq("business_id", businessId)
+        .eq("is_example", true)
+        .maybeSingle();
+      if (!existing) {
+        await supabase.from("employees").insert({
+          business_id: businessId,
+          first_name: EXAMPLE_EMPLOYEE_NAME,
+          job_title: "Team member",
+          is_example: true,
+        });
+      }
+    }
+
+    setSaving(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setStep(4);
+  }
 
   async function handleCategoriesContinue() {
     if (!businessId || !categoriesValid) return;
@@ -149,6 +186,10 @@ function BusinessSetupPage() {
   async function handleContinue() {
     if (step === 2) {
       await handleCategoriesContinue();
+      return;
+    }
+    if (step === 3) {
+      await handleTeamSizeContinue();
       return;
     }
     if (step !== 1) return;
@@ -216,7 +257,7 @@ function BusinessSetupPage() {
       </div>
 
       <div className="flex items-center justify-between px-6 pt-4 sm:px-10">
-        {step > 1 && step < 3 ? (
+        {step > 1 && step < 4 ? (
           <Button
             type="button"
             variant="outline"
@@ -248,7 +289,7 @@ function BusinessSetupPage() {
       </div>
 
       <main className="mx-auto w-full max-w-[820px] px-6 pb-24 pt-6">
-        {step === 3 ? (
+        {step >= 4 ? (
           <div className="pt-10">
             <p className="text-base text-muted-foreground">Account setup</p>
             <h1 className="mt-2 text-4xl font-bold tracking-tight text-foreground">
@@ -311,13 +352,15 @@ function BusinessSetupPage() {
                   </div>
                 </div>
               </>
-            ) : (
+            ) : step === 2 ? (
               <BusinessCategoriesStep
                 selected={categories}
                 onChange={setCategories}
                 otherLabel={otherLabel}
                 onOtherLabelChange={setOtherLabel}
               />
+            ) : (
+              <TeamSizeStep value={teamSize} onChange={setTeamSize} />
             )}
           </form>
         )}
