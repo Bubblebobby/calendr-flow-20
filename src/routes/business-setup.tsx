@@ -9,6 +9,7 @@ import { ServiceLocationStep } from "@/components/service-location-step";
 import { VenueLocationStep } from "@/components/venue-location-step";
 import { EXAMPLE_EMPLOYEE_NAME, TeamSizeStep } from "@/components/team-size-step";
 import { MigrationSourceStep, MIGRATION_SOURCES } from "@/components/migration-source-step";
+import { HeardAboutStep, HEARD_ABOUT_SOURCES } from "@/components/heard-about-step";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,7 +41,7 @@ export const Route = createFileRoute("/business-setup")({
 });
 
 const PROGRESS_SEGMENTS = 5;
-const MAX_STEP = 7;
+const MAX_STEP = 8;
 
 const nameSchema = z.object({
   name: z.string().trim().min(2, "Enter your business name").max(120),
@@ -89,6 +90,8 @@ function BusinessSetupPage() {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [migrationSource, setMigrationSource] = useState<string | null>(null);
   const [otherMigrationSource, setOtherMigrationSource] = useState("");
+  const [heardAbout, setHeardAbout] = useState<string | null>(null);
+  const [otherHeardAbout, setOtherHeardAbout] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -117,7 +120,7 @@ function BusinessSetupPage() {
         const { data: business } = await supabase
           .from("businesses")
           .select(
-            "id, name, website, setup_step, categories, other_category, team_size, service_locations, country, location, latitude, longitude, migration_source",
+            "id, name, website, setup_step, categories, other_category, team_size, service_locations, country, location, latitude, longitude, migration_source, heard_about_source",
           )
           .eq("id", profile.business_id)
           .maybeSingle();
@@ -147,6 +150,13 @@ function BusinessSetupPage() {
             setOtherMigrationSource(savedMigration);
             setMigrationSource("other");
           }
+          const savedHeard = (business.heard_about_source as string | null) ?? null;
+          if (savedHeard && !HEARD_ABOUT_SOURCES.some((s) => s.value === savedHeard)) {
+            setOtherHeardAbout(savedHeard);
+            setHeardAbout("other");
+          } else {
+            setHeardAbout(savedHeard);
+          }
           setStep(Math.min(Math.max(business.setup_step ?? 1, 1), MAX_STEP));
         }
       }
@@ -175,7 +185,10 @@ function BusinessSetupPage() {
               ? Boolean(coords)
               : step === 6
                 ? migrationSourceValid
-                : true;
+                : step === 7
+                  ? Boolean(heardAbout) &&
+                    (heardAbout !== "other" || otherHeardAbout.trim().length > 1)
+                  : true;
 
   async function handleTeamSizeContinue() {
     if (!businessId || !teamSize) return;
@@ -285,6 +298,22 @@ function BusinessSetupPage() {
     setStep(7);
   }
 
+  async function handleHeardAboutContinue() {
+    if (!businessId || !heardAbout) return;
+    setSaving(true);
+    const value = heardAbout === "other" ? otherHeardAbout.trim() || null : heardAbout;
+    const { error } = await supabase
+      .from("businesses")
+      .update({ heard_about_source: value, setup_step: 8 })
+      .eq("id", businessId);
+    setSaving(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setStep(8);
+  }
+
   async function handleContinue() {
     if (step === 2) {
       await handleCategoriesContinue();
@@ -304,6 +333,10 @@ function BusinessSetupPage() {
     }
     if (step === 6) {
       await handleMigrationSourceContinue();
+      return;
+    }
+    if (step === 7) {
+      await handleHeardAboutContinue();
       return;
     }
     if (step !== 1) return;
@@ -395,8 +428,8 @@ function BusinessSetupPage() {
             <Loader2 className="size-4 animate-spin" />
           ) : (
             <>
-              Continue
-              <ArrowRight className="ml-1 size-4" />
+              {step === MAX_STEP - 1 ? "Done" : "Continue"}
+              {step === MAX_STEP - 1 ? null : <ArrowRight className="ml-1 size-4" />}
             </>
           )}
         </Button>
@@ -485,12 +518,19 @@ function BusinessSetupPage() {
                 coords={coords}
                 onCoordsChange={setCoords}
               />
-            ) : (
+            ) : step === 6 ? (
               <MigrationSourceStep
                 value={migrationSource}
                 otherValue={otherMigrationSource}
                 onChange={setMigrationSource}
                 onOtherValueChange={setOtherMigrationSource}
+              />
+            ) : (
+              <HeardAboutStep
+                value={heardAbout}
+                otherValue={otherHeardAbout}
+                onChange={setHeardAbout}
+                onOtherValueChange={setOtherHeardAbout}
               />
             )}
           </form>
