@@ -16,33 +16,39 @@ export type Database = {
     Tables: {
       businesses: {
         Row: {
+          categories: Json
           country: string
           created_at: string
           currency: string
           id: string
           name: string
+          other_category: string | null
           owner_id: string | null
           setup_step: number
           timezone: string | null
           website: string | null
         }
         Insert: {
+          categories?: Json
           country?: string
           created_at?: string
           currency?: string
           id?: string
           name: string
+          other_category?: string | null
           owner_id?: string | null
           setup_step?: number
           timezone?: string | null
           website?: string | null
         }
         Update: {
+          categories?: Json
           country?: string
           created_at?: string
           currency?: string
           id?: string
           name?: string
+          other_category?: string | null
           owner_id?: string | null
           setup_step?: number
           timezone?: string | null
