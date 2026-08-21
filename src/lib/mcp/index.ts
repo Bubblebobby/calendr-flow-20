@@ -18,7 +18,7 @@ export default defineMcp({
     acceptedAudiences: "authenticated",
   }),
   // defineTool infers `outputSchema: undefined`, which trips exactOptionalPropertyTypes.
-  tools: [getBusinessTool, updateBusinessTool, listEmployeesTool, addEmployeeTool] as Parameters<
+  tools: [getBusinessTool, updateBusinessTool, listEmployeesTool, addEmployeeTool] as unknown as Parameters<
     typeof defineMcp
   >[0]["tools"],
 });
