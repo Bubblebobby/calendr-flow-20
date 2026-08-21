@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { BusinessCategoriesStep } from "@/components/business-categories-step";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -72,6 +73,8 @@ function BusinessSetupPage() {
   const [ownerCountry, setOwnerCountry] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [website, setWebsite] = useState("");
+  const [categories, setCategories] = useState<string[]>([]);
+  const [otherLabel, setOtherLabel] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -99,7 +102,7 @@ function BusinessSetupPage() {
       if (profile.business_id) {
         const { data: business } = await supabase
           .from("businesses")
-          .select("id, name, website, setup_step")
+          .select("id, name, website, setup_step, categories, other_category")
           .eq("id", profile.business_id)
           .maybeSingle();
         if (cancelled) return;
@@ -107,6 +110,8 @@ function BusinessSetupPage() {
           setBusinessId(business.id);
           setName(business.name ?? "");
           setWebsite(business.website ?? "");
+          setCategories(Array.isArray(business.categories) ? (business.categories as string[]) : []);
+          setOtherLabel(business.other_category ?? "");
           setStep(Math.min(Math.max(business.setup_step ?? 1, 1), TOTAL_STEPS));
         }
       }
@@ -118,9 +123,34 @@ function BusinessSetupPage() {
   }, [navigate]);
 
   const parsed = nameSchema.safeParse({ name, website });
-  const canContinue = step === 1 ? parsed.success : true;
+  const categoriesValid =
+    categories.length > 0 && (!categories.includes("other") || otherLabel.trim().length > 1);
+  const canContinue = step === 1 ? parsed.success : step === 2 ? categoriesValid : true;
+
+  async function handleCategoriesContinue() {
+    if (!businessId || !categoriesValid) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("businesses")
+      .update({
+        categories,
+        other_category: categories.includes("other") ? otherLabel.trim() : null,
+        setup_step: 3,
+      })
+      .eq("id", businessId);
+    setSaving(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setStep(3);
+  }
 
   async function handleContinue() {
+    if (step === 2) {
+      await handleCategoriesContinue();
+      return;
+    }
     if (step !== 1) return;
     const result = nameSchema.safeParse({ name, website });
     if (!result.success) {
@@ -185,7 +215,21 @@ function BusinessSetupPage() {
         <ProgressBar step={step} />
       </div>
 
-      <div className="flex justify-end px-6 pt-4 sm:px-10">
+      <div className="flex items-center justify-between px-6 pt-4 sm:px-10">
+        {step > 1 && step < 3 ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            aria-label="Back"
+            className="size-11 rounded-full"
+            onClick={() => setStep((s) => Math.max(1, s - 1))}
+          >
+            <ArrowLeft className="size-4" />
+          </Button>
+        ) : (
+          <span />
+        )}
         <Button
           type="submit"
           form="business-setup-form"
@@ -204,52 +248,7 @@ function BusinessSetupPage() {
       </div>
 
       <main className="mx-auto w-full max-w-[820px] px-6 pb-24 pt-6">
-        {step === 1 ? (
-          <form
-            id="business-setup-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void handleContinue();
-            }}
-          >
-            <p className="text-base text-muted-foreground">Account setup</p>
-            <h1 className="mt-2 text-4xl font-bold tracking-tight text-foreground sm:text-[2.9rem]">
-              What&apos;s your business name?
-            </h1>
-            <p className="mt-3 text-lg text-muted-foreground">
-              This is the brand name your clients will see. Your billing and legal name can be added later.
-            </p>
-
-            <div className="mt-10 space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="business-name" className="text-[15px] font-semibold">
-                  Business name
-                </Label>
-                <Input
-                  id="business-name"
-                  autoFocus
-                  className="h-14 rounded-xl text-base"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="business-website" className="text-[15px] font-semibold">
-                  Website <span className="font-normal text-muted-foreground">(Optional)</span>
-                </Label>
-                <Input
-                  id="business-website"
-                  inputMode="url"
-                  placeholder="www.yoursite.com"
-                  className="h-14 rounded-xl text-base"
-                  value={website}
-                  onChange={(e) => setWebsite(e.target.value)}
-                />
-              </div>
-            </div>
-          </form>
-        ) : (
+        {step === 3 ? (
           <div className="pt-10">
             <p className="text-base text-muted-foreground">Account setup</p>
             <h1 className="mt-2 text-4xl font-bold tracking-tight text-foreground">
@@ -265,8 +264,65 @@ function BusinessSetupPage() {
               Go to dashboard
             </Button>
           </div>
+        ) : (
+          <form
+            id="business-setup-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void handleContinue();
+            }}
+          >
+            {step === 1 ? (
+              <>
+                <p className="text-base text-muted-foreground">Account setup</p>
+                <h1 className="mt-2 text-4xl font-bold tracking-tight text-foreground sm:text-[2.9rem]">
+                  What&apos;s your business name?
+                </h1>
+                <p className="mt-3 text-lg text-muted-foreground">
+                  This is the brand name your clients will see. Your billing and legal name can be added later.
+                </p>
+
+                <div className="mt-10 space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="business-name" className="text-[15px] font-semibold">
+                      Business name
+                    </Label>
+                    <Input
+                      id="business-name"
+                      autoFocus
+                      className="h-14 rounded-xl text-base"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="business-website" className="text-[15px] font-semibold">
+                      Website <span className="font-normal text-muted-foreground">(Optional)</span>
+                    </Label>
+                    <Input
+                      id="business-website"
+                      inputMode="url"
+                      placeholder="www.yoursite.com"
+                      className="h-14 rounded-xl text-base"
+                      value={website}
+                      onChange={(e) => setWebsite(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <BusinessCategoriesStep
+                selected={categories}
+                onChange={setCategories}
+                otherLabel={otherLabel}
+                onOtherLabelChange={setOtherLabel}
+              />
+            )}
+          </form>
         )}
       </main>
+
     </div>
   );
 }
