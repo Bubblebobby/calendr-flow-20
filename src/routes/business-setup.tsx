@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { BusinessCategoriesStep } from "@/components/business-categories-step";
+import { ServiceLocationStep } from "@/components/service-location-step";
 import { EXAMPLE_EMPLOYEE_NAME, TeamSizeStep } from "@/components/team-size-step";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,6 +78,7 @@ function BusinessSetupPage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [otherLabel, setOtherLabel] = useState("");
   const [teamSize, setTeamSize] = useState<string | null>(null);
+  const [serviceLocations, setServiceLocations] = useState<string[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -104,7 +106,7 @@ function BusinessSetupPage() {
       if (profile.business_id) {
         const { data: business } = await supabase
           .from("businesses")
-          .select("id, name, website, setup_step, categories, other_category, team_size")
+          .select("id, name, website, setup_step, categories, other_category, team_size, service_locations")
           .eq("id", profile.business_id)
           .maybeSingle();
         if (cancelled) return;
@@ -115,6 +117,11 @@ function BusinessSetupPage() {
           setCategories(Array.isArray(business.categories) ? (business.categories as string[]) : []);
           setOtherLabel(business.other_category ?? "");
           setTeamSize(business.team_size ?? null);
+          setServiceLocations(
+            Array.isArray(business.service_locations)
+              ? (business.service_locations as string[])
+              : [],
+          );
           setStep(Math.min(Math.max(business.setup_step ?? 1, 1), TOTAL_STEPS));
         }
       }
@@ -129,7 +136,15 @@ function BusinessSetupPage() {
   const categoriesValid =
     categories.length > 0 && (!categories.includes("other") || otherLabel.trim().length > 1);
   const canContinue =
-    step === 1 ? parsed.success : step === 2 ? categoriesValid : step === 3 ? Boolean(teamSize) : true;
+    step === 1
+      ? parsed.success
+      : step === 2
+        ? categoriesValid
+        : step === 3
+          ? Boolean(teamSize)
+          : step === 4
+            ? serviceLocations.length > 0
+            : true;
 
   async function handleTeamSizeContinue() {
     if (!businessId || !teamSize) return;
@@ -183,6 +198,21 @@ function BusinessSetupPage() {
     setStep(3);
   }
 
+  async function handleServiceLocationsContinue() {
+    if (!businessId || serviceLocations.length === 0) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("businesses")
+      .update({ service_locations: serviceLocations, setup_step: 5 })
+      .eq("id", businessId);
+    setSaving(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setStep(5);
+  }
+
   async function handleContinue() {
     if (step === 2) {
       await handleCategoriesContinue();
@@ -190,6 +220,10 @@ function BusinessSetupPage() {
     }
     if (step === 3) {
       await handleTeamSizeContinue();
+      return;
+    }
+    if (step === 4) {
+      await handleServiceLocationsContinue();
       return;
     }
     if (step !== 1) return;
@@ -257,7 +291,7 @@ function BusinessSetupPage() {
       </div>
 
       <div className="flex items-center justify-between px-6 pt-4 sm:px-10">
-        {step > 1 && step < 4 ? (
+        {step > 1 && step < 5 ? (
           <Button
             type="button"
             variant="outline"
@@ -289,7 +323,7 @@ function BusinessSetupPage() {
       </div>
 
       <main className="mx-auto w-full max-w-[820px] px-6 pb-24 pt-6">
-        {step >= 4 ? (
+        {step >= 5 ? (
           <div className="pt-10">
             <p className="text-base text-muted-foreground">Account setup</p>
             <h1 className="mt-2 text-4xl font-bold tracking-tight text-foreground">
@@ -359,8 +393,10 @@ function BusinessSetupPage() {
                 otherLabel={otherLabel}
                 onOtherLabelChange={setOtherLabel}
               />
-            ) : (
+            ) : step === 3 ? (
               <TeamSizeStep value={teamSize} onChange={setTeamSize} />
+            ) : (
+              <ServiceLocationStep selected={serviceLocations} onChange={setServiceLocations} />
             )}
           </form>
         )}
