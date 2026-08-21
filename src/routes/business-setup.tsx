@@ -215,7 +215,21 @@ function BusinessSetupPage() {
         <ProgressBar step={step} />
       </div>
 
-      <div className="flex justify-end px-6 pt-4 sm:px-10">
+      <div className="flex items-center justify-between px-6 pt-4 sm:px-10">
+        {step > 1 && step < 3 ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            aria-label="Back"
+            className="size-11 rounded-full"
+            onClick={() => setStep((s) => Math.max(1, s - 1))}
+          >
+            <ArrowLeft className="size-4" />
+          </Button>
+        ) : (
+          <span />
+        )}
         <Button
           type="submit"
           form="business-setup-form"
@@ -234,52 +248,7 @@ function BusinessSetupPage() {
       </div>
 
       <main className="mx-auto w-full max-w-[820px] px-6 pb-24 pt-6">
-        {step === 1 ? (
-          <form
-            id="business-setup-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void handleContinue();
-            }}
-          >
-            <p className="text-base text-muted-foreground">Account setup</p>
-            <h1 className="mt-2 text-4xl font-bold tracking-tight text-foreground sm:text-[2.9rem]">
-              What&apos;s your business name?
-            </h1>
-            <p className="mt-3 text-lg text-muted-foreground">
-              This is the brand name your clients will see. Your billing and legal name can be added later.
-            </p>
-
-            <div className="mt-10 space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="business-name" className="text-[15px] font-semibold">
-                  Business name
-                </Label>
-                <Input
-                  id="business-name"
-                  autoFocus
-                  className="h-14 rounded-xl text-base"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="business-website" className="text-[15px] font-semibold">
-                  Website <span className="font-normal text-muted-foreground">(Optional)</span>
-                </Label>
-                <Input
-                  id="business-website"
-                  inputMode="url"
-                  placeholder="www.yoursite.com"
-                  className="h-14 rounded-xl text-base"
-                  value={website}
-                  onChange={(e) => setWebsite(e.target.value)}
-                />
-              </div>
-            </div>
-          </form>
-        ) : (
+        {step === 3 ? (
           <div className="pt-10">
             <p className="text-base text-muted-foreground">Account setup</p>
             <h1 className="mt-2 text-4xl font-bold tracking-tight text-foreground">
@@ -295,8 +264,65 @@ function BusinessSetupPage() {
               Go to dashboard
             </Button>
           </div>
+        ) : (
+          <form
+            id="business-setup-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void handleContinue();
+            }}
+          >
+            {step === 1 ? (
+              <>
+                <p className="text-base text-muted-foreground">Account setup</p>
+                <h1 className="mt-2 text-4xl font-bold tracking-tight text-foreground sm:text-[2.9rem]">
+                  What&apos;s your business name?
+                </h1>
+                <p className="mt-3 text-lg text-muted-foreground">
+                  This is the brand name your clients will see. Your billing and legal name can be added later.
+                </p>
+
+                <div className="mt-10 space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="business-name" className="text-[15px] font-semibold">
+                      Business name
+                    </Label>
+                    <Input
+                      id="business-name"
+                      autoFocus
+                      className="h-14 rounded-xl text-base"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="business-website" className="text-[15px] font-semibold">
+                      Website <span className="font-normal text-muted-foreground">(Optional)</span>
+                    </Label>
+                    <Input
+                      id="business-website"
+                      inputMode="url"
+                      placeholder="www.yoursite.com"
+                      className="h-14 rounded-xl text-base"
+                      value={website}
+                      onChange={(e) => setWebsite(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <BusinessCategoriesStep
+                selected={categories}
+                onChange={setCategories}
+                otherLabel={otherLabel}
+                onOtherLabelChange={setOtherLabel}
+              />
+            )}
+          </form>
         )}
       </main>
+
     </div>
   );
 }
