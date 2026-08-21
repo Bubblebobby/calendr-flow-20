@@ -102,7 +102,7 @@ function BusinessSetupPage() {
       if (profile.business_id) {
         const { data: business } = await supabase
           .from("businesses")
-          .select("id, name, website, setup_step")
+          .select("id, name, website, setup_step, categories, other_category")
           .eq("id", profile.business_id)
           .maybeSingle();
         if (cancelled) return;
@@ -110,6 +110,8 @@ function BusinessSetupPage() {
           setBusinessId(business.id);
           setName(business.name ?? "");
           setWebsite(business.website ?? "");
+          setCategories(Array.isArray(business.categories) ? (business.categories as string[]) : []);
+          setOtherLabel(business.other_category ?? "");
           setStep(Math.min(Math.max(business.setup_step ?? 1, 1), TOTAL_STEPS));
         }
       }
@@ -121,7 +123,9 @@ function BusinessSetupPage() {
   }, [navigate]);
 
   const parsed = nameSchema.safeParse({ name, website });
-  const canContinue = step === 1 ? parsed.success : true;
+  const categoriesValid =
+    categories.length > 0 && (!categories.includes("other") || otherLabel.trim().length > 1);
+  const canContinue = step === 1 ? parsed.success : step === 2 ? categoriesValid : true;
 
   async function handleContinue() {
     if (step !== 1) return;
