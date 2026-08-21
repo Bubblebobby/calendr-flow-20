@@ -75,50 +75,67 @@ const slots: Slot[] = [
 const hours = ["8:00 am", "9:00 am", "10:00 am", "11:00 am"];
 
 function Landing() {
-  return (
-    <div className="min-h-screen overflow-x-hidden bg-background">
-      <header className="mx-auto flex w-full max-w-7xl items-center justify-between gap-6 px-6 py-6">
-        <div className="flex items-center gap-10">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-ink text-ink-foreground">
-              <CalendarCheck className="size-4" />
-            </span>
-            <span className="text-2xl font-extrabold tracking-tight text-foreground">bookly</span>
-          </Link>
-          <nav className="hidden items-center gap-8 lg:flex">
-            {navLinks.map((label) => (
-              <a
-                key={label}
-                href="#preview"
-                className="text-base font-medium text-foreground/85 transition-colors hover:text-foreground"
-              >
-                {label}
-              </a>
-            ))}
-          </nav>
-        </div>
+  const [scrolled, setScrolled] = useState(false);
 
-        <div className="flex items-center gap-3">
-          <a
-            href="#preview"
-            className="hidden items-center gap-2 rounded-full border border-border px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted active:bg-secondary sm:inline-flex"
-          >
-            <Store className="size-4" />
-            Marketplace
-          </a>
-          <Button
-            asChild
-            className="h-12 rounded-full bg-ink px-7 text-base font-semibold text-ink-foreground hover:bg-ink/90 active:bg-ink/80"
-          >
-            <Link to="/auth">Sign up</Link>
-          </Button>
-          <button
-            type="button"
-            className="hidden items-center gap-2 rounded-full border border-border px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted active:bg-secondary md:inline-flex"
-          >
-            Menu
-            <Menu className="size-4" />
-          </button>
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return (
+    <div className="min-h-screen overflow-x-hidden bg-background pt-[88px]">
+      <header
+        className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ease-out ${
+          scrolled
+            ? "bg-background/80 backdrop-blur-xl border-b border-border/50 shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
+            : "bg-transparent border-b border-transparent"
+        }`}
+      >
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-6 px-6 py-5">
+          <div className="flex items-center gap-10">
+            <Link to="/" className="flex items-center gap-2">
+              <span className="flex size-8 items-center justify-center rounded-lg bg-ink text-ink-foreground">
+                <CalendarCheck className="size-4" />
+              </span>
+              <span className="text-2xl font-extrabold tracking-tight text-foreground">bookly</span>
+            </Link>
+            <nav className="hidden items-center gap-8 lg:flex">
+              {navLinks.map((label) => (
+                <a
+                  key={label}
+                  href="#preview"
+                  className="text-base font-medium text-foreground/85 transition-colors hover:text-foreground"
+                >
+                  {label}
+                </a>
+              ))}
+            </nav>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <a
+              href="#preview"
+              className="hidden items-center gap-2 rounded-full border border-border bg-card/50 px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted active:bg-secondary sm:inline-flex"
+            >
+              <Store className="size-4" />
+              Marketplace
+            </a>
+            <Button
+              asChild
+              className="h-12 rounded-full bg-ink px-7 text-base font-semibold text-ink-foreground hover:bg-ink/90 active:bg-ink/80"
+            >
+              <Link to="/auth">Sign up</Link>
+            </Button>
+            <button
+              type="button"
+              className="hidden items-center gap-2 rounded-full border border-border bg-card/50 px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted active:bg-secondary md:inline-flex"
+            >
+              Menu
+              <Menu className="size-4" />
+            </button>
+          </div>
         </div>
       </header>
 
@@ -127,13 +144,13 @@ function Landing() {
           <div className="pointer-events-none absolute inset-x-0 top-0 h-[720px] halo-bg" aria-hidden />
 
           <div className="relative mx-auto w-full max-w-5xl px-6 pt-16 text-center sm:pt-24">
-            <h1 className="text-[2.75rem] font-extrabold leading-[1.05] tracking-[-0.03em] text-foreground sm:text-6xl lg:text-7xl">
+            <h1 className="animate-fade-up text-[2.75rem] font-extrabold leading-[1.05] tracking-[-0.03em] text-foreground sm:text-6xl lg:text-7xl" style={{ animationDelay: "0.05s" }}>
               The #1 software for Salons and Spas
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-lg text-foreground/70 sm:text-xl">
+            <p className="animate-fade-up mx-auto mt-6 max-w-2xl text-lg text-foreground/70 sm:text-xl" style={{ animationDelay: "0.2s" }}>
               Simple, flexible and powerful booking software for your business.
             </p>
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+            <div className="animate-fade-up mt-10 flex flex-wrap items-center justify-center gap-4" style={{ animationDelay: "0.35s" }}>
               <Button
                 asChild
                 className="h-14 rounded-full bg-ink px-8 text-base font-semibold text-ink-foreground hover:bg-ink/90 active:bg-ink/80"
