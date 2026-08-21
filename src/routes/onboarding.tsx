@@ -218,7 +218,7 @@ function OnboardingPage() {
       toast.error(error.message);
       return;
     }
-    navigate({ to: "/dashboard", replace: true });
+    navigate({ to: "/business-setup", replace: true });
   }
 
   if (!ready) {
