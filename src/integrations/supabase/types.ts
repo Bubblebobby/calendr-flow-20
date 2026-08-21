@@ -25,6 +25,7 @@ export type Database = {
           other_category: string | null
           owner_id: string | null
           setup_step: number
+          team_size: string | null
           timezone: string | null
           website: string | null
         }
@@ -38,6 +39,7 @@ export type Database = {
           other_category?: string | null
           owner_id?: string | null
           setup_step?: number
+          team_size?: string | null
           timezone?: string | null
           website?: string | null
         }
@@ -51,6 +53,7 @@ export type Database = {
           other_category?: string | null
           owner_id?: string | null
           setup_step?: number
+          team_size?: string | null
           timezone?: string | null
           website?: string | null
         }
@@ -58,6 +61,60 @@ export type Database = {
           {
             foreignKeyName: "businesses_owner_id_fkey"
             columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employees: {
+        Row: {
+          business_id: string
+          created_at: string
+          email: string | null
+          first_name: string
+          id: string
+          is_example: boolean
+          job_title: string | null
+          last_name: string | null
+          phone: string | null
+          profile_id: string | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          email?: string | null
+          first_name: string
+          id?: string
+          is_example?: boolean
+          job_title?: string | null
+          last_name?: string | null
+          phone?: string | null
+          profile_id?: string | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          email?: string | null
+          first_name?: string
+          id?: string
+          is_example?: boolean
+          job_title?: string | null
+          last_name?: string | null
+          phone?: string | null
+          profile_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employees_profile_id_fkey"
+            columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
