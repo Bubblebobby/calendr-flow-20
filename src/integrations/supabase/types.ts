@@ -20,6 +20,7 @@ export type Database = {
           country: string
           created_at: string
           currency: string
+          heard_about_source: string | null
           id: string
           latitude: number | null
           location: Json | null
@@ -39,6 +40,7 @@ export type Database = {
           country?: string
           created_at?: string
           currency?: string
+          heard_about_source?: string | null
           id?: string
           latitude?: number | null
           location?: Json | null
@@ -58,6 +60,7 @@ export type Database = {
           country?: string
           created_at?: string
           currency?: string
+          heard_about_source?: string | null
           id?: string
           latitude?: number | null
           location?: Json | null
