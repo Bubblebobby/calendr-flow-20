@@ -1,0 +1,1 @@
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS service_locations jsonb NOT NULL DEFAULT '[]'::jsonb;
