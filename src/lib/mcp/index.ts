@@ -17,5 +17,8 @@ export default defineMcp({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated",
   }),
-  tools: [getBusinessTool, updateBusinessTool, listEmployeesTool, addEmployeeTool],
+  // defineTool infers `outputSchema: undefined`, which trips exactOptionalPropertyTypes.
+  tools: [getBusinessTool, updateBusinessTool, listEmployeesTool, addEmployeeTool] as Parameters<
+    typeof defineMcp
+  >[0]["tools"],
 });

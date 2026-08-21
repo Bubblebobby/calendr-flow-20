@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +11,6 @@ function safeNext(value: unknown): string | null {
 
 export const Route = createFileRoute("/auth/callback")({
   ssr: false,
-  validateSearch: (s: Record<string, unknown>) => ({ next: safeNext(s['next']) ?? undefined }),
   head: () => ({
     meta: [
       { title: "Signing you in — Bookly" },
@@ -26,7 +25,11 @@ export const Route = createFileRoute("/auth/callback")({
 
 function AuthCallback() {
   const navigate = useNavigate();
-  const { next } = Route.useSearch();
+  const [next] = useState(() =>
+    typeof window === "undefined"
+      ? null
+      : safeNext(new URLSearchParams(window.location.search).get("next")),
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -35,7 +38,7 @@ function AuthCallback() {
       const { data } = await supabase.auth.getSession();
       if (cancelled) return;
       if (!data.session) {
-        navigate({ to: "/auth", search: next ? { next } : {}, replace: true });
+        window.location.replace(next ? `/auth?next=${encodeURIComponent(next)}` : "/auth");
         return;
       }
 

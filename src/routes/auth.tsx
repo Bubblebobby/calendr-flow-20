@@ -15,7 +15,6 @@ function safeNext(value: unknown): string | null {
 }
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (s: Record<string, unknown>) => ({ next: safeNext(s['next']) ?? undefined }),
   head: () => ({
     meta: [
       { title: "Sign in — Bookly" },
@@ -60,7 +59,11 @@ function GoogleMark() {
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { next } = Route.useSearch();
+  const [next] = useState(() =>
+    typeof window === "undefined"
+      ? null
+      : safeNext(new URLSearchParams(window.location.search).get("next")),
+  );
   const callback = (origin: string) =>
     `${origin}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}`;
   const [email, setEmail] = useState("");
