@@ -73,6 +73,8 @@ function BusinessSetupPage() {
   const [ownerCountry, setOwnerCountry] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [website, setWebsite] = useState("");
+  const [categories, setCategories] = useState<string[]>([]);
+  const [otherLabel, setOtherLabel] = useState("");
 
   useEffect(() => {
     let cancelled = false;
