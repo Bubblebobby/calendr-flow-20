@@ -4,8 +4,14 @@ import { Loader2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 
+function safeNext(value: unknown): string | null {
+  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) return null;
+  return value;
+}
+
 export const Route = createFileRoute("/auth/callback")({
   ssr: false,
+  validateSearch: (s: Record<string, unknown>) => ({ next: safeNext(s['next']) ?? undefined }),
   head: () => ({
     meta: [
       { title: "Signing you in — Bookly" },
@@ -20,6 +26,7 @@ export const Route = createFileRoute("/auth/callback")({
 
 function AuthCallback() {
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
 
   useEffect(() => {
     let cancelled = false;
@@ -28,7 +35,14 @@ function AuthCallback() {
       const { data } = await supabase.auth.getSession();
       if (cancelled) return;
       if (!data.session) {
-        navigate({ to: "/auth", replace: true });
+        navigate({ to: "/auth", search: next ? { next } : {}, replace: true });
+        return;
+      }
+
+      // A pending OAuth consent (or any preserved destination) wins over the
+      // normal post-sign-in routing.
+      if (next) {
+        window.location.replace(next);
         return;
       }
 
@@ -53,7 +67,7 @@ function AuthCallback() {
       cancelled = true;
       sub.subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, next]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">

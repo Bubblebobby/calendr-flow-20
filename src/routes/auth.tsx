@@ -9,7 +9,13 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 
 
+function safeNext(value: unknown): string | null {
+  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) return null;
+  return value;
+}
+
 export const Route = createFileRoute("/auth")({
+  validateSearch: (s: Record<string, unknown>) => ({ next: safeNext(s['next']) ?? undefined }),
   head: () => ({
     meta: [
       { title: "Sign in — Bookly" },
@@ -54,6 +60,9 @@ function GoogleMark() {
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
+  const callback = (origin: string) =>
+    `${origin}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}`;
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -61,9 +70,11 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/dashboard", replace: true });
+      if (!data.session) return;
+      if (next) window.location.replace(next);
+      else navigate({ to: "/dashboard", replace: true });
     });
-  }, [navigate]);
+  }, [navigate, next]);
 
   async function handleEmail(event: React.FormEvent) {
     event.preventDefault();
@@ -74,7 +85,7 @@ function AuthPage() {
       email,
       options: {
         shouldCreateUser: true,
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: callback(window.location.origin),
       },
     });
     setLoading(false);
@@ -89,7 +100,7 @@ function AuthPage() {
     setGoogleLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: callback(window.location.origin) },
     });
     if (error) {
       setGoogleLoading(false);
