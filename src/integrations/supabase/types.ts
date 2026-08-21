@@ -22,6 +22,9 @@ export type Database = {
           id: string
           name: string
           owner_id: string | null
+          setup_step: number
+          timezone: string | null
+          website: string | null
         }
         Insert: {
           country?: string
@@ -30,6 +33,9 @@ export type Database = {
           id?: string
           name: string
           owner_id?: string | null
+          setup_step?: number
+          timezone?: string | null
+          website?: string | null
         }
         Update: {
           country?: string
@@ -38,6 +44,9 @@ export type Database = {
           id?: string
           name?: string
           owner_id?: string | null
+          setup_step?: number
+          timezone?: string | null
+          website?: string | null
         }
         Relationships: [
           {
