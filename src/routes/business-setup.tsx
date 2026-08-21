@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -458,8 +458,7 @@ function BusinessSetupPage() {
       </div>
 
       <main className="mx-auto w-full max-w-[820px] px-6 pb-24 pt-6">
-        {(
-          <form
+        <form
             id="business-setup-form"
             onSubmit={(e) => {
               e.preventDefault();
@@ -539,8 +538,7 @@ function BusinessSetupPage() {
                 onOtherValueChange={setOtherHeardAbout}
               />
             )}
-          </form>
-        )}
+        </form>
       </main>
     </div>
   );
