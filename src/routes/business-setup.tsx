@@ -397,6 +397,28 @@ function BusinessSetupPage() {
     );
   }
 
+  if (step >= MAX_STEP) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
+        <div className="flex size-20 items-center justify-center rounded-full bg-gradient-to-br from-accent via-primary to-primary shadow-lg">
+          <Check className="size-9 text-primary-foreground" strokeWidth={3} />
+        </div>
+        <h1 className="mt-6 text-3xl font-bold tracking-tight text-foreground">
+          Your business is set up!
+        </h1>
+        <p className="mt-2 text-base text-muted-foreground">
+          {name ? `${name} is ready to start taking bookings` : "You're ready to start taking bookings"}
+        </p>
+        <Button
+          className="mt-6 h-12 rounded-full bg-ink px-8 text-base font-semibold text-ink-foreground hover:bg-ink/90"
+          onClick={() => navigate({ to: "/dashboard" })}
+        >
+          Done
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="px-6 pt-5 sm:px-10">
@@ -404,7 +426,7 @@ function BusinessSetupPage() {
       </div>
 
       <div className="flex items-center justify-between px-6 pt-4 sm:px-10">
-        {step > 1 && step < MAX_STEP ? (
+        {step > 1 ? (
           <Button
             type="button"
             variant="outline"
@@ -436,23 +458,7 @@ function BusinessSetupPage() {
       </div>
 
       <main className="mx-auto w-full max-w-[820px] px-6 pb-24 pt-6">
-        {step >= MAX_STEP ? (
-          <div className="pt-10">
-            <p className="text-base text-muted-foreground">Account setup</p>
-            <h1 className="mt-2 text-4xl font-bold tracking-tight text-foreground">
-              {name} is saved
-            </h1>
-            <p className="mt-3 text-lg text-muted-foreground">
-              The next setup step is coming soon — you can head to your dashboard in the meantime.
-            </p>
-            <Button
-              className="mt-8 h-12 rounded-full px-7"
-              onClick={() => navigate({ to: "/dashboard" })}
-            >
-              Go to dashboard
-            </Button>
-          </div>
-        ) : (
+        {(
           <form
             id="business-setup-form"
             onSubmit={(e) => {
