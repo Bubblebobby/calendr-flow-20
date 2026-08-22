@@ -186,6 +186,98 @@ export type Database = {
           },
         ]
       }
+      service_categories: {
+        Row: {
+          business_id: string
+          color: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          business_id: string
+          color?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          business_id?: string
+          color?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_categories_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      services: {
+        Row: {
+          business_id: string
+          category_id: string | null
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          id: string
+          name: string
+          price: number | null
+          pricing_type: string
+          sort_order: number
+        }
+        Insert: {
+          business_id: string
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          name: string
+          price?: number | null
+          pricing_type?: string
+          sort_order?: number
+        }
+        Update: {
+          business_id?: string
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          name?: string
+          price?: number | null
+          pricing_type?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "services_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "services_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "service_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_roles: {
         Row: {
           business_id: string
