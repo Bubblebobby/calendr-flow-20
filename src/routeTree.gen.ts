@@ -21,6 +21,7 @@ import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedCatalogRouteImport } from './routes/_authenticated/catalog'
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedSalesRouteImport } from './routes/_authenticated/sales'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
@@ -89,6 +90,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSalesRoute = AuthenticatedSalesRouteImport.update({
   id: '/sales',
   path: '/sales',
@@ -133,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/catalog': typeof AuthenticatedCatalogRoute
   '/clients': typeof AuthenticatedClientsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/home': typeof AuthenticatedHomeRoute
   '/sales': typeof AuthenticatedSalesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByTo {
   '/catalog': typeof AuthenticatedCatalogRoute
   '/clients': typeof AuthenticatedClientsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/home': typeof AuthenticatedHomeRoute
   '/sales': typeof AuthenticatedSalesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
@@ -173,6 +181,7 @@ export interface FileRoutesById {
   '/_authenticated/catalog': typeof AuthenticatedCatalogRoute
   '/_authenticated/clients': typeof AuthenticatedClientsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/sales': typeof AuthenticatedSalesRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
@@ -194,6 +203,7 @@ export interface FileRouteTypes {
     | '/catalog'
     | '/clients'
     | '/dashboard'
+    | '/home'
     | '/sales'
     | '/settings'
     | '/team'
@@ -213,6 +223,7 @@ export interface FileRouteTypes {
     | '/catalog'
     | '/clients'
     | '/dashboard'
+    | '/home'
     | '/sales'
     | '/settings'
     | '/team'
@@ -233,6 +244,7 @@ export interface FileRouteTypes {
     | '/_authenticated/catalog'
     | '/_authenticated/clients'
     | '/_authenticated/dashboard'
+    | '/_authenticated/home'
     | '/_authenticated/sales'
     | '/_authenticated/settings'
     | '/_authenticated/team'
@@ -340,6 +352,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/home': {
+      id: '/_authenticated/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof AuthenticatedHomeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/sales': {
       id: '/_authenticated/sales'
       path: '/sales'
@@ -390,6 +409,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCatalogRoute: typeof AuthenticatedCatalogRoute
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedSalesRoute: typeof AuthenticatedSalesRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
@@ -400,6 +420,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCatalogRoute: AuthenticatedCatalogRoute,
   AuthenticatedClientsRoute: AuthenticatedClientsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedSalesRoute: AuthenticatedSalesRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
