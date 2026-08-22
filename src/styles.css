@@ -261,3 +261,11 @@
     -webkit-font-smoothing: antialiased;
   }
 }
+
+/* Fluid step heading: shrinks on short/narrow viewports, full size on desktop. */
+@utility step-title {
+  font-size: clamp(1.6rem, 1.05rem + 2.1vw, 2.9rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
