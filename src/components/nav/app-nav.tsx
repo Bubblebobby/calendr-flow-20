@@ -119,58 +119,68 @@ export function AppNav() {
       </nav>
 
       {/* Submenu panel */}
-      <div className="hidden md:flex">
+      <div className="relative hidden md:flex">
         <div
           className={cn(
-            "relative flex flex-col border-r border-border bg-card overflow-hidden transition-all duration-500 ease-in-out",
+            "relative flex flex-col border-r border-border bg-card transition-all duration-500 ease-in-out",
             openItem ? "w-60 opacity-100" : "w-0 opacity-0",
           )}
         >
-          {renderedItem ? (
-            <div
-              key={renderedItem.key}
-              className="flex h-full w-60 flex-col animate-fade-in"
-            >
-              <div className="flex items-center justify-between px-5 py-5 shrink-0">
-                <h2 className="text-lg font-semibold tracking-tight text-foreground">
-                  {renderedItem.title}
-                </h2>
-                <button
-                  type="button"
-                  aria-label={`Collapse ${renderedItem.title} menu`}
-                  onClick={() => setOpenKey(null)}
-                  className="flex size-6 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:text-foreground"
-                >
-                  <CaretLeft size={12} weight="bold" />
-                </button>
-              </div>
+          <div className="h-full w-full overflow-hidden">
+            {renderedItem ? (
+              <div
+                key={renderedItem.key}
+                className="flex h-full w-60 flex-col animate-fade-in"
+              >
+                <div className="flex items-center px-5 py-5 shrink-0">
+                  <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                    {renderedItem.title}
+                  </h2>
+                </div>
 
-              <div className="flex-1 overflow-y-auto pb-6">
-                {renderedItem.groups?.map((group) => (
-                  <div key={group.title} className="mb-4">
-                    <p className="px-5 pb-1 text-sm font-semibold text-foreground">
-                      {group.title}
-                    </p>
-                    <ul>
-                      {group.children.map((child) => (
-                        <li key={child.title}>
-                          <Link
-                            to={child.to}
-                            search={child.search as never}
-                            activeOptions={{ includeSearch: Boolean(child.search) }}
-                            className="block px-5 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground data-[status=active]:bg-primary/10 data-[status=active]:font-medium data-[status=active]:text-primary"
-                          >
-                            {child.title}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
+                <div className="flex-1 overflow-y-auto pb-6">
+                  {renderedItem.groups?.map((group) => (
+                    <div key={group.title} className="mb-4">
+                      <p className="px-5 pb-1 text-sm font-semibold text-foreground">
+                        {group.title}
+                      </p>
+                      <ul>
+                        {group.children.map((child) => (
+                          <li key={child.title}>
+                            <Link
+                              to={child.to}
+                              search={child.search as never}
+                              activeOptions={{ includeSearch: Boolean(child.search) }}
+                              className="block px-5 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground data-[status=active]:bg-primary/10 data-[status=active]:font-medium data-[status=active]:text-primary"
+                            >
+                              {child.title}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          ) : null}
+            ) : null}
+          </div>
         </div>
+
+        {/* Floating collapse tab */}
+        <button
+          type="button"
+          aria-label={renderedItem ? `Collapse ${renderedItem.title} menu` : "Collapse menu"}
+          onClick={() => setOpenKey(null)}
+          className={cn(
+            "absolute left-0 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2",
+            "flex size-7 items-center justify-center rounded-full",
+            "border border-border bg-card text-muted-foreground shadow-md",
+            "transition-all duration-300 hover:text-foreground hover:shadow-lg",
+            openItem ? "opacity-100 scale-100" : "opacity-0 scale-75 pointer-events-none",
+          )}
+        >
+          <CaretLeft size={14} weight="bold" />
+        </button>
       </div>
     </div>
   );
