@@ -68,7 +68,7 @@ export function HeardAboutStep({ value, otherValue, onChange, onOtherValueChange
             id="heard-about-other"
             autoFocus={value === "other"}
             placeholder="Where did you hear about us?"
-            className="h-14 rounded-xl text-base"
+            className="h-12 rounded-full px-5 text-base"
             value={otherValue}
             onChange={(e) => onOtherValueChange(e.target.value)}
             onFocus={() => setOtherInputFocused(true)}

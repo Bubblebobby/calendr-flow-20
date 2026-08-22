@@ -215,7 +215,7 @@ export function VenueLocationStep({
                 void searchFirstMatch();
               }
             }}
-            className="h-14 rounded-xl pl-12 text-base"
+            className="h-12 rounded-full pl-12 text-base"
           />
           {openList && suggestions.length > 0 ? (
             <ul className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-border bg-popover shadow-lg">
@@ -306,7 +306,7 @@ export function VenueLocationStep({
             />
             <div className="space-y-2">
               <Label className="text-[15px] font-semibold">Country</Label>
-              <Input value={countryName} disabled className="h-12 rounded-xl bg-muted" />
+              <Input value={countryName} disabled className="h-12 rounded-full bg-muted px-5" />
             </div>
           </div>
 
@@ -371,7 +371,7 @@ function Field({
         value={value}
         maxLength={maxLength}
         onChange={(e) => onChange(e.target.value)}
-        className="h-12 rounded-xl"
+        className="h-12 rounded-full px-5"
       />
     </div>
   );

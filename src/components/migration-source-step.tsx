@@ -94,7 +94,7 @@ export function MigrationSourceStep({
             id="other-software"
             autoFocus={value === "other"}
             placeholder="e.g., Shedul, Appointy"
-            className="h-14 rounded-xl text-base"
+            className="h-12 rounded-full px-5 text-base"
             value={otherValue}
             onChange={(e) => onOtherValueChange(e.target.value)}
             onFocus={() => setOtherInputFocused(true)}

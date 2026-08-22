@@ -84,7 +84,7 @@ export function BusinessCategoriesStep({
           <Input
             id="other-service-type"
             autoFocus
-            className="h-14 rounded-xl text-base"
+            className="h-12 rounded-full px-5 text-base"
             value={otherLabel}
             onChange={(e) => onOtherLabelChange(e.target.value)}
           />

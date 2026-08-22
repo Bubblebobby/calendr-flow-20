@@ -483,7 +483,7 @@ function BusinessSetupPage() {
                     <Input
                       id="business-name"
                       autoFocus
-                      className="h-14 rounded-xl text-base"
+                      className="h-12 rounded-full px-5 text-base"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                     />
@@ -497,7 +497,7 @@ function BusinessSetupPage() {
                       id="business-website"
                       inputMode="url"
                       placeholder="www.yoursite.com"
-                      className="h-14 rounded-xl text-base"
+                      className="h-12 rounded-full px-5 text-base"
                       value={website}
                       onChange={(e) => setWebsite(e.target.value)}
                     />
