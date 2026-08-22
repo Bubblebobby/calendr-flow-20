@@ -85,7 +85,7 @@ function CountryPicker({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn("h-12 justify-between rounded-full px-5 font-normal", className)}
+          className={cn("h-12 justify-between rounded-full px-5 font-normal hover:bg-secondary hover:text-foreground", className)}
         >
           <span className={cn("truncate", !value && "text-muted-foreground")}>
             {value ? render(value) : placeholder}
