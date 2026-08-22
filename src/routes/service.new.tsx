@@ -20,7 +20,9 @@ import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -28,6 +30,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { requireOnboardedUser } from "@/lib/auth-guard";
 import { formatDuration } from "@/lib/format";
+import { TREATMENT_GROUPS } from "@/lib/treatment-types";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
 
@@ -67,17 +70,6 @@ const NAV_SETTINGS = [
 
 const DURATIONS = [5, 10, 15, 20, 30, 45, 60, 75, 90, 105, 120, 150, 180, 240];
 
-const TREATMENT_TYPES = [
-  "Haircut",
-  "Hair colouring",
-  "Nail care",
-  "Facial",
-  "Massage",
-  "Waxing",
-  "Brows & lashes",
-  "Consultation",
-  "Other",
-];
 
 const soon = (label: string) => () => toast(`${label} — coming soon`);
 
@@ -308,11 +300,18 @@ function NewServicePage() {
                     <SelectTrigger className={FIELD}>
                       <SelectValue placeholder="Select treatment type" />
                     </SelectTrigger>
-                    <SelectContent>
-                      {TREATMENT_TYPES.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
+                    <SelectContent className="max-h-80">
+                      {TREATMENT_GROUPS.map((group) => (
+                        <SelectGroup key={group.label}>
+                          <SelectLabel className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                            {group.label}
+                          </SelectLabel>
+                          {group.options.map((type) => (
+                            <SelectItem key={`${group.label}-${type}`} value={type}>
+                              {type}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
                       ))}
                     </SelectContent>
                   </Select>
