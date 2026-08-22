@@ -6,6 +6,7 @@ import {
   MagnifyingGlass,
 } from "@phosphor-icons/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 import {
@@ -52,6 +53,7 @@ const soon = (label: string) => () => toast(`${label} — coming soon`);
 
 export function ServiceMenu() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { data: business } = useBusiness();
   const businessId = business?.id;
 
@@ -225,9 +227,7 @@ export function ServiceMenu() {
             <DropdownMenuContent align="end" className="w-56 p-3">
               <DropdownMenuItem
                 className="px-4 py-2.5 text-sm font-medium text-foreground gap-3"
-                onClick={() =>
-                  setServiceDialog({ ...emptyService, categoryId: selectedCategory })
-                }
+                onClick={() => navigate({ to: "/service/new" })}
               >
                 Single service
               </DropdownMenuItem>
