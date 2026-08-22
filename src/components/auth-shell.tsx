@@ -33,24 +33,16 @@ export function AuthShell({ title, subtitle, children }: AuthShellProps) {
         </div>
       </div>
 
-      {/* Right: centred showcase card (one for now, room for a set later) */}
-      <div className="hidden items-center justify-center bg-secondary px-10 py-12 lg:flex">
-        <figure className="surface-flat w-full max-w-md overflow-hidden text-center">
-          <img
-            src={salonInterior.url}
-            alt="Modern salon interior with arched mirrors and styling chairs"
-            width={736}
-            height={981}
-            loading="lazy"
-            className="h-[420px] w-full rounded-t-[inherit] object-cover"
-          />
-          <figcaption className="space-y-1 px-6 py-5">
-            <p className="text-sm font-semibold text-foreground">Built for service businesses</p>
-            <p className="text-sm text-muted-foreground">
-              Salons, spas, barbers and studios run their day on Bookly.
-            </p>
-          </figcaption>
-        </figure>
+      {/* Right: full-bleed salon image */}
+      <div className="relative hidden overflow-hidden lg:flex">
+        <img
+          src={salonInterior.url}
+          alt="Modern salon interior with arched mirrors and styling chairs"
+          width={736}
+          height={981}
+          loading="lazy"
+          className="h-full w-full object-cover"
+        />
       </div>
     </div>
   );
