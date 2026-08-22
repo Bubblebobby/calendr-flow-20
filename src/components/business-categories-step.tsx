@@ -41,7 +41,7 @@ export function BusinessCategoriesStep({
         Choose your primary and up to 3 related service types
       </p>
 
-      <div className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid gap-3 sm:mt-8 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {BUSINESS_CATEGORIES.map((category) => {
           const index = selected.indexOf(category.id);
           const isSelected = index !== -1;

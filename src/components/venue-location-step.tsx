@@ -239,8 +239,8 @@ export function VenueLocationStep({
       {coords ? (
         <div className="mt-6">
           <div className="overflow-hidden rounded-xl border border-border">
-            <div ref={mapEl} className="h-72 w-full bg-secondary" />
-            <div className="flex items-center justify-between gap-4 border-t border-border bg-card px-5 py-4">
+            <div ref={mapEl} className="h-44 sm:h-56 lg:h-64 w-full bg-secondary" />
+            <div className="flex items-center justify-between gap-4 border-t border-border bg-card flex-wrap px-4 py-3 sm:px-5 sm:py-4">
               <p className="text-[15px] text-foreground">
                 {formatAddress(address, countryName) || countryName}
               </p>
