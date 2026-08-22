@@ -224,7 +224,7 @@ export function ServiceMenu() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 p-3">
               <DropdownMenuItem
-                className="px-4 py-2.5 text-sm font-semibold text-foreground gap-3"
+                className="px-4 py-2.5 text-sm font-medium text-foreground gap-3"
                 onClick={() =>
                   setServiceDialog({ ...emptyService, categoryId: selectedCategory })
                 }
@@ -232,13 +232,13 @@ export function ServiceMenu() {
                 Single service
               </DropdownMenuItem>
               <DropdownMenuItem
-                className="px-4 py-2.5 text-sm font-semibold text-foreground gap-3"
+                className="px-4 py-2.5 text-sm font-medium text-foreground gap-3"
                 onClick={soon("Bundle")}
               >
                 Bundle
               </DropdownMenuItem>
               <DropdownMenuItem
-                className="px-4 py-2.5 text-sm font-semibold text-foreground gap-3"
+                className="px-4 py-2.5 text-sm font-medium text-foreground gap-3"
                 onClick={() => setCategoryDialog({ ...emptyCategory })}
               >
                 Category
