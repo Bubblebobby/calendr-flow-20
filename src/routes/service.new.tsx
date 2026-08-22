@@ -239,20 +239,35 @@ function NewServicePage() {
                     <SelectTrigger className={FIELD}>
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
-                    <SelectContent>
-                      {categories.length === 0 ? (
-                        <div className="px-3 py-2 text-sm text-muted-foreground">
-                          No categories yet
-                        </div>
-                      ) : (
-                        categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.name}
-                          </SelectItem>
-                        ))
-                      )}
+                    <SelectContent className="p-2">
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id} className="py-2.5">
+                          <span className="flex items-center gap-3">
+                            <span
+                              className="size-5 shrink-0 rounded-full"
+                              style={{ backgroundColor: category.color }}
+                            />
+                            <span className="font-medium">{category.name}</span>
+                          </span>
+                        </SelectItem>
+                      ))}
+                      {categories.length > 0 ? (
+                        <div className="my-2 h-px bg-border" />
+                      ) : null}
+                      <button
+                        type="button"
+                        className="flex w-full items-center gap-2 rounded-md px-2 py-2.5 text-sm font-semibold text-primary hover:bg-primary/10"
+                        onMouseDown={(event) => {
+                          event.preventDefault();
+                          setCategoryOpen(true);
+                        }}
+                      >
+                        <Plus weight="bold" className="size-4" />
+                        Add category
+                      </button>
                     </SelectContent>
                   </Select>
+
                 </Field>
 
                 <Field
