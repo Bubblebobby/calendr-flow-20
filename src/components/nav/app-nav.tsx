@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { CaretLeft, ChatCircleDots, SignOut, User } from "@phosphor-icons/react";
@@ -22,9 +22,26 @@ export function AppNav() {
   const [openKey, setOpenKey] = useState<string | null>(
     activeItem?.groups ? activeItem.key : null,
   );
-
+  const [renderedItem, setRenderedItem] = useState<NavItem | null>(
+    activeItem?.groups ? activeItem : null,
+  );
+  const [isClosing, setIsClosing] = useState(false);
 
   const openItem = navItems.find((item) => item.key === openKey && item.groups);
+
+  useEffect(() => {
+    if (openItem) {
+      setRenderedItem(openItem);
+      setIsClosing(false);
+    } else {
+      setIsClosing(true);
+      const timer = window.setTimeout(() => {
+        setRenderedItem(null);
+        setIsClosing(false);
+      }, 300);
+      return () => window.clearTimeout(timer);
+    }
+  }, [openItem]);
 
   async function handleSignOut() {
     await queryClient.cancelQueries();
