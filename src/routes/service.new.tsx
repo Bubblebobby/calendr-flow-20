@@ -31,6 +31,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { requireOnboardedUser } from "@/lib/auth-guard";
 import { formatDuration } from "@/lib/format";
 import { TREATMENT_GROUPS } from "@/lib/treatment-types";
+
+const SORTED_TREATMENT_GROUPS = [...TREATMENT_GROUPS].sort((a, b) =>
+  a.label.localeCompare(b.label),
+);
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
 
@@ -300,20 +304,25 @@ function NewServicePage() {
                     <SelectTrigger className={FIELD}>
                       <SelectValue placeholder="Select treatment type" />
                     </SelectTrigger>
-                    <SelectContent className="max-h-80">
-                      {TREATMENT_GROUPS.map((group) => (
+                    <SelectContent className="max-h-96 rounded-2xl p-2">
+                      {SORTED_TREATMENT_GROUPS.map((group) => (
                         <SelectGroup key={group.label}>
-                          <SelectLabel className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                          <SelectLabel className="px-3 pt-3 pb-2 text-base font-bold text-foreground">
                             {group.label}
                           </SelectLabel>
                           {group.options.map((type) => (
-                            <SelectItem key={`${group.label}-${type}`} value={type}>
+                            <SelectItem
+                              key={`${group.label}-${type}`}
+                              value={type}
+                              className="rounded-xl px-3 py-2.5 text-base focus:bg-muted"
+                            >
                               {type}
                             </SelectItem>
                           ))}
                         </SelectGroup>
                       ))}
                     </SelectContent>
+
                   </Select>
                 </Field>
               </div>
