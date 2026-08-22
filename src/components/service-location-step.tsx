@@ -36,7 +36,7 @@ export function ServiceLocationStep({
               aria-pressed={isSelected}
               onClick={() => toggle(option.value)}
               className={cn(
-                "flex w-full items-center rounded-xl border bg-card px-6 py-5 text-left text-base font-semibold text-foreground transition-colors",
+                "flex w-full items-center rounded-2xl border bg-card px-6 py-5 text-left text-base font-semibold text-foreground transition-colors",
                 isSelected
                   ? "border-primary bg-secondary ring-1 ring-primary"
                   : "border-border hover:border-foreground/25",

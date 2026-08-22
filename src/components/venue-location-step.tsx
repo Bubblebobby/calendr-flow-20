@@ -319,7 +319,7 @@ export function VenueLocationStep({
               maxLength={200}
               rows={4}
               placeholder="Add details to help clients find your location"
-              className="rounded-xl"
+              className="rounded-2xl px-5 py-3"
               value={draft.directions}
               onChange={(e) => setDraft({ ...draft, directions: e.target.value })}
             />

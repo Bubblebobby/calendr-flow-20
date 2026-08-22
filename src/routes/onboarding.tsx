@@ -85,7 +85,7 @@ function CountryPicker({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn("h-11 justify-between font-normal", className)}
+          className={cn("h-12 justify-between rounded-full px-5 font-normal", className)}
         >
           <span className={cn("truncate", !value && "text-muted-foreground")}>
             {value ? render(value) : placeholder}
@@ -247,7 +247,7 @@ function OnboardingPage() {
             <Input
               id="first-name"
               autoComplete="given-name"
-              className="h-11"
+              className="h-12 rounded-full px-5"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
             />
@@ -257,7 +257,7 @@ function OnboardingPage() {
             <Input
               id="last-name"
               autoComplete="family-name"
-              className="h-11"
+              className="h-12 rounded-full px-5"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
             />
@@ -285,7 +285,7 @@ function OnboardingPage() {
               inputMode="tel"
               autoComplete="tel-national"
               placeholder="801 234 5678"
-              className="h-11 flex-1"
+              className="h-12 flex-1 rounded-full px-5"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />
@@ -300,7 +300,7 @@ function OnboardingPage() {
               type={showPassword ? "text" : "password"}
               autoComplete="new-password"
               placeholder="At least 8 characters"
-              className="h-11 pr-11"
+              className="h-12 rounded-full pl-5 pr-12"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -344,7 +344,7 @@ function OnboardingPage() {
           </span>
         </label>
 
-        <Button type="submit" className="h-11 w-full" disabled={!valid || saving}>
+        <Button type="submit" className="h-12 w-full rounded-full text-base font-semibold" disabled={!valid || saving}>
           {saving ? <Loader2 className="size-4 animate-spin" /> : "Continue"}
         </Button>
       </form>
