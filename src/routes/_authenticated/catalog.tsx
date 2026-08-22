@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
+import { ServiceMenu } from "@/components/catalog/service-menu";
 import { PageShell, PlaceholderPanel } from "@/components/page-shell";
 import { cn } from "@/lib/utils";
 
@@ -61,7 +62,7 @@ function CatalogPage() {
       </div>
 
       <div className="mt-6">
-        {tab === "services" ? <PlaceholderPanel label="Services" /> : null}
+        {tab === "services" ? <ServiceMenu /> : null}
         {tab === "packages" ? <PlaceholderPanel label="Packages" /> : null}
         {tab === "products" ? <PlaceholderPanel label="Products" /> : null}
         {tab === "inventory" ? (
