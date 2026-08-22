@@ -350,7 +350,7 @@ export function ServiceMenu() {
                 return (
                   <article
                     key={service.id}
-                    className="flex items-center gap-4 overflow-hidden rounded-2xl border border-border bg-card"
+                    className="flex items-center gap-4 overflow-hidden rounded-3xl border border-border bg-card"
                   >
                     <span
                       aria-hidden
