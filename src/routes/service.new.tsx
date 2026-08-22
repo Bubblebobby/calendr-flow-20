@@ -67,17 +67,6 @@ const NAV_SETTINGS = [
 
 const DURATIONS = [5, 10, 15, 20, 30, 45, 60, 75, 90, 105, 120, 150, 180, 240];
 
-const TREATMENT_TYPES = [
-  "Haircut",
-  "Hair colouring",
-  "Nail care",
-  "Facial",
-  "Massage",
-  "Waxing",
-  "Brows & lashes",
-  "Consultation",
-  "Other",
-];
 
 const soon = (label: string) => () => toast(`${label} — coming soon`);
 
