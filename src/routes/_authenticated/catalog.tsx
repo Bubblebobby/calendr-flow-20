@@ -21,9 +21,9 @@ const inventoryTabs: { key: InventoryTab; label: string }[] = [
 
 export const Route = createFileRoute("/_authenticated/catalog")({
   validateSearch: (search: Record<string, unknown>) => ({
-    tab: (tabs.some((t) => t.key === search.tab) ? search.tab : "services") as CatalogTab,
-    sub: (inventoryTabs.some((t) => t.key === search.sub)
-      ? search.sub
+    tab: (tabs.some((t) => t.key === search["tab"]) ? search["tab"] : "services") as CatalogTab,
+    sub: (inventoryTabs.some((t) => t.key === search["sub"])
+      ? search["sub"]
       : "stock-take") as InventoryTab,
   }),
   head: () => ({
