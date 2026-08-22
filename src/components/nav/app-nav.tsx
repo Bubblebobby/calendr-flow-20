@@ -166,14 +166,14 @@ export function AppNav() {
           </div>
         </div>
 
-        {/* Floating collapse tab */}
+        {/* Floating collapse tab on the panel's right edge, aligned with the title */}
         <button
           type="button"
           aria-label={renderedItem ? `Collapse ${renderedItem.title} menu` : "Collapse menu"}
           onClick={() => setOpenKey(null)}
           className={cn(
-            "absolute left-0 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2",
-            "flex size-7 items-center justify-center rounded-full",
+            "absolute right-0 top-[34px] z-10 translate-x-1/2 -translate-y-1/2",
+            "flex size-8 items-center justify-center rounded-full",
             "border border-border bg-card text-muted-foreground shadow-md",
             "transition-all duration-300 hover:text-foreground hover:shadow-lg",
             openItem ? "opacity-100 scale-100" : "opacity-0 scale-75 pointer-events-none",
