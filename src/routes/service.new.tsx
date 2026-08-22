@@ -183,9 +183,9 @@ function NewServicePage() {
         </div>
       </header>
 
-      <div className="mx-auto grid w-full max-w-6xl gap-6 px-8 py-8 lg:grid-cols-[300px_1fr] lg:flex-1 lg:overflow-hidden lg:pt-12 lg:pb-8">
+      <div className="mx-auto grid w-full max-w-6xl items-start gap-6 px-8 pb-8 pt-12 lg:flex-1 lg:grid-cols-[300px_1fr] lg:overflow-hidden lg:pb-8 lg:pt-16">
         {/* Section nav */}
-        <nav className="h-fit rounded-3xl border border-border bg-card p-3">
+        <nav className="h-fit self-start rounded-3xl border border-border bg-card p-3">
           <ul className="space-y-1">
             {NAV_PRIMARY.map((item, index) => (
               <li key={item.label}>
