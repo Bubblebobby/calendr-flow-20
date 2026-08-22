@@ -18,11 +18,11 @@ export function AppNav() {
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
-  const activeItem =
-    navItems.find((item) => pathname.startsWith(item.to)) ?? navItems[0];
+  const activeItem = navItems.find((item) => pathname.startsWith(item.to));
   const [openKey, setOpenKey] = useState<string | null>(
-    activeItem.groups ? activeItem.key : null,
+    activeItem?.groups ? activeItem.key : null,
   );
+
 
   const openItem = navItems.find((item) => item.key === openKey && item.groups);
 
