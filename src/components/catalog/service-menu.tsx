@@ -257,10 +257,6 @@ export function ServiceMenu() {
           Filters
           <FadersHorizontal size={16} />
         </Button>
-        <Button variant="outline" className="ml-auto gap-2" onClick={soon("Manage order")}>
-          <ArrowsDownUp size={16} />
-          Manage order
-        </Button>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
@@ -447,7 +443,7 @@ function CategoryRow({
         />
       ) : null}
       <span className="min-w-0 flex-1 truncate text-sm font-semibold">{label}</span>
-      <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+      <span className="h-6 w-6 rounded-full border border-border bg-card text-center text-xs font-medium leading-6 text-muted-foreground">
         {count}
       </span>
     </button>
