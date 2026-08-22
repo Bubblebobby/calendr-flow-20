@@ -452,8 +452,17 @@ function NewServicePage() {
           </section>
         </div>
       </div>
+
+      <CategoryDialog
+        open={categoryOpen}
+        onOpenChange={setCategoryOpen}
+        initial={emptyCategory}
+        saving={createCategory.isPending}
+        onSubmit={(draft) => createCategory.mutate(draft)}
+      />
     </div>
   );
+
 }
 
 function NavRow({
