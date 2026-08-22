@@ -157,9 +157,10 @@ function NewServicePage() {
   };
 
   return (
-    <div className="min-h-full">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-background">
       <header className="sticky top-0 z-20 border-b border-border/60 bg-background/85 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-8 py-4">
+
           <h1 className="text-2xl font-bold tracking-tight text-foreground">New service</h1>
           <div className="flex items-center gap-3">
             <Button
