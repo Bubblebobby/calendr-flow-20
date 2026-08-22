@@ -44,15 +44,15 @@ export function MigrationSourceStep({
   return (
     <>
       <p className="text-base text-muted-foreground">Account setup</p>
-      <h1 className="mt-2 text-4xl font-bold tracking-tight text-foreground sm:text-[2.9rem]">
+      <h1 className="mt-2 step-title text-foreground">
         Which software are you currently using?
       </h1>
-      <p className="mt-3 text-lg text-muted-foreground">
+      <p className="mt-2 text-base text-muted-foreground sm:mt-3 sm:text-lg">
         If you&apos;re looking to switch, we can help speed up your business setup and import your
         data into your new account.
       </p>
 
-      <div className="mt-10 space-y-3">
+      <div className="mt-6 space-y-2.5 sm:mt-8 sm:space-y-3">
         {MIGRATION_SOURCES.map((option) => {
           const selected = value === option.value;
           return (

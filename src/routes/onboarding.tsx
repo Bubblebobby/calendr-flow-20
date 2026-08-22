@@ -223,7 +223,7 @@ function OnboardingPage() {
 
   if (!ready) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex h-[100svh] items-center justify-center bg-background">
         <Loader2 className="size-5 animate-spin text-muted-foreground" />
       </div>
     );

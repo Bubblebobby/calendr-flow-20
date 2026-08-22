@@ -185,15 +185,15 @@ export function VenueLocationStep({
   return (
     <>
       <p className="text-base text-muted-foreground">Account setup</p>
-      <h1 className="mt-2 text-4xl font-bold tracking-tight text-foreground sm:text-[2.9rem]">
+      <h1 className="mt-2 step-title text-foreground">
         Set your venue&apos;s physical location
       </h1>
-      <p className="mt-3 text-lg text-muted-foreground">
+      <p className="mt-2 text-base text-muted-foreground sm:mt-3 sm:text-lg">
         Add your primary business location so your clients can easily find you. Additional
         locations can be added later.
       </p>
 
-      <h2 className="mt-10 text-xl font-bold text-foreground">Business location</h2>
+      <h2 className="mt-8 text-xl font-bold text-foreground">Business location</h2>
 
       <div className="mt-5 space-y-2">
         <Label htmlFor="venue-address" className="text-[15px] font-semibold">
@@ -239,8 +239,8 @@ export function VenueLocationStep({
       {coords ? (
         <div className="mt-6">
           <div className="overflow-hidden rounded-xl border border-border">
-            <div ref={mapEl} className="h-72 w-full bg-secondary" />
-            <div className="flex items-center justify-between gap-4 border-t border-border bg-card px-5 py-4">
+            <div ref={mapEl} className="h-44 sm:h-56 lg:h-64 w-full bg-secondary" />
+            <div className="flex items-center justify-between gap-4 border-t border-border bg-card flex-wrap px-4 py-3 sm:px-5 sm:py-4">
               <p className="text-[15px] text-foreground">
                 {formatAddress(address, countryName) || countryName}
               </p>

@@ -29,7 +29,7 @@ export function HeardAboutStep({ value, otherValue, onChange, onOtherValueChange
   return (
     <>
       <p className="text-base text-muted-foreground">Account setup</p>
-      <h1 className="mt-2 text-4xl font-bold tracking-tight text-foreground sm:text-[2.9rem]">
+      <h1 className="mt-2 step-title text-foreground">
         How did you hear about us?
       </h1>
 
