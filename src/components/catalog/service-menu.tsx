@@ -4,7 +4,6 @@ import {
   DotsThreeVertical,
   FadersHorizontal,
   MagnifyingGlass,
-  ArrowsDownUp,
 } from "@phosphor-icons/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
