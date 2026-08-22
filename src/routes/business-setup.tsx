@@ -540,6 +540,7 @@ function BusinessSetupPage() {
               />
             )}
         </form>
+        </div>
       </main>
     </div>
   );
