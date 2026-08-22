@@ -145,18 +145,21 @@ export function AppNav() {
                         {group.title}
                       </p>
                       <ul>
-                        {group.children.map((child) => (
-                          <li key={child.title}>
-                            <Link
-                              to={child.to}
-                              search={child.search as never}
-                              activeOptions={{ includeSearch: Boolean(child.search) }}
-                              className="block px-5 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground data-[status=active]:bg-primary/10 data-[status=active]:font-medium data-[status=active]:text-primary"
-                            >
-                              {child.title}
-                            </Link>
-                          </li>
-                        ))}
+                        {group.children.map((child) => {
+                          const isChildActive = pathname === child.to || (child.search && pathname.startsWith(child.to));
+                          return (
+                            <li key={child.title}>
+                              <Link
+                                to={child.to}
+                                search={child.search as never}
+                                activeOptions={{ includeSearch: Boolean(child.search) }}
+                                className="block mx-3 rounded-lg px-4 py-2.5 text-sm text-foreground/80 transition-colors hover:bg-secondary hover:text-foreground data-[status=active]:bg-primary/10 data-[status=active]:font-medium data-[status=active]:text-foreground"
+                              >
+                                {child.title}
+                              </Link>
+                            </li>
+                          );
+                        })}
                       </ul>
                     </div>
                   ))}
