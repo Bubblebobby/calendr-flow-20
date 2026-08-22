@@ -44,7 +44,7 @@ export function MigrationSourceStep({
   return (
     <>
       <p className="text-base text-muted-foreground">Account setup</p>
-      <h1 className="mt-2 text-4xl font-bold tracking-tight text-foreground sm:text-[2.9rem]">
+      <h1 className="mt-2 step-title text-foreground">
         Which software are you currently using?
       </h1>
       <p className="mt-3 text-lg text-muted-foreground">

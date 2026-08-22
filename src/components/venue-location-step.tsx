@@ -185,7 +185,7 @@ export function VenueLocationStep({
   return (
     <>
       <p className="text-base text-muted-foreground">Account setup</p>
-      <h1 className="mt-2 text-4xl font-bold tracking-tight text-foreground sm:text-[2.9rem]">
+      <h1 className="mt-2 step-title text-foreground">
         Set your venue&apos;s physical location
       </h1>
       <p className="mt-3 text-lg text-muted-foreground">

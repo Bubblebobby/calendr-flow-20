@@ -24,14 +24,14 @@ export function TeamSizeStep({
   return (
     <>
       <p className="text-base text-muted-foreground">Account setup</p>
-      <h1 className="mt-2 text-4xl font-bold tracking-tight text-foreground sm:text-[2.9rem]">
+      <h1 className="mt-2 step-title text-foreground">
         What&apos;s your team size?
       </h1>
       <p className="mt-3 text-lg text-muted-foreground">
         This will help us set up your calendar correctly
       </p>
 
-      <div className="mt-10 space-y-4">
+      <div className="mt-6 space-y-3 sm:mt-8 sm:space-y-4">
         {TEAM_SIZES.map((option) => {
           const selected = value === option.value;
           return (
@@ -41,7 +41,7 @@ export function TeamSizeStep({
               aria-pressed={selected}
               onClick={() => onChange(option.value)}
               className={cn(
-                "flex w-full items-center rounded-2xl border bg-card px-6 py-5 text-left text-base font-semibold text-foreground transition-colors",
+                "flex w-full items-center rounded-2xl border bg-card px-5 py-4 text-left text-base font-semibold sm:px-6 sm:py-5 text-foreground transition-colors",
                 selected
                   ? "border-primary bg-secondary ring-1 ring-primary"
                   : "border-border hover:border-foreground/25",

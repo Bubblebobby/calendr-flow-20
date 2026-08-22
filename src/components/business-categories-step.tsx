@@ -34,7 +34,7 @@ export function BusinessCategoriesStep({
 
   return (
     <div>
-      <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-[2.9rem]">
+      <h1 className="step-title text-foreground">
         Select categories that best describe your business
       </h1>
       <p className="mt-3 text-lg text-muted-foreground">

@@ -22,11 +22,11 @@ export function ServiceLocationStep({
   return (
     <>
       <p className="text-base text-muted-foreground">Account setup</p>
-      <h1 className="mt-2 text-4xl font-bold tracking-tight text-foreground sm:text-[2.9rem]">
+      <h1 className="mt-2 step-title text-foreground">
         Where do you provide your services?
       </h1>
 
-      <div className="mt-10 space-y-4">
+      <div className="mt-6 space-y-3 sm:mt-8 sm:space-y-4">
         {SERVICE_LOCATIONS.map((option) => {
           const isSelected = selected.includes(option.value);
           return (
@@ -36,7 +36,7 @@ export function ServiceLocationStep({
               aria-pressed={isSelected}
               onClick={() => toggle(option.value)}
               className={cn(
-                "flex w-full items-center rounded-2xl border bg-card px-6 py-5 text-left text-base font-semibold text-foreground transition-colors",
+                "flex w-full items-center rounded-2xl border bg-card px-5 py-4 text-left text-base font-semibold sm:px-6 sm:py-5 text-foreground transition-colors",
                 isSelected
                   ? "border-primary bg-secondary ring-1 ring-primary"
                   : "border-border hover:border-foreground/25",

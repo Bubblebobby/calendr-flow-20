@@ -469,14 +469,14 @@ function BusinessSetupPage() {
             {step === 1 ? (
               <>
                 <p className="text-base text-muted-foreground">Account setup</p>
-                <h1 className="mt-2 text-4xl font-bold tracking-tight text-foreground sm:text-[2.9rem]">
+                <h1 className="mt-2 step-title text-foreground">
                   What&apos;s your business name?
                 </h1>
                 <p className="mt-3 text-lg text-muted-foreground">
                   This is the brand name your clients will see. Your billing and legal name can be added later.
                 </p>
 
-                <div className="mt-10 space-y-6">
+                <div className="mt-6 space-y-4 sm:mt-8 sm:space-y-6">
                   <div className="space-y-2">
                     <Label htmlFor="business-name" className="text-[15px] font-semibold">
                       Business name
