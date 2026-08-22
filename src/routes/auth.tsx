@@ -141,7 +141,7 @@ function AuthPage() {
           <Button
             type="button"
             variant="outline"
-            className="h-11 w-full"
+            className="h-12 w-full rounded-full text-base font-semibold"
             onClick={handleGoogle}
             disabled={googleLoading}
           >
@@ -166,14 +166,19 @@ function AuthPage() {
               autoComplete="email"
               required
               placeholder="Enter your personal or work email"
-              className="h-11 text-center"
+              className="h-12 rounded-full text-center"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-            <Button type="submit" className="h-11 w-full" disabled={loading}>
+            <Button
+              type="submit"
+              className="h-12 w-full rounded-full text-base font-semibold"
+              disabled={loading}
+            >
               {loading ? <Loader2 className="size-4 animate-spin" /> : "Continue with email"}
             </Button>
           </form>
+
 
           <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
             By continuing, you agree to our{" "}
