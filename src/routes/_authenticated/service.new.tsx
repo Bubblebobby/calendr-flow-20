@@ -190,7 +190,7 @@ function NewServicePage() {
                   label={item.label}
                   badge={item.badge}
                   active={index === 0}
-                  onClick={index === 0 ? undefined : soon(item.label)}
+                  onClick={index === 0 ? undefined : () => { soon(item.label)(); }}
                 />
               </li>
             ))}
@@ -200,7 +200,7 @@ function NewServicePage() {
           <ul className="space-y-1">
             {NAV_SETTINGS.map((item) => (
               <li key={item.label}>
-                <NavRow label={item.label} badge={item.badge} onClick={soon(item.label)} />
+                <NavRow label={item.label} badge={item.badge} onClick={() => { soon(item.label)(); }} />
               </li>
             ))}
           </ul>
@@ -371,7 +371,7 @@ function NewServicePage() {
               <Button
                 variant="outline"
                 className="h-11 gap-2 rounded-full bg-white px-6 text-base font-medium text-foreground hover:bg-white hover:text-foreground"
-                onClick={soon("Extra time")}
+                onClick={() => { soon("Extra time")(); }}
               >
                 <PlusCircle size={20} />
                 Add extra time
@@ -392,7 +392,7 @@ function NewServicePage() {
                       <DropdownMenuItem
                         key={label}
                         className="gap-3 px-4 py-2.5 text-sm font-medium text-foreground"
-                        onClick={soon(label)}
+                        onClick={() => { soon(label)(); }}
                       >
                         {label}
                       </DropdownMenuItem>
@@ -415,9 +415,9 @@ function NavRow({
   onClick,
 }: {
   label: string;
-  badge?: number | null;
-  active?: boolean;
-  onClick?: () => void;
+  badge?: number | null | undefined;
+  active?: boolean | undefined;
+  onClick?: (() => void) | undefined;
 }) {
   return (
     <button
