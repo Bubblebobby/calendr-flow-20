@@ -160,8 +160,8 @@ function NewServicePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-20 border-b border-border/60 bg-background/85 backdrop-blur">
+    <div className="bg-background min-h-screen lg:flex lg:h-screen lg:flex-col lg:overflow-hidden">
+      <header className="shrink-0 z-20 border-b border-border/60 bg-background/85 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-8 py-4">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">New service</h1>
           <div className="flex items-center gap-3">
@@ -183,9 +183,9 @@ function NewServicePage() {
         </div>
       </header>
 
-      <div className="mx-auto grid w-full max-w-6xl gap-6 px-8 py-8 lg:grid-cols-[300px_1fr]">
+      <div className="mx-auto grid w-full max-w-6xl gap-6 px-8 py-8 lg:grid-cols-[300px_1fr] lg:flex-1 lg:overflow-hidden lg:py-0">
         {/* Section nav */}
-        <nav className="h-fit rounded-3xl border border-border bg-card p-3">
+        <nav className="h-fit rounded-3xl border border-border bg-card p-3 lg:h-full lg:overflow-hidden">
           <ul className="space-y-1">
             {NAV_PRIMARY.map((item, index) => (
               <li key={item.label}>
@@ -209,7 +209,7 @@ function NewServicePage() {
           </ul>
         </nav>
 
-        <div className="space-y-6">
+        <div className="space-y-6 lg:h-full lg:overflow-y-auto lg:py-8">
           {/* Basic details */}
           <section className="rounded-3xl border border-border bg-card p-6 sm:p-8">
             <h2 className="text-xl font-bold text-foreground">Basic details</h2>
