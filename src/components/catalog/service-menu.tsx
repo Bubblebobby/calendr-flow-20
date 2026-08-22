@@ -206,17 +206,7 @@ export function ServiceMenu() {
               ].map((label) => (
                 <DropdownMenuItem
                   key={label}
-                  className="px-4 py-2.5 text-sm font-semibold text-foreground gap-3"
-                  onClick={soon(label)}
-                >
-                  {label}
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator className="my-2" />
-              {["Download PDF", "Download Excel", "Download CSV"].map((label) => (
-                <DropdownMenuItem
-                  key={label}
-                  className="px-4 py-2.5 text-sm font-semibold text-foreground gap-3"
+                  className="px-4 py-2.5 text-sm font-medium text-foreground gap-3"
                   onClick={soon(label)}
                 >
                   {label}
