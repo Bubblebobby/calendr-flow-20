@@ -420,7 +420,7 @@ function BusinessSetupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="theme-fresha min-h-screen bg-background">
       <div className="px-6 pt-5 sm:px-10">
         <ProgressBar step={step} />
       </div>
