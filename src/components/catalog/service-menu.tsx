@@ -206,17 +206,7 @@ export function ServiceMenu() {
               ].map((label) => (
                 <DropdownMenuItem
                   key={label}
-                  className="px-4 py-2.5 text-sm font-semibold text-foreground gap-3"
-                  onClick={soon(label)}
-                >
-                  {label}
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator className="my-2" />
-              {["Download PDF", "Download Excel", "Download CSV"].map((label) => (
-                <DropdownMenuItem
-                  key={label}
-                  className="px-4 py-2.5 text-sm font-semibold text-foreground gap-3"
+                  className="px-4 py-2.5 text-sm font-medium text-foreground gap-3"
                   onClick={soon(label)}
                 >
                   {label}
@@ -234,7 +224,7 @@ export function ServiceMenu() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 p-3">
               <DropdownMenuItem
-                className="px-4 py-2.5 text-sm font-semibold text-foreground gap-3"
+                className="px-4 py-2.5 text-sm font-medium text-foreground gap-3"
                 onClick={() =>
                   setServiceDialog({ ...emptyService, categoryId: selectedCategory })
                 }
@@ -242,13 +232,13 @@ export function ServiceMenu() {
                 Single service
               </DropdownMenuItem>
               <DropdownMenuItem
-                className="px-4 py-2.5 text-sm font-semibold text-foreground gap-3"
+                className="px-4 py-2.5 text-sm font-medium text-foreground gap-3"
                 onClick={soon("Bundle")}
               >
                 Bundle
               </DropdownMenuItem>
               <DropdownMenuItem
-                className="px-4 py-2.5 text-sm font-semibold text-foreground gap-3"
+                className="px-4 py-2.5 text-sm font-medium text-foreground gap-3"
                 onClick={() => setCategoryDialog({ ...emptyCategory })}
               >
                 Category
@@ -360,7 +350,7 @@ export function ServiceMenu() {
                 return (
                   <article
                     key={service.id}
-                    className="flex items-center gap-4 overflow-hidden rounded-2xl border border-border bg-card"
+                    className="flex items-center gap-4 overflow-hidden rounded-3xl border border-border bg-card"
                   >
                     <span
                       aria-hidden
