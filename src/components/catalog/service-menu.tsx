@@ -4,7 +4,6 @@ import {
   DotsThreeVertical,
   FadersHorizontal,
   MagnifyingGlass,
-  ArrowsDownUp,
 } from "@phosphor-icons/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -184,12 +183,6 @@ export function ServiceMenu() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-foreground">Service menu</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            View and manage the services offered by your business.{" "}
-            <a href="#" className="font-medium text-primary hover:underline">
-              Learn more
-            </a>
-          </p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -262,10 +255,6 @@ export function ServiceMenu() {
         <Button variant="outline" className="gap-2" onClick={soon("Filters")}>
           Filters
           <FadersHorizontal size={16} />
-        </Button>
-        <Button variant="outline" className="ml-auto gap-2" onClick={soon("Manage order")}>
-          <ArrowsDownUp size={16} />
-          Manage order
         </Button>
       </div>
 
@@ -453,7 +442,7 @@ function CategoryRow({
         />
       ) : null}
       <span className="min-w-0 flex-1 truncate text-sm font-semibold">{label}</span>
-      <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+      <span className="h-6 w-6 rounded-full border border-border bg-card text-center text-xs font-medium leading-6 text-muted-foreground">
         {count}
       </span>
     </button>

@@ -42,7 +42,7 @@ function CatalogPage() {
   const { tab, sub } = Route.useSearch();
 
   return (
-    <PageShell title="Catalog" description="Services, packages, products and stock in one place.">
+    <PageShell title="Catalog">
       <div className="-mt-4 flex gap-1 border-b border-border">
         {tabs.map((item) => (
           <Link

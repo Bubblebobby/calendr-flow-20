@@ -7,7 +7,7 @@ export function PageShell({
   children,
 }: {
   title: string;
-  description: string;
+  description?: string;
   action?: ReactNode;
   children?: ReactNode;
 }) {
@@ -16,7 +16,9 @@ export function PageShell({
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{description}</p>
+          {description ? (
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{description}</p>
+          ) : null}
         </div>
         {action}
       </header>
