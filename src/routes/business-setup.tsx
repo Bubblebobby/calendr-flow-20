@@ -399,7 +399,7 @@ function BusinessSetupPage() {
 
   if (step >= MAX_STEP) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
+      <div className="theme-fresha flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
         <div className="flex size-20 items-center justify-center rounded-full bg-gradient-to-br from-accent via-primary to-primary shadow-lg">
           <Check className="size-9 text-primary-foreground" strokeWidth={3} />
         </div>
