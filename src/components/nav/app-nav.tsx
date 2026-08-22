@@ -55,7 +55,7 @@ export function AppNav() {
   }
 
   return (
-    <div className="relative flex h-[100svh] shrink-0">
+    <div className="relative flex h-full shrink-0">
       {/* Icon rail */}
       <nav
         aria-label="Main"
