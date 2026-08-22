@@ -62,7 +62,7 @@ export function MigrationSourceStep({
               aria-pressed={selected}
               onClick={() => onChange(option.value)}
               className={cn(
-                "flex w-full items-center gap-4 rounded-xl border bg-card px-5 py-4 text-left transition-colors",
+                "flex w-full items-center gap-4 rounded-2xl border bg-card px-5 py-4 text-left transition-colors",
                 selected
                   ? "border-primary bg-secondary ring-1 ring-primary"
                   : "border-border hover:border-foreground/25",
@@ -94,7 +94,7 @@ export function MigrationSourceStep({
             id="other-software"
             autoFocus={value === "other"}
             placeholder="e.g., Shedul, Appointy"
-            className="h-14 rounded-xl text-base"
+            className="h-12 rounded-full px-5 text-base"
             value={otherValue}
             onChange={(e) => onOtherValueChange(e.target.value)}
             onFocus={() => setOtherInputFocused(true)}

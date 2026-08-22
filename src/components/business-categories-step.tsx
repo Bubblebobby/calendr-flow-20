@@ -56,7 +56,7 @@ export function BusinessCategoriesStep({
               disabled={disabled}
               onClick={() => toggle(category.id)}
               className={cn(
-                "relative rounded-xl border bg-card p-5 text-left transition-[border-color,background-color,box-shadow] duration-150",
+                "relative rounded-2xl border bg-card p-5 text-left transition-[border-color,background-color,box-shadow] duration-150",
                 "hover:border-foreground/25 active:bg-muted",
                 isSelected ? "border-primary ring-1 ring-primary" : "border-border",
                 disabled && "pointer-events-none opacity-40",
@@ -84,7 +84,7 @@ export function BusinessCategoriesStep({
           <Input
             id="other-service-type"
             autoFocus
-            className="h-14 rounded-xl text-base"
+            className="h-12 rounded-full px-5 text-base"
             value={otherLabel}
             onChange={(e) => onOtherLabelChange(e.target.value)}
           />

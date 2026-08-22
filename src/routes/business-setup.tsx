@@ -399,7 +399,7 @@ function BusinessSetupPage() {
 
   if (step >= MAX_STEP) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
+      <div className="theme-fresha flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
         <div className="flex size-20 items-center justify-center rounded-full bg-gradient-to-br from-accent via-primary to-primary shadow-lg">
           <Check className="size-9 text-primary-foreground" strokeWidth={3} />
         </div>
@@ -420,7 +420,7 @@ function BusinessSetupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="theme-fresha min-h-screen bg-background">
       <div className="px-6 pt-5 sm:px-10">
         <ProgressBar step={step} />
       </div>
@@ -483,7 +483,7 @@ function BusinessSetupPage() {
                     <Input
                       id="business-name"
                       autoFocus
-                      className="h-14 rounded-xl text-base"
+                      className="h-12 rounded-full px-5 text-base"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                     />
@@ -497,7 +497,7 @@ function BusinessSetupPage() {
                       id="business-website"
                       inputMode="url"
                       placeholder="www.yoursite.com"
-                      className="h-14 rounded-xl text-base"
+                      className="h-12 rounded-full px-5 text-base"
                       value={website}
                       onChange={(e) => setWebsite(e.target.value)}
                     />
