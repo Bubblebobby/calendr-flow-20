@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { ServiceMenu } from "@/components/catalog/service-menu";
-import { PageShell, PlaceholderPanel } from "@/components/page-shell";
+import { PlaceholderPanel } from "@/components/page-shell";
 import { cn } from "@/lib/utils";
 
 type CatalogTab = "services" | "packages" | "products" | "inventory";
@@ -42,7 +42,7 @@ function CatalogPage() {
   const { tab, sub } = Route.useSearch();
 
   return (
-    <PageShell title="Catalog">
+    <div className="mx-auto w-full max-w-6xl px-6 py-8">
       <div className="-mt-4 flex gap-1 border-b border-border">
         {tabs.map((item) => (
           <Link
@@ -92,6 +92,6 @@ function CatalogPage() {
           </div>
         ) : null}
       </div>
-    </PageShell>
+    </div>
   );
 }
