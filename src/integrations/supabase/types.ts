@@ -236,6 +236,7 @@ export type Database = {
           price: number | null
           pricing_type: string
           sort_order: number
+          treatment_type: string | null
         }
         Insert: {
           business_id: string
@@ -248,6 +249,7 @@ export type Database = {
           price?: number | null
           pricing_type?: string
           sort_order?: number
+          treatment_type?: string | null
         }
         Update: {
           business_id?: string
@@ -260,6 +262,7 @@ export type Database = {
           price?: number | null
           pricing_type?: string
           sort_order?: number
+          treatment_type?: string | null
         }
         Relationships: [
           {

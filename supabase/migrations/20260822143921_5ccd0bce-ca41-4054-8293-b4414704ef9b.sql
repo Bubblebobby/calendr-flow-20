@@ -1,0 +1,1 @@
+ALTER TABLE public.services ADD COLUMN IF NOT EXISTS treatment_type text;
