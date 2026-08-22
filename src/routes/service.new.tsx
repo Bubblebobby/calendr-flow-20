@@ -1,10 +1,14 @@
 import { useMemo, useState } from "react";
-import { CaretDown, PlusCircle } from "@phosphor-icons/react";
+import { CaretDown, Plus, PlusCircle } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import {
+  CategoryDialog,
+  emptyCategory,
+} from "@/components/catalog/service-dialogs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -95,6 +99,7 @@ function NewServicePage() {
   const [duration, setDuration] = useState<string>("60");
   const [customDuration, setCustomDuration] = useState("");
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [categoryOpen, setCategoryOpen] = useState(false);
 
   const categoriesQuery = useQuery({
     queryKey: ["service-categories", businessId],
@@ -111,6 +116,31 @@ function NewServicePage() {
     },
   });
   const categories = categoriesQuery.data ?? [];
+
+  const createCategory = useMutation({
+    mutationFn: async (draft: { name: string; color: string; description: string }) => {
+      const { data, error } = await supabase
+        .from("service_categories")
+        .insert({
+          business_id: businessId!,
+          name: draft.name.trim(),
+          color: draft.color,
+          description: draft.description.trim() || null,
+          sort_order: categories.length,
+        })
+        .select("id, name, color, sort_order")
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (created) => {
+      queryClient.invalidateQueries({ queryKey: ["service-categories", businessId] });
+      setCategoryId(created.id);
+      setCategoryOpen(false);
+      toast.success("Category added");
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
 
   const minutes = useMemo(() => {
     if (duration === "custom") return Number(customDuration) || 0;
@@ -239,20 +269,35 @@ function NewServicePage() {
                     <SelectTrigger className={FIELD}>
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
-                    <SelectContent>
-                      {categories.length === 0 ? (
-                        <div className="px-3 py-2 text-sm text-muted-foreground">
-                          No categories yet
-                        </div>
-                      ) : (
-                        categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.name}
-                          </SelectItem>
-                        ))
-                      )}
+                    <SelectContent className="p-2">
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id} className="py-2.5">
+                          <span className="flex items-center gap-3">
+                            <span
+                              className="size-5 shrink-0 rounded-full"
+                              style={{ backgroundColor: category.color }}
+                            />
+                            <span className="font-medium">{category.name}</span>
+                          </span>
+                        </SelectItem>
+                      ))}
+                      {categories.length > 0 ? (
+                        <div className="my-2 h-px bg-border" />
+                      ) : null}
+                      <button
+                        type="button"
+                        className="flex w-full items-center gap-2 rounded-md px-2 py-2.5 text-sm font-semibold text-primary hover:bg-primary/10"
+                        onMouseDown={(event) => {
+                          event.preventDefault();
+                          setCategoryOpen(true);
+                        }}
+                      >
+                        <Plus weight="bold" className="size-4" />
+                        Add category
+                      </button>
                     </SelectContent>
                   </Select>
+
                 </Field>
 
                 <Field
@@ -407,8 +452,17 @@ function NewServicePage() {
           </section>
         </div>
       </div>
+
+      <CategoryDialog
+        open={categoryOpen}
+        onOpenChange={setCategoryOpen}
+        initial={emptyCategory}
+        saving={createCategory.isPending}
+        onSubmit={(draft) => createCategory.mutate(draft)}
+      />
     </div>
   );
+
 }
 
 function NavRow({
