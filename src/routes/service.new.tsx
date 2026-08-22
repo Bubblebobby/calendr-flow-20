@@ -209,7 +209,7 @@ function NewServicePage() {
           </ul>
         </nav>
 
-        <div className="space-y-6 lg:h-full lg:overflow-y-auto lg:py-8">
+        <div className="space-y-6 lg:h-full lg:overflow-y-auto">
           {/* Basic details */}
           <section className="rounded-3xl border border-border bg-card p-6 sm:p-8">
             <h2 className="text-xl font-bold text-foreground">Basic details</h2>
