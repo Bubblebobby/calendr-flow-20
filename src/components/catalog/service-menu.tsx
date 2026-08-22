@@ -190,7 +190,7 @@ export function ServiceMenu() {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="h-12 gap-2 rounded-full bg-white px-8 text-base font-semibold text-foreground hover:bg-white hover:text-foreground border border-border"
+                className="h-12 gap-2 rounded-full bg-white px-6 text-base font-semibold text-foreground hover:bg-white hover:text-foreground border border-border"
               >
                 Options
                 <CaretDown size={16} weight="bold" />
@@ -227,7 +227,7 @@ export function ServiceMenu() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="h-12 gap-2 rounded-full px-8 text-base font-semibold">
+              <Button className="h-12 gap-2 rounded-full px-6 text-base font-semibold">
                 Add
                 <CaretDown size={16} weight="bold" />
               </Button>
