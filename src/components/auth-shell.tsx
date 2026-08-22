@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { CalendarCheck } from "lucide-react";
 import type { ReactNode } from "react";
 
-import authPreview from "@/assets/auth-preview.jpg";
+import salonInterior from "@/assets/salon-interior.jpg.asset.json";
 
 type AuthShellProps = {
   title: ReactNode;
@@ -37,10 +37,10 @@ export function AuthShell({ title, subtitle, children }: AuthShellProps) {
       <div className="hidden items-center justify-center bg-secondary px-10 py-12 lg:flex">
         <figure className="surface-flat w-full max-w-md overflow-hidden text-center">
           <img
-            src={authPreview}
-            alt="Bright, modern salon reception area"
-            width={1024}
-            height={1280}
+            src={salonInterior.url}
+            alt="Modern salon interior with arched mirrors and styling chairs"
+            width={736}
+            height={981}
             loading="lazy"
             className="h-[420px] w-full rounded-t-[inherit] object-cover"
           />
