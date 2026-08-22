@@ -193,7 +193,7 @@ export function VenueLocationStep({
         locations can be added later.
       </p>
 
-      <h2 className="mt-10 text-xl font-bold text-foreground">Business location</h2>
+      <h2 className="mt-8 text-xl font-bold text-foreground">Business location</h2>
 
       <div className="mt-5 space-y-2">
         <Label htmlFor="venue-address" className="text-[15px] font-semibold">

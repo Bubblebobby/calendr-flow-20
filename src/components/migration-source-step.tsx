@@ -52,7 +52,7 @@ export function MigrationSourceStep({
         data into your new account.
       </p>
 
-      <div className="mt-10 space-y-3">
+      <div className="mt-6 space-y-2.5 sm:mt-8 sm:space-y-3">
         {MIGRATION_SOURCES.map((option) => {
           const selected = value === option.value;
           return (
