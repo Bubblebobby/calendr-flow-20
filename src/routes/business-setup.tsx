@@ -420,44 +420,45 @@ function BusinessSetupPage() {
   }
 
   return (
-    <div className="theme-fresha min-h-screen bg-background">
-      <div className="px-6 pt-5 sm:px-10">
+    <div className="theme-fresha flex h-[100svh] flex-col overflow-hidden bg-background">
+      <header className="shrink-0 px-4 pt-4 sm:px-10 sm:pt-5">
         <ProgressBar step={step} />
-      </div>
 
-      <div className="flex items-center justify-between px-6 pt-4 sm:px-10">
-        {step > 1 ? (
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            aria-label="Back"
-            className="size-11 rounded-full"
-            onClick={() => setStep((s) => Math.max(1, s - 1))}
-          >
-            <ArrowLeft className="size-4" />
-          </Button>
-        ) : (
-          <span />
-        )}
-        <Button
-          type="submit"
-          form="business-setup-form"
-          disabled={!canContinue || saving}
-          className="h-12 rounded-full bg-ink px-7 text-base font-semibold text-ink-foreground hover:bg-ink/90"
-        >
-          {saving ? (
-            <Loader2 className="size-4 animate-spin" />
+        <div className="flex items-center justify-between gap-3 pt-3 sm:pt-4">
+          {step > 1 ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              aria-label="Back"
+              className="size-11 shrink-0 rounded-full"
+              onClick={() => setStep((s) => Math.max(1, s - 1))}
+            >
+              <ArrowLeft className="size-4" />
+            </Button>
           ) : (
-            <>
-              {step === MAX_STEP - 1 ? "Done" : "Continue"}
-              {step === MAX_STEP - 1 ? null : <ArrowRight className="ml-1 size-4" />}
-            </>
+            <span />
           )}
-        </Button>
-      </div>
+          <Button
+            type="submit"
+            form="business-setup-form"
+            disabled={!canContinue || saving}
+            className="h-12 shrink-0 rounded-full bg-ink px-6 text-base font-semibold text-ink-foreground hover:bg-ink/90 sm:px-7"
+          >
+            {saving ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <>
+                {step === MAX_STEP - 1 ? "Done" : "Continue"}
+                {step === MAX_STEP - 1 ? null : <ArrowRight className="ml-1 size-4" />}
+              </>
+            )}
+          </Button>
+        </div>
+      </header>
 
-      <main className="mx-auto w-full max-w-[820px] px-6 pb-24 pt-6">
+      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-6 sm:px-6">
+        <div className="mx-auto my-auto w-full max-w-[820px]">
         <form
             id="business-setup-form"
             onSubmit={(e) => {
