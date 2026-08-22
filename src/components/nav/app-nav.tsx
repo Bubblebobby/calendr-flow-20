@@ -25,19 +25,15 @@ export function AppNav() {
   const [renderedItem, setRenderedItem] = useState<NavItem | null>(
     activeItem?.groups ? activeItem : null,
   );
-  const [isClosing, setIsClosing] = useState(false);
 
   const openItem = navItems.find((item) => item.key === openKey && item.groups);
 
   useEffect(() => {
     if (openItem) {
       setRenderedItem(openItem);
-      setIsClosing(false);
     } else {
-      setIsClosing(true);
       const timer = window.setTimeout(() => {
         setRenderedItem(null);
-        setIsClosing(false);
       }, 300);
       return () => window.clearTimeout(timer);
     }
