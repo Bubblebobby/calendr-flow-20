@@ -196,7 +196,7 @@ export function ServiceMenu() {
                 <CaretDown size={16} weight="bold" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" className="w-64 p-3">
               {[
                 "Quick booking link",
                 "Set menu order",
@@ -204,13 +204,21 @@ export function ServiceMenu() {
                 "Bulk edit services",
                 "Settings",
               ].map((label) => (
-                <DropdownMenuItem key={label} onClick={soon(label)}>
+                <DropdownMenuItem
+                  key={label}
+                  className="px-4 py-2.5 text-sm font-semibold text-foreground gap-3"
+                  onClick={soon(label)}
+                >
                   {label}
                 </DropdownMenuItem>
               ))}
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="my-2" />
               {["Download PDF", "Download Excel", "Download CSV"].map((label) => (
-                <DropdownMenuItem key={label} onClick={soon(label)}>
+                <DropdownMenuItem
+                  key={label}
+                  className="px-4 py-2.5 text-sm font-semibold text-foreground gap-3"
+                  onClick={soon(label)}
+                >
                   {label}
                 </DropdownMenuItem>
               ))}
@@ -224,16 +232,25 @@ export function ServiceMenu() {
                 <CaretDown size={16} weight="bold" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuContent align="end" className="w-56 p-3">
               <DropdownMenuItem
+                className="px-4 py-2.5 text-sm font-semibold text-foreground gap-3"
                 onClick={() =>
                   setServiceDialog({ ...emptyService, categoryId: selectedCategory })
                 }
               >
                 Single service
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={soon("Bundle")}>Bundle</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setCategoryDialog({ ...emptyCategory })}>
+              <DropdownMenuItem
+                className="px-4 py-2.5 text-sm font-semibold text-foreground gap-3"
+                onClick={soon("Bundle")}
+              >
+                Bundle
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="px-4 py-2.5 text-sm font-semibold text-foreground gap-3"
+                onClick={() => setCategoryDialog({ ...emptyCategory })}
+              >
                 Category
               </DropdownMenuItem>
             </DropdownMenuContent>
