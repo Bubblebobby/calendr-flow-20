@@ -183,7 +183,7 @@ function NewServicePage() {
         </div>
       </header>
 
-      <div className="mx-auto grid w-full max-w-6xl items-start gap-6 px-8 pb-8 pt-12 lg:flex-1 lg:grid-cols-[300px_1fr] lg:overflow-hidden lg:pb-8 lg:pt-16">
+      <div className="mx-auto grid w-full max-w-6xl items-start gap-6 overflow-y-auto px-8 pb-8 pt-12 lg:flex-1 lg:grid-cols-[300px_1fr] lg:pb-8 lg:pt-16">
         {/* Section nav */}
         <nav className="h-fit self-start rounded-3xl border border-border bg-card p-3">
           <ul className="space-y-1">
@@ -209,7 +209,7 @@ function NewServicePage() {
           </ul>
         </nav>
 
-        <div className="space-y-6 lg:h-full lg:overflow-y-auto">
+        <div className="space-y-6">
           {/* Basic details */}
           <section className="rounded-3xl border border-border bg-card p-6 sm:p-8">
             <h2 className="text-xl font-bold text-foreground">Basic details</h2>
