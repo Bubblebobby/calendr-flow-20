@@ -17,7 +17,7 @@ export function AuthShell({ title, subtitle, children }: AuthShellProps) {
       {/* Left: everything centre-aligned */}
       <div className="flex flex-col items-center px-6 py-10 lg:px-16">
         <Link to="/" className="flex items-center gap-2.5">
-          <span className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
+          <span className="flex size-9 items-center justify-center rounded-full bg-accent text-accent-foreground">
             <CalendarCheck className="size-5" />
           </span>
           <span className="text-lg font-semibold tracking-tight text-foreground">Bookly</span>
