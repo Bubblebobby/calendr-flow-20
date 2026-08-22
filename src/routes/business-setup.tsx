@@ -457,8 +457,8 @@ function BusinessSetupPage() {
         </div>
       </header>
 
-      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-6 sm:px-6">
-        <div className="mx-auto my-auto w-full max-w-[820px]">
+      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-4 pb-6 sm:px-6 sm:pt-5">
+        <div className="mx-auto w-full max-w-[820px]">
         <form
             id="business-setup-form"
             onSubmit={(e) => {
