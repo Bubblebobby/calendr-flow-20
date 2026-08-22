@@ -22,11 +22,14 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+import { requireOnboardedUser } from "@/lib/auth-guard";
 import { formatDuration } from "@/lib/format";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_authenticated/service/new")({
+export const Route = createFileRoute("/service/new")({
+  ssr: false,
+  beforeLoad: requireOnboardedUser,
   head: () => ({
     meta: [
       { title: "New service — Bookly" },
@@ -75,7 +78,7 @@ const TREATMENT_TYPES = [
 const soon = (label: string) => () => toast(`${label} — coming soon`);
 
 const FIELD =
-  "h-12 rounded-xl border-border bg-background text-base transition-colors";
+  "h-12 rounded-xl border border-border bg-transparent text-base transition-colors";
 
 function NewServicePage() {
   const navigate = useNavigate();
@@ -157,10 +160,9 @@ function NewServicePage() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-background">
+    <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-20 border-b border-border/60 bg-background/85 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-8 py-4">
-
           <h1 className="text-2xl font-bold tracking-tight text-foreground">New service</h1>
           <div className="flex items-center gap-3">
             <Button
@@ -278,7 +280,7 @@ function NewServicePage() {
                 counter={`${description.length}/1000`}
               >
                 <Textarea
-                  className="min-h-32 rounded-xl text-base"
+                  className="min-h-32 rounded-xl bg-transparent text-base"
                   placeholder="Add a short description"
                   maxLength={1000}
                   value={description}

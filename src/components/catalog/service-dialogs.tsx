@@ -214,7 +214,7 @@ export function ServiceDialog({
               onChange={(event) =>
                 setDraft({ ...draft, categoryId: event.target.value || null })
               }
-              className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="h-11 w-full rounded-xl border border-input bg-transparent px-3 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="">Uncategorised</option>
               {categories.map((category) => (
