@@ -1,10 +1,14 @@
 import { useMemo, useState } from "react";
-import { CaretDown, PlusCircle } from "@phosphor-icons/react";
+import { CaretDown, Plus, PlusCircle } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import {
+  CategoryDialog,
+  emptyCategory,
+} from "@/components/catalog/service-dialogs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -95,6 +99,7 @@ function NewServicePage() {
   const [duration, setDuration] = useState<string>("60");
   const [customDuration, setCustomDuration] = useState("");
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [categoryOpen, setCategoryOpen] = useState(false);
 
   const categoriesQuery = useQuery({
     queryKey: ["service-categories", businessId],
@@ -111,6 +116,31 @@ function NewServicePage() {
     },
   });
   const categories = categoriesQuery.data ?? [];
+
+  const createCategory = useMutation({
+    mutationFn: async (draft: { name: string; color: string; description: string }) => {
+      const { data, error } = await supabase
+        .from("service_categories")
+        .insert({
+          business_id: businessId!,
+          name: draft.name.trim(),
+          color: draft.color,
+          description: draft.description.trim() || null,
+          sort_order: categories.length,
+        })
+        .select("id, name, color, sort_order")
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (created) => {
+      queryClient.invalidateQueries({ queryKey: ["service-categories", businessId] });
+      setCategoryId(created.id);
+      setCategoryOpen(false);
+      toast.success("Category added");
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
 
   const minutes = useMemo(() => {
     if (duration === "custom") return Number(customDuration) || 0;
