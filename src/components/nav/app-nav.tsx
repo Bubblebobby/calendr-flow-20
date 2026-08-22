@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { CaretLeft, ChatCircleDots, SignOut, User } from "@phosphor-icons/react";
@@ -22,9 +22,22 @@ export function AppNav() {
   const [openKey, setOpenKey] = useState<string | null>(
     activeItem?.groups ? activeItem.key : null,
   );
-
+  const [renderedItem, setRenderedItem] = useState<NavItem | null>(
+    activeItem?.groups ? activeItem : null,
+  );
 
   const openItem = navItems.find((item) => item.key === openKey && item.groups);
+
+  useEffect(() => {
+    if (!openItem) {
+      const timer = window.setTimeout(() => {
+        setRenderedItem(null);
+      }, 300);
+      return () => window.clearTimeout(timer);
+    }
+    setRenderedItem(openItem);
+    return;
+  }, [openItem]);
 
   async function handleSignOut() {
     await queryClient.cancelQueries();
@@ -106,47 +119,59 @@ export function AppNav() {
       </nav>
 
       {/* Submenu panel */}
-      {openItem ? (
-        <div className="relative hidden w-60 flex-col border-r border-border bg-card md:flex">
-          <div className="flex items-center justify-between px-5 py-5">
-            <h2 className="text-lg font-semibold tracking-tight text-foreground">
-              {openItem.title}
-            </h2>
-            <button
-              type="button"
-              aria-label={`Collapse ${openItem.title} menu`}
-              onClick={() => setOpenKey(null)}
-              className="flex size-6 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:text-foreground"
+      <div className="hidden md:flex">
+        <div
+          className={cn(
+            "relative flex flex-col border-r border-border bg-card overflow-hidden transition-all duration-300 ease-in-out",
+            openItem ? "w-60 opacity-100" : "w-0 opacity-0",
+          )}
+        >
+          {renderedItem ? (
+            <div
+              key={renderedItem.key}
+              className="flex h-full w-60 flex-col animate-fade-up"
             >
-              <CaretLeft size={12} weight="bold" />
-            </button>
-          </div>
-
-          <div className="flex-1 overflow-y-auto pb-6">
-            {openItem.groups?.map((group) => (
-              <div key={group.title} className="mb-4">
-                <p className="px-5 pb-1 text-sm font-semibold text-foreground">
-                  {group.title}
-                </p>
-                <ul>
-                  {group.children.map((child) => (
-                    <li key={child.title}>
-                      <Link
-                        to={child.to}
-                        search={child.search as never}
-                        activeOptions={{ includeSearch: Boolean(child.search) }}
-                        className="block px-5 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground data-[status=active]:bg-primary/10 data-[status=active]:font-medium data-[status=active]:text-primary"
-                      >
-                        {child.title}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+              <div className="flex items-center justify-between px-5 py-5 shrink-0">
+                <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                  {renderedItem.title}
+                </h2>
+                <button
+                  type="button"
+                  aria-label={`Collapse ${renderedItem.title} menu`}
+                  onClick={() => setOpenKey(null)}
+                  className="flex size-6 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:text-foreground"
+                >
+                  <CaretLeft size={12} weight="bold" />
+                </button>
               </div>
-            ))}
-          </div>
+
+              <div className="flex-1 overflow-y-auto pb-6">
+                {renderedItem.groups?.map((group) => (
+                  <div key={group.title} className="mb-4">
+                    <p className="px-5 pb-1 text-sm font-semibold text-foreground">
+                      {group.title}
+                    </p>
+                    <ul>
+                      {group.children.map((child) => (
+                        <li key={child.title}>
+                          <Link
+                            to={child.to}
+                            search={child.search as never}
+                            activeOptions={{ includeSearch: Boolean(child.search) }}
+                            className="block px-5 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground data-[status=active]:bg-primary/10 data-[status=active]:font-medium data-[status=active]:text-primary"
+                          >
+                            {child.title}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
-      ) : null}
+      </div>
     </div>
   );
 }
