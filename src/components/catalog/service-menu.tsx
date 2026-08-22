@@ -185,12 +185,15 @@ export function ServiceMenu() {
           <h2 className="text-3xl font-bold tracking-tight text-foreground">Service menu</h2>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="gap-2">
+              <Button
+                variant="outline"
+                className="h-12 gap-2 rounded-full px-6 text-base font-semibold"
+              >
                 Options
-                <CaretDown size={14} weight="bold" />
+                <CaretDown size={16} weight="bold" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
@@ -216,9 +219,9 @@ export function ServiceMenu() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="gap-2">
+              <Button className="h-12 gap-2 rounded-full px-6 text-base font-semibold">
                 Add
-                <CaretDown size={14} weight="bold" />
+                <CaretDown size={16} weight="bold" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
@@ -236,6 +239,7 @@ export function ServiceMenu() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
       </div>
 
       {/* Search / filter row */}
