@@ -185,7 +185,7 @@ function NewServicePage() {
 
       <div className="mx-auto grid w-full max-w-6xl gap-6 px-8 py-8 lg:grid-cols-[300px_1fr] lg:flex-1 lg:overflow-hidden lg:py-0">
         {/* Section nav */}
-        <nav className="h-fit rounded-3xl border border-border bg-card p-3">
+        <nav className="h-fit rounded-3xl border border-border bg-card p-3 lg:h-full lg:overflow-hidden">
           <ul className="space-y-1">
             {NAV_PRIMARY.map((item, index) => (
               <li key={item.label}>
