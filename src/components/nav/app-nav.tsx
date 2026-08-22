@@ -122,14 +122,14 @@ export function AppNav() {
       <div className="hidden md:flex">
         <div
           className={cn(
-            "relative flex flex-col border-r border-border bg-card overflow-hidden transition-all duration-300 ease-in-out",
+            "relative flex flex-col border-r border-border bg-card overflow-hidden transition-all duration-500 ease-in-out",
             openItem ? "w-60 opacity-100" : "w-0 opacity-0",
           )}
         >
           {renderedItem ? (
             <div
               key={renderedItem.key}
-              className="flex h-full w-60 flex-col animate-fade-up"
+              className="flex h-full w-60 flex-col animate-fade-in"
             >
               <div className="flex items-center justify-between px-5 py-5 shrink-0">
                 <h2 className="text-lg font-semibold tracking-tight text-foreground">
