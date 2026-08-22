@@ -31,6 +31,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { requireOnboardedUser } from "@/lib/auth-guard";
 import { formatDuration } from "@/lib/format";
 import { TREATMENT_GROUPS } from "@/lib/treatment-types";
+
+const SORTED_TREATMENT_GROUPS = [...TREATMENT_GROUPS].sort((a, b) =>
+  a.label.localeCompare(b.label),
+);
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
 
