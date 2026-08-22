@@ -190,7 +190,7 @@ export function ServiceMenu() {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="h-12 gap-2 rounded-full px-6 text-base font-semibold"
+                className="h-12 gap-2 rounded-full bg-white px-8 text-base font-semibold text-foreground hover:bg-white hover:text-foreground border border-border"
               >
                 Options
                 <CaretDown size={16} weight="bold" />
@@ -219,7 +219,7 @@ export function ServiceMenu() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="h-12 gap-2 rounded-full px-6 text-base font-semibold">
+              <Button className="h-12 gap-2 rounded-full px-8 text-base font-semibold">
                 Add
                 <CaretDown size={16} weight="bold" />
               </Button>
@@ -239,7 +239,15 @@ export function ServiceMenu() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+      </div>
 
+      <div className="px-2">
+        <p className="text-sm text-muted-foreground">
+          View and manage the services offered by your business.{" "}
+          <a href="#" className="font-semibold text-primary hover:underline">
+            Learn more
+          </a>
+        </p>
       </div>
 
       {/* Search / filter row */}
