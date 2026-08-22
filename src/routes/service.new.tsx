@@ -297,11 +297,18 @@ function NewServicePage() {
                     <SelectTrigger className={FIELD}>
                       <SelectValue placeholder="Select treatment type" />
                     </SelectTrigger>
-                    <SelectContent>
-                      {TREATMENT_TYPES.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
+                    <SelectContent className="max-h-80">
+                      {TREATMENT_GROUPS.map((group) => (
+                        <SelectGroup key={group.label}>
+                          <SelectLabel className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                            {group.label}
+                          </SelectLabel>
+                          {group.options.map((type) => (
+                            <SelectItem key={`${group.label}-${type}`} value={type}>
+                              {type}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
                       ))}
                     </SelectContent>
                   </Select>
