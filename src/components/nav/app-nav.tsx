@@ -29,14 +29,14 @@ export function AppNav() {
   const openItem = navItems.find((item) => item.key === openKey && item.groups);
 
   useEffect(() => {
-    if (openItem) {
-      setRenderedItem(openItem);
-    } else {
+    if (!openItem) {
       const timer = window.setTimeout(() => {
         setRenderedItem(null);
       }, 300);
       return () => window.clearTimeout(timer);
     }
+    setRenderedItem(openItem);
+    return;
   }, [openItem]);
 
   async function handleSignOut() {
