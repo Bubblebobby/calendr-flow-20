@@ -79,8 +79,8 @@
   --card-foreground: oklch(0.22 0.03 240);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.22 0.03 240);
-  --primary: oklch(0.52 0.11 214);
-  --primary-foreground: oklch(0.99 0.005 220);
+  --primary: oklch(0.53 0.235 285);
+  --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.955 0.008 230);
   --secondary-foreground: oklch(0.3 0.03 235);
   --muted: oklch(0.96 0.006 235);
@@ -91,8 +91,8 @@
   --destructive-foreground: oklch(0.99 0.005 220);
   --border: oklch(0.915 0.008 240);
   --input: oklch(0.915 0.008 240);
-  --ring: oklch(0.52 0.11 214);
-  --chart-1: oklch(0.52 0.11 214);
+  --ring: oklch(0.53 0.235 285);
+  --chart-1: oklch(0.53 0.235 285);
   --chart-2: oklch(0.66 0.12 175);
   --chart-3: oklch(0.72 0.13 85);
   --chart-4: oklch(0.6 0.13 30);
@@ -108,7 +108,7 @@
   --font-sans:
     "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --shadow-card: 0 1px 2px oklch(0.22 0.03 240 / 0.06), 0 8px 24px -12px oklch(0.22 0.03 240 / 0.18);
-  --gradient-brand: linear-gradient(135deg, oklch(0.52 0.11 214), oklch(0.62 0.1 190));
+  --gradient-brand: linear-gradient(135deg, oklch(0.53 0.235 285), oklch(0.62 0.18 300));
   --ink: oklch(0.16 0.01 250);
   --ink-foreground: oklch(0.99 0 0);
   --slot-blue: oklch(0.9 0.05 230);
@@ -121,6 +121,7 @@
   --slot-mint-foreground: oklch(0.36 0.07 180);
   --gradient-halo: radial-gradient(60% 55% at 50% 0%, oklch(0.93 0.05 300 / 0.55), transparent 70%);
 }
+
 
 
 .dark {
