@@ -27,7 +27,7 @@ export function TeamSizeStep({
       <h1 className="mt-2 step-title text-foreground">
         What&apos;s your team size?
       </h1>
-      <p className="mt-3 text-lg text-muted-foreground">
+      <p className="mt-2 text-base text-muted-foreground sm:mt-3 sm:text-lg">
         This will help us set up your calendar correctly
       </p>
 

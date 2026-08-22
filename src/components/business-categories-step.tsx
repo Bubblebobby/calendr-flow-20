@@ -37,7 +37,7 @@ export function BusinessCategoriesStep({
       <h1 className="step-title text-foreground">
         Select categories that best describe your business
       </h1>
-      <p className="mt-3 text-lg text-muted-foreground">
+      <p className="mt-2 text-base text-muted-foreground sm:mt-3 sm:text-lg">
         Choose your primary and up to 3 related service types
       </p>
 

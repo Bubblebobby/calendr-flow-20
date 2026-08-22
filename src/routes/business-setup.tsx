@@ -391,7 +391,7 @@ function BusinessSetupPage() {
 
   if (!ready) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex h-[100svh] items-center justify-center bg-background">
         <Loader2 className="size-5 animate-spin text-muted-foreground" />
       </div>
     );
@@ -399,7 +399,7 @@ function BusinessSetupPage() {
 
   if (step >= MAX_STEP) {
     return (
-      <div className="theme-fresha flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
+      <div className="theme-fresha flex h-[100svh] flex-col items-center justify-center overflow-y-auto bg-background px-6 text-center">
         <div className="flex size-20 items-center justify-center rounded-full bg-gradient-to-br from-accent via-primary to-primary shadow-lg">
           <Check className="size-9 text-primary-foreground" strokeWidth={3} />
         </div>
@@ -472,7 +472,7 @@ function BusinessSetupPage() {
                 <h1 className="mt-2 step-title text-foreground">
                   What&apos;s your business name?
                 </h1>
-                <p className="mt-3 text-lg text-muted-foreground">
+                <p className="mt-2 text-base text-muted-foreground sm:mt-3 sm:text-lg">
                   This is the brand name your clients will see. Your billing and legal name can be added later.
                 </p>
 

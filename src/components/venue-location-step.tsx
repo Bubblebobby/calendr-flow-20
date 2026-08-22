@@ -188,7 +188,7 @@ export function VenueLocationStep({
       <h1 className="mt-2 step-title text-foreground">
         Set your venue&apos;s physical location
       </h1>
-      <p className="mt-3 text-lg text-muted-foreground">
+      <p className="mt-2 text-base text-muted-foreground sm:mt-3 sm:text-lg">
         Add your primary business location so your clients can easily find you. Additional
         locations can be added later.
       </p>

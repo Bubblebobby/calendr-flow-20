@@ -47,7 +47,7 @@ export function MigrationSourceStep({
       <h1 className="mt-2 step-title text-foreground">
         Which software are you currently using?
       </h1>
-      <p className="mt-3 text-lg text-muted-foreground">
+      <p className="mt-2 text-base text-muted-foreground sm:mt-3 sm:text-lg">
         If you&apos;re looking to switch, we can help speed up your business setup and import your
         data into your new account.
       </p>
