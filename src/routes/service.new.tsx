@@ -233,16 +233,23 @@ function NewServicePage() {
         {/* Section nav */}
         <nav className="h-fit self-start rounded-3xl border border-border bg-card p-3">
           <ul className="space-y-1">
-            {NAV_PRIMARY.map((item, index) => (
-              <li key={item.label}>
-                <NavRow
-                  label={item.label}
-                  badge={item.badge}
-                  active={index === 0}
-                  onClick={index === 0 ? undefined : () => { soon(item.label)(); }}
-                />
-              </li>
-            ))}
+            {NAV_PRIMARY.map((item) => {
+              const selectable = item.key === "basic" || item.key === "team";
+              return (
+                <li key={item.key}>
+                  <NavRow
+                    label={item.label}
+                    badge={item.key === "team" ? teamSelection.length : null}
+                    active={section === item.key}
+                    onClick={
+                      selectable
+                        ? () => { setSection(item.key as "basic" | "team"); }
+                        : () => { soon(item.label)(); }
+                    }
+                  />
+                </li>
+              );
+            })}
           </ul>
           <div className="my-3 h-px bg-border" />
           <p className="px-3 py-2 text-base font-bold text-foreground">Settings</p>
