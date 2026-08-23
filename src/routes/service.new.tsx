@@ -170,17 +170,23 @@ function NewServicePage() {
 
   const save = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("services").insert({
-        business_id: businessId!,
-        category_id: categoryId || null,
-        name: name.trim(),
-        description: description.trim() || null,
-        treatment_type: treatmentType || null,
-        pricing_type: priceType,
-        price: priceType === "fixed" ? Number(price) || 0 : null,
-        duration_minutes: minutes,
-      });
+      const { data, error } = await supabase
+        .from("services")
+        .insert({
+          business_id: businessId!,
+          category_id: categoryId || null,
+          name: name.trim(),
+          description: description.trim() || null,
+          treatment_type: treatmentType || null,
+          pricing_type: priceType,
+          price: priceType === "fixed" ? Number(price) || 0 : null,
+          duration_minutes: minutes,
+        })
+        .select("id")
+        .single();
       if (error) throw error;
+
+      await reconcileServiceTeam(data.id, teamSelection, existingAssignments);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["services", businessId] });
