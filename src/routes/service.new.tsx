@@ -102,6 +102,14 @@ function NewServicePage() {
   const [customDuration, setCustomDuration] = useState("");
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [categoryOpen, setCategoryOpen] = useState(false);
+  const [section, setSection] = useState<"basic" | "team">("basic");
+
+  // Creating a service: no saved assignments yet, everyone starts checked.
+  const teamQuery = useTeamMembers(businessId);
+  const teamMembers = teamQuery.data ?? [];
+  const existingAssignments = useServiceTeamAssignments(undefined).data ?? [];
+  const [selectedTeam, setSelectedTeam] = useState<string[] | null>(null);
+  const teamSelection = selectedTeam ?? teamMembers.map((m) => m.id);
 
   const categoriesQuery = useQuery({
     queryKey: ["service-categories", businessId],
