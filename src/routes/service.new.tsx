@@ -35,6 +35,12 @@ import { TREATMENT_GROUPS } from "@/lib/treatment-types";
 const SORTED_TREATMENT_GROUPS = [...TREATMENT_GROUPS].sort((a, b) =>
   a.label.localeCompare(b.label),
 );
+import {
+  TeamMembersSection,
+  reconcileServiceTeam,
+  useServiceTeamAssignments,
+  useTeamMembers,
+} from "@/components/catalog/service-team-members";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
 
@@ -58,11 +64,11 @@ export const Route = createFileRoute("/service/new")({
 });
 
 const NAV_PRIMARY = [
-  { label: "Basic details", badge: null as number | null },
-  { label: "Team members", badge: 0 },
-  { label: "Resources", badge: null },
-  { label: "Service add-ons", badge: null },
-];
+  { key: "basic", label: "Basic details" },
+  { key: "team", label: "Team members" },
+  { key: "resources", label: "Resources" },
+  { key: "addons", label: "Service add-ons" },
+] as const;
 
 const NAV_SETTINGS = [
   { label: "Online booking", badge: null as number | null },
@@ -96,6 +102,14 @@ function NewServicePage() {
   const [customDuration, setCustomDuration] = useState("");
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [categoryOpen, setCategoryOpen] = useState(false);
+  const [section, setSection] = useState<"basic" | "team">("basic");
+
+  // Creating a service: no saved assignments yet, everyone starts checked.
+  const teamQuery = useTeamMembers(businessId);
+  const teamMembers = teamQuery.data ?? [];
+  const existingAssignments = useServiceTeamAssignments(undefined).data ?? [];
+  const [selectedTeam, setSelectedTeam] = useState<string[] | null>(null);
+  const teamSelection = selectedTeam ?? teamMembers.map((m) => m.id);
 
   const categoriesQuery = useQuery({
     queryKey: ["service-categories", businessId],
@@ -156,17 +170,23 @@ function NewServicePage() {
 
   const save = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("services").insert({
-        business_id: businessId!,
-        category_id: categoryId || null,
-        name: name.trim(),
-        description: description.trim() || null,
-        treatment_type: treatmentType || null,
-        pricing_type: priceType,
-        price: priceType === "fixed" ? Number(price) || 0 : null,
-        duration_minutes: minutes,
-      });
+      const { data, error } = await supabase
+        .from("services")
+        .insert({
+          business_id: businessId!,
+          category_id: categoryId || null,
+          name: name.trim(),
+          description: description.trim() || null,
+          treatment_type: treatmentType || null,
+          pricing_type: priceType,
+          price: priceType === "fixed" ? Number(price) || 0 : null,
+          duration_minutes: minutes,
+        })
+        .select("id")
+        .single();
       if (error) throw error;
+
+      await reconcileServiceTeam(data.id, teamSelection, existingAssignments);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["services", businessId] });
@@ -213,16 +233,23 @@ function NewServicePage() {
         {/* Section nav */}
         <nav className="h-fit self-start rounded-3xl border border-border bg-card p-3">
           <ul className="space-y-1">
-            {NAV_PRIMARY.map((item, index) => (
-              <li key={item.label}>
-                <NavRow
-                  label={item.label}
-                  badge={item.badge}
-                  active={index === 0}
-                  onClick={index === 0 ? undefined : () => { soon(item.label)(); }}
-                />
-              </li>
-            ))}
+            {NAV_PRIMARY.map((item) => {
+              const selectable = item.key === "basic" || item.key === "team";
+              return (
+                <li key={item.key}>
+                  <NavRow
+                    label={item.label}
+                    badge={item.key === "team" ? teamSelection.length : null}
+                    active={section === item.key}
+                    onClick={
+                      selectable
+                        ? () => { setSection(item.key as "basic" | "team"); }
+                        : () => { soon(item.label)(); }
+                    }
+                  />
+                </li>
+              );
+            })}
           </ul>
           <div className="my-3 h-px bg-border" />
           <p className="px-3 py-2 text-base font-bold text-foreground">Settings</p>
@@ -236,6 +263,16 @@ function NewServicePage() {
         </nav>
 
         <div className="space-y-6">
+          {section === "team" ? (
+            <TeamMembersSection
+              businessId={businessId}
+              members={teamMembers}
+              loading={teamQuery.isLoading}
+              selected={teamSelection}
+              onChange={setSelectedTeam}
+            />
+          ) : (
+          <>
           {/* Basic details */}
           <section className="rounded-3xl border border-border bg-card p-6 sm:p-8">
             <h2 className="text-xl font-bold text-foreground">Basic details</h2>
@@ -458,6 +495,8 @@ function NewServicePage() {
               </DropdownMenu>
             </div>
           </section>
+          </>
+          )}
         </div>
       </div>
 

@@ -224,6 +224,39 @@ export type Database = {
           },
         ]
       }
+      service_team_members: {
+        Row: {
+          created_at: string
+          service_id: string
+          team_member_id: string
+        }
+        Insert: {
+          created_at?: string
+          service_id: string
+          team_member_id: string
+        }
+        Update: {
+          created_at?: string
+          service_id?: string
+          team_member_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_team_members_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_team_members_team_member_id_fkey"
+            columns: ["team_member_id"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       services: {
         Row: {
           business_id: string
@@ -281,6 +314,60 @@ export type Database = {
           },
         ]
       }
+      team_members: {
+        Row: {
+          avatar_color: string
+          business_id: string
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          initials: string | null
+          invite_status: Database["public"]["Enums"]["team_invite_status"]
+          is_active: boolean
+          user_id: string | null
+        }
+        Insert: {
+          avatar_color?: string
+          business_id: string
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          initials?: string | null
+          invite_status?: Database["public"]["Enums"]["team_invite_status"]
+          is_active?: boolean
+          user_id?: string | null
+        }
+        Update: {
+          avatar_color?: string
+          business_id?: string
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          initials?: string | null
+          invite_status?: Database["public"]["Enums"]["team_invite_status"]
+          is_active?: boolean
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_members_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_roles: {
         Row: {
           business_id: string
@@ -321,7 +408,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      team_invite_status: "not_invited" | "invited" | "active"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -448,6 +535,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      team_invite_status: ["not_invited", "invited", "active"],
+    },
   },
 } as const
