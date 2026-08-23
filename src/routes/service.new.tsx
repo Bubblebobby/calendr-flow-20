@@ -35,6 +35,12 @@ import { TREATMENT_GROUPS } from "@/lib/treatment-types";
 const SORTED_TREATMENT_GROUPS = [...TREATMENT_GROUPS].sort((a, b) =>
   a.label.localeCompare(b.label),
 );
+import {
+  TeamMembersSection,
+  reconcileServiceTeam,
+  useServiceTeamAssignments,
+  useTeamMembers,
+} from "@/components/catalog/service-team-members";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
 
