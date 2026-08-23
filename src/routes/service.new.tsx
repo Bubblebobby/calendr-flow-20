@@ -58,11 +58,11 @@ export const Route = createFileRoute("/service/new")({
 });
 
 const NAV_PRIMARY = [
-  { label: "Basic details", badge: null as number | null },
-  { label: "Team members", badge: 0 },
-  { label: "Resources", badge: null },
-  { label: "Service add-ons", badge: null },
-];
+  { key: "basic", label: "Basic details" },
+  { key: "team", label: "Team members" },
+  { key: "resources", label: "Resources" },
+  { key: "addons", label: "Service add-ons" },
+] as const;
 
 const NAV_SETTINGS = [
   { label: "Online booking", badge: null as number | null },
