@@ -263,6 +263,16 @@ function NewServicePage() {
         </nav>
 
         <div className="space-y-6">
+          {section === "team" ? (
+            <TeamMembersSection
+              businessId={businessId}
+              members={teamMembers}
+              loading={teamQuery.isLoading}
+              selected={teamSelection}
+              onChange={setSelectedTeam}
+            />
+          ) : (
+          <>
           {/* Basic details */}
           <section className="rounded-3xl border border-border bg-card p-6 sm:p-8">
             <h2 className="text-xl font-bold text-foreground">Basic details</h2>
