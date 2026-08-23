@@ -495,6 +495,8 @@ function NewServicePage() {
               </DropdownMenu>
             </div>
           </section>
+          </>
+          )}
         </div>
       </div>
 
