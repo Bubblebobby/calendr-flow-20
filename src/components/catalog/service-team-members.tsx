@@ -1,0 +1,254 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
+
+export type TeamMember = {
+  id: string;
+  full_name: string;
+  initials: string | null;
+  avatar_color: string;
+};
+
+const AVATAR_COLORS = ["#D9F0FA", "#E7E3FE", "#FDE8D7", "#DCF3E4", "#FBE0EC"];
+
+/** Active roster for the business — the pool of people who can perform services. */
+export function useTeamMembers(businessId: string | undefined) {
+  return useQuery({
+    queryKey: ["team-members", businessId],
+    enabled: Boolean(businessId),
+    queryFn: async (): Promise<TeamMember[]> => {
+      const { data, error } = await supabase
+        .from("team_members")
+        .select("id, full_name, initials, avatar_color")
+        .eq("business_id", businessId!)
+        .eq("is_active", true)
+        .order("created_at");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+}
+
+/** Team members already assigned to a saved service (empty for a new service). */
+export function useServiceTeamAssignments(serviceId: string | undefined) {
+  return useQuery({
+    queryKey: ["service-team-members", serviceId],
+    enabled: Boolean(serviceId),
+    queryFn: async (): Promise<string[]> => {
+      const { data, error } = await supabase
+        .from("service_team_members")
+        .select("team_member_id")
+        .eq("service_id", serviceId!);
+      if (error) throw error;
+      return (data ?? []).map((row) => row.team_member_id);
+    },
+  });
+}
+
+/**
+ * Reconcile a service's assignments to exactly match `selected`:
+ * insert newly checked members, delete unchecked ones, leave the rest alone.
+ */
+export async function reconcileServiceTeam(
+  serviceId: string,
+  selected: string[],
+  previous: string[],
+) {
+  const added = selected.filter((id) => !previous.includes(id));
+  const removed = previous.filter((id) => !selected.includes(id));
+
+  if (added.length) {
+    const { error } = await supabase
+      .from("service_team_members")
+      .insert(added.map((team_member_id) => ({ service_id: serviceId, team_member_id })));
+    if (error) throw error;
+  }
+  if (removed.length) {
+    const { error } = await supabase
+      .from("service_team_members")
+      .delete()
+      .eq("service_id", serviceId)
+      .in("team_member_id", removed);
+    if (error) throw error;
+  }
+}
+
+export function TeamMembersSection({
+  businessId,
+  members,
+  loading,
+  selected,
+  onChange,
+}: {
+  businessId: string | undefined;
+  members: TeamMember[];
+  loading?: boolean;
+  selected: string[];
+  onChange: (ids: string[]) => void;
+}) {
+  const queryClient = useQueryClient();
+  const [adding, setAdding] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (adding) inputRef.current?.focus();
+  }, [adding]);
+
+  const allChecked = members.length > 0 && selected.length === members.length;
+  const someChecked = selected.length > 0 && !allChecked;
+
+  const toggle = (id: string) => {
+    onChange(selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id]);
+  };
+
+  const toggleAll = () => {
+    onChange(allChecked ? [] : members.map((m) => m.id));
+  };
+
+  const createMember = useMutation({
+    mutationFn: async (name: string) => {
+      const { data, error } = await supabase
+        .from("team_members")
+        .insert({
+          business_id: businessId!,
+          full_name: name.trim(),
+          avatar_color: AVATAR_COLORS[members.length % AVATAR_COLORS.length]!,
+        })
+        .select("id, full_name, initials, avatar_color")
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (created) => {
+      queryClient.invalidateQueries({ queryKey: ["team-members", businessId] });
+      onChange([...selected, created.id]);
+      setFullName("");
+      setAdding(false);
+      toast.success("Team member added");
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const submitNew = () => {
+    if (!fullName.trim()) {
+      toast.error("Enter a full name");
+      return;
+    }
+    createMember.mutate(fullName);
+  };
+
+  const countBadge = useMemo(() => members.length, [members.length]);
+
+  return (
+    <section className="rounded-3xl border border-border bg-card p-6 sm:p-8">
+      <h2 className="text-xl font-bold text-foreground">Team members required</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Choose which team members will perform this service
+      </p>
+
+      <div className="mt-6">
+        <label className="flex cursor-pointer items-center gap-4 py-2">
+          <Checkbox
+            checked={allChecked ? true : someChecked ? "indeterminate" : false}
+            onCheckedChange={toggleAll}
+            disabled={members.length === 0}
+            className="size-5"
+          />
+          <span className="text-base font-bold text-foreground">All team members</span>
+          <span className="rounded-full border border-border px-2 text-xs font-medium leading-5 text-muted-foreground">
+            {countBadge}
+          </span>
+        </label>
+
+        {loading ? (
+          <p className="py-4 text-sm text-muted-foreground">Loading team…</p>
+        ) : members.length === 0 ? (
+          <p className="py-4 text-sm text-muted-foreground">
+            No team members yet — add one below.
+          </p>
+        ) : (
+          <ul className="mt-2">
+            {members.map((member, index) => (
+              <li
+                key={member.id}
+                className={cn(index > 0 && "border-t border-border/70")}
+              >
+                <label className="flex cursor-pointer items-center gap-4 py-3">
+                  <Checkbox
+                    checked={selected.includes(member.id)}
+                    onCheckedChange={() => toggle(member.id)}
+                    className="size-5"
+                  />
+                  <span
+                    className="flex size-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-foreground/80"
+                    style={{ backgroundColor: member.avatar_color }}
+                    aria-hidden
+                  >
+                    {member.initials ?? member.full_name.slice(0, 2).toUpperCase()}
+                  </span>
+                  <span className="text-base font-medium text-foreground">
+                    {member.full_name}
+                  </span>
+                </label>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {adding ? (
+          <div className="mt-4 max-w-sm space-y-2">
+            <Label className="text-sm font-semibold text-foreground">Full name</Label>
+            <Input
+              ref={inputRef}
+              className="h-12 rounded-xl border border-border bg-transparent text-base"
+              placeholder="e.g. Ada Obi"
+              value={fullName}
+              onChange={(event) => setFullName(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  submitNew();
+                }
+              }}
+            />
+            <div className="flex items-center gap-2 pt-1">
+              <Button
+                className="h-10 rounded-full px-5 text-sm font-semibold"
+                onClick={submitNew}
+                disabled={createMember.isPending}
+              >
+                {createMember.isPending ? "Adding…" : "Add"}
+              </Button>
+              <Button
+                variant="ghost"
+                className="h-10 rounded-full px-4 text-sm font-medium"
+                onClick={() => {
+                  setAdding(false);
+                  setFullName("");
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            className="mt-4 text-sm font-semibold text-primary underline-offset-4 hover:underline"
+            onClick={() => setAdding(true)}
+          >
+            Add team member
+          </button>
+        )}
+      </div>
+    </section>
+  );
+}
