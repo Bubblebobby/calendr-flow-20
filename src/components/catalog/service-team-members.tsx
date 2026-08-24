@@ -244,12 +244,7 @@ export function TeamMembersSection({
                     >
                       {member.initials ?? deriveInitials(member.full_name)}
                     </span>
-                    <span
-                      className={cn(
-                        "flex-1 py-4 text-lg font-medium text-foreground",
-                        index > 0 && "border-t border-border/70",
-                      )}
-                    >
+                    <span className="flex-1 text-lg font-medium text-foreground">
                       {member.full_name}
                     </span>
                   </span>
