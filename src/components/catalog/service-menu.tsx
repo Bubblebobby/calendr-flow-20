@@ -433,21 +433,21 @@ export function ServiceMenu() {
           </div>
 
           <div className="mt-4 space-y-3">
-            {servicesQuery.isLoading ? (
+            {servicesQuery.isLoading || bundlesQuery.isLoading ? (
               <p className="text-sm text-muted-foreground">Loading services…</p>
             ) : filtered.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border p-10 text-center">
                 <p className="text-sm font-medium text-foreground">No services yet</p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Add a single service to start building your menu.
+                  Add a single service or a bundle to start building your menu.
                 </p>
               </div>
             ) : (
-              filtered.map((service) => {
-                const category = categories.find((c) => c.id === service.category_id);
+              filtered.map((item) => {
+                const category = categories.find((c) => c.id === item.categoryId);
                 return (
                   <article
-                    key={service.id}
+                    key={`${item.kind}-${item.id}`}
                     className="flex items-center gap-4 overflow-hidden rounded-3xl border border-border bg-card"
                   >
                     <span
@@ -456,13 +456,20 @@ export function ServiceMenu() {
                       style={{ backgroundColor: category?.color ?? "hsl(var(--muted))" }}
                     />
                     <div className="min-w-0 flex-1 py-4">
-                      <p className="truncate font-semibold text-foreground">{service.name}</p>
+                      <p className="flex items-center gap-2 truncate font-semibold text-foreground">
+                        <span className="truncate">{item.name}</span>
+                        {item.kind === "bundle" ? (
+                          <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                            Bundle
+                          </span>
+                        ) : null}
+                      </p>
                       <p className="mt-0.5 text-sm text-muted-foreground">
-                        {formatDuration(service.duration_minutes)}
+                        {formatDuration(itemDuration(item))}
                       </p>
                     </div>
                     <p className="whitespace-nowrap text-sm font-semibold text-foreground">
-                      {priceLabel(service)}
+                      {priceLabel(item)}
                     </p>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -470,14 +477,19 @@ export function ServiceMenu() {
                           variant="ghost"
                           size="icon"
                           className="mr-3 rounded-full"
-                          aria-label={`Actions for ${service.name}`}
+                          aria-label={`Actions for ${item.name}`}
                         >
                           <DotsThreeVertical size={18} weight="bold" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-40">
                         <DropdownMenuItem
-                          onClick={() =>
+                          onClick={() => {
+                            if (item.kind === "bundle") {
+                              navigate({ to: "/bundle/new", search: { id: item.id } });
+                              return;
+                            }
+                            const service = item.service;
                             setServiceDialog({
                               id: service.id,
                               name: service.name,
@@ -487,14 +499,18 @@ export function ServiceMenu() {
                               price: service.price != null ? String(service.price) : "",
                               hours: String(Math.floor(service.duration_minutes / 60)),
                               minutes: String(service.duration_minutes % 60),
-                            })
-                          }
+                            });
+                          }}
                         >
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="text-destructive focus:text-destructive"
-                          onClick={() => deleteService.mutate(service.id)}
+                          onClick={() =>
+                            item.kind === "bundle"
+                              ? deleteBundle.mutate(item.id)
+                              : deleteService.mutate(item.id)
+                          }
                         >
                           Delete
                         </DropdownMenuItem>
@@ -503,6 +519,8 @@ export function ServiceMenu() {
                   </article>
                 );
               })
+            )}
+
             )}
           </div>
         </section>
