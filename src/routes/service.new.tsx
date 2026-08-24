@@ -80,6 +80,30 @@ const NAV_SETTINGS = [
 
 const DURATIONS = [5, 10, 15, 20, 30, 45, 60, 75, 90, 105, 120, 150, 180, 240];
 
+const EXTRA_TIME_TYPES = [
+  {
+    key: "processing",
+    label: "Processing time",
+    hint: "Team member is available during this time, included in the client-facing duration",
+  },
+  {
+    key: "blocked",
+    label: "Blocked time",
+    hint: "Team member stays occupied, excluded from the client-facing duration",
+  },
+  {
+    key: "extra_servicing",
+    label: "Extra servicing time",
+    hint: "Team member finishes up after the service, added to the total duration",
+  },
+] as const;
+
+type ExtraTimeKey = (typeof EXTRA_TIME_TYPES)[number]["key"];
+
+type DurationSegment = { id: string; type: ExtraTimeKey; minutes: number };
+
+
+
 
 const soon = (label: string) => () => toast(`${label} — coming soon`);
 
