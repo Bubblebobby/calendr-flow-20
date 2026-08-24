@@ -340,7 +340,7 @@ export function ServiceMenu() {
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="px-4 py-2.5 text-sm font-medium text-foreground gap-3"
-                onClick={() => navigate({ to: "/bundle/new" })}
+                onClick={() => navigate({ to: "/bundle/new", search: { id: undefined } })}
               >
                 Bundle
               </DropdownMenuItem>
