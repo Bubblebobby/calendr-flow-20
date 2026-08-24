@@ -507,7 +507,7 @@ function BundleFormPage() {
                         onClick={() =>
                           setSelectedIds((ids) => {
                             const next = [...ids];
-                            [next[index - 1], next[index]] = [next[index], next[index - 1]];
+                            [next[index - 1], next[index]] = [next[index]!, next[index - 1]!];
                             return next;
                           })
                         }
@@ -519,7 +519,7 @@ function BundleFormPage() {
                         onClick={() =>
                           setSelectedIds((ids) => {
                             const next = [...ids];
-                            [next[index], next[index + 1]] = [next[index + 1], next[index]];
+                            [next[index], next[index + 1]] = [next[index + 1]!, next[index]!];
                             return next;
                           })
                         }
