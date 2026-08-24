@@ -208,7 +208,7 @@ export function TeamMembersSection({
             disabled={members.length === 0}
             className="size-6 rounded-md border-2"
           />
-          <span className="text-lg font-bold text-foreground">All team members</span>
+          <span className="text-base font-semibold text-foreground">All team members</span>
           <span className="flex size-6 items-center justify-center rounded-full border border-border text-xs font-medium text-muted-foreground">
             {countBadge}
           </span>
@@ -243,7 +243,7 @@ export function TeamMembersSection({
                     >
                       {member.initials ?? deriveInitials(member.full_name)}
                     </span>
-                    <span className="flex-1 text-lg font-medium text-foreground">
+                    <span className="flex-1 text-base font-medium text-foreground">
                       {member.full_name}
                     </span>
                   </span>
