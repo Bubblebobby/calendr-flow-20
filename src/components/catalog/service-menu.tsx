@@ -340,10 +340,11 @@ export function ServiceMenu() {
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="px-4 py-2.5 text-sm font-medium text-foreground gap-3"
-                onClick={soon("Bundle")}
+                onClick={() => navigate({ to: "/bundle/new" })}
               >
                 Bundle
               </DropdownMenuItem>
+
               <DropdownMenuItem
                 className="px-4 py-2.5 text-sm font-medium text-foreground gap-3"
                 onClick={() => setCategoryDialog({ ...emptyCategory })}
