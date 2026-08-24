@@ -201,16 +201,16 @@ export function TeamMembersSection({
         Choose which team members will perform this service
       </p>
 
-      <div className="mt-6">
-        <label className="flex cursor-pointer items-center gap-4 py-2">
+      <div className="mt-8">
+        <label className="flex cursor-pointer items-center gap-4 py-1">
           <Checkbox
             checked={allChecked ? true : someChecked ? "indeterminate" : false}
             onCheckedChange={toggleAll}
             disabled={members.length === 0}
-            className="size-5"
+            className="size-6 rounded-md border-2"
           />
-          <span className="text-base font-bold text-foreground">All team members</span>
-          <span className="rounded-full border border-border px-2 text-xs font-medium leading-5 text-muted-foreground">
+          <span className="text-lg font-bold text-foreground">All team members</span>
+          <span className="flex size-6 items-center justify-center rounded-full border border-border text-xs font-medium text-muted-foreground">
             {countBadge}
           </span>
         </label>
@@ -224,25 +224,33 @@ export function TeamMembersSection({
         ) : (
           <ul className="mt-2">
             {members.map((member, index) => (
-              <li
-                key={member.id}
-                className={cn(index > 0 && "border-t border-border/70")}
-              >
-                <label className="flex cursor-pointer items-center gap-4 py-3">
+              <li key={member.id}>
+                <label className="flex cursor-pointer items-center gap-4 py-2">
                   <Checkbox
                     checked={selected.includes(member.id)}
                     onCheckedChange={() => toggle(member.id)}
-                    className="size-5"
+                    className="size-6 rounded-md border-2"
                   />
-                  <span
-                    className="flex size-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-foreground/80"
-                    style={{ backgroundColor: member.avatar_color }}
-                    aria-hidden
-                  >
-                    {member.initials ?? member.full_name.slice(0, 2).toUpperCase()}
-                  </span>
-                  <span className="text-base font-medium text-foreground">
-                    {member.full_name}
+                  <span className="flex flex-1 items-center gap-4">
+                    <span
+                      className="flex size-14 shrink-0 items-center justify-center rounded-full border text-base font-semibold"
+                      style={{
+                        backgroundColor: member.avatar_color,
+                        borderColor: "#8FCDEA",
+                        color: "#1F6D93",
+                      }}
+                      aria-hidden
+                    >
+                      {member.initials ?? deriveInitials(member.full_name)}
+                    </span>
+                    <span
+                      className={cn(
+                        "flex-1 py-4 text-lg font-medium text-foreground",
+                        index > 0 && "border-t border-border/70",
+                      )}
+                    >
+                      {member.full_name}
+                    </span>
                   </span>
                 </label>
               </li>
