@@ -185,6 +185,12 @@ export function ServiceMenu() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-foreground">Service menu</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            View and manage the services offered by your business.{" "}
+            <a href="#" className="font-semibold text-primary hover:underline">
+              Learn more
+            </a>
+          </p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -246,15 +252,6 @@ export function ServiceMenu() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </div>
-
-      <div className="px-2">
-        <p className="text-sm text-muted-foreground">
-          View and manage the services offered by your business.{" "}
-          <a href="#" className="font-semibold text-primary hover:underline">
-            Learn more
-          </a>
-        </p>
       </div>
 
       {/* Search / filter row */}
