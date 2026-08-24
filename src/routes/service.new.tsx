@@ -71,11 +71,11 @@ const NAV_PRIMARY = [
 ] as const;
 
 const NAV_SETTINGS = [
-  { label: "Online booking", badge: null as number | null },
-  { label: "Portfolio images", badge: null },
-  { label: "Forms", badge: 0 },
-  { label: "Commissions", badge: null },
-  { label: "Settings", badge: null },
+  { key: null, label: "Online booking", badge: null as number | null },
+  { key: "portfolio", label: "Portfolio images", badge: null },
+  { key: null, label: "Forms", badge: 0 },
+  { key: null, label: "Commissions", badge: null },
+  { key: null, label: "Settings", badge: null },
 ];
 
 const DURATIONS = [5, 10, 15, 20, 30, 45, 60, 75, 90, 105, 120, 150, 180, 240];
