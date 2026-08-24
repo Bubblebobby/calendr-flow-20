@@ -282,20 +282,13 @@ export function PortfolioImagesSection({ businessId, draftId, serviceId }: Props
       )}
 
 
-      <p className="mt-3 text-sm text-muted-foreground">
-        File type .jpg, .png, .avif, .webp • max size 5MB • up to {MAX_PORTFOLIO_IMAGES}{" "}
-        images
-      </p>
+
       {fileError ? (
         <p className="mt-2 text-sm font-medium text-destructive">{fileError}</p>
       ) : null}
 
-      {isLoading ? null : images.length === 0 ? (
-        <p className="mt-6 text-base text-muted-foreground">
-          No images yet. Upload up to {MAX_PORTFOLIO_IMAGES} photos to showcase this
-          service.
-        </p>
-      ) : (
+      {isLoading ? null : images.length === 0 ? null : (
+
         <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
           {images.map((image) => (
             <figure
