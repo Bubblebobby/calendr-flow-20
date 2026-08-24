@@ -459,43 +459,87 @@ function BundleFormPage() {
             Add at least 2 services to this bundle.
           </p>
 
+          <p className="mt-1 text-sm text-muted-foreground">
+            Select which services to include in this bundle and how they should be sequenced when
+            booked.
+          </p>
+
           <div className="mt-6 space-y-3">
             {selected.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border px-6 py-8 text-center text-sm text-muted-foreground">
                 No services added yet.
               </div>
             ) : (
-              selected.map((service) => (
+              selected.map((service, index) => (
                 <div
                   key={service.id}
-                  className="flex items-center gap-4 rounded-2xl border border-border px-4 py-3"
+                  className="flex items-center gap-4 overflow-hidden rounded-2xl border border-border bg-card"
                 >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-foreground">
+                  <span
+                    aria-hidden
+                    className="h-[76px] w-1.5 shrink-0 rounded-r-full bg-sky-200"
+                  />
+                  <div className="min-w-0 flex-1 py-4">
+                    <p className="truncate text-base font-semibold text-foreground">
                       {service.name}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                       {formatDuration(service.duration_minutes)}
                     </p>
                   </div>
-                  <p className="whitespace-nowrap text-sm font-semibold text-foreground">
+                  <p className="whitespace-nowrap text-base font-semibold text-foreground">
                     {service.pricing_type === "fixed"
                       ? money(Number(service.price ?? 0))
                       : service.pricing_type === "free"
                         ? "Free"
                         : "Free-form"}
                   </p>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={`Remove ${service.name}`}
-                    className="size-9 rounded-full text-muted-foreground"
-                    onClick={() =>
-                      setSelectedIds((ids) => ids.filter((id) => id !== service.id))
-                    }
-                  >
-                    <X size={16} weight="bold" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="mr-3 size-9 rounded-full text-muted-foreground"
+                        aria-label={`Actions for ${service.name}`}
+                      >
+                        <DotsThreeVertical size={18} weight="bold" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-40">
+                      <DropdownMenuItem
+                        disabled={index === 0}
+                        onClick={() =>
+                          setSelectedIds((ids) => {
+                            const next = [...ids];
+                            [next[index - 1], next[index]] = [next[index], next[index - 1]];
+                            return next;
+                          })
+                        }
+                      >
+                        Move up
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        disabled={index === selected.length - 1}
+                        onClick={() =>
+                          setSelectedIds((ids) => {
+                            const next = [...ids];
+                            [next[index], next[index + 1]] = [next[index + 1], next[index]];
+                            return next;
+                          })
+                        }
+                      >
+                        Move down
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-destructive focus:text-destructive"
+                        onClick={() =>
+                          setSelectedIds((ids) => ids.filter((id) => id !== service.id))
+                        }
+                      >
+                        Remove
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               ))
             )}
@@ -533,9 +577,7 @@ function BundleFormPage() {
                         <button
                           type="button"
                           disabled={isSelected}
-                          onClick={() =>
-                            setSelectedIds((ids) => [...ids, service.id])
-                          }
+                          onClick={() => setSelectedIds((ids) => [...ids, service.id])}
                           className={cn(
                             "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
                             isSelected
@@ -567,14 +609,29 @@ function BundleFormPage() {
               </Button>
             </div>
           ) : (
-            <Button
-              variant="outline"
-              className="mt-4 h-11 gap-2 rounded-full bg-white px-6 text-base font-semibold text-foreground hover:bg-white hover:text-foreground"
-              onClick={() => setPickerOpen(true)}
-            >
-              <Plus size={18} weight="bold" />
-              Add service
-            </Button>
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+              <Button
+                variant="outline"
+                className="h-11 gap-2 rounded-full bg-white px-6 text-base font-semibold text-foreground hover:bg-white hover:text-foreground"
+                onClick={() => setPickerOpen(true)}
+              >
+                <Plus size={18} weight="bold" />
+                Add service
+              </Button>
+              {selected.length > 0 ? (
+                <div className="flex items-center gap-4 text-sm">
+                  <span className="text-muted-foreground">
+                    Total duration:{" "}
+                    <span className="font-semibold text-foreground">
+                      {formatDuration(totalDuration)}
+                    </span>
+                  </span>
+                  <span className="text-base font-semibold text-foreground">
+                    {money(finalPrice)}
+                  </span>
+                </div>
+              ) : null}
+            </div>
           )}
         </section>
 
