@@ -217,24 +217,56 @@ export function PortfolioImagesSection({ businessId, draftId, serviceId }: Props
             handleFiles(event.dataTransfer.files);
           }}
           className={cn(
-            "mt-6 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border px-6 py-14 text-center transition-colors",
+            "mt-6 cursor-pointer rounded-2xl border-2 border-dashed border-border transition-colors",
             dragging && "border-primary bg-primary/5",
+            images.length === 0
+              ? "flex flex-col items-center justify-center px-6 py-14 text-center"
+              : "p-2",
           )}
         >
-          <FileText size={32} weight="regular" className="text-foreground" />
-          <p className="mt-3 text-lg font-bold text-foreground">Add your images here</p>
-          <Button
-            type="button"
-            variant="outline"
-            className="mt-4 h-11 rounded-full bg-white px-6 text-base font-semibold text-foreground hover:bg-white"
-            disabled={upload.isPending || !businessId}
-            onClick={(event) => {
-              event.stopPropagation();
-              inputRef.current?.click();
-            }}
-          >
-            {upload.isPending ? "Uploading…" : "Choose a file"}
-          </Button>
+          {images.length === 0 ? (
+            <>
+              <FileText size={32} weight="regular" className="text-foreground" />
+              <p className="mt-3 text-lg font-bold text-foreground">
+                Add your images here
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-4 h-11 rounded-full bg-card px-6 text-base font-semibold text-foreground"
+                disabled={upload.isPending || !businessId}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  inputRef.current?.click();
+                }}
+              >
+                {upload.isPending ? "Uploading…" : "Choose a file"}
+              </Button>
+            </>
+          ) : (
+            <div className="flex items-center justify-between gap-4 rounded-xl bg-muted/50 px-6 py-5">
+              <div className="min-w-0">
+                <p className="text-lg font-bold text-foreground">
+                  Drag and drop your images here
+                </p>
+                <p className="mt-0.5 text-base text-muted-foreground">
+                  Or click to browse
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 shrink-0 rounded-full bg-card px-6 text-base font-semibold text-foreground"
+                disabled={upload.isPending || !businessId}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  inputRef.current?.click();
+                }}
+              >
+                {upload.isPending ? "Uploading…" : "Choose a file"}
+              </Button>
+            </div>
+          )}
           <input
             ref={inputRef}
             type="file"
@@ -248,6 +280,7 @@ export function PortfolioImagesSection({ businessId, draftId, serviceId }: Props
           />
         </div>
       )}
+
 
       <p className="mt-3 text-sm text-muted-foreground">
         File type .jpg, .png, .avif, .webp • max size 5MB • up to {MAX_PORTFOLIO_IMAGES}{" "}
