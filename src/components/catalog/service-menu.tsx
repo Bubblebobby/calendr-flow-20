@@ -116,13 +116,34 @@ export function ServiceMenu() {
     },
   });
 
+  const bundlesQuery = useQuery({
+    queryKey: ["bundles", businessId],
+    enabled: Boolean(businessId),
+    queryFn: async (): Promise<Bundle[]> => {
+      const { data, error } = await supabase
+        .from("bundles")
+        .select(
+          "id, name, category_id, schedule_type, pricing_mode, custom_price, discount_percentage, sort_order, bundle_services(services(price, duration_minutes))",
+        )
+        .eq("business_id", businessId!)
+        .eq("is_active", true)
+        .order("sort_order")
+        .order("created_at");
+      if (error) throw error;
+      return (data ?? []) as unknown as Bundle[];
+    },
+  });
+
   const categories = categoriesQuery.data ?? [];
   const services = servicesQuery.data ?? [];
+  const bundles = bundlesQuery.data ?? [];
 
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: ["service-categories", businessId] });
     queryClient.invalidateQueries({ queryKey: ["services", businessId] });
+    queryClient.invalidateQueries({ queryKey: ["bundles", businessId] });
   };
+
 
   const saveCategory = useMutation({
     mutationFn: async (draft: CategoryDraft) => {
