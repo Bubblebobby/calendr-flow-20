@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { CaretDown, Plus, PlusCircle } from "@phosphor-icons/react";
+import { CaretDown, Plus, PlusCircle, X } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
