@@ -82,10 +82,6 @@ export function useTeamMembers(businessId: string | undefined) {
   });
 }
 
-function rowsHaveOwner(_rows: TeamMember[], _userId: string) {
-  // user_id isn't projected in the list query; the dedicated lookup below decides.
-  return false;
-}
 
 /** Team members already assigned to a saved service (empty for a new service). */
 export function useServiceTeamAssignments(serviceId: string | undefined) {
