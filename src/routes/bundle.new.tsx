@@ -456,10 +456,6 @@ function BundleFormPage() {
         <section className="rounded-3xl border border-border bg-card p-6 sm:p-8">
           <h2 className="text-xl font-bold text-foreground">Services</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Add at least 2 services to this bundle.
-          </p>
-
-          <p className="mt-1 text-sm text-muted-foreground">
             Select which services to include in this bundle and how they should be sequenced when
             booked.
           </p>
