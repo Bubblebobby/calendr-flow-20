@@ -225,6 +225,11 @@ function NewServicePage() {
           pricing_type: priceType,
           price: priceType === "fixed" ? Number(price) || 0 : null,
           duration_minutes: minutes,
+          duration_segments: segments.map(({ type, minutes: value }) => ({
+            type,
+            minutes: value,
+          })),
+
         })
         .select("id")
         .single();
