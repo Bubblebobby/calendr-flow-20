@@ -469,13 +469,13 @@ function BundleFormPage() {
               selected.map((service, index) => (
                 <div
                   key={service.id}
-                  className="flex items-center gap-4 overflow-hidden rounded-2xl border border-border/60 bg-card py-1 pl-1 pr-4"
+                  className="flex items-stretch gap-4 overflow-hidden rounded-2xl bg-card"
                 >
                   <span
                     aria-hidden
-                    className="h-14 w-2 shrink-0 rounded-full bg-sky-200"
+                    className="w-2 shrink-0 self-stretch rounded-full bg-sky-200"
                   />
-                  <div className="min-w-0 flex-1 py-3">
+                  <div className="min-w-0 flex-1 py-0">
                     <p className="truncate text-base font-medium text-foreground">
                       {service.name}
                     </p>
