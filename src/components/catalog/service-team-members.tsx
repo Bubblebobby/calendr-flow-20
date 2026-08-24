@@ -47,7 +47,7 @@ export function useTeamMembers(businessId: string | undefined) {
       // The account owner is a team member too — make sure they're on the roster.
       const { data: auth } = await supabase.auth.getUser();
       const userId = auth.user?.id;
-      if (!userId || rows.some((row) => row.id && rowsHaveOwner(rows, userId))) return rows;
+      if (!userId) return rows;
 
       const { data: profile } = await supabase
         .from("profiles")
