@@ -41,6 +41,10 @@ import {
   useServiceTeamAssignments,
   useTeamMembers,
 } from "@/components/catalog/service-team-members";
+import {
+  PortfolioImagesSection,
+  attachDraftPortfolioImages,
+} from "@/components/catalog/service-portfolio-images";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
 
