@@ -191,6 +191,16 @@ function NewServicePage() {
     return Number(duration) || 0;
   }, [duration, customDuration]);
 
+  const totalDuration = useMemo(
+    () =>
+      minutes +
+      segments
+        .filter((row) => row.type !== "blocked")
+        .reduce((sum, row) => sum + row.minutes, 0),
+    [minutes, segments],
+  );
+
+
   const errors = {
     name: name.trim() ? null : "Service name is required",
     duration: minutes > 0 ? null : "Enter a duration in minutes",
