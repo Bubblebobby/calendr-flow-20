@@ -27,9 +27,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  bundleDuration,
+  bundlePrice,
+  type BundlePricingMode,
+  type BundleScheduleType,
+} from "@/lib/bundle-pricing";
 import { formatDuration, formatMoney } from "@/lib/format";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
+
 
 type Category = {
   id: string;
