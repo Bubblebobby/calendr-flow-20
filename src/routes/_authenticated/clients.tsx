@@ -21,7 +21,7 @@ export const Route = createFileRoute("/_authenticated/clients")({
 
 function ClientsPage() {
   return (
-    <div className="min-h-full bg-white">
+    <div className="min-h-full w-full bg-white">
       <div className="mx-auto w-full max-w-6xl px-8 py-10">
         <ClientsList />
       </div>
