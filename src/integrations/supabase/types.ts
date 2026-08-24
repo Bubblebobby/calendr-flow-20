@@ -196,41 +196,167 @@ export type Database = {
           },
         ]
       }
-      clients: {
+      client_tag_assignments: {
         Row: {
-          avatar_color: string
+          business_id: string
+          client_id: string
+          created_at: string
+          id: string
+          tag_id: string
+        }
+        Insert: {
+          business_id: string
+          client_id: string
+          created_at?: string
+          id?: string
+          tag_id: string
+        }
+        Update: {
+          business_id?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tag_assignments_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_tag_assignments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "client_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_tags: {
+        Row: {
           business_id: string
           created_at: string
-          email: string | null
-          first_name: string
           id: string
-          last_name: string | null
-          notes: string | null
-          phone: string | null
+          name: string
           updated_at: string
         }
         Insert: {
-          avatar_color?: string
           business_id: string
           created_at?: string
-          email?: string | null
-          first_name: string
           id?: string
-          last_name?: string | null
-          notes?: string | null
-          phone?: string | null
+          name: string
           updated_at?: string
         }
         Update: {
-          avatar_color?: string
           business_id?: string
           created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tags_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          additional_email: string | null
+          additional_phone: string | null
+          additional_phone_country_code: string | null
+          avatar_color: string
+          avatar_path: string | null
+          avatar_url: string | null
+          birth_day: number | null
+          birth_month: number | null
+          birth_year: number | null
+          business_id: string
+          client_source: string
+          country: string | null
+          created_at: string
+          email: string | null
+          first_name: string
+          gender: string | null
+          id: string
+          last_name: string | null
+          notes: string | null
+          occupation: string | null
+          phone: string | null
+          phone_country_code: string | null
+          preferred_language: string | null
+          pronouns: string | null
+          referred_by_client_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          additional_email?: string | null
+          additional_phone?: string | null
+          additional_phone_country_code?: string | null
+          avatar_color?: string
+          avatar_path?: string | null
+          avatar_url?: string | null
+          birth_day?: number | null
+          birth_month?: number | null
+          birth_year?: number | null
+          business_id: string
+          client_source?: string
+          country?: string | null
+          created_at?: string
           email?: string | null
-          first_name?: string
+          first_name: string
+          gender?: string | null
           id?: string
           last_name?: string | null
           notes?: string | null
+          occupation?: string | null
           phone?: string | null
+          phone_country_code?: string | null
+          preferred_language?: string | null
+          pronouns?: string | null
+          referred_by_client_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          additional_email?: string | null
+          additional_phone?: string | null
+          additional_phone_country_code?: string | null
+          avatar_color?: string
+          avatar_path?: string | null
+          avatar_url?: string | null
+          birth_day?: number | null
+          birth_month?: number | null
+          birth_year?: number | null
+          business_id?: string
+          client_source?: string
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          first_name?: string
+          gender?: string | null
+          id?: string
+          last_name?: string | null
+          notes?: string | null
+          occupation?: string | null
+          phone?: string | null
+          phone_country_code?: string | null
+          preferred_language?: string | null
+          pronouns?: string | null
+          referred_by_client_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -239,6 +365,13 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clients_referred_by_client_id_fkey"
+            columns: ["referred_by_client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
             referencedColumns: ["id"]
           },
         ]
