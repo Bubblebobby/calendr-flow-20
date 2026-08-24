@@ -1,0 +1,1 @@
+ALTER TABLE public.services ADD COLUMN IF NOT EXISTS duration_segments jsonb NOT NULL DEFAULT '[]'::jsonb;

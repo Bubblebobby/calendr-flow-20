@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { CaretDown, Plus, PlusCircle } from "@phosphor-icons/react";
+import { CaretDown, Plus, PlusCircle, X } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -80,6 +80,30 @@ const NAV_SETTINGS = [
 
 const DURATIONS = [5, 10, 15, 20, 30, 45, 60, 75, 90, 105, 120, 150, 180, 240];
 
+const EXTRA_TIME_TYPES = [
+  {
+    key: "processing",
+    label: "Processing time",
+    hint: "Team member is available during this time, included in the client-facing duration",
+  },
+  {
+    key: "blocked",
+    label: "Blocked time",
+    hint: "Team member stays occupied, excluded from the client-facing duration",
+  },
+  {
+    key: "extra_servicing",
+    label: "Extra servicing time",
+    hint: "Team member finishes up after the service, added to the total duration",
+  },
+] as const;
+
+type ExtraTimeKey = (typeof EXTRA_TIME_TYPES)[number]["key"];
+
+type DurationSegment = { id: string; type: ExtraTimeKey; minutes: number };
+
+
+
 
 const soon = (label: string) => () => toast(`${label} — coming soon`);
 
@@ -103,6 +127,16 @@ function NewServicePage() {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [section, setSection] = useState<"basic" | "team">("basic");
+  const [segments, setSegments] = useState<DurationSegment[]>([]);
+
+  const addSegment = (type: ExtraTimeKey) => {
+    setSegments((rows) =>
+      rows.some((row) => row.type === type)
+        ? rows
+        : [...rows, { id: crypto.randomUUID(), type, minutes: 15 }],
+    );
+  };
+
 
   // Creating a service: no saved assignments yet, everyone starts checked.
   const teamQuery = useTeamMembers(businessId);
@@ -157,6 +191,16 @@ function NewServicePage() {
     return Number(duration) || 0;
   }, [duration, customDuration]);
 
+  const totalDuration = useMemo(
+    () =>
+      minutes +
+      segments
+        .filter((row) => row.type !== "blocked")
+        .reduce((sum, row) => sum + row.minutes, 0),
+    [minutes, segments],
+  );
+
+
   const errors = {
     name: name.trim() ? null : "Service name is required",
     duration: minutes > 0 ? null : "Enter a duration in minutes",
@@ -181,6 +225,11 @@ function NewServicePage() {
           pricing_type: priceType,
           price: priceType === "fixed" ? Number(price) || 0 : null,
           duration_minutes: minutes,
+          duration_segments: segments.map(({ type, minutes: value }) => ({
+            type,
+            minutes: value,
+          })),
+
         })
         .select("id")
         .single();
@@ -460,15 +509,90 @@ function NewServicePage() {
               </div>
             ) : null}
 
+            {segments.length > 0 ? (
+              <div className="mt-6 space-y-3">
+                <p className="text-sm font-semibold text-foreground">Duration type</p>
+                {segments.map((segment) => {
+                  const meta = EXTRA_TIME_TYPES.find((t) => t.key === segment.type)!;
+                  return (
+                    <div
+                      key={segment.id}
+                      className="flex flex-wrap items-center gap-3 rounded-2xl border border-border p-4"
+                    >
+                      <div className="min-w-52 flex-1">
+                        <p className="text-sm font-semibold text-foreground">{meta.label}</p>
+                        <p className="text-xs text-muted-foreground">{meta.hint}</p>
+                      </div>
+                      <Select
+                        value={String(segment.minutes)}
+                        onValueChange={(value) =>
+                          setSegments((rows) =>
+                            rows.map((row) =>
+                              row.id === segment.id ? { ...row, minutes: Number(value) } : row,
+                            ),
+                          )
+                        }
+                      >
+                        <SelectTrigger className={cn(FIELD, "w-44")}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-72">
+                          {DURATIONS.map((value) => (
+                            <SelectItem key={value} value={String(value)}>
+                              {formatDuration(value)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Remove ${meta.label}`}
+                        className="size-10 rounded-full text-muted-foreground"
+                        onClick={() =>
+                          setSegments((rows) => rows.filter((row) => row.id !== segment.id))
+                        }
+                      >
+                        <X size={18} weight="bold" />
+                      </Button>
+                    </div>
+                  );
+                })}
+                <p className="text-sm text-muted-foreground">
+                  Total duration:{" "}
+                  <span className="font-semibold text-foreground">
+                    {formatDuration(totalDuration)}
+                  </span>
+                </p>
+              </div>
+            ) : null}
+
             <div className="mt-6 flex flex-wrap items-center gap-3">
-              <Button
-                variant="outline"
-                className="h-11 gap-2 rounded-full bg-white px-6 text-base font-medium text-foreground hover:bg-white hover:text-foreground"
-                onClick={() => { soon("Extra time")(); }}
-              >
-                <PlusCircle size={20} />
-                Add extra time
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="h-11 gap-2 rounded-full bg-white px-6 text-base font-medium text-foreground hover:bg-white hover:text-foreground"
+                  >
+                    <PlusCircle size={20} />
+                    Add extra time
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-80 p-3">
+                  {EXTRA_TIME_TYPES.map((type) => (
+                    <DropdownMenuItem
+                      key={type.key}
+                      className="flex-col items-start gap-1 rounded-xl px-4 py-3"
+                      disabled={segments.some((row) => row.type === type.key)}
+                      onClick={() => addSegment(type.key)}
+                    >
+                      <span className="text-sm font-semibold text-foreground">{type.label}</span>
+                      <span className="text-xs text-muted-foreground">{type.hint}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
