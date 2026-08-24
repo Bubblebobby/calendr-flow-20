@@ -70,7 +70,6 @@ export function useTeamMembers(businessId: string | undefined) {
         .insert({
           business_id: businessId!,
           full_name: ownerName,
-          initials: deriveInitials(ownerName),
           user_id: userId,
           avatar_color: AVATAR_COLORS[0]!,
         })
