@@ -126,7 +126,8 @@ function NewServicePage() {
   const [customDuration, setCustomDuration] = useState("");
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [categoryOpen, setCategoryOpen] = useState(false);
-  const [section, setSection] = useState<"basic" | "team">("basic");
+  const [section, setSection] = useState<"basic" | "team" | "portfolio">("basic");
+  const [draftId] = useState(() => crypto.randomUUID());
   const [segments, setSegments] = useState<DurationSegment[]>([]);
 
   const addSegment = (type: ExtraTimeKey) => {
