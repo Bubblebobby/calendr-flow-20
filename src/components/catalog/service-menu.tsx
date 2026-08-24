@@ -11,11 +11,8 @@ import { toast } from "sonner";
 
 import {
   CategoryDialog,
-  ServiceDialog,
   emptyCategory,
-  emptyService,
   type CategoryDraft,
-  type ServiceDraft,
 } from "@/components/catalog/service-dialogs";
 import { Button } from "@/components/ui/button";
 import {
@@ -84,7 +81,6 @@ export function ServiceMenu() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [categoryDialog, setCategoryDialog] = useState<CategoryDraft | null>(null);
-  const [serviceDialog, setServiceDialog] = useState<ServiceDraft | null>(null);
 
   const categoriesQuery = useQuery({
     queryKey: ["service-categories", businessId],
@@ -166,30 +162,6 @@ export function ServiceMenu() {
     onError: (error: Error) => toast.error(error.message),
   });
 
-  const saveService = useMutation({
-    mutationFn: async (draft: ServiceDraft) => {
-      const minutes =
-        (Number(draft.hours) || 0) * 60 + (Number(draft.minutes) || 0);
-      const payload = {
-        business_id: businessId!,
-        category_id: draft.categoryId,
-        name: draft.name.trim(),
-        pricing_type: draft.pricingType,
-        price: draft.pricingType === "fixed" ? Number(draft.price) || 0 : null,
-        duration_minutes: minutes || 15,
-      };
-      const { error } = draft.id
-        ? await supabase.from("services").update(payload).eq("id", draft.id)
-        : await supabase.from("services").insert(payload);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      setServiceDialog(null);
-      refresh();
-      toast.success("Service saved");
-    },
-    onError: (error: Error) => toast.error(error.message),
-  });
 
   const deleteService = useMutation({
     mutationFn: async (id: string) => {
@@ -490,17 +462,7 @@ export function ServiceMenu() {
                               navigate({ to: "/bundle/new", search: { id: item.id } });
                               return;
                             }
-                            const service = item.service;
-                            setServiceDialog({
-                              id: service.id,
-                              name: service.name,
-                              categoryId: service.category_id,
-                              pricingType:
-                                (service.pricing_type as ServiceDraft["pricingType"]) ?? "fixed",
-                              price: service.price != null ? String(service.price) : "",
-                              hours: String(Math.floor(service.duration_minutes / 60)),
-                              minutes: String(service.duration_minutes % 60),
-                            });
+                            navigate({ to: "/service/$serviceId", params: { serviceId: item.id } });
                           }}
                         >
                           Edit
@@ -531,16 +493,6 @@ export function ServiceMenu() {
         initial={categoryDialog ?? emptyCategory}
         saving={saveCategory.isPending}
         onSubmit={(draft) => saveCategory.mutate(draft)}
-      />
-
-      <ServiceDialog
-        open={serviceDialog !== null}
-        onOpenChange={(open) => !open && setServiceDialog(null)}
-        initial={serviceDialog ?? emptyService}
-        categories={categories}
-        saving={saveService.isPending}
-        onSubmit={(draft) => saveService.mutate(draft)}
-        onCreateCategory={() => setCategoryDialog({ ...emptyCategory })}
       />
     </div>
   );
