@@ -469,21 +469,21 @@ function BundleFormPage() {
               selected.map((service, index) => (
                 <div
                   key={service.id}
-                  className="flex items-center gap-4 overflow-hidden rounded-2xl border border-border bg-card"
+                  className="flex items-center gap-4 overflow-hidden rounded-2xl border border-border/60 bg-card py-1 pl-1 pr-4"
                 >
                   <span
                     aria-hidden
-                    className="h-[76px] w-1.5 shrink-0 rounded-r-full bg-sky-200"
+                    className="h-14 w-2 shrink-0 rounded-full bg-sky-200"
                   />
-                  <div className="min-w-0 flex-1 py-4">
-                    <p className="truncate text-base font-semibold text-foreground">
+                  <div className="min-w-0 flex-1 py-3">
+                    <p className="truncate text-base font-medium text-foreground">
                       {service.name}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       {formatDuration(service.duration_minutes)}
                     </p>
                   </div>
-                  <p className="whitespace-nowrap text-base font-semibold text-foreground">
+                  <p className="whitespace-nowrap text-base font-medium text-foreground">
                     {service.pricing_type === "fixed"
                       ? money(Number(service.price ?? 0))
                       : service.pricing_type === "free"
@@ -495,7 +495,7 @@ function BundleFormPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="mr-3 size-9 rounded-full text-muted-foreground"
+                        className="size-9 rounded-full text-muted-foreground"
                         aria-label={`Actions for ${service.name}`}
                       >
                         <DotsThreeVertical size={18} weight="bold" />
