@@ -623,7 +623,7 @@ function BundleFormPage() {
                     </span>
                   </span>
                   <span className="text-base font-semibold text-foreground">
-                    {money(finalPrice || subtotal)}
+                    {money(finalPrice)}
                   </span>
                 </div>
               ) : null}
