@@ -460,7 +460,7 @@ function BundleFormPage() {
             booked.
           </p>
 
-          <div className="mt-6 space-y-3">
+          <div className="mt-6 space-y-4">
             {selected.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border px-6 py-8 text-center text-sm text-muted-foreground">
                 No services added yet.
@@ -473,7 +473,7 @@ function BundleFormPage() {
                 >
                   <span
                     aria-hidden
-                    className="h-full w-2 shrink-0 bg-sky-200"
+                    className="h-full w-[0.425rem] shrink-0 bg-sky-200"
                   />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-base font-medium text-foreground">
