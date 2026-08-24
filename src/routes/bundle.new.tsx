@@ -352,7 +352,7 @@ function BundleFormPage() {
   return (
     <div className="bg-background min-h-screen lg:flex lg:h-screen lg:flex-col lg:overflow-hidden">
       <header className="shrink-0 z-20 border-b border-border/60 bg-background/85 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-4 px-8 py-4">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-8 py-4">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
             {editing ? "Edit bundle" : "New bundle"}
           </h1>
@@ -375,7 +375,7 @@ function BundleFormPage() {
         </div>
       </header>
 
-      <div className="mx-auto w-full max-w-4xl space-y-6 overflow-y-auto px-8 pb-16 pt-12 lg:flex-1">
+      <div className="mx-auto w-full max-w-6xl space-y-6 overflow-y-auto px-8 pb-16 pt-12 lg:flex-1">
         {/* Basic details */}
         <section className="rounded-3xl border border-border bg-card p-6 sm:p-8">
           <h2 className="text-xl font-bold text-foreground">Basic details</h2>
