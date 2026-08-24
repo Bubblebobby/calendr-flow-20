@@ -27,9 +27,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  bundleDuration,
+  bundlePrice,
+  type BundlePricingMode,
+  type BundleScheduleType,
+} from "@/lib/bundle-pricing";
 import { formatDuration, formatMoney } from "@/lib/format";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
+
 
 type Category = {
   id: string;
@@ -49,7 +56,24 @@ type Service = {
   sort_order: number;
 };
 
+type Bundle = {
+  id: string;
+  name: string;
+  category_id: string | null;
+  schedule_type: BundleScheduleType;
+  pricing_mode: BundlePricingMode;
+  custom_price: number | null;
+  discount_percentage: number | null;
+  sort_order: number;
+  bundle_services: { services: { price: number | null; duration_minutes: number } | null }[];
+};
+
+type MenuItem =
+  | { kind: "service"; id: string; name: string; categoryId: string | null; service: Service }
+  | { kind: "bundle"; id: string; name: string; categoryId: string | null; bundle: Bundle };
+
 const soon = (label: string) => () => toast(`${label} — coming soon`);
+
 
 export function ServiceMenu() {
   const queryClient = useQueryClient();
@@ -92,13 +116,34 @@ export function ServiceMenu() {
     },
   });
 
+  const bundlesQuery = useQuery({
+    queryKey: ["bundles", businessId],
+    enabled: Boolean(businessId),
+    queryFn: async (): Promise<Bundle[]> => {
+      const { data, error } = await supabase
+        .from("bundles")
+        .select(
+          "id, name, category_id, schedule_type, pricing_mode, custom_price, discount_percentage, sort_order, bundle_services(services(price, duration_minutes))",
+        )
+        .eq("business_id", businessId!)
+        .eq("is_active", true)
+        .order("sort_order")
+        .order("created_at");
+      if (error) throw error;
+      return (data ?? []) as unknown as Bundle[];
+    },
+  });
+
   const categories = categoriesQuery.data ?? [];
   const services = servicesQuery.data ?? [];
+  const bundles = bundlesQuery.data ?? [];
 
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: ["service-categories", businessId] });
     queryClient.invalidateQueries({ queryKey: ["services", businessId] });
+    queryClient.invalidateQueries({ queryKey: ["bundles", businessId] });
   };
+
 
   const saveCategory = useMutation({
     mutationFn: async (draft: CategoryDraft) => {
@@ -158,26 +203,82 @@ export function ServiceMenu() {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  const deleteBundle = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("bundles").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      refresh();
+      toast.success("Bundle deleted");
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const items = useMemo<MenuItem[]>(() => {
+    const serviceItems: MenuItem[] = services.map((service) => ({
+      kind: "service",
+      id: service.id,
+      name: service.name,
+      categoryId: service.category_id,
+      service,
+    }));
+    const bundleItems: MenuItem[] = bundles.map((bundle) => ({
+      kind: "bundle",
+      id: bundle.id,
+      name: bundle.name,
+      categoryId: bundle.category_id,
+      bundle,
+    }));
+    return [...serviceItems, ...bundleItems];
+  }, [services, bundles]);
+
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
-    return services.filter((service) => {
-      if (selectedCategory && service.category_id !== selectedCategory) return false;
-      if (term && !service.name.toLowerCase().includes(term)) return false;
+    return items.filter((item) => {
+      if (selectedCategory && item.categoryId !== selectedCategory) return false;
+      if (term && !item.name.toLowerCase().includes(term)) return false;
       return true;
     });
-  }, [services, search, selectedCategory]);
+  }, [items, search, selectedCategory]);
 
   const countFor = (categoryId: string) =>
-    services.filter((service) => service.category_id === categoryId).length;
+    items.filter((item) => item.categoryId === categoryId).length;
 
   const activeCategory = categories.find((c) => c.id === selectedCategory) ?? null;
 
-  const priceLabel = (service: Service) => {
+  const bundleServices = (bundle: Bundle) =>
+    bundle.bundle_services
+      .map((row) => row.services)
+      .filter((service): service is { price: number | null; duration_minutes: number } =>
+        Boolean(service),
+      );
+
+  const itemDuration = (item: MenuItem) =>
+    item.kind === "service"
+      ? item.service.duration_minutes
+      : bundleDuration(bundleServices(item.bundle), item.bundle.schedule_type);
+
+  const priceLabel = (item: MenuItem) => {
+    if (item.kind === "bundle") {
+      if (!business) return "—";
+      const amount = bundlePrice(
+        {
+          pricing_mode: item.bundle.pricing_mode,
+          custom_price: item.bundle.custom_price,
+          discount_percentage: item.bundle.discount_percentage,
+        },
+        bundleServices(item.bundle),
+      );
+      return amount === 0 ? "Free" : formatMoney(amount, business.currency, business.country);
+    }
+    const service = item.service;
     if (service.pricing_type === "free") return "Free";
     if (service.pricing_type === "free-form") return "Free-form";
     if (!business) return "—";
     return formatMoney(Number(service.price ?? 0), business.currency, business.country);
   };
+
 
   return (
     <div className="space-y-6">
@@ -239,10 +340,11 @@ export function ServiceMenu() {
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="px-4 py-2.5 text-sm font-medium text-foreground gap-3"
-                onClick={soon("Bundle")}
+                onClick={() => navigate({ to: "/bundle/new", search: { id: undefined } })}
               >
                 Bundle
               </DropdownMenuItem>
+
               <DropdownMenuItem
                 className="px-4 py-2.5 text-sm font-medium text-foreground gap-3"
                 onClick={() => setCategoryDialog({ ...emptyCategory })}
@@ -332,21 +434,21 @@ export function ServiceMenu() {
           </div>
 
           <div className="mt-4 space-y-3">
-            {servicesQuery.isLoading ? (
+            {servicesQuery.isLoading || bundlesQuery.isLoading ? (
               <p className="text-sm text-muted-foreground">Loading services…</p>
             ) : filtered.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border p-10 text-center">
                 <p className="text-sm font-medium text-foreground">No services yet</p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Add a single service to start building your menu.
+                  Add a single service or a bundle to start building your menu.
                 </p>
               </div>
             ) : (
-              filtered.map((service) => {
-                const category = categories.find((c) => c.id === service.category_id);
+              filtered.map((item) => {
+                const category = categories.find((c) => c.id === item.categoryId);
                 return (
                   <article
-                    key={service.id}
+                    key={`${item.kind}-${item.id}`}
                     className="flex items-center gap-4 overflow-hidden rounded-3xl border border-border bg-card"
                   >
                     <span
@@ -355,13 +457,20 @@ export function ServiceMenu() {
                       style={{ backgroundColor: category?.color ?? "hsl(var(--muted))" }}
                     />
                     <div className="min-w-0 flex-1 py-4">
-                      <p className="truncate font-semibold text-foreground">{service.name}</p>
+                      <p className="flex items-center gap-2 truncate font-semibold text-foreground">
+                        <span className="truncate">{item.name}</span>
+                        {item.kind === "bundle" ? (
+                          <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                            Bundle
+                          </span>
+                        ) : null}
+                      </p>
                       <p className="mt-0.5 text-sm text-muted-foreground">
-                        {formatDuration(service.duration_minutes)}
+                        {formatDuration(itemDuration(item))}
                       </p>
                     </div>
                     <p className="whitespace-nowrap text-sm font-semibold text-foreground">
-                      {priceLabel(service)}
+                      {priceLabel(item)}
                     </p>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -369,14 +478,19 @@ export function ServiceMenu() {
                           variant="ghost"
                           size="icon"
                           className="mr-3 rounded-full"
-                          aria-label={`Actions for ${service.name}`}
+                          aria-label={`Actions for ${item.name}`}
                         >
                           <DotsThreeVertical size={18} weight="bold" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-40">
                         <DropdownMenuItem
-                          onClick={() =>
+                          onClick={() => {
+                            if (item.kind === "bundle") {
+                              navigate({ to: "/bundle/new", search: { id: item.id } });
+                              return;
+                            }
+                            const service = item.service;
                             setServiceDialog({
                               id: service.id,
                               name: service.name,
@@ -386,14 +500,18 @@ export function ServiceMenu() {
                               price: service.price != null ? String(service.price) : "",
                               hours: String(Math.floor(service.duration_minutes / 60)),
                               minutes: String(service.duration_minutes % 60),
-                            })
-                          }
+                            });
+                          }}
                         >
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="text-destructive focus:text-destructive"
-                          onClick={() => deleteService.mutate(service.id)}
+                          onClick={() =>
+                            item.kind === "bundle"
+                              ? deleteBundle.mutate(item.id)
+                              : deleteService.mutate(item.id)
+                          }
                         >
                           Delete
                         </DropdownMenuItem>
