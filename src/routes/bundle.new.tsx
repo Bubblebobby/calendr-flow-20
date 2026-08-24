@@ -618,12 +618,12 @@ function BundleFormPage() {
                 <div className="flex items-center gap-4 text-sm">
                   <span className="text-muted-foreground">
                     Total duration:{" "}
-                    <span className="font-semibold text-foreground">
+                    <span className="font-semibold text-muted-foreground">
                       {formatDuration(totalDuration)}
                     </span>
                   </span>
                   <span className="text-base font-semibold text-foreground">
-                    {money(finalPrice)}
+                    {money(finalPrice || subtotal)}
                   </span>
                 </div>
               ) : null}
