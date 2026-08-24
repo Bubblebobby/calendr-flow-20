@@ -18,7 +18,7 @@ function AuthenticatedLayout() {
       <TopBar />
       <div className="flex min-h-0 flex-1">
         <AppNav />
-        <main className="flex-1 overflow-y-auto bg-background">
+        <main className="flex-1 overflow-y-auto">
           <Outlet />
         </main>
       </div>
