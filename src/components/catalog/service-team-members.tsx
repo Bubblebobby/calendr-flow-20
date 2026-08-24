@@ -225,6 +225,7 @@ export function TeamMembersSection({
           <ul className="mt-2">
             {members.map((member, index) => (
               <li key={member.id}>
+                {index > 0 && <div className="ml-[6.5rem] border-t border-border/70" />}
                 <label className="flex cursor-pointer items-center gap-4 py-2">
                   <Checkbox
                     checked={selected.includes(member.id)}
