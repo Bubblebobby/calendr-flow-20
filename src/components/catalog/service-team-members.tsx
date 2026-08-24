@@ -18,6 +18,17 @@ export type TeamMember = {
 
 const AVATAR_COLORS = ["#D9F0FA", "#E7E3FE", "#FDE8D7", "#DCF3E4", "#FBE0EC"];
 
+/** "Ada Obi" -> "AO": first-name + last-name initials. */
+export function deriveInitials(fullName: string) {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "";
+  const first = parts[0]![0]!;
+  const last = parts.length > 1 ? parts[parts.length - 1]![0]! : "";
+  return (first + last).toUpperCase();
+}
+
+const SELECT_COLUMNS = "id, full_name, initials, avatar_color";
+
 /** Active roster for the business — the pool of people who can perform services. */
 export function useTeamMembers(businessId: string | undefined) {
   return useQuery({
@@ -26,15 +37,51 @@ export function useTeamMembers(businessId: string | undefined) {
     queryFn: async (): Promise<TeamMember[]> => {
       const { data, error } = await supabase
         .from("team_members")
-        .select("id, full_name, initials, avatar_color")
+        .select(SELECT_COLUMNS)
         .eq("business_id", businessId!)
         .eq("is_active", true)
         .order("created_at");
       if (error) throw error;
-      return data ?? [];
+      const rows = data ?? [];
+
+      // The account owner is a team member too — make sure they're on the roster.
+      const { data: auth } = await supabase.auth.getUser();
+      const userId = auth.user?.id;
+      if (!userId) return rows;
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", userId)
+        .maybeSingle();
+      const ownerName = profile?.full_name?.trim();
+      if (!ownerName) return rows;
+
+      const { data: existing } = await supabase
+        .from("team_members")
+        .select("id")
+        .eq("business_id", businessId!)
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (existing) return rows;
+
+      const { data: created, error: createError } = await supabase
+        .from("team_members")
+        .insert({
+          business_id: businessId!,
+          full_name: ownerName,
+          initials: deriveInitials(ownerName),
+          user_id: userId,
+          avatar_color: AVATAR_COLORS[0]!,
+        })
+        .select(SELECT_COLUMNS)
+        .single();
+      if (createError) return rows;
+      return [created, ...rows];
     },
   });
 }
+
 
 /** Team members already assigned to a saved service (empty for a new service). */
 export function useServiceTeamAssignments(serviceId: string | undefined) {
@@ -154,16 +201,16 @@ export function TeamMembersSection({
         Choose which team members will perform this service
       </p>
 
-      <div className="mt-6">
-        <label className="flex cursor-pointer items-center gap-4 py-2">
+      <div className="mt-8">
+        <label className="flex cursor-pointer items-center gap-4 py-1">
           <Checkbox
             checked={allChecked ? true : someChecked ? "indeterminate" : false}
             onCheckedChange={toggleAll}
             disabled={members.length === 0}
-            className="size-5"
+            className="size-6 rounded-md border-2"
           />
-          <span className="text-base font-bold text-foreground">All team members</span>
-          <span className="rounded-full border border-border px-2 text-xs font-medium leading-5 text-muted-foreground">
+          <span className="text-lg font-bold text-foreground">All team members</span>
+          <span className="flex size-6 items-center justify-center rounded-full border border-border text-xs font-medium text-muted-foreground">
             {countBadge}
           </span>
         </label>
@@ -177,25 +224,29 @@ export function TeamMembersSection({
         ) : (
           <ul className="mt-2">
             {members.map((member, index) => (
-              <li
-                key={member.id}
-                className={cn(index > 0 && "border-t border-border/70")}
-              >
-                <label className="flex cursor-pointer items-center gap-4 py-3">
+              <li key={member.id}>
+                {index > 0 && <div className="ml-[6.5rem] border-t border-border/70" />}
+                <label className="flex cursor-pointer items-center gap-4 py-2">
                   <Checkbox
                     checked={selected.includes(member.id)}
                     onCheckedChange={() => toggle(member.id)}
-                    className="size-5"
+                    className="size-6 rounded-md border-2"
                   />
-                  <span
-                    className="flex size-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-foreground/80"
-                    style={{ backgroundColor: member.avatar_color }}
-                    aria-hidden
-                  >
-                    {member.initials ?? member.full_name.slice(0, 2).toUpperCase()}
-                  </span>
-                  <span className="text-base font-medium text-foreground">
-                    {member.full_name}
+                  <span className="flex flex-1 items-center gap-4">
+                    <span
+                      className="flex size-14 shrink-0 items-center justify-center rounded-full border text-base font-semibold"
+                      style={{
+                        backgroundColor: member.avatar_color,
+                        borderColor: "#8FCDEA",
+                        color: "#1F6D93",
+                      }}
+                      aria-hidden
+                    >
+                      {member.initials ?? deriveInitials(member.full_name)}
+                    </span>
+                    <span className="flex-1 text-lg font-medium text-foreground">
+                      {member.full_name}
+                    </span>
                   </span>
                 </label>
               </li>
