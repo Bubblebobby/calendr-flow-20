@@ -49,7 +49,24 @@ type Service = {
   sort_order: number;
 };
 
+type Bundle = {
+  id: string;
+  name: string;
+  category_id: string | null;
+  schedule_type: BundleScheduleType;
+  pricing_mode: BundlePricingMode;
+  custom_price: number | null;
+  discount_percentage: number | null;
+  sort_order: number;
+  bundle_services: { services: { price: number | null; duration_minutes: number } | null }[];
+};
+
+type MenuItem =
+  | { kind: "service"; id: string; name: string; categoryId: string | null; service: Service }
+  | { kind: "bundle"; id: string; name: string; categoryId: string | null; bundle: Bundle };
+
 const soon = (label: string) => () => toast(`${label} — coming soon`);
+
 
 export function ServiceMenu() {
   const queryClient = useQueryClient();
