@@ -306,14 +306,25 @@ function NewServicePage() {
           <ul className="space-y-1">
             {NAV_SETTINGS.map((item) => (
               <li key={item.label}>
-                <NavRow label={item.label} badge={item.badge} onClick={() => { soon(item.label)(); }} />
+                <NavRow
+                  label={item.label}
+                  badge={item.badge}
+                  active={item.key === "portfolio" && section === "portfolio"}
+                  onClick={
+                    item.key === "portfolio"
+                      ? () => { setSection("portfolio"); }
+                      : () => { soon(item.label)(); }
+                  }
+                />
               </li>
             ))}
           </ul>
         </nav>
 
         <div className="space-y-6">
-          {section === "team" ? (
+          {section === "portfolio" ? (
+            <PortfolioImagesSection businessId={businessId} draftId={draftId} />
+          ) : section === "team" ? (
             <TeamMembersSection
               businessId={businessId}
               members={teamMembers}
