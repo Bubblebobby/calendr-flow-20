@@ -203,26 +203,82 @@ export function ServiceMenu() {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  const deleteBundle = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("bundles").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      refresh();
+      toast.success("Bundle deleted");
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const items = useMemo<MenuItem[]>(() => {
+    const serviceItems: MenuItem[] = services.map((service) => ({
+      kind: "service",
+      id: service.id,
+      name: service.name,
+      categoryId: service.category_id,
+      service,
+    }));
+    const bundleItems: MenuItem[] = bundles.map((bundle) => ({
+      kind: "bundle",
+      id: bundle.id,
+      name: bundle.name,
+      categoryId: bundle.category_id,
+      bundle,
+    }));
+    return [...serviceItems, ...bundleItems];
+  }, [services, bundles]);
+
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
-    return services.filter((service) => {
-      if (selectedCategory && service.category_id !== selectedCategory) return false;
-      if (term && !service.name.toLowerCase().includes(term)) return false;
+    return items.filter((item) => {
+      if (selectedCategory && item.categoryId !== selectedCategory) return false;
+      if (term && !item.name.toLowerCase().includes(term)) return false;
       return true;
     });
-  }, [services, search, selectedCategory]);
+  }, [items, search, selectedCategory]);
 
   const countFor = (categoryId: string) =>
-    services.filter((service) => service.category_id === categoryId).length;
+    items.filter((item) => item.categoryId === categoryId).length;
 
   const activeCategory = categories.find((c) => c.id === selectedCategory) ?? null;
 
-  const priceLabel = (service: Service) => {
+  const bundleServices = (bundle: Bundle) =>
+    bundle.bundle_services
+      .map((row) => row.services)
+      .filter((service): service is { price: number | null; duration_minutes: number } =>
+        Boolean(service),
+      );
+
+  const itemDuration = (item: MenuItem) =>
+    item.kind === "service"
+      ? item.service.duration_minutes
+      : bundleDuration(bundleServices(item.bundle), item.bundle.schedule_type);
+
+  const priceLabel = (item: MenuItem) => {
+    if (item.kind === "bundle") {
+      if (!business) return "—";
+      const amount = bundlePrice(
+        {
+          pricing_mode: item.bundle.pricing_mode,
+          custom_price: item.bundle.custom_price,
+          discount_percentage: item.bundle.discount_percentage,
+        },
+        bundleServices(item.bundle),
+      );
+      return amount === 0 ? "Free" : formatMoney(amount, business.currency, business.country);
+    }
+    const service = item.service;
     if (service.pricing_type === "free") return "Free";
     if (service.pricing_type === "free-form") return "Free-form";
     if (!business) return "—";
     return formatMoney(Number(service.price ?? 0), business.currency, business.country);
   };
+
 
   return (
     <div className="space-y-6">
