@@ -224,6 +224,54 @@ export type Database = {
           },
         ]
       }
+      service_portfolio_images: {
+        Row: {
+          business_id: string
+          created_at: string
+          draft_id: string | null
+          id: string
+          image_url: string
+          is_primary: boolean
+          service_id: string | null
+          storage_path: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          draft_id?: string | null
+          id?: string
+          image_url: string
+          is_primary?: boolean
+          service_id?: string | null
+          storage_path: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          draft_id?: string | null
+          id?: string
+          image_url?: string
+          is_primary?: boolean
+          service_id?: string | null
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_portfolio_images_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_portfolio_images_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_team_members: {
         Row: {
           created_at: string

@@ -41,6 +41,10 @@ import {
   useServiceTeamAssignments,
   useTeamMembers,
 } from "@/components/catalog/service-team-members";
+import {
+  PortfolioImagesSection,
+  attachDraftPortfolioImages,
+} from "@/components/catalog/service-portfolio-images";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
 
@@ -71,11 +75,11 @@ const NAV_PRIMARY = [
 ] as const;
 
 const NAV_SETTINGS = [
-  { label: "Online booking", badge: null as number | null },
-  { label: "Portfolio images", badge: null },
-  { label: "Forms", badge: 0 },
-  { label: "Commissions", badge: null },
-  { label: "Settings", badge: null },
+  { key: null, label: "Online booking", badge: null as number | null },
+  { key: "portfolio", label: "Portfolio images", badge: null },
+  { key: null, label: "Forms", badge: 0 },
+  { key: null, label: "Commissions", badge: null },
+  { key: null, label: "Settings", badge: null },
 ];
 
 const DURATIONS = [5, 10, 15, 20, 30, 45, 60, 75, 90, 105, 120, 150, 180, 240];
@@ -126,7 +130,8 @@ function NewServicePage() {
   const [customDuration, setCustomDuration] = useState("");
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [categoryOpen, setCategoryOpen] = useState(false);
-  const [section, setSection] = useState<"basic" | "team">("basic");
+  const [section, setSection] = useState<"basic" | "team" | "portfolio">("basic");
+  const [draftId] = useState(() => crypto.randomUUID());
   const [segments, setSegments] = useState<DurationSegment[]>([]);
 
   const addSegment = (type: ExtraTimeKey) => {
@@ -236,6 +241,7 @@ function NewServicePage() {
       if (error) throw error;
 
       await reconcileServiceTeam(data.id, teamSelection, existingAssignments);
+      await attachDraftPortfolioImages(data.id, draftId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["services", businessId] });
@@ -305,14 +311,25 @@ function NewServicePage() {
           <ul className="space-y-1">
             {NAV_SETTINGS.map((item) => (
               <li key={item.label}>
-                <NavRow label={item.label} badge={item.badge} onClick={() => { soon(item.label)(); }} />
+                <NavRow
+                  label={item.label}
+                  badge={item.badge}
+                  active={item.key === "portfolio" && section === "portfolio"}
+                  onClick={
+                    item.key === "portfolio"
+                      ? () => { setSection("portfolio"); }
+                      : () => { soon(item.label)(); }
+                  }
+                />
               </li>
             ))}
           </ul>
         </nav>
 
         <div className="space-y-6">
-          {section === "team" ? (
+          {section === "portfolio" ? (
+            <PortfolioImagesSection businessId={businessId} draftId={draftId} />
+          ) : section === "team" ? (
             <TeamMembersSection
               businessId={businessId}
               members={teamMembers}
