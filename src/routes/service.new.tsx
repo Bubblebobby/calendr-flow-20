@@ -127,6 +127,16 @@ function NewServicePage() {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [section, setSection] = useState<"basic" | "team">("basic");
+  const [segments, setSegments] = useState<DurationSegment[]>([]);
+
+  const addSegment = (type: ExtraTimeKey) => {
+    setSegments((rows) =>
+      rows.some((row) => row.type === type)
+        ? rows
+        : [...rows, { id: crypto.randomUUID(), type, minutes: 15 }],
+    );
+  };
+
 
   // Creating a service: no saved assignments yet, everyone starts checked.
   const teamQuery = useTeamMembers(businessId);
