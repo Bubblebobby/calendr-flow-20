@@ -28,6 +28,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as BundleNewRouteImport } from './routes/bundle.new'
+import { Route as ServiceServiceIdRouteImport } from './routes/service.$serviceId'
 import { Route as ServiceNewRouteImport } from './routes/service.new'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
@@ -129,6 +130,11 @@ const BundleNewRoute = BundleNewRouteImport.update({
   path: '/bundle/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ServiceServiceIdRoute = ServiceServiceIdRouteImport.update({
+  id: '/service/$serviceId',
+  path: '/service/$serviceId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ServiceNewRoute = ServiceNewRouteImport.update({
   id: '/service/new',
   path: '/service/new',
@@ -165,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/team': typeof AuthenticatedTeamRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/bundle/new': typeof BundleNewRoute
+  '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -188,6 +195,7 @@ export interface FileRoutesByTo {
   '/team': typeof AuthenticatedTeamRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/bundle/new': typeof BundleNewRoute
+  '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -213,6 +221,7 @@ export interface FileRoutesById {
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/bundle/new': typeof BundleNewRoute
+  '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -238,6 +247,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/auth/callback'
     | '/bundle/new'
+    | '/service/$serviceId'
     | '/service/new'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -261,6 +271,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/auth/callback'
     | '/bundle/new'
+    | '/service/$serviceId'
     | '/service/new'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -285,6 +296,7 @@ export interface FileRouteTypes {
     | '/_authenticated/team'
     | '/auth/callback'
     | '/bundle/new'
+    | '/service/$serviceId'
     | '/service/new'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -300,6 +312,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   BundleNewRoute: typeof BundleNewRoute
+  ServiceServiceIdRoute: typeof ServiceServiceIdRoute
   ServiceNewRoute: typeof ServiceNewRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -440,6 +453,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BundleNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/service/$serviceId': {
+      id: '/service/$serviceId'
+      path: '/service/$serviceId'
+      fullPath: '/service/$serviceId'
+      preLoaderRoute: typeof ServiceServiceIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/service/new': {
       id: '/service/new'
       path: '/service/new'
@@ -512,6 +532,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   BundleNewRoute: BundleNewRoute,
+  ServiceServiceIdRoute: ServiceServiceIdRoute,
   ServiceNewRoute: ServiceNewRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
