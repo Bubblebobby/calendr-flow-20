@@ -521,8 +521,6 @@ export function ServiceMenu() {
                 );
               })
             )}
-
-            )}
           </div>
         </section>
       </div>
