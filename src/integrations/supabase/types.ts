@@ -14,6 +14,117 @@ export type Database = {
   }
   public: {
     Tables: {
+      bundle_services: {
+        Row: {
+          bundle_id: string
+          created_at: string
+          id: string
+          service_id: string
+          sort_order: number
+        }
+        Insert: {
+          bundle_id: string
+          created_at?: string
+          id?: string
+          service_id: string
+          sort_order?: number
+        }
+        Update: {
+          bundle_id?: string
+          created_at?: string
+          id?: string
+          service_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bundle_services_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "bundles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bundle_services_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bundles: {
+        Row: {
+          business_id: string
+          category_id: string | null
+          created_at: string
+          custom_price: number | null
+          description: string | null
+          discount_percentage: number | null
+          id: string
+          is_active: boolean
+          name: string
+          online_booking_enabled: boolean
+          portfolio_image_path: string | null
+          portfolio_image_url: string | null
+          pricing_mode: Database["public"]["Enums"]["bundle_pricing_mode"]
+          schedule_type: Database["public"]["Enums"]["bundle_schedule_type"]
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          category_id?: string | null
+          created_at?: string
+          custom_price?: number | null
+          description?: string | null
+          discount_percentage?: number | null
+          id?: string
+          is_active?: boolean
+          name: string
+          online_booking_enabled?: boolean
+          portfolio_image_path?: string | null
+          portfolio_image_url?: string | null
+          pricing_mode?: Database["public"]["Enums"]["bundle_pricing_mode"]
+          schedule_type?: Database["public"]["Enums"]["bundle_schedule_type"]
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          category_id?: string | null
+          created_at?: string
+          custom_price?: number | null
+          description?: string | null
+          discount_percentage?: number | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          online_booking_enabled?: boolean
+          portfolio_image_path?: string | null
+          portfolio_image_url?: string | null
+          pricing_mode?: Database["public"]["Enums"]["bundle_pricing_mode"]
+          schedule_type?: Database["public"]["Enums"]["bundle_schedule_type"]
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bundles_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bundles_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "service_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       businesses: {
         Row: {
           categories: Json
@@ -459,6 +570,12 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      bundle_pricing_mode:
+        | "service_pricing"
+        | "custom"
+        | "percentage_discount"
+        | "free"
+      bundle_schedule_type: "sequence" | "parallel"
       team_invite_status: "not_invited" | "invited" | "active"
     }
     CompositeTypes: {
@@ -587,6 +704,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      bundle_pricing_mode: [
+        "service_pricing",
+        "custom",
+        "percentage_discount",
+        "free",
+      ],
+      bundle_schedule_type: ["sequence", "parallel"],
       team_invite_status: ["not_invited", "invited", "active"],
     },
   },
