@@ -26,7 +26,7 @@ export type PortfolioImage = {
   storage_path: string;
   image_url: string;
   is_primary: boolean;
-  signedUrl?: string;
+  signedUrl?: string | undefined;
 };
 
 /** Images uploaded while the service was still a draft get attached on save. */
@@ -72,9 +72,9 @@ export function usePortfolioImages(draftId: string, serviceId?: string) {
 }
 
 type Props = {
-  businessId?: string;
+  businessId?: string | undefined;
   draftId: string;
-  serviceId?: string;
+  serviceId?: string | undefined;
 };
 
 export function PortfolioImagesSection({ businessId, draftId, serviceId }: Props) {
