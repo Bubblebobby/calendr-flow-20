@@ -241,6 +241,7 @@ function NewServicePage() {
       if (error) throw error;
 
       await reconcileServiceTeam(data.id, teamSelection, existingAssignments);
+      await attachDraftPortfolioImages(data.id, draftId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["services", businessId] });
