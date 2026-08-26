@@ -28,6 +28,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as BundleNewRouteImport } from './routes/bundle.new'
+import { Route as ClientClientIdRouteImport } from './routes/client.$clientId'
 import { Route as ClientNewRouteImport } from './routes/client.new'
 import { Route as ServiceServiceIdRouteImport } from './routes/service.$serviceId'
 import { Route as ServiceNewRouteImport } from './routes/service.new'
@@ -131,6 +132,11 @@ const BundleNewRoute = BundleNewRouteImport.update({
   path: '/bundle/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ClientClientIdRoute = ClientClientIdRouteImport.update({
+  id: '/client/$clientId',
+  path: '/client/$clientId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ClientNewRoute = ClientNewRouteImport.update({
   id: '/client/new',
   path: '/client/new',
@@ -177,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/team': typeof AuthenticatedTeamRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/bundle/new': typeof BundleNewRoute
+  '/client/$clientId': typeof ClientClientIdRoute
   '/client/new': typeof ClientNewRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
@@ -202,6 +209,7 @@ export interface FileRoutesByTo {
   '/team': typeof AuthenticatedTeamRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/bundle/new': typeof BundleNewRoute
+  '/client/$clientId': typeof ClientClientIdRoute
   '/client/new': typeof ClientNewRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
@@ -229,6 +237,7 @@ export interface FileRoutesById {
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/bundle/new': typeof BundleNewRoute
+  '/client/$clientId': typeof ClientClientIdRoute
   '/client/new': typeof ClientNewRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
@@ -256,6 +265,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/auth/callback'
     | '/bundle/new'
+    | '/client/$clientId'
     | '/client/new'
     | '/service/$serviceId'
     | '/service/new'
@@ -281,6 +291,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/auth/callback'
     | '/bundle/new'
+    | '/client/$clientId'
     | '/client/new'
     | '/service/$serviceId'
     | '/service/new'
@@ -307,6 +318,7 @@ export interface FileRouteTypes {
     | '/_authenticated/team'
     | '/auth/callback'
     | '/bundle/new'
+    | '/client/$clientId'
     | '/client/new'
     | '/service/$serviceId'
     | '/service/new'
@@ -324,6 +336,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   BundleNewRoute: typeof BundleNewRoute
+  ClientClientIdRoute: typeof ClientClientIdRoute
   ClientNewRoute: typeof ClientNewRoute
   ServiceServiceIdRoute: typeof ServiceServiceIdRoute
   ServiceNewRoute: typeof ServiceNewRoute
@@ -466,6 +479,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BundleNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/client/$clientId': {
+      id: '/client/$clientId'
+      path: '/client/$clientId'
+      fullPath: '/client/$clientId'
+      preLoaderRoute: typeof ClientClientIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/client/new': {
       id: '/client/new'
       path: '/client/new'
@@ -552,6 +572,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   BundleNewRoute: BundleNewRoute,
+  ClientClientIdRoute: ClientClientIdRoute,
   ClientNewRoute: ClientNewRoute,
   ServiceServiceIdRoute: ServiceServiceIdRoute,
   ServiceNewRoute: ServiceNewRoute,
