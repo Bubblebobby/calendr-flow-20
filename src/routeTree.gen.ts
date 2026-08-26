@@ -28,6 +28,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as BundleNewRouteImport } from './routes/bundle.new'
+import { Route as ClientNewRouteImport } from './routes/client.new'
 import { Route as ServiceServiceIdRouteImport } from './routes/service.$serviceId'
 import { Route as ServiceNewRouteImport } from './routes/service.new'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
@@ -130,6 +131,11 @@ const BundleNewRoute = BundleNewRouteImport.update({
   path: '/bundle/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ClientNewRoute = ClientNewRouteImport.update({
+  id: '/client/new',
+  path: '/client/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ServiceServiceIdRoute = ServiceServiceIdRouteImport.update({
   id: '/service/$serviceId',
   path: '/service/$serviceId',
@@ -171,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/team': typeof AuthenticatedTeamRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/bundle/new': typeof BundleNewRoute
+  '/client/new': typeof ClientNewRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -195,6 +202,7 @@ export interface FileRoutesByTo {
   '/team': typeof AuthenticatedTeamRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/bundle/new': typeof BundleNewRoute
+  '/client/new': typeof ClientNewRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -221,6 +229,7 @@ export interface FileRoutesById {
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/bundle/new': typeof BundleNewRoute
+  '/client/new': typeof ClientNewRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -247,6 +256,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/auth/callback'
     | '/bundle/new'
+    | '/client/new'
     | '/service/$serviceId'
     | '/service/new'
     | '/.lovable/oauth/consent'
@@ -271,6 +281,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/auth/callback'
     | '/bundle/new'
+    | '/client/new'
     | '/service/$serviceId'
     | '/service/new'
     | '/.lovable/oauth/consent'
@@ -296,6 +307,7 @@ export interface FileRouteTypes {
     | '/_authenticated/team'
     | '/auth/callback'
     | '/bundle/new'
+    | '/client/new'
     | '/service/$serviceId'
     | '/service/new'
     | '/.lovable/oauth/consent'
@@ -312,6 +324,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   BundleNewRoute: typeof BundleNewRoute
+  ClientNewRoute: typeof ClientNewRoute
   ServiceServiceIdRoute: typeof ServiceServiceIdRoute
   ServiceNewRoute: typeof ServiceNewRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
@@ -453,6 +466,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BundleNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/client/new': {
+      id: '/client/new'
+      path: '/client/new'
+      fullPath: '/client/new'
+      preLoaderRoute: typeof ClientNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/service/$serviceId': {
       id: '/service/$serviceId'
       path: '/service/$serviceId'
@@ -532,6 +552,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   BundleNewRoute: BundleNewRoute,
+  ClientNewRoute: ClientNewRoute,
   ServiceServiceIdRoute: ServiceServiceIdRoute,
   ServiceNewRoute: ServiceNewRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
