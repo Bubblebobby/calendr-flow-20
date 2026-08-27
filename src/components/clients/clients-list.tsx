@@ -319,7 +319,7 @@ export function ClientsList() {
                   "cursor-pointer border-b border-border transition-colors hover:bg-muted/50",
                   selected.includes(client.id) && "bg-muted/40",
                 )}
-                onClick={() => soon("Client profile")}
+                onClick={() => navigate({ to: "/client/$clientId", params: { clientId: client.id } })}
               >
                 <td className="px-4 py-4" onClick={(event) => event.stopPropagation()}>
                   <Checkbox
