@@ -9,6 +9,7 @@ import {
   X,
 } from "@phosphor-icons/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,7 @@ const initials = (client: Client) =>
   [client.first_name?.[0], client.last_name?.[0]].filter(Boolean).join("").toUpperCase() || "?";
 
 export function ClientsList() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: business } = useBusiness();
   const businessId = business?.id;
@@ -166,7 +168,7 @@ export function ClientsList() {
 
           <Button
             className="h-12 rounded-full px-8 text-base font-semibold"
-            onClick={() => soon("Add client")}
+            onClick={() => navigate({ to: "/client/new" })}
           >
             Add
           </Button>
@@ -317,7 +319,7 @@ export function ClientsList() {
                   "cursor-pointer border-b border-border transition-colors hover:bg-muted/50",
                   selected.includes(client.id) && "bg-muted/40",
                 )}
-                onClick={() => soon("Client profile")}
+                onClick={() => navigate({ to: "/client/$clientId", params: { clientId: client.id } })}
               >
                 <td className="px-4 py-4" onClick={(event) => event.stopPropagation()}>
                   <Checkbox
@@ -365,7 +367,7 @@ export function ClientsList() {
                     <DropdownMenuContent align="end" className="w-44 p-2">
                       <DropdownMenuItem
                         className="px-3 py-2 text-sm font-medium"
-                        onClick={() => soon("Edit client")}
+                        onClick={() => navigate({ to: "/client/$clientId", params: { clientId: client.id } })}
                       >
                         Edit
                       </DropdownMenuItem>
