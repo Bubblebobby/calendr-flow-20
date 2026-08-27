@@ -367,7 +367,7 @@ export function ClientsList() {
                     <DropdownMenuContent align="end" className="w-44 p-2">
                       <DropdownMenuItem
                         className="px-3 py-2 text-sm font-medium"
-                        onClick={() => soon("Edit client")}
+                        onClick={() => navigate({ to: "/client/$clientId", params: { clientId: client.id } })}
                       >
                         Edit
                       </DropdownMenuItem>
