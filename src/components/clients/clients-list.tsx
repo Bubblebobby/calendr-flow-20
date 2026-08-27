@@ -168,7 +168,7 @@ export function ClientsList() {
 
           <Button
             className="h-12 rounded-full px-8 text-base font-semibold"
-            onClick={() => soon("Add client")}
+            onClick={() => navigate({ to: "/client/new" })}
           >
             Add
           </Button>
