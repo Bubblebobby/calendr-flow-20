@@ -47,6 +47,7 @@ const initials = (client: Client) =>
   [client.first_name?.[0], client.last_name?.[0]].filter(Boolean).join("").toUpperCase() || "?";
 
 export function ClientsList() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: business } = useBusiness();
   const businessId = business?.id;
