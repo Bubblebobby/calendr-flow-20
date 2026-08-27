@@ -358,377 +358,516 @@ export function ClientForm({ clientId }: { clientId?: string }) {
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="sticky top-0 z-20 border-b border-border/60 bg-white/85 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-4 px-8 py-4">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {isEdit ? "Edit client" : "Add client"}
-          </h1>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              className="h-11 rounded-full bg-white px-6 text-base font-semibold text-foreground hover:bg-white hover:text-foreground"
-              onClick={() => navigate({ to: "/clients" })}
-            >
-              Close
-            </Button>
-            <Button
-              className="h-11 rounded-full px-7 text-base font-semibold"
-              onClick={onSave}
-              disabled={save.isPending}
-            >
-              {save.isPending ? "Saving…" : isEdit ? "Save changes" : "Save"}
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <div className="mx-auto w-full max-w-4xl space-y-6 px-8 pb-16 pt-10">
-        <Section title="Client profile" description="Basic details for this client.">
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="first-name">First name</Label>
-              <Input
-                id="first-name"
-                className={cn(FIELD, firstNameError && "border-destructive")}
-                value={firstName}
-                onChange={(event) => setFirstName(event.target.value)}
-                onBlur={() => setTouched((t) => ({ ...t, firstName: true }))}
-              />
-              {firstNameError ? (
-                <p className="text-sm text-destructive">First name is required</p>
-              ) : null}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="last-name">Last name</Label>
-              <Input
-                id="last-name"
-                className={cn(FIELD, lastNameError && "border-destructive")}
-                value={lastName}
-                onChange={(event) => setLastName(event.target.value)}
-                onBlur={() => setTouched((t) => ({ ...t, lastName: true }))}
-              />
-              {lastNameError ? (
-                <p className="text-sm text-destructive">Last name is required</p>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                className={FIELD}
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Mobile number</Label>
-              <div className="flex gap-2">
-                <Select value={dial} onValueChange={setDial}>
-                  <SelectTrigger className={cn(FIELD, "w-32 shrink-0")}>
-                    <SelectValue placeholder="Code" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-72">
-                    {COUNTRIES.map((c) => (
-                      <SelectItem key={c.code} value={c.dial}>
-                        {flagEmoji(c.code)} +{c.dial}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Input
-                  id="phone"
-                  inputMode="tel"
-                  className={cn(FIELD, "flex-1")}
-                  value={phone}
-                  onChange={(event) => setPhone(event.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="grid gap-5 sm:grid-cols-3">
-            <div className="space-y-2">
-              <Label>Birth day</Label>
-              <Select value={birthDay} onValueChange={setBirthDay}>
-                <SelectTrigger className={FIELD}>
-                  <SelectValue placeholder="Day" />
-                </SelectTrigger>
-                <SelectContent className="max-h-72">
-                  {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                    <SelectItem key={day} value={String(day)}>
-                      {day}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Birth month</Label>
-              <Select value={birthMonth} onValueChange={setBirthMonth}>
-                <SelectTrigger className={FIELD}>
-                  <SelectValue placeholder="Month" />
-                </SelectTrigger>
-                <SelectContent className="max-h-72">
-                  {MONTHS.map((month, index) => (
-                    <SelectItem key={month} value={String(index + 1)}>
-                      {month}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="birth-year">Birth year</Label>
-              <Input
-                id="birth-year"
-                inputMode="numeric"
-                placeholder="YYYY"
-                className={FIELD}
-                value={birthYear}
-                onChange={(event) => setBirthYear(event.target.value.replace(/\D/g, "").slice(0, 4))}
-              />
-            </div>
-          </div>
-
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Gender</Label>
-              <Select value={gender} onValueChange={setGender}>
-                <SelectTrigger className={FIELD}>
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  {GENDERS.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Pronouns</Label>
-              <Select value={pronouns} onValueChange={setPronouns}>
-                <SelectTrigger className={FIELD}>
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  {PRONOUNS.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </Section>
-
-        <Section title="Additional info" description="Optional context to personalise service.">
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Client source</Label>
-              <Select value={source} onValueChange={setSource}>
-                <SelectTrigger className={FIELD}>
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CLIENT_SOURCES.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Referred by</Label>
-              <Select value={referredBy} onValueChange={setReferredBy}>
-                <SelectTrigger className={FIELD}>
-                  <SelectValue placeholder="Select client" />
-                </SelectTrigger>
-                <SelectContent className="max-h-72">
-                  {referralOptions.length === 0 ? (
-                    <div className="px-3 py-2 text-sm text-muted-foreground">No other clients</div>
-                  ) : (
-                    referralOptions.map((row) => (
-                      <SelectItem key={row.id} value={row.id}>
-                        {[row.first_name, row.last_name].filter(Boolean).join(" ")}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Preferred language</Label>
-              <Select value={language} onValueChange={setLanguage}>
-                <SelectTrigger className={FIELD}>
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent className="max-h-72">
-                  {LANGUAGES.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="occupation">Occupation</Label>
-                <span className="text-xs text-muted-foreground">{occupation.length}/255</span>
-              </div>
-              <Input
-                id="occupation"
-                className={FIELD}
-                maxLength={255}
-                value={occupation}
-                onChange={(event) => setOccupation(event.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Country</Label>
-              <Select value={country} onValueChange={setCountry}>
-                <SelectTrigger className={FIELD}>
-                  <SelectValue placeholder="Select country" />
-                </SelectTrigger>
-                <SelectContent className="max-h-72">
-                  {COUNTRIES.map((c) => (
-                    <SelectItem key={c.code} value={c.code}>
-                      {flagEmoji(c.code)} {c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="additional-email">Additional email</Label>
-              <Input
-                id="additional-email"
-                type="email"
-                className={FIELD}
-                value={additionalEmail}
-                onChange={(event) => setAdditionalEmail(event.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="additional-phone">Additional phone</Label>
-            <div className="flex gap-2">
-              <Select value={additionalDial} onValueChange={setAdditionalDial}>
-                <SelectTrigger className={cn(FIELD, "w-32 shrink-0")}>
-                  <SelectValue placeholder="Code" />
-                </SelectTrigger>
-                <SelectContent className="max-h-72">
-                  {COUNTRIES.map((c) => (
-                    <SelectItem key={c.code} value={c.dial}>
-                      {flagEmoji(c.code)} +{c.dial}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Input
-                id="additional-phone"
-                inputMode="tel"
-                className={cn(FIELD, "flex-1")}
-                value={additionalPhone}
-                onChange={(event) => setAdditionalPhone(event.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="notes">Client notes</Label>
-            <Textarea
-              id="notes"
-              rows={4}
-              className="rounded-xl border border-border bg-transparent text-base"
-              value={notes}
-              onChange={(event) => setNotes(event.target.value)}
-            />
-          </div>
-        </Section>
-
-        <Section title="Tags" description="Group clients for filters and campaigns.">
-          <div className="flex flex-wrap gap-2">
-            {tags.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No tags yet.</p>
-            ) : (
-              tags.map((tag) => {
-                const active = tagIds.includes(tag.id);
-                return (
-                  <button
-                    key={tag.id}
-                    type="button"
-                    onClick={() =>
-                      setTagIds((ids) =>
-                        active ? ids.filter((id) => id !== tag.id) : [...ids, tag.id],
-                      )
-                    }
-                    className={cn(
-                      "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
-                      active
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border text-foreground hover:bg-muted",
-                    )}
-                  >
-                    {active ? <Check size={14} weight="bold" /> : null}
-                    {tag.name}
-                  </button>
-                );
-              })
-            )}
-          </div>
-          <div className="flex gap-2">
-            <Input
-              className={cn(FIELD, "flex-1")}
-              placeholder="New tag name"
-              value={newTag}
-              onChange={(event) => setNewTag(event.target.value)}
-            />
-            <Button
-              variant="outline"
-              className="h-12 gap-2 rounded-xl bg-white px-5 font-semibold text-foreground hover:bg-white hover:text-foreground"
-              disabled={!newTag.trim() || !businessId || createTag.isPending}
-              onClick={() => createTag.mutate(newTag.trim())}
-            >
-              <Plus size={16} weight="bold" />
-              Add tag
-            </Button>
-          </div>
-        </Section>
-
-        <div className="flex justify-end gap-3">
+      <header className="sticky top-0 z-20 bg-white/90 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-end gap-3 px-8 py-4">
           <Button
             variant="outline"
-            className="h-12 rounded-full bg-white px-6 text-base font-semibold text-foreground hover:bg-white hover:text-foreground"
+            className="h-11 rounded-full border-[#D3D3D3] bg-white px-6 text-base font-semibold text-foreground hover:bg-white hover:text-foreground"
             onClick={() => navigate({ to: "/clients" })}
           >
-            <X size={16} weight="bold" />
-            Cancel
+            Close
           </Button>
           <Button
-            className="h-12 rounded-full px-8 text-base font-semibold"
+            className="h-11 rounded-full px-7 text-base font-semibold"
             onClick={onSave}
             disabled={save.isPending}
           >
-            {save.isPending ? "Saving…" : isEdit ? "Save changes" : "Save client"}
+            {save.isPending ? "Saving…" : "Save"}
           </Button>
+        </div>
+      </header>
+
+      <div className="mx-auto w-full max-w-6xl px-8 pb-24">
+        <h1 className="text-4xl font-bold tracking-tight text-foreground">
+          {isEdit ? "Edit client" : "Add a new client"}
+        </h1>
+
+        <div className="mt-10 grid gap-12 lg:grid-cols-[240px_minmax(0,1fr)]">
+          {/* Left navigation */}
+          <nav className="h-fit rounded-2xl border border-[#D3D3D3] bg-white p-3">
+            <p className="px-3 py-2 text-sm font-bold text-foreground">Personal</p>
+            <button
+              type="button"
+              className="w-full rounded-lg bg-accent/40 px-3 py-2 text-left text-sm font-medium text-foreground"
+            >
+              Profile
+            </button>
+            {["Addresses", "Emergency contacts"].map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => toast("Coming soon")}
+                className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted"
+              >
+                {item}
+              </button>
+            ))}
+            <div className="my-2 h-px bg-[#D3D3D3]" />
+            <button
+              type="button"
+              onClick={() => toast("Coming soon")}
+              className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted"
+            >
+              Settings
+            </button>
+          </nav>
+
+          {/* Right content */}
+          <div className="max-w-2xl space-y-10">
+            <section className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight text-foreground">Profile</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Manage your client&apos;s personal profile
+                </p>
+              </div>
+
+              <div className="relative w-fit">
+                <div className="flex size-20 items-center justify-center overflow-hidden rounded-full bg-accent/40">
+                  {avatarPreview ? (
+                    <img src={avatarPreview} alt="" className="size-full object-cover" />
+                  ) : (
+                    <User size={34} className="text-primary" weight="regular" />
+                  )}
+                </div>
+                <label className="absolute -bottom-1 right-0 flex size-7 cursor-pointer items-center justify-center rounded-full border border-[#D3D3D3] bg-white">
+                  <PencilSimple size={13} className="text-foreground" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="sr-only"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      if (file) uploadAvatar(file);
+                    }}
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="first-name">First name</Label>
+                  <Input
+                    id="first-name"
+                    placeholder="e.g. John"
+                    className={cn(FIELD, firstNameError && "border-destructive")}
+                    value={firstName}
+                    onChange={(event) => setFirstName(event.target.value)}
+                    onBlur={() => setTouched((t) => ({ ...t, firstName: true }))}
+                  />
+                  {firstNameError ? (
+                    <p className="text-sm text-destructive">First name is required</p>
+                  ) : null}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="last-name">Last name</Label>
+                  <Input
+                    id="last-name"
+                    placeholder="e.g. Hancock"
+                    className={cn(FIELD, lastNameError && "border-destructive")}
+                    value={lastName}
+                    onChange={(event) => setLastName(event.target.value)}
+                    onBlur={() => setTouched((t) => ({ ...t, lastName: true }))}
+                  />
+                  {lastNameError ? (
+                    <p className="text-sm text-destructive">Last name is required</p>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="example@domain.com"
+                    className={FIELD}
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone</Label>
+                  <div className="flex gap-2">
+                    <Select value={dial} onValueChange={setDial}>
+                      <SelectTrigger className={cn(FIELD, "w-28 shrink-0")}>
+                        <SelectValue placeholder="Code" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-72">
+                        {COUNTRIES.map((c) => (
+                          <SelectItem key={c.code} value={c.dial}>
+                            {flagEmoji(c.code)} +{c.dial}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      id="phone"
+                      inputMode="tel"
+                      placeholder="e.g. +1 234 567 8901"
+                      className={cn(FIELD, "flex-1")}
+                      value={phone}
+                      onChange={(event) => setPhone(event.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_140px]">
+                <div className="space-y-2">
+                  <Label>Birthday</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Select value={birthDay} onValueChange={setBirthDay}>
+                      <SelectTrigger className={FIELD}>
+                        <SelectValue placeholder="Day" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-72">
+                        {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                          <SelectItem key={day} value={String(day)}>
+                            {day}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select value={birthMonth} onValueChange={setBirthMonth}>
+                      <SelectTrigger className={FIELD}>
+                        <SelectValue placeholder="Month" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-72">
+                        {MONTHS.map((month, index) => (
+                          <SelectItem key={month} value={String(index + 1)}>
+                            {month}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="birth-year">Year</Label>
+                  <Input
+                    id="birth-year"
+                    inputMode="numeric"
+                    placeholder="Year"
+                    className={FIELD}
+                    value={birthYear}
+                    onChange={(event) =>
+                      setBirthYear(event.target.value.replace(/\D/g, "").slice(0, 4))
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Gender</Label>
+                  <Select value={gender} onValueChange={setGender}>
+                    <SelectTrigger className={FIELD}>
+                      <SelectValue placeholder="Select an option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {GENDERS.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Pronouns</Label>
+                  <Select value={pronouns} onValueChange={setPronouns}>
+                    <SelectTrigger className={FIELD}>
+                      <SelectValue placeholder="Select an option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PRONOUNS.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </section>
+
+            <div className="h-px bg-[#D3D3D3]" />
+
+            <section className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                  Additional info
+                </h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Edit additional information about the client
+                </p>
+              </div>
+
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Client source</Label>
+                  <Select value={source} onValueChange={setSource}>
+                    <SelectTrigger className={FIELD}>
+                      <SelectValue placeholder="Select an option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CLIENT_SOURCES.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Choose how this client found your business.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label>Referred by</Label>
+                    <button
+                      type="button"
+                      onClick={() => setQuickAddOpen((v) => !v)}
+                      className="text-sm font-semibold text-primary"
+                    >
+                      Add
+                    </button>
+                  </div>
+                  <Select value={referredBy} onValueChange={setReferredBy}>
+                    <SelectTrigger className={FIELD}>
+                      <SelectValue placeholder="Select a client" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-72">
+                      {referralOptions.length === 0 ? (
+                        <div className="px-3 py-2 text-sm text-muted-foreground">
+                          No other clients
+                        </div>
+                      ) : (
+                        referralOptions.map((row) => (
+                          <SelectItem key={row.id} value={row.id}>
+                            {[row.first_name, row.last_name].filter(Boolean).join(" ")}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                  {quickAddOpen ? (
+                    <div className="flex gap-2">
+                      <Input
+                        className={cn(FIELD, "flex-1")}
+                        placeholder="Client name"
+                        value={quickAddName}
+                        onChange={(event) => setQuickAddName(event.target.value)}
+                      />
+                      <Button
+                        variant="outline"
+                        className="h-12 rounded-xl border-[#D3D3D3] bg-white px-4 font-semibold text-foreground hover:bg-white hover:text-foreground"
+                        disabled={!quickAddName.trim() || quickAddClient.isPending}
+                        onClick={() => quickAddClient.mutate(quickAddName.trim())}
+                      >
+                        Save
+                      </Button>
+                    </div>
+                  ) : null}
+                  <p className="text-xs text-muted-foreground">
+                    Choose who referred this client to your business.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label>Preferred language</Label>
+                    <button
+                      type="button"
+                      onClick={() => setAddLanguageOpen((v) => !v)}
+                      className="text-sm font-semibold text-primary"
+                    >
+                      Add
+                    </button>
+                  </div>
+                  <Select value={language} onValueChange={setLanguage}>
+                    <SelectTrigger className={FIELD}>
+                      <SelectValue placeholder="Select language" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-72">
+                      {languageOptions.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {addLanguageOpen ? (
+                    <div className="flex gap-2">
+                      <Input
+                        className={cn(FIELD, "flex-1")}
+                        placeholder="Language name"
+                        value={newLanguage}
+                        onChange={(event) => setNewLanguage(event.target.value)}
+                      />
+                      <Button
+                        variant="outline"
+                        className="h-12 rounded-xl border-[#D3D3D3] bg-white px-4 font-semibold text-foreground hover:bg-white hover:text-foreground"
+                        disabled={!newLanguage.trim()}
+                        onClick={() => {
+                          const value = newLanguage.trim();
+                          setExtraLanguages((list) =>
+                            list.includes(value) ? list : [...list, value],
+                          );
+                          setLanguage(value);
+                          setNewLanguage("");
+                          setAddLanguageOpen(false);
+                        }}
+                      >
+                        Add
+                      </Button>
+                    </div>
+                  ) : null}
+                  <p className="text-xs text-muted-foreground">
+                    Set the language of automated client notifications.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="occupation">Occupation</Label>
+                    <span className="text-xs text-muted-foreground">{occupation.length}/255</span>
+                  </div>
+                  <Input
+                    id="occupation"
+                    className={FIELD}
+                    maxLength={255}
+                    placeholder="Enter client job information"
+                    value={occupation}
+                    onChange={(event) => setOccupation(event.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Country</Label>
+                  <Select value={country} onValueChange={setCountry}>
+                    <SelectTrigger className={FIELD}>
+                      <SelectValue placeholder="Select country" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-72">
+                      {COUNTRIES.map((c) => (
+                        <SelectItem key={c.code} value={c.code}>
+                          {flagEmoji(c.code)} {c.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="additional-email">Additional email</Label>
+                  <Input
+                    id="additional-email"
+                    type="email"
+                    placeholder="example+1@domain.com"
+                    className={FIELD}
+                    value={additionalEmail}
+                    onChange={(event) => setAdditionalEmail(event.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="additional-phone">Additional phone</Label>
+                  <div className="flex gap-2">
+                    <Select value={additionalDial} onValueChange={setAdditionalDial}>
+                      <SelectTrigger className={cn(FIELD, "w-28 shrink-0")}>
+                        <SelectValue placeholder="Code" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-72">
+                        {COUNTRIES.map((c) => (
+                          <SelectItem key={c.code} value={c.dial}>
+                            {flagEmoji(c.code)} +{c.dial}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      id="additional-phone"
+                      inputMode="tel"
+                      placeholder="e.g. +1 234 567 8901"
+                      className={cn(FIELD, "flex-1")}
+                      value={additionalPhone}
+                      onChange={(event) => setAdditionalPhone(event.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Tags</Label>
+                <div className="flex flex-wrap gap-2">
+                  {tags.map((tag) => {
+                    const active = tagIds.includes(tag.id);
+                    return (
+                      <button
+                        key={tag.id}
+                        type="button"
+                        onClick={() =>
+                          setTagIds((ids) =>
+                            active ? ids.filter((id) => id !== tag.id) : [...ids, tag.id],
+                          )
+                        }
+                        className={cn(
+                          "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+                          active
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-[#D3D3D3] text-foreground hover:bg-muted",
+                        )}
+                      >
+                        {active ? <Check size={14} weight="bold" /> : null}
+                        {tag.name}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    className={cn(FIELD, "flex-1")}
+                    placeholder="Select or create a tag"
+                    value={newTag}
+                    onChange={(event) => setNewTag(event.target.value)}
+                  />
+                  <Button
+                    variant="outline"
+                    className="h-12 gap-2 rounded-xl border-[#D3D3D3] bg-white px-5 font-semibold text-foreground hover:bg-white hover:text-foreground"
+                    disabled={!newTag.trim() || !businessId || createTag.isPending}
+                    onClick={() => createTag.mutate(newTag.trim())}
+                  >
+                    <Plus size={16} weight="bold" />
+                    Add
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Add tags to group clients and filter them across the platform.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="notes">Client notes</Label>
+                <Textarea
+                  id="notes"
+                  rows={4}
+                  className="rounded-xl border border-[#D3D3D3] bg-transparent text-base"
+                  value={notes}
+                  onChange={(event) => setNotes(event.target.value)}
+                />
+              </div>
+            </section>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
