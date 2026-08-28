@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, Plus, X } from "@phosphor-icons/react";
+import { Check, PencilSimple, Plus, User, X } from "@phosphor-icons/react";
 import { useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -142,6 +142,63 @@ export function ClientForm({ clientId }: { clientId?: string }) {
   const [newTag, setNewTag] = useState("");
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [hydrated, setHydrated] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPath, setAvatarPath] = useState<string | null>(null);
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [quickAddName, setQuickAddName] = useState("");
+  const [addLanguageOpen, setAddLanguageOpen] = useState(false);
+  const [newLanguage, setNewLanguage] = useState("");
+  const [extraLanguages, setExtraLanguages] = useState<string[]>([]);
+
+  const languageOptions = useMemo(() => {
+    const all = [...LANGUAGES, ...extraLanguages];
+    return Array.from(new Set(all)).sort((a, b) => a.localeCompare(b));
+  }, [extraLanguages]);
+
+  const signedAvatarUrl = async (path: string) => {
+    const { data, error } = await supabase.storage
+      .from("client-photos")
+      .createSignedUrl(path, 60 * 60);
+    if (!error && data?.signedUrl) setAvatarPreview(data.signedUrl);
+  };
+
+  const uploadAvatar = (file: File) => {
+    setAvatarFile(file);
+    setAvatarPreview((prev) => {
+      if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(file);
+    });
+  };
+
+  const quickAddClient = useMutation({
+    mutationFn: async (name: string) => {
+      if (!businessId) throw new Error("No business found");
+      const [first = "", ...rest] = name.split(/\s+/);
+      const { data, error } = await supabase
+        .from("clients")
+        .insert({
+          business_id: businessId,
+          first_name: first,
+          last_name: rest.join(" ") || null,
+          client_source: "Walk-in",
+          avatar_color:
+            AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)] ?? "#7c3aed",
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (row) => {
+      setReferredBy(row.id);
+      setQuickAddName("");
+      setQuickAddOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["clients", businessId] });
+      toast.success("Client added");
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
 
   // Default the phone dial code + country to the business's own country.
   useEffect(() => {
