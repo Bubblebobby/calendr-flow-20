@@ -9,14 +9,35 @@ import { supabase } from "@/integrations/supabase/client";
  * accessible to fully onboarded business users. Nested routes under
  * `/_authenticated` already inherit this check from the layout route.
  */
+
+// beforeLoad re-runs on every navigation inside the authenticated shell.
+// Re-checking onboarding over the network each time makes navigation feel
+// sluggish, so the "fully onboarded" verdict is memoised per user.
+const ONBOARDED_TTL_MS = 5 * 60_000;
+let onboardedCache: { userId: string; at: number } | undefined;
+
+export function clearOnboardingCache() {
+  onboardedCache = undefined;
+}
+
 export async function requireOnboardedUser() {
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) throw redirect({ to: "/auth" });
+  // Local read from storage (no network round-trip); refreshes only when stale.
+  const { data: sessionData } = await supabase.auth.getSession();
+  const user = sessionData.session?.user;
+  if (!user) throw redirect({ to: "/auth" });
+
+  if (
+    onboardedCache &&
+    onboardedCache.userId === user.id &&
+    Date.now() - onboardedCache.at < ONBOARDED_TTL_MS
+  ) {
+    return { user };
+  }
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("onboarded_at, business_id")
-    .eq("id", data.user.id)
+    .eq("id", user.id)
     .maybeSingle();
 
   if (!profile?.onboarded_at) throw redirect({ to: "/onboarding" });
@@ -33,5 +54,6 @@ export async function requireOnboardedUser() {
     throw redirect({ to: "/business-setup" });
   }
 
-  return { user: data.user };
+  onboardedCache = { userId: user.id, at: Date.now() };
+  return { user };
 }
