@@ -90,6 +90,7 @@ type ClientRow = {
   birth_day: number | null;
   birth_month: number | null;
   birth_year: number | null;
+  avatar_path: string | null;
 };
 
 function Section({
@@ -371,6 +372,23 @@ export function ClientForm({ clientId }: { clientId?: string }) {
           .single();
         if (error) throw error;
         id = data.id;
+      }
+
+      // Upload a newly chosen avatar to the private client-photos bucket.
+      if (avatarFile) {
+        const ext = avatarFile.name.split(".").pop() || "jpg";
+        const path = `${businessId}/${id}/avatar.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from("client-photos")
+          .upload(path, avatarFile, { upsert: true });
+        if (uploadError) throw uploadError;
+        const { error: updateError } = await supabase
+          .from("clients")
+          .update({ avatar_path: path })
+          .eq("id", id!);
+        if (updateError) throw updateError;
+      } else if (avatarPath && avatarPath !== payload) {
+        // keep existing avatar_path (already on the row)
       }
 
       // Reconcile tag assignments for this client.
