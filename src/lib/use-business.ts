@@ -14,8 +14,10 @@ export function useBusiness() {
   return useQuery({
     queryKey: ["current-business"],
     queryFn: async (): Promise<CurrentBusiness | null> => {
-      const { data: auth } = await supabase.auth.getUser();
-      if (!auth.user) return null;
+      // Local session read — avoids a network round-trip on every mount.
+      const { data: auth } = await supabase.auth.getSession();
+      const user = auth.session?.user;
+      if (!user) return null;
 
       const { data, error } = await supabase
         .from("businesses")
