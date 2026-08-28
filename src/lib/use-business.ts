@@ -22,7 +22,7 @@ export function useBusiness() {
       const { data, error } = await supabase
         .from("businesses")
         .select("id, name, country, currency")
-        .eq("owner_id", auth.user.id)
+        .eq("owner_id", user.id)
         .order("created_at", { ascending: true })
         .limit(1)
         .maybeSingle();
