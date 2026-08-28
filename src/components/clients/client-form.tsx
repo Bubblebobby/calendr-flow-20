@@ -387,8 +387,6 @@ export function ClientForm({ clientId }: { clientId?: string }) {
           .update({ avatar_path: path })
           .eq("id", id!);
         if (updateError) throw updateError;
-      } else if (avatarPath && avatarPath !== payload) {
-        // keep existing avatar_path (already on the row)
       }
 
       // Reconcile tag assignments for this client.
