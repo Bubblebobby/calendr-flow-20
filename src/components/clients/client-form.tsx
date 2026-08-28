@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, PencilSimple, Plus, User, X } from "@phosphor-icons/react";
+import { Check, PencilSimple, Plus, User } from "@phosphor-icons/react";
 import { useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
