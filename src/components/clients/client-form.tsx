@@ -218,7 +218,7 @@ export function ClientForm({ clientId }: { clientId?: string }) {
       const { data, error } = await supabase
         .from("clients")
         .select(
-          "id, first_name, last_name, email, additional_email, phone, phone_country_code, additional_phone, additional_phone_country_code, notes, occupation, preferred_language, client_source, referred_by_client_id, country, gender, pronouns, birth_day, birth_month, birth_year",
+          "id, first_name, last_name, email, additional_email, phone, phone_country_code, additional_phone, additional_phone_country_code, notes, occupation, preferred_language, client_source, referred_by_client_id, country, gender, pronouns, birth_day, birth_month, birth_year, avatar_path",
         )
         .eq("id", clientId!)
         .maybeSingle();
@@ -295,6 +295,10 @@ export function ClientForm({ clientId }: { clientId?: string }) {
     setOccupation(c.occupation ?? "");
     setCountry(c.country ?? "");
     setNotes(c.notes ?? "");
+    if (c.avatar_path) {
+      setAvatarPath(c.avatar_path);
+      void signedAvatarUrl(c.avatar_path);
+    }
     setHydrated(true);
   }, [isEdit, hydrated, clientQuery.isSuccess, clientQuery.data, navigate]);
 
