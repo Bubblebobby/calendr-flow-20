@@ -62,12 +62,14 @@ export function InviteTeamMemberDialog({
   onOpenChange,
   businessId,
   member,
+  mode = "invite",
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   businessId: string | undefined;
-  /** Set when inviting an existing (not-yet-invited) roster row. */
+  /** Set when acting on an existing roster row. */
   member?: TeamMemberRow | null;
+  mode?: "invite" | "edit";
 }) {
   const queryClient = useQueryClient();
   const rolesQuery = useTeamRoles(businessId);
@@ -119,13 +121,15 @@ export function InviteTeamMemberDialog({
         roleId = role;
       }
 
-      const invite_token = generateInviteToken();
-      const payload = {
-        email: mail,
-        invite_token,
-        invite_status: "invited" as const,
-        role_id: roleId,
-      };
+      const editing = mode === "edit";
+      const payload = editing
+        ? { email: mail || null, role_id: roleId }
+        : {
+            email: mail,
+            invite_token: generateInviteToken(),
+            invite_status: "invited" as const,
+            role_id: roleId,
+          };
 
       let teamMemberId = member?.id;
       if (teamMemberId) {
@@ -151,26 +155,35 @@ export function InviteTeamMemberDialog({
       }
 
       // Placeholder — swapped for the real delivery function next.
-      await sendTeamInvite(teamMemberId!);
+      if (!editing) await sendTeamInvite(teamMemberId!);
       return teamMemberId!;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team-members", businessId] });
       queryClient.invalidateQueries({ queryKey: ["team-roles", businessId] });
-      toast.success("Invite queued", {
-        description: `${fullName.trim()} will receive an invite at ${email.trim()}.`,
-      });
+      if (mode === "edit") {
+        toast.success("Team member updated");
+      } else {
+        toast.success("Invite queued", {
+          description: `${fullName.trim()} will receive an invite at ${email.trim()}.`,
+        });
+      }
       onOpenChange(false);
     },
     onError: (err: Error) => {
       setError(err.message);
-      toast.error("Couldn't queue the invite", { description: err.message });
+      toast.error(mode === "edit" ? "Couldn't save changes" : "Couldn't queue the invite", {
+        description: err.message,
+      });
     },
   });
 
   const submit = () => {
     if (!fullName.trim()) return setError("Enter a full name.");
-    if (!emailPattern.test(email.trim())) return setError("Enter a valid email address.");
+    if (mode === "invite" && !emailPattern.test(email.trim()))
+      return setError("Enter a valid email address.");
+    if (mode === "edit" && email.trim() && !emailPattern.test(email.trim()))
+      return setError("Enter a valid email address.");
     if (!role) return setError("Choose a permission role.");
     setError(null);
     invite.mutate();
@@ -181,12 +194,18 @@ export function InviteTeamMemberDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
-            {member ? `Invite ${member.full_name}` : "Invite team member"}
+            {mode === "edit"
+              ? `Edit ${member?.full_name ?? "team member"}`
+              : member
+                ? `Invite ${member.full_name}`
+                : "Invite team member"}
           </DialogTitle>
           <DialogDescription>
-            {member
-              ? "Add an email address and permission role to send them access."
-              : "They'll get an email invite to join this workspace."}
+            {mode === "edit"
+              ? "Update their details and permission role."
+              : member
+                ? "Add an email address and permission role to send them access."
+                : "They'll get an email invite to join this workspace."}
           </DialogDescription>
         </DialogHeader>
 
@@ -198,7 +217,7 @@ export function InviteTeamMemberDialog({
             <Input
               id="invite-name"
               value={fullName}
-              readOnly={Boolean(member)}
+              readOnly={mode === "invite" && Boolean(member)}
               maxLength={80}
               onChange={(event) => setFullName(event.target.value)}
               placeholder="e.g. Ada Obi"
@@ -262,7 +281,13 @@ export function InviteTeamMemberDialog({
             onClick={submit}
             disabled={invite.isPending}
           >
-            {invite.isPending ? "Queueing…" : "Send invite"}
+            {invite.isPending
+              ? mode === "edit"
+                ? "Saving…"
+                : "Queueing…"
+              : mode === "edit"
+                ? "Save changes"
+                : "Send invite"}
           </Button>
         </DialogFooter>
       </DialogContent>
