@@ -658,45 +658,99 @@ export type Database = {
       }
       team_members: {
         Row: {
+          additional_phone: string | null
+          additional_phone_country_code: string | null
           avatar_color: string
+          avatar_path: string | null
+          avatar_url: string | null
+          birthday: string | null
           business_id: string
+          calendar_color: string
+          country: string | null
           created_at: string
           email: string | null
-          full_name: string
+          employment_type: string | null
+          end_date: string | null
+          external_team_member_id: string | null
+          first_name: string
+          gender: string | null
           id: string
           initials: string | null
           invite_status: Database["public"]["Enums"]["team_invite_status"]
           invite_token: string | null
           is_active: boolean
+          job_title: string | null
+          last_name: string | null
+          notes: string | null
+          phone: string | null
+          phone_country_code: string | null
+          pronouns: string | null
           role_id: string | null
+          start_date: string | null
           user_id: string | null
         }
         Insert: {
+          additional_phone?: string | null
+          additional_phone_country_code?: string | null
           avatar_color?: string
+          avatar_path?: string | null
+          avatar_url?: string | null
+          birthday?: string | null
           business_id: string
+          calendar_color?: string
+          country?: string | null
           created_at?: string
           email?: string | null
-          full_name: string
+          employment_type?: string | null
+          end_date?: string | null
+          external_team_member_id?: string | null
+          first_name: string
+          gender?: string | null
           id?: string
           initials?: string | null
           invite_status?: Database["public"]["Enums"]["team_invite_status"]
           invite_token?: string | null
           is_active?: boolean
+          job_title?: string | null
+          last_name?: string | null
+          notes?: string | null
+          phone?: string | null
+          phone_country_code?: string | null
+          pronouns?: string | null
           role_id?: string | null
+          start_date?: string | null
           user_id?: string | null
         }
         Update: {
+          additional_phone?: string | null
+          additional_phone_country_code?: string | null
           avatar_color?: string
+          avatar_path?: string | null
+          avatar_url?: string | null
+          birthday?: string | null
           business_id?: string
+          calendar_color?: string
+          country?: string | null
           created_at?: string
           email?: string | null
-          full_name?: string
+          employment_type?: string | null
+          end_date?: string | null
+          external_team_member_id?: string | null
+          first_name?: string
+          gender?: string | null
           id?: string
           initials?: string | null
           invite_status?: Database["public"]["Enums"]["team_invite_status"]
           invite_token?: string | null
           is_active?: boolean
+          job_title?: string | null
+          last_name?: string | null
+          notes?: string | null
+          phone?: string | null
+          phone_country_code?: string | null
+          pronouns?: string | null
           role_id?: string | null
+          start_date?: string | null
           user_id?: string | null
         }
         Relationships: [
