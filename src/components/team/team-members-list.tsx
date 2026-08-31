@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { DotsThreeVertical, MagnifyingGlass, PaperPlaneTilt } from "@phosphor-icons/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -11,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { deriveInitials } from "@/components/catalog/service-team-members";
+import { deriveInitials, memberName } from "@/components/catalog/service-team-members";
 import { InviteTeamMemberDialog, useTeamRoles } from "@/components/team/invite-team-member-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { sendTeamInvite } from "@/lib/team-invites";
@@ -22,7 +23,8 @@ export type InviteStatus = "not_invited" | "invited" | "active";
 
 export type TeamMemberRow = {
   id: string;
-  full_name: string;
+  first_name: string;
+  last_name: string | null;
   initials: string | null;
   avatar_color: string;
   email: string | null;
@@ -64,6 +66,7 @@ function StatusBadge({ status }: { status: InviteStatus }) {
 
 export function TeamMembersList() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { data: business } = useBusiness();
   const businessId = business?.id;
 
@@ -85,7 +88,7 @@ export function TeamMembersList() {
       const { data, error } = await supabase
         .from("team_members")
         .select(
-          "id, full_name, initials, avatar_color, email, invite_status, role_id, is_active, created_at",
+          "id, first_name, last_name, initials, avatar_color, email, invite_status, role_id, is_active, created_at",
         )
         .eq("business_id", businessId!)
         .order("created_at");
@@ -100,7 +103,7 @@ export function TeamMembersList() {
     const term = search.trim().toLowerCase();
     if (!term) return members;
     return members.filter((member) =>
-      `${member.full_name} ${member.email ?? ""}`.toLowerCase().includes(term),
+      `${memberName(member)} ${member.email ?? ""}`.toLowerCase().includes(term),
     );
   }, [members, search]);
 
@@ -152,7 +155,7 @@ export function TeamMembersList() {
         </div>
         <Button
           className="h-12 gap-2 rounded-full px-7 text-base font-semibold"
-          onClick={() => openInvite(null)}
+          onClick={() => navigate({ to: "/team/new" })}
         >
           <PaperPlaneTilt size={18} weight="bold" />
           Invite team member
@@ -203,9 +206,9 @@ export function TeamMembersList() {
                       style={{ backgroundColor: member.avatar_color }}
                       aria-hidden
                     >
-                      {member.initials || deriveInitials(member.full_name)}
+                      {member.initials || deriveInitials(memberName(member))}
                     </span>
-                    <span className="font-semibold text-foreground">{member.full_name}</span>
+                    <span className="font-semibold text-foreground">{memberName(member)}</span>
                   </div>
                 </td>
                 <td className="px-4 py-4 text-muted-foreground">{member.email || "–"}</td>
@@ -233,7 +236,7 @@ export function TeamMembersList() {
                         variant="ghost"
                         size="icon"
                         className="h-9 w-9 rounded-full"
-                        aria-label={`Actions for ${member.full_name}`}
+                        aria-label={`Actions for ${memberName(member)}`}
                       >
                         <DotsThreeVertical size={18} weight="bold" />
                       </Button>

@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { deriveInitials } from "@/components/catalog/service-team-members";
+import { deriveInitials, memberName } from "@/components/catalog/service-team-members";
 import { sendTeamInvite } from "@/lib/team-invites";
 import type { TeamMemberRow } from "@/components/team/team-members-list";
 
@@ -82,7 +82,7 @@ export function InviteTeamMemberDialog({
 
   useEffect(() => {
     if (!open) return;
-    setFullName(member?.full_name ?? "");
+    setFullName(member ? memberName(member) : "");
     setEmail(member?.email ?? "");
     setRole(member?.role_id ?? "");
     setError(null);
@@ -135,7 +135,12 @@ export function InviteTeamMemberDialog({
       if (teamMemberId) {
         const { error: updateError } = await supabase
           .from("team_members")
-          .update({ ...payload, full_name: name })
+          .update({
+            ...payload,
+            first_name: name.split(/\s+/)[0]!,
+            last_name: name.split(/\s+/).slice(1).join(" ") || null,
+            initials: deriveInitials(name),
+          })
           .eq("id", teamMemberId);
         if (updateError) throw updateError;
       } else {
@@ -143,7 +148,8 @@ export function InviteTeamMemberDialog({
           .from("team_members")
           .insert({
             business_id: businessId!,
-            full_name: name,
+            first_name: name.split(/\s+/)[0]!,
+            last_name: name.split(/\s+/).slice(1).join(" ") || null,
             initials: deriveInitials(name),
             avatar_color: AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)]!,
             ...payload,
@@ -195,9 +201,9 @@ export function InviteTeamMemberDialog({
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             {mode === "edit"
-              ? `Edit ${member?.full_name ?? "team member"}`
+              ? `Edit ${member ? memberName(member) : "team member"}`
               : member
-                ? `Invite ${member.full_name}`
+                ? `Invite ${memberName(member)}`
                 : "Invite team member"}
           </DialogTitle>
           <DialogDescription>
