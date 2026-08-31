@@ -274,21 +274,30 @@ export function TeamMemberForm() {
     save.mutate();
   };
 
-  const navItem = (label: string, badge?: number) => (
-    <button
-      key={label}
-      type="button"
-      onClick={() => toast("Coming soon")}
-      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted"
-    >
-      <span>{label}</span>
-      {badge !== undefined ? (
-        <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-foreground">
-          {badge}
-        </span>
-      ) : null}
-    </button>
-  );
+  const navItem = (label: string, badge?: number, target?: Section) => {
+    const active = target !== undefined && section === target;
+    return (
+      <button
+        key={label}
+        type="button"
+        onClick={() => (target ? setSection(target) : toast("Coming soon"))}
+        className={cn(
+          "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors",
+          active
+            ? "bg-accent/40 text-foreground"
+            : "text-muted-foreground hover:bg-muted",
+        )}
+      >
+        <span>{label}</span>
+        {badge !== undefined ? (
+          <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-foreground">
+            {badge}
+          </span>
+        ) : null}
+      </button>
+    );
+  };
+
 
   return (
     <div className="min-h-screen bg-white">
@@ -317,18 +326,13 @@ export function TeamMemberForm() {
         <div className="mt-10 grid gap-12 lg:grid-cols-[240px_minmax(0,1fr)]">
           <nav className="h-fit rounded-2xl border border-[#D3D3D3] bg-white p-3">
             <p className="px-3 py-2 text-sm font-bold text-foreground">Personal</p>
-            <button
-              type="button"
-              className="w-full rounded-lg bg-accent/40 px-3 py-2 text-left text-sm font-medium text-foreground"
-            >
-              Profile
-            </button>
+            {navItem("Profile", undefined, "profile")}
             {navItem("Addresses")}
             {navItem("Emergency contacts")}
 
             <div className="my-2 h-px bg-[#D3D3D3]" />
             <p className="px-3 py-2 text-sm font-bold text-foreground">Workspace</p>
-            {navItem("Services", 0)}
+            {navItem("Services", selectedServices.length, "services")}
             {navItem("Locations", 1)}
             {navItem("Settings")}
 
@@ -339,8 +343,21 @@ export function TeamMemberForm() {
             {navItem("Pay runs")}
           </nav>
 
+          {section === "services" ? (
+            <div className="max-w-2xl">
+              <TeamMemberServicesSection
+                services={services ?? []}
+                loading={servicesLoading}
+                selected={selectedServices}
+                onChange={setSelectedServices}
+                currency={business?.currency ?? "USD"}
+                country={business?.country}
+              />
+            </div>
+          ) : (
           <div className="max-w-2xl space-y-12">
             {/* Profile */}
+
             <section className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold tracking-tight text-foreground">Profile</h2>
