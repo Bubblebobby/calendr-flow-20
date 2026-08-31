@@ -32,6 +32,7 @@ import { Route as ClientClientIdRouteImport } from './routes/client.$clientId'
 import { Route as ClientNewRouteImport } from './routes/client.new'
 import { Route as ServiceServiceIdRouteImport } from './routes/service.$serviceId'
 import { Route as ServiceNewRouteImport } from './routes/service.new'
+import { Route as TeamNewRouteImport } from './routes/team.new'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 
@@ -152,6 +153,11 @@ const ServiceNewRoute = ServiceNewRouteImport.update({
   path: '/service/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TeamNewRoute = TeamNewRouteImport.update({
+  id: '/team/new',
+  path: '/team/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
@@ -187,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/client/new': typeof ClientNewRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
+  '/team/new': typeof TeamNewRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
@@ -213,6 +220,7 @@ export interface FileRoutesByTo {
   '/client/new': typeof ClientNewRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
+  '/team/new': typeof TeamNewRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
@@ -241,6 +249,7 @@ export interface FileRoutesById {
   '/client/new': typeof ClientNewRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
+  '/team/new': typeof TeamNewRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
@@ -269,6 +278,7 @@ export interface FileRouteTypes {
     | '/client/new'
     | '/service/$serviceId'
     | '/service/new'
+    | '/team/new'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
   fileRoutesByTo: FileRoutesByTo
@@ -295,6 +305,7 @@ export interface FileRouteTypes {
     | '/client/new'
     | '/service/$serviceId'
     | '/service/new'
+    | '/team/new'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
   id:
@@ -322,6 +333,7 @@ export interface FileRouteTypes {
     | '/client/new'
     | '/service/$serviceId'
     | '/service/new'
+    | '/team/new'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
   fileRoutesById: FileRoutesById
@@ -340,6 +352,7 @@ export interface RootRouteChildren {
   ClientNewRoute: typeof ClientNewRoute
   ServiceServiceIdRoute: typeof ServiceServiceIdRoute
   ServiceNewRoute: typeof ServiceNewRoute
+  TeamNewRoute: typeof TeamNewRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
 }
@@ -507,6 +520,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServiceNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/team/new': {
+      id: '/team/new'
+      path: '/team/new'
+      fullPath: '/team/new'
+      preLoaderRoute: typeof TeamNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/.lovable/oauth/consent': {
       id: '/.lovable/oauth/consent'
       path: '/.lovable/oauth/consent'
@@ -576,6 +596,7 @@ const rootRouteChildren: RootRouteChildren = {
   ClientNewRoute: ClientNewRoute,
   ServiceServiceIdRoute: ServiceServiceIdRoute,
   ServiceNewRoute: ServiceNewRoute,
+  TeamNewRoute: TeamNewRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
 }
