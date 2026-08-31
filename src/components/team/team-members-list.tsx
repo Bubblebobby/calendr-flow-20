@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { DotsThreeVertical, MagnifyingGlass, PaperPlaneTilt } from "@phosphor-icons/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -65,6 +66,7 @@ function StatusBadge({ status }: { status: InviteStatus }) {
 
 export function TeamMembersList() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { data: business } = useBusiness();
   const businessId = business?.id;
 
@@ -153,7 +155,7 @@ export function TeamMembersList() {
         </div>
         <Button
           className="h-12 gap-2 rounded-full px-7 text-base font-semibold"
-          onClick={() => openInvite(null)}
+          onClick={() => navigate({ to: "/team/new" })}
         >
           <PaperPlaneTilt size={18} weight="bold" />
           Invite team member
