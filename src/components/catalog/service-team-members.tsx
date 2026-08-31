@@ -11,7 +11,8 @@ import { cn } from "@/lib/utils";
 
 export type TeamMember = {
   id: string;
-  full_name: string;
+  first_name: string;
+  last_name: string | null;
   initials: string | null;
   avatar_color: string;
 };
@@ -27,7 +28,12 @@ export function deriveInitials(fullName: string) {
   return (first + last).toUpperCase();
 }
 
-const SELECT_COLUMNS = "id, full_name, initials, avatar_color";
+const SELECT_COLUMNS = "id, first_name, last_name, initials, avatar_color";
+
+/** Display name for a roster row. */
+export function memberName(member: { first_name: string; last_name?: string | null }) {
+  return [member.first_name, member.last_name].filter(Boolean).join(" ");
+}
 
 /** Active roster for the business — the pool of people who can perform services. */
 export function useTeamMembers(businessId: string | undefined) {
@@ -69,7 +75,9 @@ export function useTeamMembers(businessId: string | undefined) {
         .from("team_members")
         .insert({
           business_id: businessId!,
-          full_name: ownerName,
+          first_name: ownerName.split(/\s+/)[0]!,
+          last_name: ownerName.split(/\s+/).slice(1).join(" ") || null,
+          initials: deriveInitials(ownerName),
           user_id: userId,
           avatar_color: AVATAR_COLORS[0]!,
         })
@@ -165,10 +173,12 @@ export function TeamMembersSection({
         .from("team_members")
         .insert({
           business_id: businessId!,
-          full_name: name.trim(),
+          first_name: name.trim().split(/\s+/)[0]!,
+          last_name: name.trim().split(/\s+/).slice(1).join(" ") || null,
+          initials: deriveInitials(name),
           avatar_color: AVATAR_COLORS[members.length % AVATAR_COLORS.length]!,
         })
-        .select("id, full_name, initials, avatar_color")
+        .select(SELECT_COLUMNS)
         .single();
       if (error) throw error;
       return data;
@@ -241,10 +251,10 @@ export function TeamMembersSection({
                       }}
                       aria-hidden
                     >
-                      {member.initials ?? deriveInitials(member.full_name)}
+                      {member.initials ?? deriveInitials(memberName(member))}
                     </span>
                     <span className="flex-1 text-base font-medium text-foreground">
-                      {member.full_name}
+                      {memberName(member)}
                     </span>
                   </span>
                 </label>
