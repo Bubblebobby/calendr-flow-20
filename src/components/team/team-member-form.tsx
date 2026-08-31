@@ -274,21 +274,30 @@ export function TeamMemberForm() {
     save.mutate();
   };
 
-  const navItem = (label: string, badge?: number) => (
-    <button
-      key={label}
-      type="button"
-      onClick={() => toast("Coming soon")}
-      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted"
-    >
-      <span>{label}</span>
-      {badge !== undefined ? (
-        <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-foreground">
-          {badge}
-        </span>
-      ) : null}
-    </button>
-  );
+  const navItem = (label: string, badge?: number, target?: Section) => {
+    const active = target !== undefined && section === target;
+    return (
+      <button
+        key={label}
+        type="button"
+        onClick={() => (target ? setSection(target) : toast("Coming soon"))}
+        className={cn(
+          "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors",
+          active
+            ? "bg-accent/40 text-foreground"
+            : "text-muted-foreground hover:bg-muted",
+        )}
+      >
+        <span>{label}</span>
+        {badge !== undefined ? (
+          <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-foreground">
+            {badge}
+          </span>
+        ) : null}
+      </button>
+    );
+  };
+
 
   return (
     <div className="min-h-screen bg-white">
