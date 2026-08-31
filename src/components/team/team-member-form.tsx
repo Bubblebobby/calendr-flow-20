@@ -326,18 +326,13 @@ export function TeamMemberForm() {
         <div className="mt-10 grid gap-12 lg:grid-cols-[240px_minmax(0,1fr)]">
           <nav className="h-fit rounded-2xl border border-[#D3D3D3] bg-white p-3">
             <p className="px-3 py-2 text-sm font-bold text-foreground">Personal</p>
-            <button
-              type="button"
-              className="w-full rounded-lg bg-accent/40 px-3 py-2 text-left text-sm font-medium text-foreground"
-            >
-              Profile
-            </button>
+            {navItem("Profile", undefined, "profile")}
             {navItem("Addresses")}
             {navItem("Emergency contacts")}
 
             <div className="my-2 h-px bg-[#D3D3D3]" />
             <p className="px-3 py-2 text-sm font-bold text-foreground">Workspace</p>
-            {navItem("Services", 0)}
+            {navItem("Services", selectedServices.length, "services")}
             {navItem("Locations", 1)}
             {navItem("Settings")}
 
@@ -348,8 +343,21 @@ export function TeamMemberForm() {
             {navItem("Pay runs")}
           </nav>
 
+          {section === "services" ? (
+            <div className="max-w-2xl">
+              <TeamMemberServicesSection
+                services={services ?? []}
+                loading={servicesLoading}
+                selected={selectedServices}
+                onChange={setSelectedServices}
+                currency={business?.currency ?? "USD"}
+                country={business?.country}
+              />
+            </div>
+          ) : (
           <div className="max-w-2xl space-y-12">
             {/* Profile */}
+
             <section className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold tracking-tight text-foreground">Profile</h2>
