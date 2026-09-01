@@ -99,7 +99,7 @@ export async function reconcileTeamMemberServices(
 
 function CountBadge({ children }: { children: React.ReactNode }) {
   return (
-    <span className="rounded-full border border-border px-2 py-0.5 text-xs font-semibold text-muted-foreground">
+    <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-muted px-1.5 text-[11px] font-semibold text-muted-foreground">
       {children}
     </span>
   );
