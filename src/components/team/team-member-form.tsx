@@ -368,7 +368,7 @@ export function TeamMemberForm() {
                 selected={selectedServices}
                 onChange={setSelectedServices}
                 currency={business?.currency ?? "USD"}
-                country={business?.country}
+                country={business?.country ?? null}
               />
             </div>
           ) : (
