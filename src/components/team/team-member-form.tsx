@@ -261,12 +261,18 @@ export function TeamMemberForm() {
         await supabase.from("team_members").update({ avatar_path: path }).eq("id", data.id);
       }
 
+      if (selectedServices.length) {
+        await reconcileTeamMemberServices(data.id, selectedServices, []);
+      }
+
       // Placeholder — swapped for the real delivery function next.
       await sendTeamInvite(data.id);
       return data.id;
     },
-    onSuccess: () => {
+    onSuccess: (id) => {
       queryClient.invalidateQueries({ queryKey: ["team-members", businessId] });
+      queryClient.invalidateQueries({ queryKey: ["service-team-members", businessId] });
+      queryClient.invalidateQueries({ queryKey: ["team-member-services", id] });
       toast.success("Invite queued", {
         description: `${firstName.trim()} will receive an invite at ${email.trim()}.`,
       });
