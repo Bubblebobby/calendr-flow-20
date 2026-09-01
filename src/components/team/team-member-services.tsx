@@ -178,8 +178,8 @@ export function TeamMemberServicesSection({
         />
       </div>
 
-      <div className="rounded-2xl border border-border">
-        <label className="flex cursor-pointer items-center gap-3 border-b border-border px-4 py-3">
+      <div>
+        <label className="flex cursor-pointer items-center gap-3 py-3">
           <Checkbox
             checked={allChecked ? true : allIndeterminate ? "indeterminate" : false}
             onCheckedChange={toggleAll}
@@ -191,9 +191,9 @@ export function TeamMemberServicesSection({
         </label>
 
         {loading ? (
-          <p className="px-4 py-6 text-sm text-muted-foreground">Loading services…</p>
+          <p className="py-6 text-sm text-muted-foreground">Loading services…</p>
         ) : groups.length === 0 ? (
-          <p className="px-4 py-6 text-sm text-muted-foreground">
+          <p className="py-6 text-sm text-muted-foreground">
             {services.length === 0
               ? "No services yet — add services in your catalog first."
               : "No services match your search."}
@@ -206,14 +206,14 @@ export function TeamMemberServicesSection({
             const partial = checkedCount > 0 && !fully;
 
             return (
-              <div key={group.id} className="border-b border-border last:border-b-0">
-                <label className="flex cursor-pointer items-center gap-3 bg-muted/40 px-4 py-2.5">
+              <div key={group.id} className="mt-4">
+                <label className="flex cursor-pointer items-center gap-3 py-3">
                   <Checkbox
                     checked={fully ? true : partial ? "indeterminate" : false}
                     onCheckedChange={() => toggleGroup(ids, fully)}
                     className="size-5 rounded-md border-2"
                   />
-                  <span className="flex-1 text-sm font-semibold text-foreground">
+                  <span className="flex-1 text-sm font-bold text-foreground">
                     {group.name}
                   </span>
                   <CountBadge>
@@ -221,10 +221,10 @@ export function TeamMemberServicesSection({
                   </CountBadge>
                 </label>
 
-                <ul>
+                <ul className="divide-y divide-border">
                   {group.items.map((service) => (
                     <li key={service.id}>
-                      <label className="flex cursor-pointer items-center gap-3 px-4 py-2.5 pl-10">
+                      <label className="flex cursor-pointer items-center gap-3 py-3.5 pl-8">
                         <Checkbox
                           checked={selectedSet.has(service.id)}
                           onCheckedChange={() => toggleService(service.id)}
@@ -238,7 +238,7 @@ export function TeamMemberServicesSection({
                             {formatDuration(service.duration_minutes)}
                           </span>
                         </span>
-                        <span className="text-sm font-semibold text-foreground">
+                        <span className="text-sm font-medium text-foreground">
                           {service.price === null
                             ? "Free"
                             : formatMoney(Number(service.price), currency, country)}
