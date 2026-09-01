@@ -184,7 +184,7 @@ export function TeamMemberServicesSection({
             checked={allChecked ? true : allIndeterminate ? "indeterminate" : false}
             onCheckedChange={toggleAll}
             disabled={services.length === 0}
-            className="size-5 rounded-md border-2"
+            className="size-5 rounded-md border-2 border-muted-foreground/30 bg-background data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=indeterminate]:border-primary data-[state=indeterminate]:bg-primary"
           />
           <span className="flex-1 text-sm font-bold text-foreground">All services</span>
           <CountBadge>{services.length}</CountBadge>
@@ -211,7 +211,7 @@ export function TeamMemberServicesSection({
                   <Checkbox
                     checked={fully ? true : partial ? "indeterminate" : false}
                     onCheckedChange={() => toggleGroup(ids, fully)}
-                    className="size-5 rounded-md border-2"
+                    className="size-5 rounded-md border-2 border-muted-foreground/30 bg-background data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=indeterminate]:border-primary data-[state=indeterminate]:bg-primary"
                   />
                   <span className="flex-1 text-sm font-bold text-foreground">
                     {group.name}
@@ -228,7 +228,7 @@ export function TeamMemberServicesSection({
                         <Checkbox
                           checked={selectedSet.has(service.id)}
                           onCheckedChange={() => toggleService(service.id)}
-                          className="size-5 rounded-md border-2"
+                          className="size-5 rounded-md border-2 border-muted-foreground/30 bg-background data-[state=checked]:border-primary data-[state=checked]:bg-primary"
                         />
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-medium text-foreground">
