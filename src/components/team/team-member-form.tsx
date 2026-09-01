@@ -703,6 +703,7 @@ export function TeamMemberForm() {
               </div>
             </section>
           </div>
+        )}
         </div>
       </div>
     </div>
