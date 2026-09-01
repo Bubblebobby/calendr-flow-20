@@ -23,6 +23,11 @@ import { COUNTRIES, flagEmoji } from "@/lib/countries";
 import { sendTeamInvite } from "@/lib/team-invites";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
+import {
+  reconcileTeamMemberServices,
+  TeamMemberServicesSection,
+  useBusinessServices,
+} from "./team-member-services";
 
 const FIELD = "h-12 rounded-xl border border-border bg-transparent text-base";
 
