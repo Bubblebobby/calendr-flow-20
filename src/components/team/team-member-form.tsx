@@ -23,6 +23,11 @@ import { COUNTRIES, flagEmoji } from "@/lib/countries";
 import { sendTeamInvite } from "@/lib/team-invites";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
+import {
+  reconcileTeamMemberServices,
+  TeamMemberServicesSection,
+  useBusinessServices,
+} from "./team-member-services";
 
 const FIELD = "h-12 rounded-xl border border-border bg-transparent text-base";
 
@@ -177,6 +182,12 @@ export function TeamMemberForm() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
+  type Section = "profile" | "services";
+  const [section, setSection] = useState<Section>("profile");
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+
+  const { data: services, isLoading: servicesLoading } = useBusinessServices(businessId);
+
   // Default dial codes + country to the business's own country.
   useEffect(() => {
     if (!business?.country || dial) return;
@@ -250,12 +261,18 @@ export function TeamMemberForm() {
         await supabase.from("team_members").update({ avatar_path: path }).eq("id", data.id);
       }
 
+      if (selectedServices.length) {
+        await reconcileTeamMemberServices(data.id, selectedServices, []);
+      }
+
       // Placeholder — swapped for the real delivery function next.
       await sendTeamInvite(data.id);
       return data.id;
     },
-    onSuccess: () => {
+    onSuccess: (id) => {
       queryClient.invalidateQueries({ queryKey: ["team-members", businessId] });
+      queryClient.invalidateQueries({ queryKey: ["service-team-members", businessId] });
+      queryClient.invalidateQueries({ queryKey: ["team-member-services", id] });
       toast.success("Invite queued", {
         description: `${firstName.trim()} will receive an invite at ${email.trim()}.`,
       });
@@ -351,7 +368,7 @@ export function TeamMemberForm() {
                 selected={selectedServices}
                 onChange={setSelectedServices}
                 currency={business?.currency ?? "USD"}
-                country={business?.country}
+                country={business?.country ?? null}
               />
             </div>
           ) : (
@@ -686,6 +703,7 @@ export function TeamMemberForm() {
               </div>
             </section>
           </div>
+        )}
         </div>
       </div>
     </div>
