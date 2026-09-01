@@ -228,7 +228,7 @@ export function TeamMemberServicesSection({
                         <Checkbox
                           checked={selectedSet.has(service.id)}
                           onCheckedChange={() => toggleService(service.id)}
-                          className="size-5 rounded-md border-2"
+                          className="size-5 rounded-md border-2 border-muted-foreground/30 bg-background data-[state=checked]:border-primary data-[state=checked]:bg-primary"
                         />
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-medium text-foreground">
