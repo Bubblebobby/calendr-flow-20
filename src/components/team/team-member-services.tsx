@@ -159,7 +159,7 @@ export function TeamMemberServicesSection({
   return (
     <section className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight text-foreground">Services</h2>
+        <h2 className="text-lg font-bold tracking-tight text-foreground">Services</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Choose the services this team member provides
         </p>
