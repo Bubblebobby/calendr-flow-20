@@ -38,12 +38,12 @@ export function formatMoney(
   }
 }
 
-/** "1 hr 30 min", "45 min", "2 hr" */
+/** "1 hr, 30 min", "45 min", "2 hr" */
 export function formatDuration(totalMinutes: number): string {
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
   const parts: string[] = [];
   if (hours) parts.push(`${hours} hr`);
   if (minutes || !hours) parts.push(`${minutes} min`);
-  return parts.join(" ");
+  return parts.join(", ");
 }
