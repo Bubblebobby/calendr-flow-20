@@ -182,6 +182,12 @@ export function TeamMemberForm() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
+  type Section = "profile" | "services";
+  const [section, setSection] = useState<Section>("profile");
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+
+  const { data: services, isLoading: servicesLoading } = useBusinessServices(businessId);
+
   // Default dial codes + country to the business's own country.
   useEffect(() => {
     if (!business?.country || dial) return;
