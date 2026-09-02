@@ -16,8 +16,9 @@ const Checkbox = React.forwardRef<
     )}
     {...props}
   >
-    <CheckboxPrimitive.Indicator className={cn("grid place-content-center text-current")}>
-      <Check className="hidden h-4 w-4 data-[state=checked]:block" data-state="checked" />
+    <CheckboxPrimitive.Indicator className={cn("group grid place-content-center text-current")}>
+      <Check className="hidden h-4 w-4 group-data-[state=checked]:block" />
+      <Minus className="hidden h-4 w-4 group-data-[state=indeterminate]:block" />
     </CheckboxPrimitive.Indicator>
   </CheckboxPrimitive.Root>
 ));
