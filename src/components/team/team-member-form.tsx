@@ -54,21 +54,6 @@ export const CALENDAR_COLORS = [
 const GENDERS = ["Female", "Male", "Non-binary", "Prefer not to say"];
 const PRONOUNS = ["She/her", "He/him", "They/them", "Prefer not to say"];
 const EMPLOYMENT_TYPES = ["Full-time", "Part-time", "Contractor", "Freelance", "Intern"];
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function generateInviteToken() {
