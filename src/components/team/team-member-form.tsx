@@ -54,21 +54,6 @@ export const CALENDAR_COLORS = [
 const GENDERS = ["Female", "Male", "Non-binary", "Prefer not to say"];
 const PRONOUNS = ["She/her", "He/him", "They/them", "Prefer not to say"];
 const EMPLOYMENT_TYPES = ["Full-time", "Part-time", "Contractor", "Freelance", "Intern"];
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function generateInviteToken() {
@@ -166,9 +151,7 @@ export function TeamMemberForm() {
   const [additionalDial, setAdditionalDial] = useState("");
   const [additionalPhone, setAdditionalPhone] = useState("");
   const [country, setCountry] = useState("");
-  const [birthDay, setBirthDay] = useState("");
-  const [birthMonth, setBirthMonth] = useState("");
-  const [birthYear, setBirthYear] = useState("");
+  const [birthdayDate, setBirthdayDate] = useState<Date | undefined>(undefined);
   const [gender, setGender] = useState("");
   const [pronouns, setPronouns] = useState("");
   const [calendarColor, setCalendarColor] = useState<string>(CALENDAR_COLORS[0]);
@@ -216,10 +199,7 @@ export function TeamMemberForm() {
     mutationFn: async () => {
       if (!businessId) throw new Error("No business found");
 
-      const birthday =
-        birthDay && birthMonth && birthYear
-          ? `${birthYear.padStart(4, "0")}-${birthMonth.padStart(2, "0")}-${birthDay.padStart(2, "0")}`
-          : null;
+      const birthday = birthdayDate ? toISODate(birthdayDate) : null;
 
       const { data, error } = await supabase
         .from("team_members")
@@ -521,47 +501,56 @@ export function TeamMemberForm() {
 
               <div className="grid grid-cols-[minmax(0,1fr)_110px] gap-4">
                 <div className="space-y-2">
-                  <Label>Birthday</Label>
-                  <div className="flex gap-2">
-                    <Select value={birthDay} onValueChange={setBirthDay}>
-                      <SelectTrigger className={cn(FIELD, "w-[100px]")}>
-                        <SelectValue placeholder="Day" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-72">
-                        {days.map((day) => (
-                          <SelectItem key={day} value={day}>
-                            {day}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Select value={birthMonth} onValueChange={setBirthMonth}>
-                      <SelectTrigger className={cn(FIELD, "flex-1")}>
-                        <SelectValue placeholder="Month" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-72">
-                        {MONTHS.map((month, index) => (
-                          <SelectItem key={month} value={String(index + 1)}>
-                            {month}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <Label htmlFor="tm-birthday">Birthday</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        id="tm-birthday"
+                        variant="outline"
+                        className={cn(
+                          FIELD,
+                          "w-full justify-between px-4 font-normal hover:bg-transparent",
+                          !birthdayDate && "text-muted-foreground",
+                        )}
+                      >
+                        {birthdayDate ? format(birthdayDate, "EEE, MMM d") : "Day and month"}
+                        <CalendarBlank size={18} className="text-muted-foreground" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={birthdayDate}
+                        onSelect={setBirthdayDate}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="tm-birth-year">Year</Label>
-                  <Input
-                    id="tm-birth-year"
-                    inputMode="numeric"
-                    maxLength={4}
-                    placeholder="Year"
-                    className={FIELD}
-                    value={birthYear}
-                    onChange={(event) =>
-                      setBirthYear(event.target.value.replace(/\D/g, "").slice(0, 4))
-                    }
-                  />
+                  <Select
+                    value={birthdayDate ? String(birthdayDate.getFullYear()) : ""}
+                    onValueChange={(year) => {
+                      const next = birthdayDate ? new Date(birthdayDate) : new Date();
+                      next.setFullYear(Number(year));
+                      setBirthdayDate(next);
+                    }}
+                  >
+                    <SelectTrigger id="tm-birth-year" className={FIELD}>
+                      <SelectValue placeholder="Year" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-72">
+                      {Array.from({ length: 101 }, (_, i) => String(new Date().getFullYear() - i)).map(
+                        (year) => (
+                          <SelectItem key={year} value={year}>
+                            {year}
+                          </SelectItem>
+                        ),
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
