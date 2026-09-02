@@ -214,10 +214,7 @@ export function TeamMemberForm() {
     mutationFn: async () => {
       if (!businessId) throw new Error("No business found");
 
-      const birthday =
-        birthDay && birthMonth && birthYear
-          ? `${birthYear.padStart(4, "0")}-${birthMonth.padStart(2, "0")}-${birthDay.padStart(2, "0")}`
-          : null;
+      const birthday = birthdayDate ? toISODate(birthdayDate) : null;
 
       const { data, error } = await supabase
         .from("team_members")
