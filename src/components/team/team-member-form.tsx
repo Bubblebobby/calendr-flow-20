@@ -167,7 +167,7 @@ export function TeamMemberForm() {
   const [additionalPhone, setAdditionalPhone] = useState("");
   const [country, setCountry] = useState("");
   const [birthdayDate, setBirthdayDate] = useState<Date | undefined>(undefined);
-  const [gender, setGender] = useState("";
+  const [gender, setGender] = useState("");
   const [pronouns, setPronouns] = useState("");
   const [calendarColor, setCalendarColor] = useState<string>(CALENDAR_COLORS[0]);
   const [jobTitle, setJobTitle] = useState("");
