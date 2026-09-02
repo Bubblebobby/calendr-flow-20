@@ -141,7 +141,6 @@ export function TeamMemberServicesSection({
   const selectedSet = useMemo(() => new Set(selected), [selected]);
 
   const allChecked = services.length > 0 && selected.length === services.length;
-  const allIndeterminate = selected.length > 0 && !allChecked;
 
   const toggleAll = () => onChange(allChecked ? [] : services.map((s) => s.id));
 
@@ -181,10 +180,10 @@ export function TeamMemberServicesSection({
       <div>
         <label className="flex cursor-pointer items-center gap-3 py-3">
           <Checkbox
-            checked={allChecked ? true : allIndeterminate ? "indeterminate" : false}
+            checked={allChecked}
             onCheckedChange={toggleAll}
             disabled={services.length === 0}
-            className="size-5 rounded-md border-2 border-muted-foreground/30 bg-background data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=indeterminate]:border-primary data-[state=indeterminate]:bg-primary"
+            className="size-5 rounded-md border-2 border-muted-foreground/30 bg-background data-[state=checked]:border-primary data-[state=checked]:bg-primary"
           />
           <span className="flex-1 text-sm font-bold text-foreground">All services</span>
           <CountBadge>{services.length}</CountBadge>
