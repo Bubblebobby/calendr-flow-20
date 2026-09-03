@@ -56,12 +56,8 @@ const PRONOUNS = ["She/her", "He/him", "They/them", "Prefer not to say"];
 const EMPLOYMENT_TYPES = ["Full-time", "Part-time", "Contractor", "Freelance", "Intern"];
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function generateInviteToken() {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return `${crypto.randomUUID()}${crypto.randomUUID()}`.replace(/-/g, "");
-  }
-  return Math.random().toString(36).slice(2) + Date.now().toString(36);
-}
+
+
 
 function toISODate(date: Date) {
   return format(date, "yyyy-MM-dd");
