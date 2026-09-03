@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.sync_profile_on_team_member_claim() FROM PUBLIC, anon, authenticated;
