@@ -34,13 +34,6 @@ const AVATAR_COLORS = ["#D9F0FA", "#E7E3FE", "#FDE8D7", "#DCF3E4", "#FBE0EC"];
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function generateInviteToken() {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return `${crypto.randomUUID()}${crypto.randomUUID()}`.replace(/-/g, "");
-  }
-  return Math.random().toString(36).slice(2) + Date.now().toString(36);
-}
-
 export function useTeamRoles(businessId: string | undefined) {
   return useQuery({
     queryKey: ["team-roles", businessId],
@@ -124,12 +117,7 @@ export function InviteTeamMemberDialog({
       const editing = mode === "edit";
       const payload = editing
         ? { email: mail || null, role_id: roleId }
-        : {
-            email: mail,
-            invite_token: generateInviteToken(),
-            invite_status: "invited" as const,
-            role_id: roleId,
-          };
+        : { email: mail, role_id: roleId };
 
       let teamMemberId = member?.id;
       if (teamMemberId) {
@@ -160,7 +148,6 @@ export function InviteTeamMemberDialog({
         teamMemberId = data.id;
       }
 
-      // Placeholder — swapped for the real delivery function next.
       if (!editing) await sendTeamInvite(teamMemberId!);
       return teamMemberId!;
     },
@@ -170,15 +157,15 @@ export function InviteTeamMemberDialog({
       if (mode === "edit") {
         toast.success("Team member updated");
       } else {
-        toast.success("Invite queued", {
-          description: `${fullName.trim()} will receive an invite at ${email.trim()}.`,
+        toast.success("Invite sent", {
+          description: `${fullName.trim()} will get an invite at ${email.trim()}.`,
         });
       }
       onOpenChange(false);
     },
     onError: (err: Error) => {
       setError(err.message);
-      toast.error(mode === "edit" ? "Couldn't save changes" : "Couldn't queue the invite", {
+      toast.error(mode === "edit" ? "Couldn't save changes" : "Couldn't send the invite", {
         description: err.message,
       });
     },
@@ -290,7 +277,7 @@ export function InviteTeamMemberDialog({
             {invite.isPending
               ? mode === "edit"
                 ? "Saving…"
-                : "Queueing…"
+                : "Sending…"
               : mode === "edit"
                 ? "Save changes"
                 : "Send invite"}
