@@ -1,11 +1,11 @@
-/**
- * Placeholder invite dispatcher.
- *
- * The invite row (email + invite_token + invite_status) is already written by
- * the time this runs. Delivery will be wired to a real backend function next;
- * for now this resolves so the UI can confirm the invite was queued.
- */
-export async function sendTeamInvite(teamMemberId: string): Promise<{ queued: true }> {
-  console.info("[team-invite] queued for team member", teamMemberId);
-  return { queued: true };
+import { inviteTeamMember, revokeTeamMemberAccess } from "@/lib/team-invites.functions";
+
+/** Sends (or resends) the invite email for a team member row. */
+export async function sendTeamInvite(teamMemberId: string) {
+  return inviteTeamMember({ data: { team_member_id: teamMemberId } });
+}
+
+/** Bans the linked account and resets the row back to "Not invited". */
+export async function revokeTeamAccess(teamMemberId: string) {
+  return revokeTeamMemberAccess({ data: { team_member_id: teamMemberId } });
 }

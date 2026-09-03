@@ -14,8 +14,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { deriveInitials, memberName } from "@/components/catalog/service-team-members";
 import { InviteTeamMemberDialog, useTeamRoles } from "@/components/team/invite-team-member-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { sendTeamInvite } from "@/lib/team-invites";
+import { revokeTeamAccess, sendTeamInvite } from "@/lib/team-invites";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
 
@@ -74,6 +84,7 @@ export function TeamMembersList() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"invite" | "edit">("invite");
   const [activeMember, setActiveMember] = useState<TeamMemberRow | null>(null);
+  const [revokeTarget, setRevokeTarget] = useState<TeamMemberRow | null>(null);
 
   const rolesQuery = useTeamRoles(businessId);
   const roleNameById = useMemo(
@@ -108,24 +119,34 @@ export function TeamMembersList() {
   }, [members, search]);
 
   const resendInvite = useMutation({
-    mutationFn: async (member: TeamMemberRow) => {
-      await sendTeamInvite(member.id);
-    },
-    onSuccess: () => toast.success("Invite queued again"),
+    mutationFn: async (member: TeamMemberRow) => sendTeamInvite(member.id),
+    onSuccess: (result) =>
+      toast.success("Invite sent", { description: `Sent again to ${result.email}.` }),
     onError: (error: Error) =>
       toast.error("Couldn't resend the invite", { description: error.message }),
   });
 
-  const revokeAccess = useMutation({
-    mutationFn: async (member: TeamMemberRow) => {
-      const { error } = await supabase
-        .from("team_members")
-        .update({ invite_status: "not_invited", invite_token: null })
-        .eq("id", member.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
+  const inviteNow = useMutation({
+    mutationFn: async (member: TeamMemberRow) => sendTeamInvite(member.id),
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["team-members", businessId] });
+      toast.success("Invite sent", { description: `Sent to ${result.email}.` });
+    },
+    onError: (error: Error) =>
+      toast.error("Couldn't send the invite", { description: error.message }),
+  });
+
+  const revokeAccess = useMutation({
+    mutationFn: async (member: TeamMemberRow) => revokeTeamAccess(member.id),
+    onSuccess: (_data, member) => {
+      // Reflect the change immediately, no refetch round trip.
+      queryClient.setQueryData<TeamMemberRow[]>(["team-members", businessId], (rows) =>
+        (rows ?? []).map((row) =>
+          row.id === member.id ? { ...row, invite_status: "not_invited" as const } : row,
+        ),
+      );
+      queryClient.invalidateQueries({ queryKey: ["team-members", businessId] });
+      setRevokeTarget(null);
       toast.success("Access revoked");
     },
     onError: (error: Error) =>
@@ -133,6 +154,10 @@ export function TeamMembersList() {
   });
 
   const openInvite = (member: TeamMemberRow | null) => {
+    if (member?.email) {
+      inviteNow.mutate(member);
+      return;
+    }
     setActiveMember(member);
     setDialogMode("invite");
     setDialogOpen(true);
@@ -267,7 +292,7 @@ export function TeamMembersList() {
                       {member.invite_status === "active" && (
                         <DropdownMenuItem
                           className="px-3 py-2 text-sm font-medium text-destructive focus:text-destructive"
-                          onClick={() => revokeAccess.mutate(member)}
+                          onClick={() => setRevokeTarget(member)}
                         >
                           Revoke access
                         </DropdownMenuItem>
@@ -280,6 +305,34 @@ export function TeamMembersList() {
           </tbody>
         </table>
       </div>
+
+      <AlertDialog
+        open={Boolean(revokeTarget)}
+        onOpenChange={(open) => !open && setRevokeTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Revoke access?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {revokeTarget ? memberName(revokeTarget) : "This person"} will immediately lose
+              access to the dashboard. Their past records stay intact.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-full">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={revokeAccess.isPending}
+              onClick={(event) => {
+                event.preventDefault();
+                if (revokeTarget) revokeAccess.mutate(revokeTarget);
+              }}
+            >
+              {revokeAccess.isPending ? "Revoking…" : "Revoke access"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <InviteTeamMemberDialog
         open={dialogOpen}

@@ -56,12 +56,8 @@ const PRONOUNS = ["She/her", "He/him", "They/them", "Prefer not to say"];
 const EMPLOYMENT_TYPES = ["Full-time", "Part-time", "Contractor", "Freelance", "Intern"];
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function generateInviteToken() {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return `${crypto.randomUUID()}${crypto.randomUUID()}`.replace(/-/g, "");
-  }
-  return Math.random().toString(36).slice(2) + Date.now().toString(36);
-}
+
+
 
 function toISODate(date: Date) {
   return format(date, "yyyy-MM-dd");
@@ -224,8 +220,6 @@ export function TeamMemberForm() {
           employment_type: employmentType || null,
           external_team_member_id: externalId.trim() || null,
           notes: notes.trim() || null,
-          invite_token: generateInviteToken(),
-          invite_status: "invited" as const,
         })
         .select("id")
         .single();
@@ -245,7 +239,6 @@ export function TeamMemberForm() {
         await reconcileTeamMemberServices(data.id, selectedServices, []);
       }
 
-      // Placeholder — swapped for the real delivery function next.
       await sendTeamInvite(data.id);
       return data.id;
     },
@@ -253,8 +246,8 @@ export function TeamMemberForm() {
       queryClient.invalidateQueries({ queryKey: ["team-members", businessId] });
       queryClient.invalidateQueries({ queryKey: ["service-team-members", businessId] });
       queryClient.invalidateQueries({ queryKey: ["team-member-services", id] });
-      toast.success("Invite queued", {
-        description: `${firstName.trim()} will receive an invite at ${email.trim()}.`,
+      toast.success("Invite sent", {
+        description: `${firstName.trim()} will get an invite at ${email.trim()}.`,
       });
       navigate({ to: "/team" });
     },
