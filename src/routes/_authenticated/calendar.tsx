@@ -1,19 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { PageShell, PlaceholderPanel } from "@/components/page-shell";
+import { DayCalendar } from "@/components/calendar/day-calendar";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   head: () => ({
     meta: [
       { title: "Calendar — Bookly" },
-      { name: "description", content: "Manage appointments and staff availability on a shared calendar." },
+      {
+        name: "description",
+        content: "A day view of every team member's schedule, aligned to your business hours.",
+      },
       { property: "og:title", content: "Calendar — Bookly" },
-      { property: "og:description", content: "Manage appointments and staff availability on a shared calendar." },
+      {
+        property: "og:description",
+        content: "A day view of every team member's schedule, aligned to your business hours.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: () => (
-    <PageShell title="Calendar" description="Appointments, availability and shift planning.">
-      <PlaceholderPanel label="Calendar" />
-    </PageShell>
-  ),
+  component: () => <DayCalendar />,
 });
