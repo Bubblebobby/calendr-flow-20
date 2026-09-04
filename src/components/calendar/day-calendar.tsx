@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useBusiness } from "@/lib/use-business";
-import { minutesToTime, timeToMinutes, useBusinessHours } from "@/lib/business-hours";
+import { timeToMinutes, useBusinessHours } from "@/lib/business-hours";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -313,7 +313,6 @@ export function DayCalendar() {
                 </div>
               ))}
             </div>
-            <div className="sr-only">{minutesToTime(0)}</div>
           </div>
         </div>
       )}

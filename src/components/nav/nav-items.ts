@@ -136,6 +136,7 @@ export const navItems: NavItem[] = [
         title: "Workspace",
         children: [
           { title: "Business details", to: "/settings" },
+          { title: "Business hours", to: "/settings" },
           { title: "Locations", to: "/settings" },
           { title: "Billing", to: "/settings" },
         ],
