@@ -340,7 +340,7 @@ export function DayCalendar() {
                       <button
                         key={minutes}
                         type="button"
-                        onClick={() => handleSlotClick(member, minutes)}
+                        onClick={(event) => handleSlotClick(event, member, minutes)}
                         title={`${formatSlotLabel(minutes, locale)} · ${memberName(member)}`}
                         style={{ height: SLOT_HEIGHT }}
                         className={cn(
