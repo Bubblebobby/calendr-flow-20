@@ -1,7 +1,16 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarBlank, CaretLeft, CaretRight, UsersThree } from "@phosphor-icons/react";
+import {
+  CalendarBlank,
+  CalendarPlus,
+  CaretLeft,
+  CaretRight,
+  CalendarX,
+  UserPlus,
+  UsersThree,
+  X,
+} from "@phosphor-icons/react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +19,13 @@ import { timeToMinutes, useBusinessHours } from "@/lib/business-hours";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -69,6 +85,16 @@ export function DayCalendar() {
 
   const [selected, setSelected] = useState(() => new Date());
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [quickAction, setQuickAction] = useState<{
+    member: TeamMember;
+    minutes: number;
+    x: number;
+    y: number;
+  } | null>(null);
+  const [bookingSlot, setBookingSlot] = useState<{
+    member: TeamMember;
+    minutes: number;
+  } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const didScroll = useRef(false);
 
@@ -117,9 +143,33 @@ export function DayCalendar() {
 
   const isToday = new Date().toDateString() === selected.toDateString();
 
-  function handleSlotClick(member: TeamMember, minutes: number) {
+  function handleSlotClick(
+    event: React.MouseEvent<HTMLButtonElement>,
+    member: TeamMember,
+    minutes: number,
+  ) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    // Anchor to the slot; clamp so the popup never clips off-screen.
+    const popupWidth = 300;
+    const popupHeight = 230;
+    const x = Math.min(rect.left + 12, window.innerWidth - popupWidth - 16);
+    const y = Math.min(rect.top, window.innerHeight - popupHeight - 16);
+    setQuickAction({ member, minutes, x: Math.max(16, x), y: Math.max(16, y) });
+  }
+
+  function handleQuickAction(action: "appointment" | "group" | "block") {
+    const slot = quickAction;
+    setQuickAction(null);
+    if (!slot) return;
+    if (action === "appointment") {
+      setBookingSlot({ member: slot.member, minutes: slot.minutes });
+      return;
+    }
     toast("Coming soon", {
-      description: `${memberName(member)} · ${formatSlotLabel(minutes, locale)} — appointment actions arrive in the next step.`,
+      description:
+        action === "group"
+          ? "Group appointments are on the way."
+          : "Blocked time is on the way.",
     });
   }
 
@@ -273,7 +323,11 @@ export function DayCalendar() {
                         <div
                           key={minutes}
                           aria-disabled="true"
-                          style={{ height: SLOT_HEIGHT }}
+                          style={{
+                            height: SLOT_HEIGHT,
+                            backgroundImage:
+                              "repeating-linear-gradient(135deg, transparent 0 6px, oklch(0.22 0.03 240 / 0.05) 6px 7px)",
+                          }}
                           className={cn(
                             "bg-muted/40",
                             isHour
@@ -290,7 +344,7 @@ export function DayCalendar() {
                       <button
                         key={minutes}
                         type="button"
-                        onClick={() => handleSlotClick(member, minutes)}
+                        onClick={(event) => handleSlotClick(event, member, minutes)}
                         title={`${formatSlotLabel(minutes, locale)} · ${memberName(member)}`}
                         style={{ height: SLOT_HEIGHT }}
                         className={cn(
@@ -316,6 +370,89 @@ export function DayCalendar() {
           </div>
         </div>
       )}
+
+      {/* Quick-action popup anchored to the clicked slot */}
+      {quickAction ? (
+        <div
+          role="presentation"
+          className="fixed inset-0 z-50"
+          onClick={() => setQuickAction(null)}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") setQuickAction(null);
+          }}
+        >
+          <div
+            role="menu"
+            aria-label="Slot actions"
+            className="surface-card absolute w-[300px] overflow-hidden rounded-xl p-0 shadow-lg"
+            style={{ left: quickAction.x, top: quickAction.y }}
+            onClick={(event) => event.stopPropagation()}
+            ref={(node) => node?.focus()}
+            tabIndex={-1}
+          >
+            <div className="flex items-center justify-between border-b border-border bg-muted/50 px-4 py-3">
+              <p className="text-sm font-semibold text-foreground">
+                {formatSlotLabel(quickAction.minutes, locale)} — {memberName(quickAction.member)}
+              </p>
+              <button
+                type="button"
+                aria-label="Close"
+                onClick={() => setQuickAction(null)}
+                className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              >
+                <X size={14} weight="bold" />
+              </button>
+            </div>
+            <div className="flex flex-col gap-0.5 p-2">
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => handleQuickAction("appointment")}
+                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary active:bg-secondary/80"
+              >
+                <CalendarPlus size={18} className="text-muted-foreground" />
+                Add appointment
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => handleQuickAction("group")}
+                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary active:bg-secondary/80"
+              >
+                <UserPlus size={18} className="text-muted-foreground" />
+                Add group appointment
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => handleQuickAction("block")}
+                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary active:bg-secondary/80"
+              >
+                <CalendarX size={18} className="text-muted-foreground" />
+                Block time
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Placeholder booking modal — full flow arrives in the next step */}
+      <Dialog open={bookingSlot !== null} onOpenChange={(open) => !open && setBookingSlot(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>New appointment</DialogTitle>
+            <DialogDescription>
+              {bookingSlot
+                ? `${formatSlotLabel(bookingSlot.minutes, locale)} with ${memberName(bookingSlot.member)}`
+                : null}
+            </DialogDescription>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            The full booking flow is coming next. The selected time and team member were passed
+            through correctly.
+          </p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
