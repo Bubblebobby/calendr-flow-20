@@ -323,7 +323,11 @@ export function DayCalendar() {
                         <div
                           key={minutes}
                           aria-disabled="true"
-                          style={{ height: SLOT_HEIGHT }}
+                          style={{
+                            height: SLOT_HEIGHT,
+                            backgroundImage:
+                              "repeating-linear-gradient(135deg, transparent 0 6px, oklch(0.22 0.03 240 / 0.05) 6px 7px)",
+                          }}
                           className={cn(
                             "bg-muted/40",
                             isHour
