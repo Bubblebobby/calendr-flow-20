@@ -85,6 +85,16 @@ export function DayCalendar() {
 
   const [selected, setSelected] = useState(() => new Date());
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [quickAction, setQuickAction] = useState<{
+    member: TeamMember;
+    minutes: number;
+    x: number;
+    y: number;
+  } | null>(null);
+  const [bookingSlot, setBookingSlot] = useState<{
+    member: TeamMember;
+    minutes: number;
+  } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const didScroll = useRef(false);
 
