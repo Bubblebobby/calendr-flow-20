@@ -143,9 +143,33 @@ export function DayCalendar() {
 
   const isToday = new Date().toDateString() === selected.toDateString();
 
-  function handleSlotClick(member: TeamMember, minutes: number) {
+  function handleSlotClick(
+    event: React.MouseEvent<HTMLButtonElement>,
+    member: TeamMember,
+    minutes: number,
+  ) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    // Anchor to the slot; clamp so the popup never clips off-screen.
+    const popupWidth = 300;
+    const popupHeight = 230;
+    const x = Math.min(rect.left + 12, window.innerWidth - popupWidth - 16);
+    const y = Math.min(rect.top, window.innerHeight - popupHeight - 16);
+    setQuickAction({ member, minutes, x: Math.max(16, x), y: Math.max(16, y) });
+  }
+
+  function handleQuickAction(action: "appointment" | "group" | "block") {
+    const slot = quickAction;
+    setQuickAction(null);
+    if (!slot) return;
+    if (action === "appointment") {
+      setBookingSlot({ member: slot.member, minutes: slot.minutes });
+      return;
+    }
     toast("Coming soon", {
-      description: `${memberName(member)} · ${formatSlotLabel(minutes, locale)} — appointment actions arrive in the next step.`,
+      description:
+        action === "group"
+          ? "Group appointments are on the way."
+          : "Blocked time is on the way.",
     });
   }
 
