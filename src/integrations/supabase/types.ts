@@ -14,6 +14,148 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointment_items: {
+        Row: {
+          appointment_id: string
+          bundle_id: string | null
+          business_id: string
+          created_at: string
+          end_time: string
+          id: string
+          is_blocking: boolean
+          price: number | null
+          service_id: string | null
+          sort_order: number
+          start_time: string
+          team_member_id: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_id: string
+          bundle_id?: string | null
+          business_id: string
+          created_at?: string
+          end_time: string
+          id?: string
+          is_blocking?: boolean
+          price?: number | null
+          service_id?: string | null
+          sort_order?: number
+          start_time: string
+          team_member_id: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string
+          bundle_id?: string | null
+          business_id?: string
+          created_at?: string
+          end_time?: string
+          id?: string
+          is_blocking?: boolean
+          price?: number | null
+          service_id?: string | null
+          sort_order?: number
+          start_time?: string
+          team_member_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_items_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_items_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "bundles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_items_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_items_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_items_team_member_id_fkey"
+            columns: ["team_member_id"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      appointments: {
+        Row: {
+          business_id: string
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_walk_in: boolean
+          notes: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_walk_in?: boolean
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_walk_in?: boolean
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bundle_services: {
         Row: {
           bundle_id: string
