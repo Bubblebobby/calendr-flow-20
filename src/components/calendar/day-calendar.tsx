@@ -1,7 +1,16 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarBlank, CaretLeft, CaretRight, UsersThree } from "@phosphor-icons/react";
+import {
+  CalendarBlank,
+  CalendarPlus,
+  CaretLeft,
+  CaretRight,
+  CalendarX,
+  UserPlus,
+  UsersThree,
+  X,
+} from "@phosphor-icons/react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +19,13 @@ import { timeToMinutes, useBusinessHours } from "@/lib/business-hours";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 
