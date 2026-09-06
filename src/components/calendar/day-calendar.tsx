@@ -307,8 +307,35 @@ export function DayCalendar() {
               {members.map((member) => (
                 <div
                   key={member.id}
-                  className="min-w-0 flex-1 border-r border-border last:border-r-0"
+                  className="relative min-w-0 flex-1 border-r border-border last:border-r-0"
                 >
+                  {/* Booked appointments overlay the slot grid */}
+                  {(appointments ?? [])
+                    .filter((a) => a.team_member_id === member.id)
+                    .map((a) => (
+                      <div
+                        key={a.id}
+                        className="absolute inset-x-1 z-10 overflow-hidden rounded-md border-l-[3px] px-2 py-1 text-left shadow-sm"
+                        style={{
+                          top: (a.startMinutes / SLOT_MINUTES) * SLOT_HEIGHT,
+                          height: Math.max(
+                            SLOT_HEIGHT,
+                            ((a.endMinutes - a.startMinutes) / SLOT_MINUTES) * SLOT_HEIGHT,
+                          ),
+                          borderLeftColor: member.calendar_color,
+                          backgroundColor: `${member.calendar_color}22`,
+                        }}
+                        title={`${formatSlotLabel(a.startMinutes, locale)} · ${a.title}`}
+                      >
+                        <p className="truncate text-[11px] font-semibold text-foreground">
+                          {a.title}
+                        </p>
+                        <p className="truncate text-[10px] text-muted-foreground">
+                          {formatSlotLabel(a.startMinutes, locale)} · {a.serviceName}
+                        </p>
+                      </div>
+                    ))}
+
                   {slots.map((minutes) => {
                     const withinHours =
                       openMinutes !== null &&
