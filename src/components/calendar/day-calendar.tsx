@@ -130,7 +130,9 @@ export function DayCalendar() {
 
 
   const [selected, setSelected] = useState(() => new Date());
+  const { data: appointments } = useAppointments(business?.id, selected);
   const [pickerOpen, setPickerOpen] = useState(false);
+
   const [quickAction, setQuickAction] = useState<{
     member: TeamMember;
     minutes: number;
