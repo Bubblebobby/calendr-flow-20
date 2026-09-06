@@ -19,15 +19,10 @@ import { timeToMinutes, useBusinessHours } from "@/lib/business-hours";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { AppointmentDialog } from "@/components/calendar/appointment-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
+
 
 const SLOT_MINUTES = 15;
 const SLOT_HEIGHT = 18; // px — 72px per hour keeps a full day scannable
@@ -73,6 +68,56 @@ function useTeamMembers(businessId: string | undefined) {
   });
 }
 
+type CalendarEvent = {
+  id: string;
+  team_member_id: string;
+  startMinutes: number;
+  endMinutes: number;
+  title: string;
+  serviceName: string;
+};
+
+function useAppointments(businessId: string | undefined, day: Date) {
+  const dayStart = new Date(day);
+  dayStart.setHours(0, 0, 0, 0);
+  const dayEnd = new Date(dayStart);
+  dayEnd.setDate(dayEnd.getDate() + 1);
+
+  return useQuery({
+    queryKey: ["calendar-appointments", businessId, dayStart.toDateString()],
+    enabled: Boolean(businessId),
+    queryFn: async (): Promise<CalendarEvent[]> => {
+      const { data, error } = await supabase
+        .from("appointment_items")
+        .select(
+          "id, team_member_id, start_time, end_time, services(name), appointments(status, is_walk_in, clients(first_name, last_name))",
+        )
+        .eq("business_id", businessId!)
+        .gte("start_time", dayStart.toISOString())
+        .lt("start_time", dayEnd.toISOString());
+      if (error) throw error;
+
+      return (data ?? [])
+        .filter((row: any) => !["cancelled", "no_show"].includes(row.appointments?.status))
+        .map((row: any) => {
+          const start = new Date(row.start_time);
+          const end = new Date(row.end_time);
+          const client = row.appointments?.clients;
+          return {
+            id: row.id,
+            team_member_id: row.team_member_id,
+            startMinutes: start.getHours() * 60 + start.getMinutes(),
+            endMinutes: end.getHours() * 60 + end.getMinutes(),
+            title: client
+              ? [client.first_name, client.last_name].filter(Boolean).join(" ")
+              : "Walk-in",
+            serviceName: row.services?.name ?? "Service",
+          } satisfies CalendarEvent;
+        });
+    },
+  });
+}
+
 function formatSlotLabel(minutes: number, locale: string) {
   const date = new Date(2000, 0, 1, Math.floor(minutes / 60), minutes % 60);
   return new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit" }).format(date);
@@ -83,8 +128,11 @@ export function DayCalendar() {
   const { data: members, isLoading: loadingMembers } = useTeamMembers(business?.id);
   const { data: hours } = useBusinessHours(business?.id);
 
+
   const [selected, setSelected] = useState(() => new Date());
+  const { data: appointments } = useAppointments(business?.id, selected);
   const [pickerOpen, setPickerOpen] = useState(false);
+
   const [quickAction, setQuickAction] = useState<{
     member: TeamMember;
     minutes: number;
@@ -307,8 +355,35 @@ export function DayCalendar() {
               {members.map((member) => (
                 <div
                   key={member.id}
-                  className="min-w-0 flex-1 border-r border-border last:border-r-0"
+                  className="relative min-w-0 flex-1 border-r border-border last:border-r-0"
                 >
+                  {/* Booked appointments overlay the slot grid */}
+                  {(appointments ?? [])
+                    .filter((a) => a.team_member_id === member.id)
+                    .map((a) => (
+                      <div
+                        key={a.id}
+                        className="absolute inset-x-1 z-10 overflow-hidden rounded-md border-l-[3px] px-2 py-1 text-left shadow-sm"
+                        style={{
+                          top: (a.startMinutes / SLOT_MINUTES) * SLOT_HEIGHT,
+                          height: Math.max(
+                            SLOT_HEIGHT,
+                            ((a.endMinutes - a.startMinutes) / SLOT_MINUTES) * SLOT_HEIGHT,
+                          ),
+                          borderLeftColor: member.calendar_color,
+                          backgroundColor: `${member.calendar_color}22`,
+                        }}
+                        title={`${formatSlotLabel(a.startMinutes, locale)} · ${a.title}`}
+                      >
+                        <p className="truncate text-[11px] font-semibold text-foreground">
+                          {a.title}
+                        </p>
+                        <p className="truncate text-[10px] text-muted-foreground">
+                          {formatSlotLabel(a.startMinutes, locale)} · {a.serviceName}
+                        </p>
+                      </div>
+                    ))}
+
                   {slots.map((minutes) => {
                     const withinHours =
                       openMinutes !== null &&
@@ -436,23 +511,17 @@ export function DayCalendar() {
         </div>
       ) : null}
 
-      {/* Placeholder booking modal — full flow arrives in the next step */}
-      <Dialog open={bookingSlot !== null} onOpenChange={(open) => !open && setBookingSlot(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>New appointment</DialogTitle>
-            <DialogDescription>
-              {bookingSlot
-                ? `${formatSlotLabel(bookingSlot.minutes, locale)} with ${memberName(bookingSlot.member)}`
-                : null}
-            </DialogDescription>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            The full booking flow is coming next. The selected time and team member were passed
-            through correctly.
-          </p>
-        </DialogContent>
-      </Dialog>
+      <AppointmentDialog
+        slot={
+          bookingSlot
+            ? { member: bookingSlot.member, minutes: bookingSlot.minutes, date: selected }
+            : null
+        }
+        business={business}
+        team={members ?? []}
+        onClose={() => setBookingSlot(null)}
+      />
+
     </div>
   );
 }
