@@ -68,6 +68,56 @@ function useTeamMembers(businessId: string | undefined) {
   });
 }
 
+type CalendarEvent = {
+  id: string;
+  team_member_id: string;
+  startMinutes: number;
+  endMinutes: number;
+  title: string;
+  serviceName: string;
+};
+
+function useAppointments(businessId: string | undefined, day: Date) {
+  const dayStart = new Date(day);
+  dayStart.setHours(0, 0, 0, 0);
+  const dayEnd = new Date(dayStart);
+  dayEnd.setDate(dayEnd.getDate() + 1);
+
+  return useQuery({
+    queryKey: ["calendar-appointments", businessId, dayStart.toDateString()],
+    enabled: Boolean(businessId),
+    queryFn: async (): Promise<CalendarEvent[]> => {
+      const { data, error } = await supabase
+        .from("appointment_items")
+        .select(
+          "id, team_member_id, start_time, end_time, services(name), appointments(status, is_walk_in, clients(first_name, last_name))",
+        )
+        .eq("business_id", businessId!)
+        .gte("start_time", dayStart.toISOString())
+        .lt("start_time", dayEnd.toISOString());
+      if (error) throw error;
+
+      return (data ?? [])
+        .filter((row: any) => !["cancelled", "no_show"].includes(row.appointments?.status))
+        .map((row: any) => {
+          const start = new Date(row.start_time);
+          const end = new Date(row.end_time);
+          const client = row.appointments?.clients;
+          return {
+            id: row.id,
+            team_member_id: row.team_member_id,
+            startMinutes: start.getHours() * 60 + start.getMinutes(),
+            endMinutes: end.getHours() * 60 + end.getMinutes(),
+            title: client
+              ? [client.first_name, client.last_name].filter(Boolean).join(" ")
+              : "Walk-in",
+            serviceName: row.services?.name ?? "Service",
+          } satisfies CalendarEvent;
+        });
+    },
+  });
+}
+
 function formatSlotLabel(minutes: number, locale: string) {
   const date = new Date(2000, 0, 1, Math.floor(minutes / 60), minutes % 60);
   return new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit" }).format(date);
@@ -77,6 +127,7 @@ export function DayCalendar() {
   const { data: business } = useBusiness();
   const { data: members, isLoading: loadingMembers } = useTeamMembers(business?.id);
   const { data: hours } = useBusinessHours(business?.id);
+
 
   const [selected, setSelected] = useState(() => new Date());
   const [pickerOpen, setPickerOpen] = useState(false);
