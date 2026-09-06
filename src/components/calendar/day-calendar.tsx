@@ -19,15 +19,10 @@ import { timeToMinutes, useBusinessHours } from "@/lib/business-hours";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { AppointmentDialog } from "@/components/calendar/appointment-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
+
 
 const SLOT_MINUTES = 15;
 const SLOT_HEIGHT = 18; // px — 72px per hour keeps a full day scannable
