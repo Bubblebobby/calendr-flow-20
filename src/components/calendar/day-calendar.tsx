@@ -463,23 +463,17 @@ export function DayCalendar() {
         </div>
       ) : null}
 
-      {/* Placeholder booking modal — full flow arrives in the next step */}
-      <Dialog open={bookingSlot !== null} onOpenChange={(open) => !open && setBookingSlot(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>New appointment</DialogTitle>
-            <DialogDescription>
-              {bookingSlot
-                ? `${formatSlotLabel(bookingSlot.minutes, locale)} with ${memberName(bookingSlot.member)}`
-                : null}
-            </DialogDescription>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            The full booking flow is coming next. The selected time and team member were passed
-            through correctly.
-          </p>
-        </DialogContent>
-      </Dialog>
+      <AppointmentDialog
+        slot={
+          bookingSlot
+            ? { member: bookingSlot.member, minutes: bookingSlot.minutes, date: selected }
+            : null
+        }
+        business={business}
+        team={members ?? []}
+        onClose={() => setBookingSlot(null)}
+      />
+
     </div>
   );
 }
