@@ -281,7 +281,6 @@ export function AppointmentDialog({
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
       <DialogContent
-        showCloseButton={false}
         className="left-0 top-0 h-svh w-svw max-w-none translate-x-0 translate-y-0 gap-0 rounded-none border-0 bg-background p-0 sm:max-w-none"
       >
         <DialogTitle className="sr-only">Add appointment</DialogTitle>
@@ -546,14 +545,6 @@ export function AppointmentDialog({
           <aside className="flex min-h-0 w-full flex-col border-t border-border bg-secondary/30 lg:w-[400px] lg:border-l lg:border-t-0">
             <div className="flex items-start justify-between gap-3 px-6 pt-6">
               <h3 className="text-lg font-semibold tracking-tight">Select a service</h3>
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label="Close"
-                className="flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-              >
-                <X size={18} />
-              </button>
             </div>
             <div className="px-6 py-4">
               <div className="relative">
