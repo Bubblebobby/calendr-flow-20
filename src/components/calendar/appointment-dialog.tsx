@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CaretLeft, MagnifyingGlass, Trash, User, X } from "@phosphor-icons/react";
+import { CalendarBlank, MagnifyingGlass, Plus, Trash, User, X } from "@phosphor-icons/react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -96,6 +96,7 @@ export function AppointmentDialog({
   const [notes, setNotes] = useState("");
   const [conflict, setConflict] = useState<string | null>(null);
   const [serviceQuery, setServiceQuery] = useState("");
+  const [clientPickerOpen, setClientPickerOpen] = useState(false);
 
   // Reset the form each time a new slot is opened.
   useEffect(() => {
@@ -109,6 +110,7 @@ export function AppointmentDialog({
     setConflict(null);
     setLines([]);
     setServiceQuery("");
+    setClientPickerOpen(false);
   }, [slot]);
 
   const { data: services } = useQuery({
@@ -140,20 +142,29 @@ export function AppointmentDialog({
   });
 
   const { data: clients } = useQuery({
-    queryKey: ["booking-clients", business?.id, clientQuery],
-    enabled: Boolean(business?.id) && Boolean(slot) && clientQuery.trim().length > 0,
+    queryKey: ["booking-clients", business?.id],
+    enabled: Boolean(business?.id) && Boolean(slot),
     queryFn: async (): Promise<ClientRow[]> => {
-      const term = `%${clientQuery.trim()}%`;
       const { data, error } = await supabase
         .from("clients")
         .select("id, first_name, last_name, email, phone, avatar_color")
         .eq("business_id", business!.id)
-        .or(`first_name.ilike.${term},last_name.ilike.${term},email.ilike.${term},phone.ilike.${term}`)
-        .limit(6);
+        .order("first_name", { ascending: true })
+        .limit(100);
       if (error) throw error;
       return (data ?? []) as ClientRow[];
     },
   });
+
+  const visibleClients = useMemo(() => {
+    const term = clientQuery.trim().toLocaleLowerCase();
+    if (!term) return clients ?? [];
+    return (clients ?? []).filter((item) =>
+      [personName(item), item.email, item.phone]
+        .filter(Boolean)
+        .some((value) => value?.toLocaleLowerCase().includes(term)),
+    );
+  }, [clients, clientQuery]);
 
   // Group the catalog by category for the right-hand picker.
   const grouped = useMemo(() => {
@@ -281,322 +292,227 @@ export function AppointmentDialog({
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
       <DialogContent
-        className="left-0 top-0 h-svh w-svw max-w-none translate-x-0 translate-y-0 gap-0 rounded-none border-0 bg-background p-0 sm:max-w-none"
+        overlayClassName="bg-foreground/10"
+        className="inset-y-0 left-auto right-0 top-0 h-svh w-full max-w-[720px] translate-x-0 translate-y-0 gap-0 overflow-hidden rounded-none border-0 border-l border-border bg-card p-0 shadow-2xl sm:max-w-[720px] [&>button]:hidden"
       >
         <DialogTitle className="sr-only">Add appointment</DialogTitle>
         <DialogDescription className="sr-only">
           Choose a client and services for this time slot.
         </DialogDescription>
 
-        <div className="flex h-full min-h-0 flex-col lg:flex-row">
-          {/* Left: appointment builder */}
-          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 py-6 lg:px-10 lg:py-8">
-            <div className="mx-auto w-full max-w-2xl space-y-6">
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  aria-label="Back"
-                  className="flex size-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-secondary lg:hidden"
-                >
-                  <CaretLeft size={16} />
-                </button>
-                <div>
-                  <h2 className="text-2xl font-semibold tracking-tight">Add appointment</h2>
-                  {slot ? (
-                    <p className="text-sm text-muted-foreground">
-                      {dayLabel} · {minutesLabel(slot.minutes, locale)} ·{" "}
-                      {personName(slot.member)}
-                    </p>
+        <div className="flex h-full min-h-0 bg-card">
+          <aside className="flex w-44 shrink-0 flex-col border-r border-border bg-card px-4 py-6 text-center">
+            <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <User size={22} />
+            </div>
+            {client ? (
+              <>
+                <p className="mt-3 truncate text-sm font-semibold text-foreground">{personName(client)}</p>
+                <p className="mt-1 truncate text-xs text-muted-foreground">{client.email || client.phone}</p>
+                <Button variant="ghost" size="sm" className="mt-2" onClick={() => setClientPickerOpen(true)}>
+                  Change client
+                </Button>
+              </>
+            ) : walkIn ? (
+              <>
+                <p className="mt-3 text-sm font-semibold text-foreground">Walk-in</p>
+                <Button variant="ghost" size="sm" className="mt-2" onClick={() => setClientPickerOpen(true)}>
+                  Change
+                </Button>
+              </>
+            ) : (
+              <Button variant="ghost" className="mt-2 h-auto flex-col gap-1 py-2" onClick={() => setClientPickerOpen(true)}>
+                <span className="font-semibold text-foreground">Add client</span>
+                <span className="whitespace-normal text-xs font-normal leading-5 text-muted-foreground">
+                  Or leave empty for walk-ins
+                </span>
+              </Button>
+            )}
+
+            <div className="mt-auto border-t border-border pt-4 text-left">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <CalendarBlank size={15} />
+                <span>{dayLabel}</span>
+              </div>
+              <p className="mt-2 text-sm font-semibold text-foreground">
+                {slot ? minutesLabel(slot.minutes, locale) : ""}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">{slot ? personName(slot.member) : ""}</p>
+            </div>
+          </aside>
+
+          <main className="relative flex min-w-0 flex-1 flex-col bg-card">
+            <div className="flex h-16 shrink-0 items-center justify-between border-b border-border px-7">
+              <h2 className="text-xl font-semibold text-foreground">
+                {clientPickerOpen ? "Select a client" : "Select a service"}
+              </h2>
+              <Button variant="ghost" size="icon" aria-label="Close appointment" onClick={onClose}>
+                <X size={20} />
+              </Button>
+            </div>
+
+            {clientPickerOpen ? (
+              <div className="flex min-h-0 flex-1 flex-col">
+                <div className="space-y-3 border-b border-border px-7 py-5">
+                  <div className="relative">
+                    <MagnifyingGlass size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      autoFocus
+                      value={clientQuery}
+                      onChange={(event) => setClientQuery(event.target.value)}
+                      placeholder="Search by name, email or mobile"
+                      className="h-11 rounded-lg pl-10"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      className="flex-1 justify-start"
+                      onClick={() => {
+                        setWalkIn(true);
+                        setClient(null);
+                        setClientPickerOpen(false);
+                      }}
+                    >
+                      <User size={16} /> Continue as walk-in
+                    </Button>
+                    <Button variant="outline" onClick={() => setQuickAdd((value) => !value)}>
+                      <Plus size={16} /> New client
+                    </Button>
+                  </div>
+                  {quickAdd ? (
+                    <div className="grid grid-cols-2 gap-2 border-t border-border pt-3">
+                      <Input placeholder="First name" value={newClient.first_name} onChange={(event) => setNewClient({ ...newClient, first_name: event.target.value })} />
+                      <Input placeholder="Last name" value={newClient.last_name} onChange={(event) => setNewClient({ ...newClient, last_name: event.target.value })} />
+                      <Input placeholder="Mobile" value={newClient.phone} onChange={(event) => setNewClient({ ...newClient, phone: event.target.value })} />
+                      <Input placeholder="Email" value={newClient.email} onChange={(event) => setNewClient({ ...newClient, email: event.target.value })} />
+                      <Button
+                        className="col-span-2"
+                        disabled={!newClient.first_name.trim()}
+                        onClick={() => {
+                          setClient({
+                            id: "pending",
+                            first_name: newClient.first_name.trim(),
+                            last_name: newClient.last_name.trim() || null,
+                            email: newClient.email.trim() || null,
+                            phone: newClient.phone.trim() || null,
+                            avatar_color: "var(--primary)",
+                          });
+                          setWalkIn(false);
+                          setClientPickerOpen(false);
+                        }}
+                      >
+                        Use this client
+                      </Button>
+                    </div>
                   ) : null}
                 </div>
-              </div>
-
-              {conflict ? (
-                <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                  {conflict}
-                </p>
-              ) : null}
-
-              {/* Client */}
-              <section className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label>Client</Label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setWalkIn((v) => !v);
-                      setClient(null);
-                      setQuickAdd(false);
-                    }}
-                    className={cn(
-                      "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-                      walkIn
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border text-muted-foreground hover:bg-secondary",
-                    )}
-                  >
-                    Walk-in
-                  </button>
-                </div>
-
-                {walkIn ? (
-                  <p className="rounded-xl border border-border px-4 py-3 text-sm text-muted-foreground">
-                    Booking without a client record.
+                <div className="min-h-0 flex-1 overflow-y-auto px-7 py-3">
+                  <p className="py-2 text-xs font-semibold text-muted-foreground">
+                    {clientQuery ? "Search results" : "Clients"}
                   </p>
-                ) : client ? (
-                  <div className="flex items-center gap-3 rounded-xl border border-border px-4 py-3">
-                    <span
-                      className="flex size-10 items-center justify-center rounded-full text-sm font-semibold text-white"
-                      style={{ backgroundColor: client.avatar_color }}
-                    >
-                      {client.first_name[0]?.toUpperCase()}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium">{personName(client)}</span>
-                      <span className="block truncate text-xs text-muted-foreground">
-                        {client.email || client.phone || "No contact details"}
-                      </span>
-                    </span>
-                    <button
-                      type="button"
-                      aria-label="Remove client"
-                      onClick={() => setClient(null)}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="relative">
-                      <MagnifyingGlass
-                        size={16}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                      />
-                      <Input
-                        value={clientQuery}
-                        onChange={(e) => setClientQuery(e.target.value)}
-                        placeholder="Search client by name, email or phone"
-                        className="pl-9"
-                      />
-                    </div>
-                    {clients && clients.length > 0 ? (
-                      <ul className="divide-y divide-border rounded-xl border border-border">
-                        {clients.map((c) => (
-                          <li key={c.id}>
-                            <button
-                              type="button"
-                              onClick={() => setClient(c)}
-                              className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-secondary"
-                            >
-                              <span
-                                className="flex size-7 items-center justify-center rounded-full text-[11px] font-semibold text-white"
-                                style={{ backgroundColor: c.avatar_color }}
-                              >
-                                {c.first_name[0]?.toUpperCase()}
-                              </span>
-                              <span className="min-w-0">
-                                <span className="block truncate text-sm">{personName(c)}</span>
-                                <span className="block truncate text-xs text-muted-foreground">
-                                  {c.email || c.phone || ""}
-                                </span>
-                              </span>
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : null}
-
-                    {quickAdd ? (
-                      <div className="grid grid-cols-2 gap-2 rounded-xl border border-border p-3">
-                        <Input
-                          placeholder="First name"
-                          value={newClient.first_name}
-                          onChange={(e) => setNewClient({ ...newClient, first_name: e.target.value })}
-                        />
-                        <Input
-                          placeholder="Last name"
-                          value={newClient.last_name}
-                          onChange={(e) => setNewClient({ ...newClient, last_name: e.target.value })}
-                        />
-                        <Input
-                          placeholder="Mobile"
-                          value={newClient.phone}
-                          onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })}
-                        />
-                        <Input
-                          placeholder="Email"
-                          value={newClient.email}
-                          onChange={(e) => setNewClient({ ...newClient, email: e.target.value })}
-                        />
-                      </div>
-                    ) : (
-                      <Button variant="outline" size="sm" onClick={() => setQuickAdd(true)}>
-                        <User size={14} /> Add new client
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </section>
-
-              {/* Selected services */}
-              <section className="space-y-2">
-                <Label>Services</Label>
-                {scheduled.length > 0 ? (
-                  <ul className="divide-y divide-border rounded-xl border border-border">
-                    {scheduled.map((line, index) => {
-                      const service = services?.find((s) => s.id === line.serviceId);
-                      return (
-                        <li key={line.key} className="flex items-center gap-3 px-3 py-3">
-                          <span className="w-16 shrink-0 text-xs font-medium tabular-nums text-muted-foreground">
-                            {minutesLabel(line.start, locale)}
-                          </span>
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-sm font-medium">
-                              {service?.name ?? "Service"}
+                  {visibleClients.length ? (
+                    <ul className="divide-y divide-border">
+                      {visibleClients.map((item) => (
+                        <li key={item.id}>
+                          <Button
+                            variant="ghost"
+                            className="h-auto w-full justify-start rounded-none px-0 py-3 text-left"
+                            onClick={() => {
+                              setClient(item);
+                              setWalkIn(false);
+                              setQuickAdd(false);
+                              setClientPickerOpen(false);
+                            }}
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                              {item.first_name[0]?.toUpperCase()}{item.last_name?.[0]?.toUpperCase()}
                             </span>
-                            <span className="block text-xs text-muted-foreground">
-                              {formatDuration(line.durationMinutes)}
-                            </span>
-                          </span>
-                          <Select
-                            value={line.teamMemberId}
-                            onValueChange={(value) =>
-                              setLines((current) =>
-                                current.map((l, i) => (i === index ? { ...l, teamMemberId: value } : l)),
-                              )
-                            }
-                          >
-                            <SelectTrigger className="h-8 w-40 text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {team.map((m) => (
-                                <SelectItem key={m.id} value={m.id}>
-                                  {personName(m)}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <span className="w-24 shrink-0 text-right text-sm tabular-nums">
-                            {line.price !== null
-                              ? formatMoney(Number(line.price), currency, business?.country)
-                              : "—"}
-                          </span>
-                          <button
-                            type="button"
-                            aria-label="Remove service"
-                            onClick={() => setLines((current) => current.filter((_, i) => i !== index))}
-                            className="text-muted-foreground hover:text-destructive"
-                          >
-                            <Trash size={16} />
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                ) : (
-                  <p className="rounded-xl border border-dashed border-border px-3 py-6 text-center text-sm text-muted-foreground">
-                    Pick a service from the list on the right.
-                  </p>
-                )}
-              </section>
-
-              <section className="space-y-2">
-                <Label htmlFor="appointment-notes">Notes</Label>
-                <Textarea
-                  id="appointment-notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Anything the team should know"
-                  rows={2}
-                />
-              </section>
-
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
-                <span className="text-sm text-muted-foreground">
-                  {scheduled.length > 0
-                    ? `${formatDuration(totalMinutes)} · ${formatMoney(totalPrice, currency, business?.country)}`
-                    : "No services selected"}
-                </span>
-                <span className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    disabled={save.isPending || lines.length === 0}
-                    onClick={() =>
-                      save.mutateAsync().then(
-                        () => toast("Coming soon", { description: "Checkout arrives with Sales." }),
-                        () => undefined,
-                      )
-                    }
-                  >
-                    Save & checkout
-                  </Button>
-                  <Button disabled={save.isPending || lines.length === 0} onClick={() => save.mutate()}>
-                    {save.isPending ? "Saving…" : "Save"}
-                  </Button>
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Right: service catalog */}
-          <aside className="flex min-h-0 w-full flex-col border-t border-border bg-secondary/30 lg:w-[400px] lg:border-l lg:border-t-0">
-            <div className="flex items-start justify-between gap-3 px-6 pt-6">
-              <h3 className="text-lg font-semibold tracking-tight">Select a service</h3>
-            </div>
-            <div className="px-6 py-4">
-              <div className="relative">
-                <MagnifyingGlass
-                  size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                />
-                <Input
-                  value={serviceQuery}
-                  onChange={(e) => setServiceQuery(e.target.value)}
-                  placeholder="Search service name"
-                  className="bg-background pl-9"
-                />
-              </div>
-            </div>
-            <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-8">
-              {grouped.length === 0 ? (
-                <p className="py-8 text-center text-sm text-muted-foreground">No services found.</p>
-              ) : (
-                grouped.map((group) => (
-                  <div key={group.id} className="mb-6">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      {group.name}
-                    </p>
-                    <ul className="overflow-hidden rounded-xl border border-border bg-background">
-                      {group.items.map((service) => (
-                        <li key={service.id} className="border-b border-border last:border-0">
-                          <button
-                            type="button"
-                            onClick={() => addService(service)}
-                            className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-secondary active:bg-secondary"
-                          >
                             <span className="min-w-0 flex-1">
-                              <span className="block truncate text-sm font-medium">{service.name}</span>
-                              <span className="block text-xs text-muted-foreground">
-                                {formatDuration(service.duration_minutes)}
-                              </span>
+                              <span className="block truncate text-sm font-semibold text-foreground">{personName(item)}</span>
+                              <span className="block truncate text-xs font-normal text-muted-foreground">{item.email || item.phone || "No contact details"}</span>
                             </span>
-                            <span className="shrink-0 text-sm tabular-nums">
-                              {service.price !== null
-                                ? formatMoney(Number(service.price), currency, business?.country)
-                                : "—"}
-                            </span>
-                          </button>
+                          </Button>
                         </li>
                       ))}
                     </ul>
+                  ) : (
+                    <p className="py-10 text-center text-sm text-muted-foreground">No clients found.</p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="border-b border-border px-7 py-4">
+                  <div className="relative">
+                    <MagnifyingGlass size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <Input value={serviceQuery} onChange={(event) => setServiceQuery(event.target.value)} placeholder="Search by service name" className="h-11 rounded-lg border-primary pl-10" />
                   </div>
-                ))
-              )}
-            </div>
-          </aside>
+                </div>
+                <div className="min-h-0 flex-1 overflow-y-auto px-7 py-5">
+                  {conflict ? <p className="mb-4 border-l-2 border-destructive bg-destructive/10 px-3 py-2 text-sm text-destructive">{conflict}</p> : null}
+                  {grouped.length === 0 ? (
+                    <p className="py-10 text-center text-sm text-muted-foreground">No services found.</p>
+                  ) : grouped.map((group) => (
+                    <section key={group.id} className="mb-7">
+                      <div className="mb-2 flex items-center gap-2">
+                        <h3 className="text-sm font-semibold text-foreground">{group.name}</h3>
+                        <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">{group.items.length}</span>
+                      </div>
+                      <ul>
+                        {group.items.map((service) => (
+                          <li key={service.id}>
+                            <Button variant="ghost" className="h-auto w-full justify-start rounded-none border-l-2 border-accent px-4 py-3 text-left hover:bg-secondary" onClick={() => addService(service)}>
+                              <span className="min-w-0 flex-1">
+                                <span className="block truncate text-sm font-medium text-foreground">{service.name}</span>
+                                <span className="mt-1 block text-xs font-normal text-muted-foreground">{formatDuration(service.duration_minutes)}</span>
+                              </span>
+                              <span className="shrink-0 text-sm font-medium tabular-nums text-foreground">
+                                {service.price !== null ? formatMoney(Number(service.price), currency, business?.country) : "—"}
+                              </span>
+                            </Button>
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  ))}
+
+                  {scheduled.length ? (
+                    <section className="mt-2 border-t border-border pt-5">
+                      <h3 className="mb-3 text-sm font-semibold text-foreground">Appointment</h3>
+                      <ul className="divide-y divide-border border-y border-border">
+                        {scheduled.map((line, index) => {
+                          const service = services?.find((item) => item.id === line.serviceId);
+                          return (
+                            <li key={line.key} className="flex items-center gap-3 py-3">
+                              <span className="w-16 text-xs tabular-nums text-muted-foreground">{minutesLabel(line.start, locale)}</span>
+                              <span className="min-w-0 flex-1 truncate text-sm font-medium">{service?.name ?? "Service"}</span>
+                              <Select value={line.teamMemberId} onValueChange={(value) => setLines((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, teamMemberId: value } : item))}>
+                                <SelectTrigger className="h-8 w-32 text-xs"><SelectValue /></SelectTrigger>
+                                <SelectContent>{team.map((member) => <SelectItem key={member.id} value={member.id}>{personName(member)}</SelectItem>)}</SelectContent>
+                              </Select>
+                              <Button variant="ghost" size="icon" aria-label="Remove service" onClick={() => setLines((current) => current.filter((_, itemIndex) => itemIndex !== index))}><Trash size={16} /></Button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                      <Textarea value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Add appointment notes" rows={2} className="mt-4" />
+                    </section>
+                  ) : null}
+                </div>
+                <footer className="flex shrink-0 items-center justify-between gap-4 border-t border-border bg-card px-7 py-4">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{lines.length ? formatMoney(totalPrice, currency, business?.country) : "No services selected"}</p>
+                    {lines.length ? <p className="text-xs text-muted-foreground">{formatDuration(totalMinutes)}</p> : null}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" disabled={save.isPending || !lines.length} onClick={() => save.mutateAsync().then(() => toast("Coming soon", { description: "Checkout arrives with Sales." }), () => undefined)}>Save & checkout</Button>
+                    <Button disabled={save.isPending || !lines.length} onClick={() => save.mutate()}>{save.isPending ? "Saving…" : "Save"}</Button>
+                  </div>
+                </footer>
+              </>
+            )}
+          </main>
         </div>
       </DialogContent>
     </Dialog>
