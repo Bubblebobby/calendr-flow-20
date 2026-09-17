@@ -472,7 +472,7 @@ export function AppointmentDialog({
         </div>
 
         <Dialog open={clientFormOpen} onOpenChange={setClientFormOpen}>
-          <DialogContent className="inset-0 h-svh w-full max-w-none translate-x-0 translate-y-0 gap-0 overflow-y-auto rounded-none border-0 p-0 sm:max-w-none [&>button]:hidden">
+          <DialogContent className="left-0 top-0 h-svh w-full max-w-none translate-x-0 translate-y-0 gap-0 overflow-y-auto rounded-none border-0 p-0 sm:max-w-none sm:rounded-none [&>button]:hidden">
             <DialogTitle className="sr-only">Add a new client</DialogTitle>
             <DialogDescription className="sr-only">
               Create a new client profile for this business.
