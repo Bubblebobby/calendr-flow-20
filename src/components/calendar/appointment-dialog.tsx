@@ -216,23 +216,7 @@ export function AppointmentDialog({
       if (!business || !slot) throw new Error("Missing business");
       if (scheduled.length === 0) throw new Error("Add at least one service");
 
-      let clientId = client?.id ?? null;
-
-      if (!walkIn && !clientId && quickAdd && newClient.first_name.trim()) {
-        const { data, error } = await supabase
-          .from("clients")
-          .insert({
-            business_id: business.id,
-            first_name: newClient.first_name.trim(),
-            last_name: newClient.last_name.trim() || null,
-            phone: newClient.phone.trim() || null,
-            email: newClient.email.trim() || null,
-          })
-          .select("id")
-          .single();
-        if (error) throw error;
-        clientId = data.id;
-      }
+      const clientId = client?.id ?? null;
 
       const { data: appointment, error: apptError } = await supabase
         .from("appointments")
@@ -375,36 +359,10 @@ export function AppointmentDialog({
                     >
                       <User size={16} /> Continue as walk-in
                     </Button>
-                    <Button variant="outline" onClick={() => setQuickAdd((value) => !value)}>
+                    <Button variant="outline" onClick={() => setClientFormOpen(true)}>
                       <Plus size={16} /> New client
                     </Button>
                   </div>
-                  {quickAdd ? (
-                    <div className="grid grid-cols-2 gap-2 border-t border-border pt-3">
-                      <Input placeholder="First name" value={newClient.first_name} onChange={(event) => setNewClient({ ...newClient, first_name: event.target.value })} />
-                      <Input placeholder="Last name" value={newClient.last_name} onChange={(event) => setNewClient({ ...newClient, last_name: event.target.value })} />
-                      <Input placeholder="Mobile" value={newClient.phone} onChange={(event) => setNewClient({ ...newClient, phone: event.target.value })} />
-                      <Input placeholder="Email" value={newClient.email} onChange={(event) => setNewClient({ ...newClient, email: event.target.value })} />
-                      <Button
-                        className="col-span-2"
-                        disabled={!newClient.first_name.trim()}
-                        onClick={() => {
-                          setClient({
-                            id: "pending",
-                            first_name: newClient.first_name.trim(),
-                            last_name: newClient.last_name.trim() || null,
-                            email: newClient.email.trim() || null,
-                            phone: newClient.phone.trim() || null,
-                            avatar_color: "var(--primary)",
-                          });
-                          setWalkIn(false);
-                          setClientPickerOpen(false);
-                        }}
-                      >
-                        Use this client
-                      </Button>
-                    </div>
-                  ) : null}
                 </div>
                 <div className="min-h-0 flex-1 overflow-y-auto px-7 py-3">
                   <p className="py-2 text-xs font-semibold text-muted-foreground">
@@ -420,7 +378,6 @@ export function AppointmentDialog({
                             onClick={() => {
                               setClient(item);
                               setWalkIn(false);
-                              setQuickAdd(false);
                               setClientPickerOpen(false);
                             }}
                           >
