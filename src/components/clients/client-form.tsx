@@ -446,13 +446,13 @@ export function ClientForm({
   const tags = tagsQuery.data ?? [];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className={cn("bg-white", !onClose && "min-h-screen")}>
       <header className="sticky top-0 z-20 bg-white/90 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-end gap-3 px-8 py-4">
           <Button
             variant="outline"
             className="h-11 rounded-full border-[#D3D3D3] bg-white px-6 text-base font-semibold text-foreground hover:bg-white hover:text-foreground"
-            onClick={() => navigate({ to: "/clients" })}
+            onClick={() => (onClose ? onClose() : navigate({ to: "/clients" }))}
           >
             Close
           </Button>
