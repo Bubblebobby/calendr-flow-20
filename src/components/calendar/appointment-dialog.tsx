@@ -470,6 +470,33 @@ export function AppointmentDialog({
             )}
           </main>
         </div>
+
+        <Dialog open={clientFormOpen} onOpenChange={setClientFormOpen}>
+          <DialogContent className="h-[92vh] max-w-4xl gap-0 overflow-y-auto p-0 [&>button]:hidden">
+            <DialogTitle className="sr-only">Add a new client</DialogTitle>
+            <DialogDescription className="sr-only">
+              Create a new client profile for this business.
+            </DialogDescription>
+            <ClientForm
+              onClose={() => setClientFormOpen(false)}
+              onSaved={async (id) => {
+                setClientFormOpen(false);
+                if (!id) return;
+                const { data } = await supabase
+                  .from("clients")
+                  .select("id, first_name, last_name, email, phone, avatar_color")
+                  .eq("id", id)
+                  .single();
+                if (data) {
+                  setClient(data as ClientRow);
+                  setWalkIn(false);
+                  setClientPickerOpen(false);
+                }
+                queryClient.invalidateQueries({ queryKey: ["booking-clients", business?.id] });
+              }}
+            />
+          </DialogContent>
+        </Dialog>
       </DialogContent>
     </Dialog>
   );
