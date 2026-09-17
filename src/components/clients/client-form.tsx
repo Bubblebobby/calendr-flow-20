@@ -113,7 +113,15 @@ function Section({
   );
 }
 
-export function ClientForm({ clientId }: { clientId?: string }) {
+export function ClientForm({
+  clientId,
+  onClose,
+  onSaved,
+}: {
+  clientId?: string;
+  onClose?: () => void;
+  onSaved?: (clientId: string | undefined) => void;
+}) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: business } = useBusiness();
@@ -403,9 +411,13 @@ export function ClientForm({ clientId }: { clientId?: string }) {
       }
       return id;
     },
-    onSuccess: () => {
+    onSuccess: (id) => {
       toast.success(isEdit ? "Client updated" : "Client added");
       queryClient.invalidateQueries({ queryKey: ["clients", businessId] });
+      if (onSaved) {
+        onSaved(id);
+        return;
+      }
       navigate({ to: "/clients" });
     },
     onError: (error: Error) => toast.error(error.message),
@@ -434,13 +446,13 @@ export function ClientForm({ clientId }: { clientId?: string }) {
   const tags = tagsQuery.data ?? [];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className={cn("bg-white", !onClose && "min-h-screen")}>
       <header className="sticky top-0 z-20 bg-white/90 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-end gap-3 px-8 py-4">
           <Button
             variant="outline"
             className="h-11 rounded-full border-[#D3D3D3] bg-white px-6 text-base font-semibold text-foreground hover:bg-white hover:text-foreground"
-            onClick={() => navigate({ to: "/clients" })}
+            onClick={() => (onClose ? onClose() : navigate({ to: "/clients" }))}
           >
             Close
           </Button>
