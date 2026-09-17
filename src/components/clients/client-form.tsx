@@ -446,7 +446,7 @@ export function ClientForm({
   const tags = tagsQuery.data ?? [];
 
   return (
-    <div className={cn("bg-white", !onClose && "min-h-screen")}>
+    <div className="min-h-screen bg-white">
       <header className="sticky top-0 z-20 bg-white/90 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-end gap-3 px-8 py-4">
           <Button
