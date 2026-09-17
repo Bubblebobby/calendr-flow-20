@@ -4,6 +4,7 @@ import { CalendarBlank, MagnifyingGlass, Plus, Trash, User, X } from "@phosphor-
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
+import { ClientForm } from "@/components/clients/client-form";
 import type { CurrentBusiness } from "@/lib/use-business";
 import { formatDuration, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -90,8 +91,7 @@ export function AppointmentDialog({
   const [clientQuery, setClientQuery] = useState("");
   const [client, setClient] = useState<ClientRow | null>(null);
   const [walkIn, setWalkIn] = useState(false);
-  const [quickAdd, setQuickAdd] = useState(false);
-  const [newClient, setNewClient] = useState({ first_name: "", last_name: "", phone: "", email: "" });
+  const [clientFormOpen, setClientFormOpen] = useState(false);
   const [lines, setLines] = useState<Line[]>([]);
   const [notes, setNotes] = useState("");
   const [conflict, setConflict] = useState<string | null>(null);
@@ -104,8 +104,7 @@ export function AppointmentDialog({
     setClientQuery("");
     setClient(null);
     setWalkIn(false);
-    setQuickAdd(false);
-    setNewClient({ first_name: "", last_name: "", phone: "", email: "" });
+    setClientFormOpen(false);
     setNotes("");
     setConflict(null);
     setLines([]);
