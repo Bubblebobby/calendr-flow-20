@@ -588,7 +588,14 @@ export function ClientForm({
 
           {/* Right content */}
           <div className="max-w-2xl space-y-10">
-            <section className="space-y-6">
+            {section === "addresses" ? (
+              <ClientAddressesPanel
+                value={address}
+                onChange={setAddress}
+                defaultCountry={country || business?.country || "US"}
+              />
+            ) : null}
+            <section className={cn("space-y-6", section !== "profile" && "hidden")}>
               <div>
                 <h2 className="text-2xl font-bold tracking-tight text-foreground">Profile</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
