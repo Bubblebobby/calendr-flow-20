@@ -379,6 +379,72 @@ export type Database = {
           },
         ]
       }
+      client_addresses: {
+        Row: {
+          address_name: string
+          address_type: Database["public"]["Enums"]["client_address_type"]
+          apartment_suite: string | null
+          business_id: string
+          city: string | null
+          client_id: string
+          country: string
+          created_at: string
+          district: string | null
+          id: string
+          postcode: string | null
+          region: string | null
+          street_address: string
+          updated_at: string
+        }
+        Insert: {
+          address_name?: string
+          address_type?: Database["public"]["Enums"]["client_address_type"]
+          apartment_suite?: string | null
+          business_id: string
+          city?: string | null
+          client_id: string
+          country: string
+          created_at?: string
+          district?: string | null
+          id?: string
+          postcode?: string | null
+          region?: string | null
+          street_address: string
+          updated_at?: string
+        }
+        Update: {
+          address_name?: string
+          address_type?: Database["public"]["Enums"]["client_address_type"]
+          apartment_suite?: string | null
+          business_id?: string
+          city?: string | null
+          client_id?: string
+          country?: string
+          created_at?: string
+          district?: string | null
+          id?: string
+          postcode?: string | null
+          region?: string | null
+          street_address?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_addresses_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_addresses_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_tag_assignments: {
         Row: {
           business_id: string
@@ -1006,6 +1072,7 @@ export type Database = {
         | "percentage_discount"
         | "free"
       bundle_schedule_type: "sequence" | "parallel"
+      client_address_type: "home" | "work" | "other"
       team_invite_status: "not_invited" | "invited" | "active"
     }
     CompositeTypes: {
@@ -1141,6 +1208,7 @@ export const Constants = {
         "free",
       ],
       bundle_schedule_type: ["sequence", "parallel"],
+      client_address_type: ["home", "work", "other"],
       team_invite_status: ["not_invited", "invited", "active"],
     },
   },
