@@ -19,6 +19,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { COUNTRIES, flagEmoji } from "@/lib/countries";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
+import {
+  ClientAddressesPanel,
+  type ClientAddressValue,
+} from "@/components/clients/client-addresses";
 
 const FIELD = "h-12 rounded-xl border border-border bg-transparent text-base";
 
@@ -159,6 +163,9 @@ export function ClientForm({
   const [addLanguageOpen, setAddLanguageOpen] = useState(false);
   const [newLanguage, setNewLanguage] = useState("");
   const [extraLanguages, setExtraLanguages] = useState<string[]>([]);
+  const [section, setSection] = useState<"profile" | "addresses">("profile");
+  const [address, setAddress] = useState<ClientAddressValue | null>(null);
+  const [addressHydrated, setAddressHydrated] = useState(false);
 
   const languageOptions = useMemo(() => {
     const all = [...LANGUAGES, ...extraLanguages];
@@ -276,6 +283,41 @@ export function ClientForm({
       return (data ?? []).map((row) => row.tag_id);
     },
   });
+
+  const addressQuery = useQuery({
+    queryKey: ["client-address", clientId],
+    enabled: Boolean(clientId),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("client_addresses")
+        .select(
+          "address_type, address_name, street_address, apartment_suite, district, city, region, postcode, country",
+        )
+        .eq("client_id", clientId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  useEffect(() => {
+    if (addressHydrated || !addressQuery.isSuccess) return;
+    const row = addressQuery.data;
+    if (row) {
+      setAddress({
+        address_type: row.address_type,
+        address_name: row.address_name,
+        street_address: row.street_address,
+        apartment_suite: row.apartment_suite ?? "",
+        district: row.district ?? "",
+        city: row.city ?? "",
+        region: row.region ?? "",
+        postcode: row.postcode ?? "",
+        country: row.country,
+      });
+    }
+    setAddressHydrated(true);
+  }, [addressHydrated, addressQuery.isSuccess, addressQuery.data]);
 
   useEffect(() => {
     if (!isEdit || hydrated || !clientQuery.isSuccess) return;
@@ -409,11 +451,39 @@ export function ClientForm({
         );
         if (error) throw error;
       }
+
+      // One address per client: upsert the local value, or clear it if removed.
+      if (address) {
+        const { error } = await supabase.from("client_addresses").upsert(
+          {
+            client_id: id!,
+            business_id: businessId,
+            address_type: address.address_type,
+            address_name: address.address_name,
+            street_address: address.street_address,
+            apartment_suite: address.apartment_suite || null,
+            district: address.district || null,
+            city: address.city || null,
+            region: address.region || null,
+            postcode: address.postcode || null,
+            country: address.country,
+          },
+          { onConflict: "client_id" },
+        );
+        if (error) throw error;
+      } else if (isEdit) {
+        const { error } = await supabase
+          .from("client_addresses")
+          .delete()
+          .eq("client_id", id!);
+        if (error) throw error;
+      }
       return id;
     },
     onSuccess: (id) => {
       toast.success(isEdit ? "Client updated" : "Client added");
       queryClient.invalidateQueries({ queryKey: ["clients", businessId] });
+      queryClient.invalidateQueries({ queryKey: ["client-address", clientId] });
       if (onSaved) {
         onSaved(id);
         return;
