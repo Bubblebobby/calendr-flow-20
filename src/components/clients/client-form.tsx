@@ -547,20 +547,35 @@ export function ClientForm({
             <p className="px-3 py-2 text-sm font-bold text-foreground">Personal</p>
             <button
               type="button"
-              className="w-full rounded-lg bg-accent/40 px-3 py-2 text-left text-sm font-medium text-foreground"
+              onClick={() => setSection("profile")}
+              className={cn(
+                "w-full rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors",
+                section === "profile"
+                  ? "bg-accent/40 text-foreground"
+                  : "text-muted-foreground hover:bg-muted",
+              )}
             >
               Profile
             </button>
-            {["Addresses", "Emergency contacts"].map((item) => (
-              <button
-                key={item}
-                type="button"
-                onClick={() => toast("Coming soon")}
-                className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted"
-              >
-                {item}
-              </button>
-            ))}
+            <button
+              type="button"
+              onClick={() => setSection("addresses")}
+              className={cn(
+                "w-full rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors",
+                section === "addresses"
+                  ? "bg-accent/40 text-foreground"
+                  : "text-muted-foreground hover:bg-muted",
+              )}
+            >
+              Addresses
+            </button>
+            <button
+              type="button"
+              onClick={() => toast("Coming soon")}
+              className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted"
+            >
+              Emergency contacts
+            </button>
             <div className="my-2 h-px bg-[#D3D3D3]" />
             <button
               type="button"
