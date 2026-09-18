@@ -776,7 +776,7 @@ export function ClientForm({
 
             <div className="h-px bg-[#D3D3D3]" />
 
-            <section className="space-y-6">
+            <section className={cn("space-y-6", section !== "profile" && "hidden")}>
               <div>
                 <h2 className="text-2xl font-bold tracking-tight text-foreground">
                   Additional info
