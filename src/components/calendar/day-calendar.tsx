@@ -6,7 +6,11 @@ import {
   CalendarPlus,
   CaretLeft,
   CaretRight,
+  CaretDown,
+  ArrowClockwise,
   CalendarX,
+  FadersHorizontal,
+  Gear,
   UserPlus,
   UsersThree,
   X,
@@ -74,7 +78,10 @@ type CalendarEvent = {
   startMinutes: number;
   endMinutes: number;
   title: string;
+  email: string | null;
   serviceName: string;
+  status: string;
+  price: number | null;
 };
 
 function useAppointments(businessId: string | undefined, day: Date) {
@@ -90,7 +97,7 @@ function useAppointments(businessId: string | undefined, day: Date) {
       const { data, error } = await supabase
         .from("appointment_items")
         .select(
-          "id, team_member_id, start_time, end_time, services(name), appointments(status, is_walk_in, clients(first_name, last_name))",
+          "id, team_member_id, start_time, end_time, price, services(name), appointments(status, is_walk_in, clients(first_name, last_name, email))",
         )
         .eq("business_id", businessId!)
         .gte("start_time", dayStart.toISOString())
@@ -111,7 +118,10 @@ function useAppointments(businessId: string | undefined, day: Date) {
             title: client
               ? [client.first_name, client.last_name].filter(Boolean).join(" ")
               : "Walk-in",
+            email: client?.email ?? null,
             serviceName: row.services?.name ?? "Service",
+            status: row.appointments?.status ?? "booked",
+            price: row.price,
           } satisfies CalendarEvent;
         });
     },
@@ -142,6 +152,12 @@ export function DayCalendar() {
   const [bookingSlot, setBookingSlot] = useState<{
     member: TeamMember;
     minutes: number;
+  } | null>(null);
+  const [hoveredEvent, setHoveredEvent] = useState<{
+    appointment: CalendarEvent;
+    member: TeamMember;
+    x: number;
+    y: number;
   } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const didScroll = useRef(false);
@@ -191,6 +207,26 @@ export function DayCalendar() {
 
   const isToday = new Date().toDateString() === selected.toDateString();
 
+  const currency = business?.currency;
+
+  function formatPrice(value: number | null) {
+    if (value === null || !currency) return null;
+    return new Intl.NumberFormat(locale, { style: "currency", currency }).format(value);
+  }
+
+  function showAppointment(event: React.MouseEvent<HTMLDivElement>, appointment: CalendarEvent, member: TeamMember) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const width = 372;
+    const x = Math.min(Math.max(16, rect.left + rect.width / 2 - width / 2), window.innerWidth - width - 16);
+    const preferredTop = rect.top - 220;
+    setHoveredEvent({
+      appointment,
+      member,
+      x,
+      y: preferredTop >= 16 ? preferredTop : Math.min(window.innerHeight - 210, rect.bottom + 10),
+    });
+  }
+
   function handleSlotClick(
     event: React.MouseEvent<HTMLButtonElement>,
     member: TeamMember,
@@ -223,26 +259,31 @@ export function DayCalendar() {
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
-      {/* Top bar */}
-      <div className="flex flex-wrap items-center gap-3 border-b border-border bg-card px-5 py-3">
+      {/* Compact calendar toolbar */}
+      <div className="flex min-h-16 flex-wrap items-center gap-2 border-b border-border bg-card px-4 py-3">
+        <Button variant="outline" className="rounded-full px-4" onClick={() => setSelected(new Date())}>
+          Today
+        </Button>
         <div className="flex items-center gap-1">
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="icon"
             aria-label="Previous day"
             onClick={() => shiftDay(-1)}
-            className="flex size-9 items-center justify-center rounded-lg border border-border text-foreground transition-colors hover:bg-secondary active:bg-secondary/80"
+            className="rounded-l-full rounded-r-none"
           >
             <CaretLeft size={16} weight="bold" />
-          </button>
+          </Button>
           <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
             <PopoverTrigger asChild>
-              <button
+              <Button
                 type="button"
-                className="flex h-9 items-center gap-2 rounded-lg border border-border px-3 text-sm font-semibold text-foreground transition-colors hover:bg-secondary active:bg-secondary/80"
+                variant="outline"
+                className="min-w-44 rounded-none border-x-0 px-5 font-semibold"
               >
-                <CalendarBlank size={16} />
                 {dateLabel}
-              </button>
+              </Button>
             </PopoverTrigger>
             <PopoverContent align="start" className="w-auto p-0">
               <Calendar
@@ -256,27 +297,37 @@ export function DayCalendar() {
               />
             </PopoverContent>
           </Popover>
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="icon"
             aria-label="Next day"
             onClick={() => shiftDay(1)}
-            className="flex size-9 items-center justify-center rounded-lg border border-border text-foreground transition-colors hover:bg-secondary active:bg-secondary/80"
+            className="rounded-l-none rounded-r-full"
           >
             <CaretRight size={16} weight="bold" />
-          </button>
-        </div>
-
-        {!isToday ? (
-          <Button variant="outline" size="sm" onClick={() => setSelected(new Date())}>
-            Today
           </Button>
-        ) : null}
-
-        <span className="ml-auto text-sm text-muted-foreground">
-          {dayHours?.is_open && openMinutes !== null && closeMinutes !== null
-            ? `Open ${formatSlotLabel(openMinutes, locale)} – ${formatSlotLabel(closeMinutes, locale)}`
-            : "Closed today"}
-        </span>
+        </div>
+        <Button variant="outline" className="rounded-full px-4">
+          Scheduled team <CaretDown size={14} />
+        </Button>
+        <Button variant="outline" size="icon" className="rounded-full" aria-label="Calendar filters">
+          <FadersHorizontal size={18} />
+        </Button>
+        <div className="ml-auto flex items-center gap-2">
+          <Button variant="outline" size="icon" className="rounded-full" aria-label="Calendar settings">
+            <Gear size={18} />
+          </Button>
+          <Button variant="outline" size="icon" className="rounded-full" aria-label="Refresh calendar" onClick={() => window.location.reload()}>
+            <ArrowClockwise size={18} />
+          </Button>
+          <Button variant="outline" className="rounded-full px-4">
+            Day <CaretDown size={14} />
+          </Button>
+          <Button className="rounded-full bg-ink px-5 text-ink-foreground hover:bg-ink/90">
+            Add <CaretDown size={14} />
+          </Button>
+        </div>
       </div>
 
       {loadingMembers ? (
@@ -308,8 +359,7 @@ export function DayCalendar() {
                 key={member.id}
                 className="min-w-0 flex-1 border-r border-border last:border-r-0"
               >
-                <div className="h-1" style={{ backgroundColor: member.calendar_color }} />
-                <div className="flex items-center gap-2 px-3 py-2.5">
+                <div className="flex h-16 items-center justify-center gap-2 px-3">
                   <span
                     className="flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
                     style={{ backgroundColor: member.avatar_color }}
@@ -332,7 +382,7 @@ export function DayCalendar() {
           </div>
 
           {/* Scrollable grid */}
-          <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
+          <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto bg-card">
             <div className="flex">
               {/* Time gutter */}
               <div className="w-16 shrink-0 border-r border-border bg-card">
@@ -363,23 +413,23 @@ export function DayCalendar() {
                     .map((a) => (
                       <div
                         key={a.id}
-                        className="absolute inset-x-1 z-10 overflow-hidden rounded-md border-l-[3px] px-2 py-1 text-left shadow-sm"
+                        className="absolute inset-x-0.5 z-10 overflow-hidden rounded-[3px] border border-primary/70 bg-slot-blue px-2 py-1.5 text-left text-slot-blue-foreground transition-[filter] hover:brightness-[0.98]"
                         style={{
                           top: (a.startMinutes / SLOT_MINUTES) * SLOT_HEIGHT,
                           height: Math.max(
                             SLOT_HEIGHT,
                             ((a.endMinutes - a.startMinutes) / SLOT_MINUTES) * SLOT_HEIGHT,
                           ),
-                          borderLeftColor: member.calendar_color,
-                          backgroundColor: `${member.calendar_color}22`,
                         }}
                         title={`${formatSlotLabel(a.startMinutes, locale)} · ${a.title}`}
+                        onMouseEnter={(event) => showAppointment(event, a, member)}
+                        onMouseLeave={() => setHoveredEvent(null)}
                       >
-                        <p className="truncate text-[11px] font-semibold text-foreground">
-                          {a.title}
+                        <p className="truncate text-xs text-slot-blue-foreground">
+                          {formatSlotLabel(a.startMinutes, locale)} – {formatSlotLabel(a.endMinutes, locale)} <span className="font-semibold">{a.title}</span>
                         </p>
-                        <p className="truncate text-[10px] text-muted-foreground">
-                          {formatSlotLabel(a.startMinutes, locale)} · {a.serviceName}
+                        <p className="truncate text-xs text-slot-blue-foreground">
+                          {a.serviceName}
                         </p>
                       </div>
                     ))}
@@ -423,7 +473,7 @@ export function DayCalendar() {
                         title={`${formatSlotLabel(minutes, locale)} · ${memberName(member)}`}
                         style={{ height: SLOT_HEIGHT }}
                         className={cn(
-                          "block w-full cursor-pointer text-left transition-colors duration-75",
+                            "block w-full cursor-pointer text-left transition-colors duration-75",
                           "hover:bg-primary/10 active:bg-primary/20",
                           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                           isHour
@@ -445,6 +495,37 @@ export function DayCalendar() {
           </div>
         </div>
       )}
+
+      {hoveredEvent ? (
+        <div
+          className="pointer-events-none fixed z-[70] w-[372px] overflow-hidden rounded-lg border border-border bg-popover shadow-xl animate-in fade-in-0 zoom-in-95 duration-150"
+          style={{ left: hoveredEvent.x, top: hoveredEvent.y }}
+          role="status"
+        >
+          <div className="flex h-11 items-center justify-between bg-primary px-5 text-sm text-primary-foreground">
+            <span>{formatSlotLabel(hoveredEvent.appointment.startMinutes, locale)} – {formatSlotLabel(hoveredEvent.appointment.endMinutes, locale)}</span>
+            <span className="capitalize">{hoveredEvent.appointment.status.replace("_", " ")}</span>
+          </div>
+          <div className="p-5">
+            <div className="flex items-center gap-4">
+              <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-secondary text-base font-semibold text-primary">
+                {deriveInitials(hoveredEvent.appointment.title)}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-base font-semibold text-popover-foreground">{hoveredEvent.appointment.title}</p>
+                {hoveredEvent.appointment.email ? <p className="truncate text-sm text-muted-foreground">{hoveredEvent.appointment.email}</p> : null}
+              </div>
+            </div>
+            <div className="mt-5 flex items-start justify-between gap-4">
+              <div>
+                <p className="font-semibold text-popover-foreground">{hoveredEvent.appointment.serviceName}</p>
+                <p className="text-sm text-muted-foreground">{memberName(hoveredEvent.member)} · {Math.max(0, hoveredEvent.appointment.endMinutes - hoveredEvent.appointment.startMinutes)} min</p>
+              </div>
+              {formatPrice(hoveredEvent.appointment.price) ? <p className="font-semibold text-popover-foreground">{formatPrice(hoveredEvent.appointment.price)}</p> : null}
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {/* Quick-action popup anchored to the clicked slot */}
       {quickAction ? (
