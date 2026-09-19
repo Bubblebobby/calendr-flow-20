@@ -312,23 +312,23 @@ export function DayCalendar() {
             <CaretRight size={16} weight="bold" />
           </Button>
         </div>
-        <Button variant="outline" className="rounded-full px-4">
+        <Button variant="outline" className="rounded-full px-4" onClick={() => toast("Team filtering is coming soon")}>
           Scheduled team <CaretDown size={14} />
         </Button>
-        <Button variant="outline" size="icon" className="rounded-full" aria-label="Calendar filters">
+        <Button variant="outline" size="icon" className="rounded-full" aria-label="Calendar filters" onClick={() => toast("Calendar filters are coming soon")}>
           <FadersHorizontal size={18} />
         </Button>
         <div className="ml-auto flex items-center gap-2">
-          <Button variant="outline" size="icon" className="rounded-full" aria-label="Calendar settings">
+          <Button variant="outline" size="icon" className="rounded-full" aria-label="Calendar settings" onClick={() => toast("Calendar settings are coming soon")}>
             <Gear size={18} />
           </Button>
           <Button variant="outline" size="icon" className="rounded-full" aria-label="Refresh calendar" onClick={() => window.location.reload()}>
             <ArrowClockwise size={18} />
           </Button>
-          <Button variant="outline" className="rounded-full px-4">
+          <Button variant="outline" className="rounded-full px-4" onClick={() => toast("More calendar views are coming soon")}>
             Day <CaretDown size={14} />
           </Button>
-          <Button className="rounded-full bg-ink px-5 text-ink-foreground hover:bg-ink/90">
+          <Button className="rounded-full bg-ink px-5 text-ink-foreground hover:bg-ink/90" onClick={() => toast("Choose an open time on the calendar to add a booking")}>
             Add <CaretDown size={14} />
           </Button>
         </div>
