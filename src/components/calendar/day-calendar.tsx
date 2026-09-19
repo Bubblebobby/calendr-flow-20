@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
-  CalendarBlank,
   CalendarPlus,
   CaretLeft,
   CaretRight,
@@ -205,8 +204,6 @@ export function DayCalendar() {
     year: "numeric",
   }).format(selected);
 
-  const isToday = new Date().toDateString() === selected.toDateString();
-
   const currency = business?.currency;
 
   function formatPrice(value: number | null) {
@@ -214,10 +211,17 @@ export function DayCalendar() {
     return new Intl.NumberFormat(locale, { style: "currency", currency }).format(value);
   }
 
-  function showAppointment(event: React.MouseEvent<HTMLDivElement>, appointment: CalendarEvent, member: TeamMember) {
+  function showAppointment(
+    event: React.MouseEvent<HTMLDivElement>,
+    appointment: CalendarEvent,
+    member: TeamMember,
+  ) {
     const rect = event.currentTarget.getBoundingClientRect();
     const width = 372;
-    const x = Math.min(Math.max(16, rect.left + rect.width / 2 - width / 2), window.innerWidth - width - 16);
+    const x = Math.min(
+      Math.max(16, rect.left + rect.width / 2 - width / 2),
+      window.innerWidth - width - 16,
+    );
     const preferredTop = rect.top - 220;
     setHoveredEvent({
       appointment,
