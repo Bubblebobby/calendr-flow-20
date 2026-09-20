@@ -162,6 +162,8 @@ export function DayCalendar() {
     x: number;
     y: number;
   } | null>(null);
+  const [detail, setDetail] = useState<{ id: string; label: string } | null>(null);
+  const [detailMinimized, setDetailMinimized] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const didScroll = useRef(false);
 
