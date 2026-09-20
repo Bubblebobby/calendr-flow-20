@@ -421,9 +421,15 @@ export function DayCalendar() {
                   {(appointments ?? [])
                     .filter((a) => a.team_member_id === member.id)
                     .map((a) => (
-                      <div
+                      <button
+                        type="button"
                         key={a.id}
-                        className="absolute inset-x-0.5 z-10 overflow-hidden rounded-[3px] border border-primary/70 bg-slot-blue px-2 py-1.5 text-left text-slot-blue-foreground transition-[filter] hover:brightness-[0.98]"
+                        className={cn(
+                          "absolute inset-x-0.5 z-10 overflow-hidden rounded-[3px] border px-2 py-1.5 text-left transition-[filter] hover:brightness-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          a.status === "no_show"
+                            ? "border-border bg-muted text-muted-foreground opacity-70"
+                            : "border-primary/70 bg-slot-blue text-slot-blue-foreground",
+                        )}
                         style={{
                           top: (a.startMinutes / SLOT_MINUTES) * SLOT_HEIGHT,
                           height: Math.max(
@@ -434,15 +440,26 @@ export function DayCalendar() {
                         title={`${formatSlotLabel(a.startMinutes, locale)} · ${a.title}`}
                         onMouseEnter={(event) => showAppointment(event, a, member)}
                         onMouseLeave={() => setHoveredEvent(null)}
+                        onClick={() => {
+                          setHoveredEvent(null);
+                          setDetailMinimized(false);
+                          setDetail({
+                            id: a.appointmentId,
+                            label: `${a.title} · ${formatSlotLabel(a.startMinutes, locale)}`,
+                          });
+                        }}
                       >
-                        <p className="truncate text-xs text-slot-blue-foreground">
+                        <p className="flex items-center gap-1.5 truncate text-xs">
+                          <span
+                            className={cn("size-1.5 shrink-0 rounded-full", statusTone(a.status).dot)}
+                            aria-hidden
+                          />
                           {formatSlotLabel(a.startMinutes, locale)} – {formatSlotLabel(a.endMinutes, locale)} <span className="font-semibold">{a.title}</span>
                         </p>
-                        <p className="truncate text-xs text-slot-blue-foreground">
-                          {a.serviceName}
-                        </p>
-                      </div>
+                        <p className="truncate text-xs">{a.serviceName}</p>
+                      </button>
                     ))}
+
 
                   {slots.map((minutes) => {
                     const withinHours =
