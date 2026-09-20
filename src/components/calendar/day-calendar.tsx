@@ -630,6 +630,29 @@ export function DayCalendar() {
         onClose={() => setBookingSlot(null)}
       />
 
+      <AppointmentDetail
+        appointmentId={detail && !detailMinimized ? detail.id : null}
+        business={business}
+        onClose={() => {
+          setDetail(null);
+          setDetailMinimized(false);
+        }}
+        onMinimize={() => setDetailMinimized(true)}
+      />
+
+      {detail && detailMinimized ? (
+        <button
+          type="button"
+          onClick={() => setDetailMinimized(false)}
+          className="fixed bottom-4 left-1/2 z-[60] flex -translate-x-1/2 items-center gap-3 rounded-full border border-border bg-card px-5 py-3 text-sm font-medium text-foreground shadow-lg transition-colors hover:bg-secondary"
+        >
+          {detail.label}
+          <span className="text-xs text-muted-foreground">Reopen</span>
+        </button>
+      ) : null}
+
+
+
     </div>
   );
 }
