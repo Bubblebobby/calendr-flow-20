@@ -73,6 +73,7 @@ function useTeamMembers(businessId: string | undefined) {
 
 type CalendarEvent = {
   id: string;
+  appointmentId: string;
   team_member_id: string;
   startMinutes: number;
   endMinutes: number;
@@ -96,7 +97,7 @@ function useAppointments(businessId: string | undefined, day: Date) {
       const { data, error } = await supabase
         .from("appointment_items")
         .select(
-          "id, team_member_id, start_time, end_time, price, services(name), appointments(status, is_walk_in, clients(first_name, last_name, email))",
+          "id, appointment_id, team_member_id, start_time, end_time, price, services(name), appointments(status, is_walk_in, clients(first_name, last_name, email))",
         )
         .eq("business_id", businessId!)
         .gte("start_time", dayStart.toISOString())
@@ -104,13 +105,14 @@ function useAppointments(businessId: string | undefined, day: Date) {
       if (error) throw error;
 
       return (data ?? [])
-        .filter((row: any) => !["cancelled", "no_show"].includes(row.appointments?.status))
+        .filter((row: any) => row.appointments?.status !== "cancelled")
         .map((row: any) => {
           const start = new Date(row.start_time);
           const end = new Date(row.end_time);
           const client = row.appointments?.clients;
           return {
             id: row.id,
+            appointmentId: row.appointment_id,
             team_member_id: row.team_member_id,
             startMinutes: start.getHours() * 60 + start.getMinutes(),
             endMinutes: end.getHours() * 60 + end.getMinutes(),
@@ -126,6 +128,7 @@ function useAppointments(businessId: string | undefined, day: Date) {
     },
   });
 }
+
 
 function formatSlotLabel(minutes: number, locale: string) {
   const date = new Date(2000, 0, 1, Math.floor(minutes / 60), minutes % 60);
