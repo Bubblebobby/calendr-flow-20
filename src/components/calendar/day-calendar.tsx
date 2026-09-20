@@ -218,7 +218,7 @@ export function DayCalendar() {
   }
 
   function showAppointment(
-    event: React.MouseEvent<HTMLDivElement>,
+    event: React.MouseEvent<HTMLElement>,
     appointment: CalendarEvent,
     member: TeamMember,
   ) {
