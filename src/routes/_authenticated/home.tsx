@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { PageShell, PlaceholderPanel } from "@/components/page-shell";
+import { HomeDashboard } from "@/components/home/home-dashboard";
 
 export const Route = createFileRoute("/_authenticated/home")({
   head: () => ({
@@ -9,11 +9,9 @@ export const Route = createFileRoute("/_authenticated/home")({
       { name: "description", content: "Daily overview of your bookings, sales and team activity." },
       { property: "og:title", content: "Home — Bookly" },
       { property: "og:description", content: "Daily overview of your bookings, sales and team activity." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: () => (
-    <PageShell title="Home" description="Your daily overview across bookings, sales and team.">
-      <PlaceholderPanel label="Home" />
-    </PageShell>
-  ),
+  component: HomeDashboard,
 });
