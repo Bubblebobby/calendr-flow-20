@@ -7,6 +7,7 @@ export type CurrentBusiness = {
   name: string;
   country: string;
   currency: string;
+  timezone: string | null;
 };
 
 /** The signed-in owner's business — the tenant root for every catalog read. */
@@ -21,7 +22,7 @@ export function useBusiness() {
 
       const { data, error } = await supabase
         .from("businesses")
-        .select("id, name, country, currency")
+        .select("id, name, country, currency, timezone")
         .eq("owner_id", user.id)
         .order("created_at", { ascending: true })
         .limit(1)
