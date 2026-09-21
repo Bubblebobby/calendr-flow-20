@@ -293,7 +293,6 @@ export function HomeDashboard() {
           .from("services")
           .select("id, name")
           .eq("business_id", business.id)
-          .eq("is_active", true)
           .order("sort_order", { ascending: true }),
       ]);
       if (itemsResult.error) throw itemsResult.error;
