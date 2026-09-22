@@ -371,7 +371,14 @@ function AppointmentList({
 
 export function HomeDashboard() {
   const { data: business, isLoading: businessLoading } = useBusiness();
-  const locale = typeof navigator !== "undefined" ? navigator.language : "en";
+  const locale = useMemo(() => {
+    const browserLocale = typeof navigator !== "undefined" ? navigator.language : "en";
+    try {
+      return new Intl.Locale(browserLocale).baseName;
+    } catch {
+      return "en";
+    }
+  }, []);
   const timeZone = business?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
   const now = useMemo(() => new Date(), []);
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("last-7-days");
