@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -37,6 +37,14 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type DashboardItem = {
   id: string;
@@ -72,6 +80,15 @@ type ServiceRow = {
   name: string;
 };
 
+type TimePeriod = "last-7-days" | "last-30-days" | "this-month" | "last-month";
+
+const TIME_PERIODS: Array<{ value: TimePeriod; label: string }> = [
+  { value: "last-7-days", label: "Last 7 days" },
+  { value: "last-30-days", label: "Last 30 days" },
+  { value: "this-month", label: "This month" },
+  { value: "last-month", label: "Last month" },
+];
+
 const chartConfig = {
   sales: { label: "Sales", color: "var(--color-chart-1)" },
   appointments: { label: "Appointments", color: "var(--color-chart-2)" },
@@ -93,6 +110,23 @@ function addDays(date: Date, days: number) {
   const next = new Date(date);
   next.setDate(next.getDate() + days);
   return next;
+}
+
+function periodDates(period: TimePeriod, now: Date) {
+  if (period === "last-30-days") {
+    return Array.from({ length: 30 }, (_, index) => addDays(now, index - 29));
+  }
+  if (period === "this-month") {
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    const dayCount = now.getDate();
+    return Array.from({ length: dayCount }, (_, index) => addDays(start, index));
+  }
+  if (period === "last-month") {
+    const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const end = new Date(now.getFullYear(), now.getMonth(), 0);
+    return Array.from({ length: end.getDate() }, (_, index) => addDays(start, index));
+  }
+  return Array.from({ length: 7 }, (_, index) => addDays(now, index - 6));
 }
 
 function clientName(item: DashboardItem) {
@@ -143,23 +177,25 @@ function DashboardCard({
   title,
   subtitle,
   menu = false,
+  action,
   className,
   children,
 }: {
   title: string;
   subtitle?: string;
   menu?: boolean;
+  action?: React.ReactNode;
   className?: string;
   children: React.ReactNode;
 }) {
   return (
     <Card className={cn("flex min-h-[19rem] flex-col overflow-hidden rounded-lg shadow-none", className)}>
       <CardHeader className="flex-row items-start justify-between space-y-0 px-5 pb-3 pt-5">
-        <div>
-          <CardTitle className="text-sm font-semibold">{title}</CardTitle>
-          {subtitle ? <CardDescription className="mt-1 text-xs">{subtitle}</CardDescription> : null}
+        <div className="min-w-0">
+          <CardTitle className="text-base font-semibold leading-tight">{title}</CardTitle>
+          {subtitle ? <CardDescription className="mt-1 text-[0.8125rem] leading-none">{subtitle}</CardDescription> : null}
         </div>
-        {menu ? (
+        {action ?? (menu ? (
           <Button
             variant="ghost"
             size="icon"
@@ -169,10 +205,80 @@ function DashboardCard({
           >
             <DotsThreeVertical size={18} weight="bold" />
           </Button>
-        ) : null}
+        ) : null)}
       </CardHeader>
       {children}
     </Card>
+  );
+}
+
+function TimePeriodFilter({
+  value,
+  onApply,
+}: {
+  value: TimePeriod;
+  onApply: (value: TimePeriod) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState<TimePeriod>(value);
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) setDraft(value);
+    setOpen(nextOpen);
+  };
+
+  return (
+    <Popover open={open} onOpenChange={handleOpenChange}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          size="icon"
+          className="-mr-1 -mt-1 size-10 shrink-0 rounded-full border-foreground bg-card hover:bg-secondary"
+          aria-label="Filter recent sales by time period"
+        >
+          <DotsThreeVertical size={20} weight="bold" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="end"
+        sideOffset={2}
+        className="w-[19.25rem] rounded-lg border-border bg-popover p-4 shadow-card"
+      >
+        <label className="text-sm font-semibold leading-none text-popover-foreground">Time period</label>
+        <Select value={draft} onValueChange={(next) => setDraft(next as TimePeriod)}>
+          <SelectTrigger className="mt-2 h-11 rounded-md border-input bg-card px-4 text-sm font-medium">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {TIME_PERIODS.map((period) => (
+              <SelectItem key={period.value} value={period.value}>
+                {period.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <div className="mt-6 grid grid-cols-[auto_1fr] gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            className="h-11 rounded-full px-5 text-sm font-semibold"
+            onClick={() => setOpen(false)}
+          >
+            Close
+          </Button>
+          <Button
+            type="button"
+            className="h-11 rounded-full bg-ink px-6 text-sm font-semibold text-ink-foreground shadow-none hover:bg-ink/90"
+            onClick={() => {
+              onApply(draft);
+              setOpen(false);
+            }}
+          >
+            Apply changes
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -265,9 +371,17 @@ function AppointmentList({
 
 export function HomeDashboard() {
   const { data: business, isLoading: businessLoading } = useBusiness();
-  const locale = typeof navigator !== "undefined" ? navigator.language : "en";
+  const locale = useMemo(() => {
+    const browserLocale = typeof navigator !== "undefined" ? navigator.language : "en";
+    try {
+      return new Intl.Locale(browserLocale).baseName;
+    } catch {
+      return "en";
+    }
+  }, []);
   const timeZone = business?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
   const now = useMemo(() => new Date(), []);
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>("last-7-days");
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["home-dashboard", business?.id],
@@ -310,8 +424,8 @@ export function HomeDashboard() {
     const activeItems = items.filter((item) => item.appointments?.status !== "cancelled");
     const appointments = groupAppointments(activeItems);
     const todayKey = dateKey(now, timeZone);
-    const sevenDaysAgo = addDays(now, -6);
-    const recentKeys = Array.from({ length: 7 }, (_, index) => dateKey(addDays(sevenDaysAgo, index), timeZone));
+    const selectedDates = periodDates(timePeriod, now);
+    const recentKeys = selectedDates.map((date) => dateKey(date, timeZone));
     const nextKeys = new Set(Array.from({ length: 8 }, (_, index) => dateKey(addDays(now, index), timeZone)));
     const recentItems = activeItems.filter((item) => recentKeys.includes(dateKey(new Date(item.start_time), timeZone)));
     const recentAppointments = groupAppointments(recentItems);
@@ -322,10 +436,10 @@ export function HomeDashboard() {
 
     const chart = recentKeys.map((key) => ({
       key,
-      label: new Intl.DateTimeFormat(locale, { weekday: "short", timeZone }).format(
+      label: new Intl.DateTimeFormat(locale, { day: "numeric", weekday: "short", timeZone }).format(
         activeItems.find((item) => dateKey(new Date(item.start_time), timeZone) === key)?.start_time
           ? new Date(activeItems.find((item) => dateKey(new Date(item.start_time), timeZone) === key)?.start_time ?? now)
-          : addDays(sevenDaysAgo, recentKeys.indexOf(key)),
+          : selectedDates[recentKeys.indexOf(key)],
       ),
       sales: 0,
       appointments: new Set(
@@ -364,7 +478,9 @@ export function HomeDashboard() {
       activity: appointments.sort((a, b) => b.start.getTime() - a.start.getTime()).slice(0, 20),
       serviceCounts,
     };
-  }, [data, locale, now, timeZone]);
+  }, [data, locale, now, timePeriod, timeZone]);
+
+  const timePeriodLabel = TIME_PERIODS.find((period) => period.value === timePeriod)?.label ?? "Last 7 days";
 
   if (businessLoading || isLoading) {
     return (
@@ -391,9 +507,13 @@ export function HomeDashboard() {
   return (
     <div className="min-h-full bg-background">
       <div className="mx-auto grid w-full max-w-6xl gap-4 p-4 sm:p-6 lg:grid-cols-2">
-        <DashboardCard title="Recent sales" subtitle="Last 7 days" menu>
+        <DashboardCard
+          title="Recent sales"
+          subtitle={timePeriodLabel}
+          action={<TimePeriodFilter value={timePeriod} onApply={setTimePeriod} />}
+        >
           <CardContent className="flex flex-1 flex-col px-5 pb-4 pt-0">
-            <p className="text-2xl font-semibold tabular-nums text-foreground">
+            <p className="text-2xl font-semibold leading-tight tabular-nums text-foreground">
               {formatMoney(0, business.currency, business.country)}
             </p>
             <div className="mt-4 space-y-1 text-xs text-muted-foreground">
