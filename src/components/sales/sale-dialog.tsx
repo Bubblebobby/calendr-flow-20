@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -268,9 +268,9 @@ export function SaleDialog({
       }}
     >
       <DialogContent
-        hideClose
-        className="left-0 top-0 flex h-full max-h-none w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none border-0 bg-background p-0 sm:left-auto sm:right-0 sm:h-full sm:w-[36rem] sm:max-w-[36rem] sm:rounded-none"
+        className="[&>button:last-child]:hidden left-0 top-0 flex h-full max-h-none w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none border-0 bg-background p-0 sm:left-auto sm:right-0 sm:h-full sm:w-[36rem] sm:max-w-[36rem] sm:rounded-none"
       >
+        <DialogTitle className="sr-only">Add sale</DialogTitle>
         <header className="flex items-center justify-between border-b border-border px-6 py-5">
           <div>
             <h2 className="text-xl font-semibold tracking-tight text-foreground">Add sale</h2>
