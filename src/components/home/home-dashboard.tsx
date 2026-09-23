@@ -427,6 +427,7 @@ export function HomeDashboard() {
     const todayKey = dateKey(now, timeZone);
     const selectedDates = periodDates(timePeriod, now);
     const recentKeys = selectedDates.map((date) => dateKey(date, timeZone));
+    const activityKeys = new Set(periodDates(activityPeriod, now).map((date) => dateKey(date, timeZone)));
     const nextKeys = new Set(Array.from({ length: 8 }, (_, index) => dateKey(addDays(now, index), timeZone)));
     const recentItems = activeItems.filter((item) => recentKeys.includes(dateKey(new Date(item.start_time), timeZone)));
     const recentAppointments = groupAppointments(recentItems);
