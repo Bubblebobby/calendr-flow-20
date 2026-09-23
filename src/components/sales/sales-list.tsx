@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { DotsThreeVertical } from "@phosphor-icons/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -170,8 +170,8 @@ export function SalesList() {
               </tr>
             )}
             {rows.map((row) => (
-              <>
-                <tr key={row.id} className="border-b border-border">
+              <Fragment key={row.id}>
+                <tr className="border-b border-border">
                   <td className="px-4 py-4 text-foreground">
                     {dateFormatter.format(new Date(row.sale_date))}
                   </td>
@@ -224,7 +224,7 @@ export function SalesList() {
                   </td>
                 </tr>
                 {expanded === row.id && (
-                  <tr key={`${row.id}-items`} className="border-b border-border bg-muted/40">
+                  <tr className="border-b border-border bg-muted/40">
                     <td colSpan={7} className="px-8 py-4">
                       <ul className="space-y-1.5">
                         {row.sale_items.map((item) => (
@@ -242,7 +242,7 @@ export function SalesList() {
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             ))}
           </tbody>
         </table>
