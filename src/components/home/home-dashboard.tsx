@@ -486,6 +486,8 @@ export function HomeDashboard() {
   }, [activityPeriod, data, locale, now, timePeriod, timeZone]);
 
   const timePeriodLabel = TIME_PERIODS.find((period) => period.value === timePeriod)?.label ?? "Last 7 days";
+  const activityPeriodLabel =
+    TIME_PERIODS.find((period) => period.value === activityPeriod)?.label ?? "Last 7 days";
 
   if (businessLoading || isLoading) {
     return (
