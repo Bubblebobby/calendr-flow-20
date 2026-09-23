@@ -726,6 +726,161 @@ export type Database = {
           },
         ]
       }
+      sale_items: {
+        Row: {
+          appointment_item_id: string | null
+          business_id: string
+          created_at: string
+          description: string
+          id: string
+          price: number
+          quantity: number
+          sale_id: string
+          service_id: string | null
+          sort_order: number
+        }
+        Insert: {
+          appointment_item_id?: string | null
+          business_id: string
+          created_at?: string
+          description: string
+          id?: string
+          price?: number
+          quantity?: number
+          sale_id: string
+          service_id?: string | null
+          sort_order?: number
+        }
+        Update: {
+          appointment_item_id?: string | null
+          business_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          price?: number
+          quantity?: number
+          sale_id?: string
+          service_id?: string | null
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sale_items_appointment_item_id_fkey"
+            columns: ["appointment_item_id"]
+            isOneToOne: false
+            referencedRelation: "appointment_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sale_items_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sale_items_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sale_items_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales: {
+        Row: {
+          appointment_id: string | null
+          business_id: string
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_walk_in: boolean
+          notes: string | null
+          payment_method: string
+          sale_date: string
+          status: string
+          team_member_id: string | null
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          business_id: string
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_walk_in?: boolean
+          notes?: string | null
+          payment_method?: string
+          sale_date?: string
+          status?: string
+          team_member_id?: string | null
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          business_id?: string
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_walk_in?: boolean
+          notes?: string | null
+          payment_method?: string
+          sale_date?: string
+          status?: string
+          team_member_id?: string | null
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: true
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_team_member_id_fkey"
+            columns: ["team_member_id"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_categories: {
         Row: {
           business_id: string
