@@ -382,6 +382,7 @@ export function HomeDashboard() {
   const timeZone = business?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
   const now = useMemo(() => new Date(), []);
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("last-7-days");
+  const [activityPeriod, setActivityPeriod] = useState<TimePeriod>("last-7-days");
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["home-dashboard", business?.id],
