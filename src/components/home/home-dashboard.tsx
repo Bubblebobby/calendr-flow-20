@@ -382,6 +382,7 @@ export function HomeDashboard() {
   const timeZone = business?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
   const now = useMemo(() => new Date(), []);
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("last-7-days");
+  const [activityPeriod, setActivityPeriod] = useState<TimePeriod>("last-7-days");
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["home-dashboard", business?.id],
@@ -426,6 +427,7 @@ export function HomeDashboard() {
     const todayKey = dateKey(now, timeZone);
     const selectedDates = periodDates(timePeriod, now);
     const recentKeys = selectedDates.map((date) => dateKey(date, timeZone));
+    const activityKeys = new Set(periodDates(activityPeriod, now).map((date) => dateKey(date, timeZone)));
     const nextKeys = new Set(Array.from({ length: 8 }, (_, index) => dateKey(addDays(now, index), timeZone)));
     const recentItems = activeItems.filter((item) => recentKeys.includes(dateKey(new Date(item.start_time), timeZone)));
     const recentAppointments = groupAppointments(recentItems);
@@ -475,12 +477,17 @@ export function HomeDashboard() {
       recentValue: recentItems.reduce((sum, item) => sum + Number(item.price ?? 0), 0),
       upcoming,
       today,
-      activity: appointments.sort((a, b) => b.start.getTime() - a.start.getTime()).slice(0, 20),
+      activity: appointments
+        .filter((appointment) => activityKeys.has(dateKey(appointment.start, timeZone)))
+        .sort((a, b) => b.start.getTime() - a.start.getTime())
+        .slice(0, 20),
       serviceCounts,
     };
-  }, [data, locale, now, timePeriod, timeZone]);
+  }, [activityPeriod, data, locale, now, timePeriod, timeZone]);
 
   const timePeriodLabel = TIME_PERIODS.find((period) => period.value === timePeriod)?.label ?? "Last 7 days";
+  const activityPeriodLabel =
+    TIME_PERIODS.find((period) => period.value === activityPeriod)?.label ?? "Last 7 days";
 
   if (businessLoading || isLoading) {
     return (
@@ -554,7 +561,11 @@ export function HomeDashboard() {
           )}
         </DashboardCard>
 
-        <DashboardCard title="Appointments activity">
+        <DashboardCard
+          title="Appointments activity"
+          subtitle={activityPeriodLabel}
+          action={<TimePeriodFilter value={activityPeriod} onApply={setActivityPeriod} />}
+        >
           {dashboard.activity.length ? (
             <AppointmentList appointments={dashboard.activity} locale={locale} timeZone={timeZone} />
           ) : (
