@@ -559,7 +559,11 @@ export function HomeDashboard() {
           )}
         </DashboardCard>
 
-        <DashboardCard title="Appointments activity">
+        <DashboardCard
+          title="Appointments activity"
+          subtitle={activityPeriodLabel}
+          action={<TimePeriodFilter value={activityPeriod} onApply={setActivityPeriod} />}
+        >
           {dashboard.activity.length ? (
             <AppointmentList appointments={dashboard.activity} locale={locale} timeZone={timeZone} />
           ) : (
