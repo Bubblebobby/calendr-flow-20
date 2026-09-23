@@ -476,10 +476,13 @@ export function HomeDashboard() {
       recentValue: recentItems.reduce((sum, item) => sum + Number(item.price ?? 0), 0),
       upcoming,
       today,
-      activity: appointments.sort((a, b) => b.start.getTime() - a.start.getTime()).slice(0, 20),
+      activity: appointments
+        .filter((appointment) => activityKeys.has(dateKey(appointment.start, timeZone)))
+        .sort((a, b) => b.start.getTime() - a.start.getTime())
+        .slice(0, 20),
       serviceCounts,
     };
-  }, [data, locale, now, timePeriod, timeZone]);
+  }, [activityPeriod, data, locale, now, timePeriod, timeZone]);
 
   const timePeriodLabel = TIME_PERIODS.find((period) => period.value === timePeriod)?.label ?? "Last 7 days";
 
