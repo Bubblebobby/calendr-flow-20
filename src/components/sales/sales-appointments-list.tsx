@@ -39,7 +39,7 @@ type AppointmentRow = {
   is_walk_in: boolean;
   created_at: string;
   clients: { id: string; first_name: string | null; last_name: string | null } | null;
-  profiles: { first_name: string | null; last_name: string | null } | null;
+  profiles: { full_name: string | null } | null;
   appointment_items: ItemRow[];
 };
 
@@ -155,7 +155,7 @@ export function SalesAppointmentsList() {
         .select(
           `id, status, is_walk_in, created_at,
            clients ( id, first_name, last_name ),
-           profiles ( first_name, last_name ),
+           profiles ( full_name ),
            appointment_items ( start_time, end_time, sort_order,
              services ( name ),
              team_members ( first_name, last_name ) )`,
@@ -201,7 +201,7 @@ export function SalesAppointmentsList() {
         clientId: appt.clients?.id ?? null,
         clientName: appt.is_walk_in ? "Walk-In" : fullName(appt.clients),
         serviceName: serviceNames.join(", ") || "—",
-        createdBy: fullName(appt.profiles),
+        createdBy: appt.profiles?.full_name?.trim() || "—",
         createdAt: new Date(appt.created_at),
         scheduledAt,
         durationMinutes,
