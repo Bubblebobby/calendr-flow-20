@@ -10,8 +10,10 @@
 export function businessLocale(countryCode?: string | null): string {
   const nav =
     typeof navigator !== "undefined" && navigator.language ? navigator.language : "en";
-  const language = nav.split("-")[0] || "en";
-  return countryCode ? `${language}-${countryCode.toUpperCase()}` : nav;
+  // Strip POSIX-style modifiers (e.g. "en-US@posix") that Intl rejects.
+  const cleaned = nav.split("@")[0] || "en";
+  const language = cleaned.split("-")[0] || "en";
+  return countryCode ? `${language}-${countryCode.toUpperCase()}` : cleaned;
 }
 
 export function formatMoney(
