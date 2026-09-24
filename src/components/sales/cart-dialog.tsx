@@ -341,16 +341,27 @@ export function CartDialog({
       }}
     >
       <DialogContent
-        className="[&>button:last-child]:hidden left-0 top-0 flex h-full max-h-none w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none border-0 bg-background p-0"
+        overlayClassName="bg-foreground/10"
+        className="[&>button:last-child]:hidden left-auto right-0 top-0 flex h-full max-h-none w-[min(100%,82rem)] max-w-none translate-x-0 translate-y-0 flex-col gap-0 overflow-visible rounded-none border-0 border-l border-border bg-background p-0 shadow-2xl sm:w-[calc(100%-18rem)]"
       >
         <DialogTitle className="sr-only">Add to cart</DialogTitle>
 
+        <Button
+          variant="outline"
+          size="icon"
+          className="absolute -left-16 top-3 hidden h-12 w-12 rounded-full bg-background shadow-md sm:inline-flex"
+          aria-label="Close"
+          onClick={() => onOpenChange(false)}
+        >
+          <X size={18} weight="bold" />
+        </Button>
+
         {/* Top bar */}
-        <header className="relative flex items-center justify-center border-b border-border px-6 py-4">
+        <header className="flex items-center gap-3 px-8 pt-8">
           <Button
             variant="outline"
             size="icon"
-            className="absolute left-6 rounded-full"
+            className="rounded-full sm:hidden"
             aria-label="Close"
             onClick={() => onOpenChange(false)}
           >
