@@ -140,10 +140,8 @@ export function AppNav() {
 
                 <div className="flex-1 overflow-y-auto pb-6">
                   {renderedItem.groups?.map((group, index) => (
-                    <div
-                      key={group.title}
-                      className={cn("mb-4", index > 0 && "border-t border-border pt-4")}
-                    >
+                    <div key={group.title} className="mb-4">
+                      {index > 0 ? <div className="mx-5 mb-4 border-t border-border" /> : null}
                       <p className="px-5 pb-1 text-sm font-semibold text-foreground">
                         {group.title}
                       </p>
