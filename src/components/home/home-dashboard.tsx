@@ -80,6 +80,14 @@ type ServiceRow = {
   name: string;
 };
 
+type SaleRow = {
+  id: string;
+  total: number;
+  sale_date: string;
+  team_member_id: string | null;
+  team_members: { first_name: string; last_name: string | null } | null;
+};
+
 type TimePeriod = "last-7-days" | "last-30-days" | "this-month" | "last-month";
 
 const TIME_PERIODS: Array<{ value: TimePeriod; label: string }> = [
@@ -388,7 +396,8 @@ export function HomeDashboard() {
     queryKey: ["home-dashboard", business?.id],
     enabled: Boolean(business?.id),
     queryFn: async () => {
-      if (!business) return { items: [] as DashboardItem[], services: [] as ServiceRow[] };
+      if (!business)
+        return { items: [] as DashboardItem[], services: [] as ServiceRow[], sales: [] as SaleRow[] };
       const rangeStart = new Date(now);
       rangeStart.setMonth(rangeStart.getMonth() - 2, 1);
       rangeStart.setHours(0, 0, 0, 0);
