@@ -72,6 +72,25 @@ export function ClientsList() {
     },
   });
 
+  const salesQuery = useQuery({
+    queryKey: ["client-sales", businessId],
+    enabled: Boolean(businessId),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("sales")
+        .select("client_id, total")
+        .eq("business_id", businessId!)
+        .eq("status", "completed");
+      if (error) throw error;
+      const totals = new Map<string, number>();
+      for (const sale of data ?? []) {
+        if (!sale.client_id) continue;
+        totals.set(sale.client_id, (totals.get(sale.client_id) ?? 0) + Number(sale.total ?? 0));
+      }
+      return totals;
+    },
+  });
+
   const deleteClient = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("clients").delete().eq("id", id);
@@ -118,7 +137,10 @@ export function ClientsList() {
     day: "numeric",
   });
 
-  const salesLabel = business ? formatMoney(0, business.currency, business.country) : "—";
+  const salesLabel = (clientId: string) =>
+    business
+      ? formatMoney(salesQuery.data?.get(clientId) ?? 0, business.currency, business.country)
+      : "—";
 
   const from = filtered.length === 0 ? 0 : currentPage * PAGE_SIZE + 1;
   const to = Math.min(filtered.length, (currentPage + 1) * PAGE_SIZE);
@@ -348,7 +370,7 @@ export function ClientsList() {
                 </td>
                 <td className="px-4 py-4 text-muted-foreground">{client.phone || "–"}</td>
                 <td className="px-4 py-4 text-muted-foreground">–</td>
-                <td className="px-4 py-4 text-foreground">{salesLabel}</td>
+                <td className="px-4 py-4 text-foreground">{salesLabel(client.id)}</td>
                 <td className="px-4 py-4 text-foreground">
                   {dateFormatter.format(new Date(client.created_at))}
                 </td>
