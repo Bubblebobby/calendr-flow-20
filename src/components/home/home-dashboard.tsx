@@ -80,6 +80,14 @@ type ServiceRow = {
   name: string;
 };
 
+type SaleRow = {
+  id: string;
+  total: number;
+  sale_date: string;
+  team_member_id: string | null;
+  team_members: { first_name: string; last_name: string | null } | null;
+};
+
 type TimePeriod = "last-7-days" | "last-30-days" | "this-month" | "last-month";
 
 const TIME_PERIODS: Array<{ value: TimePeriod; label: string }> = [
@@ -388,13 +396,14 @@ export function HomeDashboard() {
     queryKey: ["home-dashboard", business?.id],
     enabled: Boolean(business?.id),
     queryFn: async () => {
-      if (!business) return { items: [] as DashboardItem[], services: [] as ServiceRow[] };
+      if (!business)
+        return { items: [] as DashboardItem[], services: [] as ServiceRow[], sales: [] as SaleRow[] };
       const rangeStart = new Date(now);
       rangeStart.setMonth(rangeStart.getMonth() - 2, 1);
       rangeStart.setHours(0, 0, 0, 0);
       const rangeEnd = addDays(now, 8);
 
-      const [itemsResult, servicesResult] = await Promise.all([
+      const [itemsResult, servicesResult, salesResult] = await Promise.all([
         supabase
           .from("appointment_items")
           .select(
@@ -409,12 +418,21 @@ export function HomeDashboard() {
           .select("id, name")
           .eq("business_id", business.id)
           .order("sort_order", { ascending: true }),
+        supabase
+          .from("sales")
+          .select("id, total, sale_date, team_member_id, team_members(first_name, last_name)")
+          .eq("business_id", business.id)
+          .eq("status", "completed")
+          .gte("sale_date", rangeStart.toISOString())
+          .lt("sale_date", rangeEnd.toISOString()),
       ]);
       if (itemsResult.error) throw itemsResult.error;
       if (servicesResult.error) throw servicesResult.error;
+      if (salesResult.error) throw salesResult.error;
       return {
         items: itemsResult.data as unknown as DashboardItem[],
         services: servicesResult.data as ServiceRow[],
+        sales: salesResult.data as unknown as SaleRow[],
       };
     },
     staleTime: 60_000,
@@ -436,6 +454,7 @@ export function HomeDashboard() {
       .sort((a, b) => a.start.getTime() - b.start.getTime());
     const today = upcoming.filter((appointment) => dateKey(appointment.start, timeZone) === todayKey);
 
+    const sales = data?.sales ?? [];
     const chart = recentKeys.map((key) => ({
       key,
       label: new Intl.DateTimeFormat(locale, { day: "numeric", weekday: "short", timeZone }).format(
@@ -443,7 +462,9 @@ export function HomeDashboard() {
           ? new Date(activeItems.find((item) => dateKey(new Date(item.start_time), timeZone) === key)?.start_time ?? now)
           : selectedDates[recentKeys.indexOf(key)],
       ),
-      sales: 0,
+      sales: sales
+        .filter((sale) => dateKey(new Date(sale.sale_date), timeZone) === key)
+        .reduce((sum, sale) => sum + Number(sale.total ?? 0), 0),
       appointments: new Set(
         recentItems
           .filter((item) => dateKey(new Date(item.start_time), timeZone) === key)
@@ -471,10 +492,30 @@ export function HomeDashboard() {
       ).size,
     })).sort((a, b) => b.current - a.current || b.previous - a.previous || a.name.localeCompare(b.name));
 
+    const memberMap = new Map<string, { name: string; current: number; previous: number }>();
+    for (const sale of sales) {
+      const key = sale.team_member_id ?? "unassigned";
+      const entry = memberMap.get(key) ?? {
+        name: fullName(sale.team_members),
+        current: 0,
+        previous: 0,
+      };
+      const month = monthKey(sale.sale_date);
+      if (month === currentMonth) entry.current += Number(sale.total ?? 0);
+      if (month === previousMonth) entry.previous += Number(sale.total ?? 0);
+      memberMap.set(key, entry);
+    }
+    const topMembers = [...memberMap.values()]
+      .sort((a, b) => b.current - a.current || b.previous - a.previous || a.name.localeCompare(b.name));
+
     return {
       chart,
       recentCount: recentAppointments.length,
       recentValue: recentItems.reduce((sum, item) => sum + Number(item.price ?? 0), 0),
+      recentSalesTotal: sales
+        .filter((sale) => recentKeys.includes(dateKey(new Date(sale.sale_date), timeZone)))
+        .reduce((sum, sale) => sum + Number(sale.total ?? 0), 0),
+      topMembers,
       upcoming,
       today,
       activity: appointments
@@ -521,7 +562,7 @@ export function HomeDashboard() {
         >
           <CardContent className="flex flex-1 flex-col px-5 pb-4 pt-0">
             <p className="text-2xl font-semibold leading-tight tabular-nums text-foreground">
-              {formatMoney(0, business.currency, business.country)}
+              {formatMoney(dashboard.recentSalesTotal, business.currency, business.country)}
             </p>
             <div className="mt-4 space-y-1 text-xs text-muted-foreground">
               <p>Appointments <span className="font-semibold text-foreground">{dashboard.recentCount}</span></p>
@@ -536,7 +577,7 @@ export function HomeDashboard() {
               <LineChart data={dashboard.chart} margin={{ top: 8, right: 10, left: -24, bottom: 0 }}>
                 <CartesianGrid vertical={false} strokeDasharray="3 3" />
                 <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={10} />
-                <YAxis allowDecimals={false} tickLine={false} axisLine={false} fontSize={10} />
+                <YAxis tickLine={false} axisLine={false} fontSize={10} />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Line type="monotone" dataKey="sales" stroke="var(--color-sales)" strokeWidth={2} dot={{ r: 2 }} />
                 <Line type="monotone" dataKey="appointments" stroke="var(--color-appointments)" strokeWidth={2} dot={{ r: 2 }} />
@@ -609,12 +650,30 @@ export function HomeDashboard() {
         </DashboardCard>
 
         <DashboardCard title="Top team member">
-          <div className="grid grid-cols-[1fr_6rem_6rem] border-y border-border bg-muted/40 px-5 py-2 text-[0.6875rem] font-semibold text-muted-foreground">
-            <span>Team member</span><span className="text-right">This month</span><span className="text-right">Last month</span>
-          </div>
-          <EmptyState icon={TrendUp} title="No sales this month">
-            Create some sales for sales data to appear
-          </EmptyState>
+          {dashboard.topMembers.length ? (
+            <CardContent className="px-0 pb-0">
+              <div className="grid grid-cols-[1fr_6rem_6rem] border-y border-border bg-muted/40 px-5 py-2 text-[0.6875rem] font-semibold text-muted-foreground">
+                <span>Team member</span><span className="text-right">This month</span><span className="text-right">Last month</span>
+              </div>
+              <div className="max-h-56 divide-y divide-border overflow-y-auto">
+                {dashboard.topMembers.map((member, index) => (
+                  <div key={`${member.name}-${index}`} className="grid grid-cols-[1fr_6rem_6rem] px-5 py-3 text-xs">
+                    <span className="truncate font-medium text-foreground">{member.name}</span>
+                    <span className="text-right tabular-nums text-foreground">
+                      {formatMoney(member.current, business.currency, business.country)}
+                    </span>
+                    <span className="text-right tabular-nums text-muted-foreground">
+                      {formatMoney(member.previous, business.currency, business.country)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          ) : (
+            <EmptyState icon={TrendUp} title="No sales this month">
+              Create some sales for sales data to appear
+            </EmptyState>
+          )}
         </DashboardCard>
       </div>
     </div>
