@@ -562,7 +562,7 @@ export function HomeDashboard() {
         >
           <CardContent className="flex flex-1 flex-col px-5 pb-4 pt-0">
             <p className="text-2xl font-semibold leading-tight tabular-nums text-foreground">
-              {formatMoney(0, business.currency, business.country)}
+              {formatMoney(dashboard.recentSalesTotal, business.currency, business.country)}
             </p>
             <div className="mt-4 space-y-1 text-xs text-muted-foreground">
               <p>Appointments <span className="font-semibold text-foreground">{dashboard.recentCount}</span></p>
@@ -650,12 +650,30 @@ export function HomeDashboard() {
         </DashboardCard>
 
         <DashboardCard title="Top team member">
-          <div className="grid grid-cols-[1fr_6rem_6rem] border-y border-border bg-muted/40 px-5 py-2 text-[0.6875rem] font-semibold text-muted-foreground">
-            <span>Team member</span><span className="text-right">This month</span><span className="text-right">Last month</span>
-          </div>
-          <EmptyState icon={TrendUp} title="No sales this month">
-            Create some sales for sales data to appear
-          </EmptyState>
+          {dashboard.topMembers.length ? (
+            <CardContent className="px-0 pb-0">
+              <div className="grid grid-cols-[1fr_6rem_6rem] border-y border-border bg-muted/40 px-5 py-2 text-[0.6875rem] font-semibold text-muted-foreground">
+                <span>Team member</span><span className="text-right">This month</span><span className="text-right">Last month</span>
+              </div>
+              <div className="max-h-56 divide-y divide-border overflow-y-auto">
+                {dashboard.topMembers.map((member) => (
+                  <div key={member.name} className="grid grid-cols-[1fr_6rem_6rem] px-5 py-3 text-xs">
+                    <span className="truncate font-medium text-foreground">{member.name}</span>
+                    <span className="text-right tabular-nums text-foreground">
+                      {formatMoney(member.current, business.currency, business.country)}
+                    </span>
+                    <span className="text-right tabular-nums text-muted-foreground">
+                      {formatMoney(member.previous, business.currency, business.country)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          ) : (
+            <EmptyState icon={TrendUp} title="No sales this month">
+              Create some sales for sales data to appear
+            </EmptyState>
+          )}
         </DashboardCard>
       </div>
     </div>
