@@ -66,8 +66,8 @@ const QUICK_COLORS = [
   "border-l-slot-blue",
   "border-l-slot-blue",
   "border-l-slot-blue",
-  "border-l-violet-400",
-  "border-l-lime-500",
+  "border-l-slot-blue",
+  "border-l-slot-blue",
 ];
 
 const SOURCE_CARDS: { id: string; label: string; icon: typeof Stack; available: boolean }[] = [
