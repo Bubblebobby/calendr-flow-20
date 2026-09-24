@@ -492,10 +492,30 @@ export function HomeDashboard() {
       ).size,
     })).sort((a, b) => b.current - a.current || b.previous - a.previous || a.name.localeCompare(b.name));
 
+    const memberMap = new Map<string, { name: string; current: number; previous: number }>();
+    for (const sale of sales) {
+      const key = sale.team_member_id ?? "unassigned";
+      const entry = memberMap.get(key) ?? {
+        name: fullName(sale.team_members),
+        current: 0,
+        previous: 0,
+      };
+      const month = monthKey(sale.sale_date);
+      if (month === currentMonth) entry.current += Number(sale.total ?? 0);
+      if (month === previousMonth) entry.previous += Number(sale.total ?? 0);
+      memberMap.set(key, entry);
+    }
+    const topMembers = [...memberMap.values()]
+      .sort((a, b) => b.current - a.current || b.previous - a.previous || a.name.localeCompare(b.name));
+
     return {
       chart,
       recentCount: recentAppointments.length,
       recentValue: recentItems.reduce((sum, item) => sum + Number(item.price ?? 0), 0),
+      recentSalesTotal: sales
+        .filter((sale) => recentKeys.includes(dateKey(new Date(sale.sale_date), timeZone)))
+        .reduce((sum, sale) => sum + Number(sale.total ?? 0), 0),
+      topMembers,
       upcoming,
       today,
       activity: appointments
