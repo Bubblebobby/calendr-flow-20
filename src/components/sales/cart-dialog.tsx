@@ -356,8 +356,10 @@ export function CartDialog({
           <X size={18} weight="bold" />
         </Button>
 
+        <div className="flex min-h-0 flex-1">
+        <div className="flex min-w-0 flex-1 flex-col">
         {/* Top bar */}
-        <header className="flex items-center gap-3 px-8 pt-8">
+        <header className="flex items-center gap-3 px-8 pt-10">
           <Button
             variant="outline"
             size="icon"
@@ -390,13 +392,12 @@ export function CartDialog({
           </nav>
         </header>
 
-        <div className="flex min-h-0 flex-1">
           {/* Main panel */}
           {step === "cart" ? (
-            <div className="min-w-0 flex-1 overflow-y-auto px-8 py-6">
-              <h2 className="text-2xl font-bold tracking-tight text-foreground">Add to cart</h2>
+            <div className="min-w-0 flex-1 overflow-y-auto px-8 pb-8 pt-3">
+              <h2 className="text-3xl font-bold tracking-tight text-foreground">Add to cart</h2>
 
-              <div className="relative mt-4 max-w-2xl">
+              <div className="relative mt-6 ">
                 <MagnifyingGlass
                   size={16}
                   className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
@@ -405,13 +406,13 @@ export function CartDialog({
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder="Search"
-                  className="h-11 rounded-xl pl-10"
+                  className="h-12 rounded-lg pl-11 text-base"
                 />
               </div>
 
               {source === "menu" && (
                 <>
-                  <div className="mt-5 grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-3">
+                  <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3">
                     {SOURCE_CARDS.map((card) => (
                       <button
                         key={card.id}
@@ -421,18 +422,18 @@ export function CartDialog({
                             ? setSource(card.id as Source)
                             : toast(`${card.label} — coming soon`)
                         }
-                        className="flex flex-col items-start gap-3 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:border-foreground/30"
+                        className="flex min-h-[6.25rem] flex-col items-start justify-between gap-3 rounded-lg border border-border bg-card p-4 text-left transition-colors hover:border-foreground/30"
                       >
-                        <card.icon size={22} className="text-muted-foreground" />
-                        <span className="text-sm font-semibold text-foreground">{card.label}</span>
+                        <card.icon size={24} className="text-foreground/70" />
+                        <span className="text-base font-medium text-foreground">{card.label}</span>
                       </button>
                     ))}
                   </div>
 
                   {/* Quick sale */}
-                  <div className="mt-8 max-w-2xl">
+                  <div className="mt-12">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-base font-bold text-foreground">Quick sale</h3>
+                      <h3 className="text-lg font-semibold text-foreground">Quick sale</h3>
                       <button
                         type="button"
                         className="text-sm font-medium text-primary"
@@ -446,21 +447,21 @@ export function CartDialog({
                         No services yet — add services in your catalog to see them here.
                       </p>
                     ) : (
-                      <div className="mt-3 grid grid-cols-2 gap-3">
+                      <div className="mt-6 grid grid-cols-2 gap-4">
                         {quickSale.map((service, index) => (
                           <button
                             key={service.id}
                             type="button"
                             onClick={() => addService(service)}
                             className={cn(
-                              "rounded-xl border border-border border-l-4 bg-card px-4 py-3.5 text-left transition-colors hover:border-foreground/30",
+                              "flex min-h-[8rem] flex-col justify-center rounded-lg border border-border border-l-8 bg-card px-6 py-4 text-left transition-colors hover:border-foreground/30",
                               QUICK_COLORS[index % QUICK_COLORS.length],
                             )}
                           >
-                            <span className="block text-sm font-semibold text-foreground">
+                            <span className="block text-base font-medium text-foreground">
                               {service.name}
                             </span>
-                            <span className="mt-0.5 block text-xs text-muted-foreground">
+                            <span className="mt-1 block text-sm text-muted-foreground">
                               {money(Number(service.price ?? 0))}
                             </span>
                           </button>
@@ -472,7 +473,7 @@ export function CartDialog({
               )}
 
               {source === "services" && (
-                <div className="mt-5 max-w-2xl">
+                <div className="mt-5 ">
                   <button
                     type="button"
                     className="text-sm font-medium text-primary"
@@ -502,7 +503,7 @@ export function CartDialog({
               )}
 
               {source === "appointments" && (
-                <div className="mt-5 max-w-2xl">
+                <div className="mt-5 ">
                   <button
                     type="button"
                     className="text-sm font-medium text-primary"
@@ -545,8 +546,8 @@ export function CartDialog({
             </div>
           ) : (
             /* Payment step */
-            <div className="min-w-0 flex-1 overflow-y-auto px-8 py-6">
-              <h2 className="text-2xl font-bold tracking-tight text-foreground">Payment</h2>
+            <div className="min-w-0 flex-1 overflow-y-auto px-8 pb-8 pt-3">
+              <h2 className="text-3xl font-bold tracking-tight text-foreground">Payment</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 Choose how the client is paying.
               </p>
@@ -569,10 +570,11 @@ export function CartDialog({
               </div>
             </div>
           )}
+        </div>
 
           {/* Cart panel */}
-          <aside className="flex w-[24rem] shrink-0 flex-col border-l border-border bg-card">
-            <div className="border-b border-border p-4">
+          <aside className="flex w-[26rem] shrink-0 flex-col border-l border-border bg-background lg:w-[30rem]">
+            <div className="p-8 pb-4">
               {selectedClient ? (
                 <div className="flex items-center justify-between rounded-xl border border-border px-4 py-3">
                   <div>
@@ -592,16 +594,16 @@ export function CartDialog({
                   <button
                     type="button"
                     onClick={() => setClientPickerOpen((prev) => !prev)}
-                    className="flex w-full items-center justify-between rounded-xl border border-border px-4 py-3 text-left transition-colors hover:border-foreground/30"
+                    className="flex w-full items-center justify-between rounded-xl border border-border px-5 py-5 text-left transition-colors hover:border-foreground/30"
                   >
                     <span>
-                      <span className="block text-sm font-semibold text-foreground">Add client</span>
-                      <span className="block text-xs text-muted-foreground">
+                      <span className="block text-base font-medium text-foreground">Add client</span>
+                      <span className="mt-0.5 block text-sm text-muted-foreground">
                         Leave empty for walk-ins
                       </span>
                     </span>
-                    <span className="flex size-9 items-center justify-center rounded-full bg-muted text-foreground">
-                      <UserPlus size={18} />
+                    <span className="flex size-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <UserPlus size={26} />
                     </span>
                   </button>
                   {clientPickerOpen && (
@@ -647,9 +649,9 @@ export function CartDialog({
             <div className="flex-1 overflow-y-auto p-4">
               {items.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
-                  <ShoppingCart size={36} className="text-muted-foreground/50" />
-                  <p className="text-sm font-semibold text-foreground">Your cart is empty</p>
-                  <p className="max-w-[16rem] text-xs text-muted-foreground">
+                  <ShoppingCart size={56} weight="duotone" className="text-primary" />
+                  <p className="mt-2 text-base font-semibold text-foreground">Your cart is empty</p>
+                  <p className="max-w-[20rem] text-sm text-muted-foreground">
                     Tap an item to add to cart or add an existing client for smart recommendations
                   </p>
                 </div>
