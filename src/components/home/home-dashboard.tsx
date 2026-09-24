@@ -403,7 +403,7 @@ export function HomeDashboard() {
       rangeStart.setHours(0, 0, 0, 0);
       const rangeEnd = addDays(now, 8);
 
-      const [itemsResult, servicesResult] = await Promise.all([
+      const [itemsResult, servicesResult, salesResult] = await Promise.all([
         supabase
           .from("appointment_items")
           .select(
@@ -418,12 +418,21 @@ export function HomeDashboard() {
           .select("id, name")
           .eq("business_id", business.id)
           .order("sort_order", { ascending: true }),
+        supabase
+          .from("sales")
+          .select("id, total, sale_date, team_member_id, team_members(first_name, last_name)")
+          .eq("business_id", business.id)
+          .eq("status", "completed")
+          .gte("sale_date", rangeStart.toISOString())
+          .lt("sale_date", rangeEnd.toISOString()),
       ]);
       if (itemsResult.error) throw itemsResult.error;
       if (servicesResult.error) throw servicesResult.error;
+      if (salesResult.error) throw salesResult.error;
       return {
         items: itemsResult.data as unknown as DashboardItem[],
         services: servicesResult.data as ServiceRow[],
+        sales: salesResult.data as unknown as SaleRow[],
       };
     },
     staleTime: 60_000,
