@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Receipt } from "@phosphor-icons/react";
 
 import { DailySalesSummary } from "@/components/sales/daily-sales-summary";
+import { SalesAppointmentsList } from "@/components/sales/sales-appointments-list";
 import { SalesList } from "@/components/sales/sales-list";
 
 const TAB_LABELS: Record<string, string> = {
@@ -42,6 +43,8 @@ function SalesPage() {
     <div className="min-w-0 px-8 py-10">
       {tab === "daily" ? (
         <DailySalesSummary />
+      ) : tab === "appointments" ? (
+        <SalesAppointmentsList />
       ) : tab === "sales" ? (
         <SalesList />
       ) : (
