@@ -261,9 +261,7 @@ export function SalesAppointmentsList() {
               <button
                 key={format}
                 type="button"
-                onClick={() =>
-                  comingSoon("Export", `${format} export is coming soon.`)
-                }
+                onClick={() => toast(`${format} export — coming soon`)}
                 className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted/60"
               >
                 <Export size={15} className="text-muted-foreground" />

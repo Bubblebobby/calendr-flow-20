@@ -43,6 +43,8 @@ function SalesPage() {
     <div className="min-w-0 px-8 py-10">
       {tab === "daily" ? (
         <DailySalesSummary />
+      ) : tab === "appointments" ? (
+        <SalesAppointmentsList />
       ) : tab === "sales" ? (
         <SalesList />
       ) : (
