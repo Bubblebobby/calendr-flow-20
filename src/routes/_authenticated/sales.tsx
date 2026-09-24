@@ -18,8 +18,8 @@ const TAB_LABELS: Record<string, string> = {
 export const Route = createFileRoute("/_authenticated/sales")({
   validateSearch: (search: Record<string, unknown>) => ({
     tab:
-      typeof search.tab === "string" && search.tab in TAB_LABELS
-        ? search.tab
+      typeof search["tab"] === "string" && search["tab"] in TAB_LABELS
+        ? (search["tab"] as string)
         : "daily",
   }),
   head: () => ({
