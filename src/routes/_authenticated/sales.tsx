@@ -1,12 +1,27 @@
-import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { toast } from "sonner";
+import { Receipt } from "@phosphor-icons/react";
 
 import { DailySalesSummary } from "@/components/sales/daily-sales-summary";
 import { SalesList } from "@/components/sales/sales-list";
-import { cn } from "@/lib/utils";
+
+const TAB_LABELS: Record<string, string> = {
+  daily: "Daily sales summary",
+  register: "Register",
+  appointments: "Appointments",
+  sales: "Sales",
+  payments: "Payments",
+  "gift-cards": "Gift cards sold",
+  packages: "Packages sold",
+  memberships: "Memberships sold",
+};
 
 export const Route = createFileRoute("/_authenticated/sales")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    tab:
+      typeof search.tab === "string" && search.tab in TAB_LABELS
+        ? search.tab
+        : "daily",
+  }),
   head: () => ({
     meta: [
       { title: "Sales — Bookly" },
@@ -20,56 +35,30 @@ export const Route = createFileRoute("/_authenticated/sales")({
   component: SalesPage,
 });
 
-type SalesSection = "daily" | "sales";
-
-const TABS: { id: SalesSection | string; label: string }[] = [
-  { id: "daily", label: "Daily sales summary" },
-  { id: "register", label: "Register" },
-  { id: "appointments", label: "Appointments" },
-  { id: "sales", label: "Sales" },
-  { id: "payments", label: "Payments" },
-  { id: "gift-cards", label: "Gift cards sold" },
-  { id: "packages", label: "Packages sold" },
-  { id: "memberships", label: "Memberships sold" },
-];
-
 function SalesPage() {
-  const [section, setSection] = useState<SalesSection>("daily");
+  const { tab } = Route.useSearch();
 
   return (
-    <div className="min-h-full w-full">
-      {/* Sales tabs */}
-      <div className="border-b border-border px-8 pt-6">
-        <nav className="flex flex-wrap gap-1">
-          {TABS.map((item) => {
-            const active = section === item.id;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                className={cn(
-                  "rounded-lg px-3.5 py-2 text-sm font-medium transition-colors",
-                  active
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
-                )}
-                onClick={() =>
-                  item.id === "daily" || item.id === "sales"
-                    ? setSection(item.id as SalesSection)
-                    : toast(`${item.label} — coming soon`)
-                }
-              >
-                {item.label}
-              </button>
-            );
-          })}
-        </nav>
-      </div>
+    <div className="min-w-0 px-8 py-10">
+      {tab === "daily" ? (
+        <DailySalesSummary />
+      ) : tab === "sales" ? (
+        <SalesList />
+      ) : (
+        <ComingSoon label={TAB_LABELS[tab] ?? "This section"} />
+      )}
+    </div>
+  );
+}
 
-      {/* Content */}
-      <div className="min-w-0 px-8 py-8">
-        {section === "daily" ? <DailySalesSummary /> : <SalesList />}
-      </div>
+function ComingSoon({ label }: { label: string }) {
+  return (
+    <div className="mx-auto flex max-w-md flex-col items-center gap-2 py-24 text-center">
+      <span className="flex size-12 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+        <Receipt size={22} />
+      </span>
+      <h2 className="mt-2 text-base font-semibold text-foreground">{label}</h2>
+      <p className="text-sm text-muted-foreground">This section is coming soon.</p>
     </div>
   );
 }

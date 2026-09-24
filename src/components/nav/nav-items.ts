@@ -53,12 +53,21 @@ export const navItems: NavItem[] = [
     icon: Receipt,
     groups: [
       {
-        title: "Transactions",
+        title: "Sales",
         children: [
-          { title: "Daily sales", to: "/sales" },
-          { title: "Appointments", to: "/sales" },
-          { title: "Invoices", to: "/sales" },
-          { title: "Payments", to: "/sales" },
+          { title: "Daily sales summary", to: "/sales", search: { tab: "daily" } },
+          { title: "Register", to: "/sales", search: { tab: "register" } },
+          { title: "Appointments", to: "/sales", search: { tab: "appointments" } },
+          { title: "Sales", to: "/sales", search: { tab: "sales" } },
+          { title: "Payments", to: "/sales", search: { tab: "payments" } },
+        ],
+      },
+      {
+        title: "Sold items",
+        children: [
+          { title: "Gift cards sold", to: "/sales", search: { tab: "gift-cards" } },
+          { title: "Packages sold", to: "/sales", search: { tab: "packages" } },
+          { title: "Memberships sold", to: "/sales", search: { tab: "memberships" } },
         ],
       },
     ],
