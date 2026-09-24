@@ -3,7 +3,7 @@ import { CaretDown, CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { SaleDialog } from "@/components/sales/sale-dialog";
+import { CartDialog } from "@/components/sales/cart-dialog";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -278,7 +278,7 @@ export function DailySalesSummary() {
         </section>
       </div>
 
-      <SaleDialog open={addOpen} onOpenChange={setAddOpen} />
+      <CartDialog open={addOpen} onOpenChange={setAddOpen} />
     </div>
   );
 }
