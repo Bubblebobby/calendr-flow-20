@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useBusiness } from "@/lib/use-business";
 import { businessLocale, formatDuration } from "@/lib/format";
-import { comingSoon } from "@/lib/coming-soon";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
