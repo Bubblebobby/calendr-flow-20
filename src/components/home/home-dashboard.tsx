@@ -656,8 +656,8 @@ export function HomeDashboard() {
                 <span>Team member</span><span className="text-right">This month</span><span className="text-right">Last month</span>
               </div>
               <div className="max-h-56 divide-y divide-border overflow-y-auto">
-                {dashboard.topMembers.map((member) => (
-                  <div key={member.name} className="grid grid-cols-[1fr_6rem_6rem] px-5 py-3 text-xs">
+                {dashboard.topMembers.map((member, index) => (
+                  <div key={`${member.name}-${index}`} className="grid grid-cols-[1fr_6rem_6rem] px-5 py-3 text-xs">
                     <span className="truncate font-medium text-foreground">{member.name}</span>
                     <span className="text-right tabular-nums text-foreground">
                       {formatMoney(member.current, business.currency, business.country)}
