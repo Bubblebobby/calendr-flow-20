@@ -454,6 +454,7 @@ export function HomeDashboard() {
       .sort((a, b) => a.start.getTime() - b.start.getTime());
     const today = upcoming.filter((appointment) => dateKey(appointment.start, timeZone) === todayKey);
 
+    const sales = data?.sales ?? [];
     const chart = recentKeys.map((key) => ({
       key,
       label: new Intl.DateTimeFormat(locale, { day: "numeric", weekday: "short", timeZone }).format(
@@ -461,7 +462,9 @@ export function HomeDashboard() {
           ? new Date(activeItems.find((item) => dateKey(new Date(item.start_time), timeZone) === key)?.start_time ?? now)
           : selectedDates[recentKeys.indexOf(key)],
       ),
-      sales: 0,
+      sales: sales
+        .filter((sale) => dateKey(new Date(sale.sale_date), timeZone) === key)
+        .reduce((sum, sale) => sum + Number(sale.total ?? 0), 0),
       appointments: new Set(
         recentItems
           .filter((item) => dateKey(new Date(item.start_time), timeZone) === key)
