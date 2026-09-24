@@ -577,7 +577,7 @@ export function HomeDashboard() {
               <LineChart data={dashboard.chart} margin={{ top: 8, right: 10, left: -24, bottom: 0 }}>
                 <CartesianGrid vertical={false} strokeDasharray="3 3" />
                 <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={10} />
-                <YAxis allowDecimals={false} tickLine={false} axisLine={false} fontSize={10} />
+                <YAxis tickLine={false} axisLine={false} fontSize={10} />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Line type="monotone" dataKey="sales" stroke="var(--color-sales)" strokeWidth={2} dot={{ r: 2 }} />
                 <Line type="monotone" dataKey="appointments" stroke="var(--color-appointments)" strokeWidth={2} dot={{ r: 2 }} />
