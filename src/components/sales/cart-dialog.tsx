@@ -62,10 +62,10 @@ const personName = (row: { first_name: string; last_name: string | null }) =>
   [row.first_name, row.last_name].filter(Boolean).join(" ").trim();
 
 const QUICK_COLORS = [
-  "border-l-sky-400",
-  "border-l-teal-400",
-  "border-l-amber-400",
-  "border-l-rose-400",
+  "border-l-slot-blue",
+  "border-l-slot-blue",
+  "border-l-slot-blue",
+  "border-l-slot-blue",
   "border-l-violet-400",
   "border-l-lime-500",
 ];
