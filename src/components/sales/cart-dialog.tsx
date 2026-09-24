@@ -342,7 +342,7 @@ export function CartDialog({
     >
       <DialogContent
         overlayClassName="bg-foreground/10"
-        className="[&>button:last-child]:hidden left-auto right-0 top-0 flex h-full max-h-none w-[min(100%,82rem)] max-w-none translate-x-0 translate-y-0 flex-col gap-0 overflow-visible rounded-none border-0 border-l border-border bg-background p-0 shadow-2xl sm:w-[calc(100%-18rem)]"
+        className="[&>button:last-child]:hidden left-auto right-0 top-0 flex h-full max-h-none w-[min(100%,82rem)] max-w-none translate-x-0 translate-y-0 flex-col gap-0 overflow-visible rounded-none border-0 border-l border-border bg-card p-0 shadow-2xl sm:w-[calc(100%-18rem)]"
       >
         <DialogTitle className="sr-only">Add to cart</DialogTitle>
 
@@ -573,7 +573,7 @@ export function CartDialog({
         </div>
 
           {/* Cart panel */}
-          <aside className="flex w-[26rem] shrink-0 flex-col border-l border-border bg-background lg:w-[30rem]">
+          <aside className="flex w-[26rem] shrink-0 flex-col border-l border-border bg-card lg:w-[30rem]">
             <div className="p-8 pb-4">
               {selectedClient ? (
                 <div className="flex items-center justify-between rounded-xl border border-border px-4 py-3">
