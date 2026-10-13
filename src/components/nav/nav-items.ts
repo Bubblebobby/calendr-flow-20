@@ -67,10 +67,17 @@ export const navItems: NavItem[] = [
     icon: UserSquare,
     groups: [
       {
-        title: "Client list",
+        title: "Clients",
         children: [
-          { title: "All clients", to: "/clients" },
-          { title: "Reviews", to: "/clients" },
+          { title: "Clients list", to: "/clients", search: { tab: "list" } },
+          { title: "Client segments", to: "/clients", search: { tab: "segments" } },
+        ],
+      },
+      {
+        title: "Engage",
+        children: [
+          { title: "Client loyalty", to: "/clients", search: { tab: "loyalty" } },
+          { title: "Online reputation", to: "/clients", search: { tab: "reviews" } },
         ],
       },
     ],

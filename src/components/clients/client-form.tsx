@@ -257,8 +257,10 @@ export function ClientForm({
     },
   });
 
+  // Separate cache key: this is a slim name-only list for "Referred by", and must not
+  // overwrite the full list the Clients page caches under ["clients", businessId].
   const clientsQuery = useQuery({
-    queryKey: ["clients", businessId],
+    queryKey: ["clients-referral-options", businessId],
     enabled: Boolean(businessId),
     queryFn: async () => {
       const { data, error } = await supabase
@@ -527,7 +529,7 @@ export function ClientForm({
             Close
           </Button>
           <Button
-            className="h-11 rounded-full px-7 text-base font-semibold"
+            className="h-11 rounded-full bg-ink px-7 text-base font-semibold text-ink-foreground hover:bg-ink/90"
             onClick={onSave}
             disabled={save.isPending}
           >

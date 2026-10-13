@@ -49,7 +49,7 @@ import {
   type TeamSelection,
 } from "./calendar-data";
 
-export type CalendarSearch = { view?: CalendarView; date?: string; team?: string };
+export type CalendarSearch = { view?: CalendarView; date?: string; team?: string; book?: string };
 
 /** What a slot click does while the purple "Select a time" banner is showing. */
 type PickMode =
@@ -73,11 +73,16 @@ export function CalendarPage({
   view,
   anchor,
   selection,
+  bookClientId = null,
+  onBookConsumed,
   onNavigate,
 }: {
   view: CalendarView;
   anchor: Date;
   selection: TeamSelection;
+  /** "Book now" from a client profile: start picking a time with this client. */
+  bookClientId?: string | null;
+  onBookConsumed?: () => void;
   onNavigate: (next: { view?: CalendarView; date?: Date; team?: TeamSelection }) => void;
 }) {
   const queryClient = useQueryClient();
@@ -162,6 +167,13 @@ export function CalendarPage({
   } | null>(null);
   const [drawer, setDrawer] = useState<null | "filters" | "settings" | "waitlist">(null);
   const [checkout, setCheckout] = useState<CheckoutStart | null>(null);
+
+  useEffect(() => {
+    if (!bookClientId) return;
+    setPick({ kind: "rebook", request: { clientId: bookClientId, serviceIds: [], label: "client" } });
+    onBookConsumed?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookClientId]);
 
   useEffect(() => {
     if (!pick) return;

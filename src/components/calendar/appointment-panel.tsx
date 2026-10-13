@@ -479,6 +479,14 @@ export function AppointmentPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [services.length, clients.length, targetKey]);
 
+  // Booking for a known client (Book now / Rebook): fill the client once the list has loaded.
+  useEffect(() => {
+    if (target?.kind !== "new" || !target.prefill?.clientId || client) return;
+    const match = clients.find((row) => row.id === target.prefill!.clientId);
+    if (match) setClient(match);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clients.length, targetKey]);
+
   useEffect(() => {
     if (target?.kind !== "existing" || !existing || existing.id !== target.appointmentId) return;
     const items = [...existing.appointment_items].sort((a, b) =>

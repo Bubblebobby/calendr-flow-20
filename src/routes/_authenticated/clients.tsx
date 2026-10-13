@@ -1,8 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { ClientsList } from "@/components/clients/clients-list";
+import {
+  ClientLoyalty,
+  ClientSegments,
+  OnlineReputation,
+} from "@/components/clients/clients-extra-pages";
+
+const TABS = ["list", "segments", "loyalty", "reviews"] as const;
+type ClientsTab = (typeof TABS)[number];
 
 export const Route = createFileRoute("/_authenticated/clients")({
+  validateSearch: (search: Record<string, unknown>): { tab?: ClientsTab } =>
+    typeof search["tab"] === "string" && (TABS as readonly string[]).includes(search["tab"])
+      ? { tab: search["tab"] as ClientsTab }
+      : {},
   head: () => ({
     meta: [
       { title: "Clients list — Bookly" },
@@ -20,10 +32,19 @@ export const Route = createFileRoute("/_authenticated/clients")({
 });
 
 function ClientsPage() {
+  const { tab = "list" } = Route.useSearch();
   return (
     <div className="min-h-full w-full bg-white">
       <div className="mx-auto w-full max-w-6xl px-8 py-10">
-        <ClientsList />
+        {tab === "segments" ? (
+          <ClientSegments />
+        ) : tab === "loyalty" ? (
+          <ClientLoyalty />
+        ) : tab === "reviews" ? (
+          <OnlineReputation />
+        ) : (
+          <ClientsList />
+        )}
       </div>
     </div>
   );

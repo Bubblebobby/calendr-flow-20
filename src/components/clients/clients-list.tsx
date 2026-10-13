@@ -1,26 +1,37 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  ArrowDown,
-  ArrowUp,
+  ArrowsDownUp,
+  ArrowsMerge,
   CaretDown,
+  Check,
   DotsThreeVertical,
-  FadersHorizontal,
-  MagnifyingGlass,
+  DownloadSimple,
+  FileCsv,
+  FileXls,
+  UploadSimple,
   X,
 } from "@phosphor-icons/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
+import { ClientProfile } from "@/components/clients/client-profile";
+import {
+  ChipButton,
+  FiltersChip,
+  ListToolbar,
+  SearchBox,
+  pillButton,
+} from "@/components/sales/list-ui";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { businessLocale, formatMoney } from "@/lib/format";
 import { useBusiness } from "@/lib/use-business";
@@ -32,19 +43,56 @@ type Client = {
   last_name: string | null;
   email: string | null;
   phone: string | null;
+  phone_country_code: string | null;
+  gender: string | null;
+  client_source: string;
   avatar_color: string;
   created_at: string;
 };
 
+type Sort = "created-desc" | "created-asc" | "name-asc" | "name-desc";
+const SORT_LABELS: Record<Sort, string> = {
+  "created-desc": "Created at (newest first)",
+  "created-asc": "Created at (oldest first)",
+  "name-asc": "Name (A-Z)",
+  "name-desc": "Name (Z-A)",
+};
+
 const PAGE_SIZE = 20;
+const BANNER_KEY = "bookly.clients.importBanner";
 
-const soon = (label: string) => toast(`${label} — coming soon`);
-
-const fullName = (client: Client) =>
+const fullName = (client: Pick<Client, "first_name" | "last_name">) =>
   [client.first_name, client.last_name].filter(Boolean).join(" ").trim();
 
-const initials = (client: Client) =>
-  [client.first_name?.[0], client.last_name?.[0]].filter(Boolean).join("").toUpperCase() || "?";
+function downloadCsv(rows: Client[], filename: string) {
+  const escape = (value: string | null | undefined) =>
+    `"${String(value ?? "").replace(/"/g, '""')}"`;
+  const lines = [
+    ["First name", "Last name", "Email", "Phone", "Gender", "Client source", "Created at"].join(
+      ",",
+    ),
+    ...rows.map((row) =>
+      [
+        row.first_name,
+        row.last_name,
+        row.email,
+        [row.phone_country_code, row.phone].filter(Boolean).join(" "),
+        row.gender,
+        row.client_source,
+        row.created_at.slice(0, 10),
+      ]
+        .map(escape)
+        .join(","),
+    ),
+  ];
+  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
 
 export function ClientsList() {
   const navigate = useNavigate();
@@ -53,10 +101,22 @@ export function ClientsList() {
   const businessId = business?.id;
 
   const [search, setSearch] = useState("");
-  const [sortDesc, setSortDesc] = useState(true);
+  const [sort, setSort] = useState<Sort>("created-desc");
   const [page, setPage] = useState(0);
   const [selected, setSelected] = useState<string[]>([]);
   const [bannerOpen, setBannerOpen] = useState(true);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filters, setFilters] = useState({ gender: "all", source: "all", tag: "all" });
+  const [draft, setDraft] = useState(filters);
+  const [profileId, setProfileId] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      setBannerOpen(window.localStorage.getItem(BANNER_KEY) !== "hidden");
+    } catch {
+      // keep the banner
+    }
+  }, []);
 
   const clientsQuery = useQuery({
     queryKey: ["clients", businessId],
@@ -64,11 +124,13 @@ export function ClientsList() {
     queryFn: async (): Promise<Client[]> => {
       const { data, error } = await supabase
         .from("clients")
-        .select("id, first_name, last_name, email, phone, avatar_color, created_at")
+        .select(
+          "id, first_name, last_name, email, phone, phone_country_code, gender, client_source, avatar_color, created_at",
+        )
         .eq("business_id", businessId!)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as Client[];
     },
   });
 
@@ -91,6 +153,27 @@ export function ClientsList() {
     },
   });
 
+  const tagsQuery = useQuery({
+    queryKey: ["client-tags-index", businessId],
+    enabled: Boolean(businessId),
+    queryFn: async () => {
+      const [tags, assignments] = await Promise.all([
+        supabase
+          .from("client_tags")
+          .select("id, name")
+          .eq("business_id", businessId!)
+          .order("name"),
+        supabase
+          .from("client_tag_assignments")
+          .select("client_id, tag_id")
+          .eq("business_id", businessId!),
+      ]);
+      if (tags.error) throw tags.error;
+      if (assignments.error) throw assignments.error;
+      return { tags: tags.data ?? [], assignments: assignments.data ?? [] };
+    },
+  });
+
   const deleteClient = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("clients").delete().eq("id", id);
@@ -104,298 +187,368 @@ export function ClientsList() {
   });
 
   const clients = clientsQuery.data ?? [];
+  const sources = [
+    ...new Set(clients.map((client) => client.client_source).filter(Boolean)),
+  ].sort();
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
-    const rows = term
-      ? clients.filter((client) =>
+    const tagged =
+      filters.tag === "all"
+        ? null
+        : new Set(
+            (tagsQuery.data?.assignments ?? [])
+              .filter((row) => row.tag_id === filters.tag)
+              .map((row) => row.client_id),
+          );
+    const rows = clients
+      .filter(
+        (client) =>
+          !term ||
           [fullName(client), client.email ?? "", client.phone ?? ""]
             .join(" ")
             .toLowerCase()
             .includes(term),
-        )
-      : clients;
+      )
+      .filter(
+        (client) =>
+          filters.gender === "all" || (client.gender ?? "").toLowerCase() === filters.gender,
+      )
+      .filter((client) => filters.source === "all" || client.client_source === filters.source)
+      .filter((client) => !tagged || tagged.has(client.id));
     return [...rows].sort((a, b) => {
+      if (sort === "name-asc") return fullName(a).localeCompare(fullName(b));
+      if (sort === "name-desc") return fullName(b).localeCompare(fullName(a));
       const diff = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-      return sortDesc ? -diff : diff;
+      return sort === "created-desc" ? -diff : diff;
     });
-  }, [clients, search, sortDesc]);
+  }, [clients, search, sort, filters, tagsQuery.data]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, pageCount - 1);
   const pageRows = filtered.slice(currentPage * PAGE_SIZE, currentPage * PAGE_SIZE + PAGE_SIZE);
-
   const allSelected = pageRows.length > 0 && pageRows.every((row) => selected.includes(row.id));
-  const toggleAll = () =>
-    setSelected(allSelected ? [] : pageRows.map((row) => row.id));
-  const toggleRow = (id: string) =>
-    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  const filterCount = Object.values(filters).filter((value) => value !== "all").length;
 
   const dateFormatter = new Intl.DateTimeFormat(businessLocale(business?.country), {
     year: "numeric",
     month: "short",
     day: "numeric",
   });
-
   const salesLabel = (clientId: string) =>
     business
       ? formatMoney(salesQuery.data?.get(clientId) ?? 0, business.currency, business.country)
       : "—";
-
   const from = filtered.length === 0 ? 0 : currentPage * PAGE_SIZE + 1;
   const to = Math.min(filtered.length, (currentPage + 1) * PAGE_SIZE);
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground">Clients list</h2>
-            <span className="rounded-full border border-border bg-white px-3 py-1 text-sm font-semibold text-foreground">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <h2 className="text-[1.75rem] font-bold leading-9 tracking-tight text-foreground">
+              Clients list
+            </h2>
+            <span className="rounded-full bg-secondary px-2 text-[0.8125rem] font-semibold text-muted-foreground">
               {clients.length}
             </span>
           </div>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-1 text-[0.9375rem] text-muted-foreground">
             View, add, edit and delete your client&apos;s details.{" "}
-            <a href="#" className="font-semibold text-primary hover:underline">
+            <span className="cursor-pointer font-medium text-primary hover:underline">
               Learn more
-            </a>
+            </span>
           </p>
         </div>
-
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="h-12 gap-2 rounded-full border border-border bg-white px-6 text-base font-semibold text-foreground hover:bg-white hover:text-foreground"
+              <button
+                type="button"
+                className={cn(
+                  pillButton,
+                  "border border-border bg-card hover:bg-secondary data-[state=open]:bg-secondary",
+                )}
               >
-                Options
-                <CaretDown size={16} weight="bold" />
-              </Button>
+                Options <CaretDown size={13} weight="bold" />
+              </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64 p-3">
-              {["Import clients", "Export clients", "Merge duplicates", "Settings"].map((label) => (
+            <DropdownMenuContent align="end" className="w-56 rounded-xl p-1.5">
+              <DropdownMenuItem
+                onSelect={() =>
+                  toast("Client import (CSV/Excel upload) is coming in a later update")
+                }
+                className="gap-3 rounded-lg px-3 py-2 text-[0.9375rem]"
+              >
+                <UploadSimple size={18} /> Import clients
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={() => toast("Merging duplicate profiles is coming in a later update")}
+                className="gap-3 rounded-lg px-3 py-2 text-[0.9375rem]"
+              >
+                <ArrowsMerge size={18} /> Merge clients
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="px-3 py-1.5 text-[0.875rem] font-semibold">
+                Export
+              </DropdownMenuLabel>
+              <DropdownMenuItem
+                onSelect={() => toast("Excel export arrives with Reports, CSV works now")}
+                className="gap-3 rounded-lg px-3 py-2 text-[0.9375rem]"
+              >
+                <FileXls size={18} /> Excel
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={() => {
+                  downloadCsv(filtered, `clients-${new Date().toISOString().slice(0, 10)}.csv`);
+                  toast.success(
+                    `Exported ${filtered.length} client${filtered.length === 1 ? "" : "s"}`,
+                  );
+                }}
+                className="gap-3 rounded-lg px-3 py-2 text-[0.9375rem]"
+              >
+                <FileCsv size={18} /> CSV
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <button
+            type="button"
+            onClick={() => navigate({ to: "/client/new" })}
+            className={cn(pillButton, "bg-ink px-6 text-ink-foreground hover:bg-ink/90")}
+          >
+            Add
+          </button>
+        </div>
+      </div>
+
+      {/* Import banner, like Fresha */}
+      {bannerOpen ? (
+        <section className="relative overflow-hidden rounded-2xl bg-[#111] px-6 py-6 text-white">
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-2/3 bg-gradient-to-r from-transparent via-[#6b2bd9]/70 to-[#c13bd6]" />
+          <button
+            type="button"
+            aria-label="Dismiss"
+            onClick={() => {
+              setBannerOpen(false);
+              try {
+                window.localStorage.setItem(BANNER_KEY, "hidden");
+              } catch {
+                // fine
+              }
+            }}
+            className="absolute right-4 top-4 rounded-full p-1.5 text-white/80 hover:bg-white/10"
+          >
+            <X size={16} weight="bold" />
+          </button>
+          <div className="relative max-w-sm">
+            <h3 className="text-xl font-bold">Import your client list</h3>
+            <p className="mt-1 text-[0.875rem] text-white/80">
+              Takes a few minutes and brings your existing clients&apos; details, history and notes
+              into Bookly
+            </p>
+            <div className="mt-4 flex items-center gap-5">
+              <button
+                type="button"
+                onClick={() =>
+                  toast("Client import (CSV/Excel upload) is coming in a later update")
+                }
+                className="inline-flex h-10 items-center gap-2 rounded-full bg-white px-5 text-[0.875rem] font-semibold text-[#111]"
+              >
+                <DownloadSimple size={16} /> Start import
+              </button>
+              <span className="cursor-pointer text-[0.875rem] font-semibold hover:underline">
+                Learn more
+              </span>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <ListToolbar
+        right={
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <ChipButton>
+                {SORT_LABELS[sort]} <ArrowsDownUp size={16} />
+              </ChipButton>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-60 rounded-xl p-1.5">
+              {(Object.keys(SORT_LABELS) as Sort[]).map((key) => (
                 <DropdownMenuItem
-                  key={label}
-                  className="gap-3 px-4 py-2.5 text-sm font-medium text-foreground"
-                  onClick={() => soon(label)}
+                  key={key}
+                  onSelect={() => setSort(key)}
+                  className="rounded-lg px-3 py-2 text-[0.9375rem]"
                 >
-                  {label}
+                  <span className="flex-1">{SORT_LABELS[key]}</span>
+                  {sort === key ? <Check size={14} weight="bold" /> : null}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+        }
+      >
+        <SearchBox
+          value={search}
+          onChange={(value) => {
+            setSearch(value);
+            setPage(0);
+          }}
+          placeholder="Name, email or phone"
+        />
+        <FiltersChip
+          count={filterCount}
+          onClick={() => {
+            setDraft(filters);
+            setFiltersOpen(true);
+          }}
+        />
+      </ListToolbar>
 
-          <Button
-            className="h-12 rounded-full px-8 text-base font-semibold"
-            onClick={() => navigate({ to: "/client/new" })}
-          >
-            Add
-          </Button>
-        </div>
-      </div>
-
-      {/* Promo banner — brand accent, no gradient */}
-      {bannerOpen && (
-        <section className="relative overflow-hidden rounded-3xl bg-accent px-8 py-8 text-accent-foreground">
-          <button
-            type="button"
-            aria-label="Dismiss"
-            onClick={() => setBannerOpen(false)}
-            className="absolute right-5 top-5 rounded-full p-1.5 text-accent-foreground/70 transition-colors hover:bg-black/5 hover:text-accent-foreground"
-          >
-            <X size={18} weight="bold" />
-          </button>
-          <h3 className="max-w-2xl text-2xl font-bold tracking-tight">
-            Attract new clients with online bookings
-          </h3>
-          <p className="mt-2 max-w-2xl text-sm text-accent-foreground/80">
-            Let clients discover your business and book themselves in, 24/7.
-          </p>
-          <div className="mt-6 flex items-center gap-4">
-            <Button
-              className="h-11 rounded-full bg-foreground px-7 text-sm font-semibold text-background hover:bg-foreground/90"
-              onClick={() => soon("Online booking")}
-            >
-              Start now
-            </Button>
+      {selected.length > 0 ? (
+        <div className="flex items-center justify-between rounded-2xl border border-border bg-card px-5 py-3 text-[0.875rem]">
+          <span className="font-semibold">{selected.length} selected</span>
+          <div className="flex items-center gap-2">
             <button
               type="button"
-              className="text-sm font-semibold underline-offset-4 hover:underline"
-              onClick={() => soon("Online booking")}
-            >
-              Learn more
-            </button>
-          </div>
-        </section>
-      )}
-
-      {/* Search / filter row */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-muted/60 p-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative">
-            <MagnifyingGlass
-              size={18}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              value={search}
-              onChange={(event) => {
-                setSearch(event.target.value);
-                setPage(0);
+              onClick={() => {
+                downloadCsv(
+                  clients.filter((client) => selected.includes(client.id)),
+                  "selected-clients.csv",
+                );
               }}
-              placeholder="Name, email or phone"
-              className="h-12 w-[320px] rounded-full border-border bg-white pl-11 text-sm"
-            />
-          </div>
-          <Button
-            variant="outline"
-            className="h-12 gap-2 rounded-full border-border bg-white px-6 text-sm font-semibold text-foreground hover:bg-white"
-            onClick={() => soon("Filters")}
-          >
-            <FadersHorizontal size={18} />
-            Filters
-          </Button>
-        </div>
-
-        <Button
-          variant="outline"
-          className="h-12 gap-2 rounded-full border-border bg-white px-6 text-sm font-semibold text-foreground hover:bg-white"
-          onClick={() => setSortDesc((prev) => !prev)}
-        >
-          Created at ({sortDesc ? "newest first" : "oldest first"})
-          {sortDesc ? <ArrowDown size={16} weight="bold" /> : <ArrowUp size={16} weight="bold" />}
-        </Button>
-      </div>
-
-      {selected.length > 0 && (
-        <div className="flex items-center justify-between rounded-2xl border border-border bg-white px-5 py-3 text-sm">
-          <span className="font-semibold text-foreground">{selected.length} selected</span>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              className="h-9 rounded-full px-4 text-sm font-semibold"
-              onClick={() => soon("Bulk actions")}
+              className="h-9 rounded-full px-4 font-semibold hover:bg-secondary"
             >
-              Bulk actions
-            </Button>
-            <Button
-              variant="ghost"
-              className="h-9 rounded-full px-4 text-sm font-semibold"
+              Export selected
+            </button>
+            <button
+              type="button"
               onClick={() => setSelected([])}
+              className="h-9 rounded-full px-4 font-semibold hover:bg-secondary"
             >
               Clear
-            </Button>
+            </button>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[880px] border-collapse text-sm">
+        <table className="w-full min-w-[52rem] border-collapse whitespace-nowrap text-[0.8125rem]">
           <thead>
             <tr className="border-b border-border text-left">
               <th className="w-12 px-4 py-4">
                 <Checkbox
                   checked={allSelected}
-                  onCheckedChange={toggleAll}
+                  onCheckedChange={() =>
+                    setSelected(allSelected ? [] : pageRows.map((row) => row.id))
+                  }
                   aria-label="Select all clients"
                 />
               </th>
-              <th className="px-4 py-4 text-base font-bold text-foreground">Client name</th>
-              <th className="px-4 py-4 text-base font-bold text-foreground">Mobile number</th>
-              <th className="px-4 py-4 text-base font-bold text-foreground">Reviews</th>
-              <th className="px-4 py-4 text-base font-bold text-foreground">Sales</th>
-              <th className="px-4 py-4">
-                <button
-                  type="button"
-                  className="flex items-center gap-2 text-base font-bold text-foreground"
-                  onClick={() => setSortDesc((prev) => !prev)}
+              {["Client name", "Mobile number", "Reviews", "Sales", "Created at"].map((label) => (
+                <th
+                  key={label}
+                  className="px-4 py-4 text-[0.8125rem] font-semibold text-foreground"
                 >
-                  Created at
-                  {sortDesc ? (
-                    <ArrowDown size={16} weight="bold" />
-                  ) : (
-                    <ArrowUp size={16} weight="bold" />
-                  )}
-                </button>
-              </th>
+                  {label}
+                </th>
+              ))}
               <th className="w-12 px-4 py-4" />
             </tr>
           </thead>
           <tbody>
-            {pageRows.length === 0 && (
+            {pageRows.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-16 text-center text-sm text-muted-foreground">
-                  {clientsQuery.isLoading ? "Loading clients…" : "No clients yet."}
+                <td
+                  colSpan={7}
+                  className="px-4 py-16 text-center text-[0.875rem] text-muted-foreground"
+                >
+                  {clientsQuery.isLoading
+                    ? "Loading clients…"
+                    : clients.length
+                      ? "No clients match your search."
+                      : "No clients yet."}
                 </td>
               </tr>
-            )}
-
+            ) : null}
             {pageRows.map((client) => (
               <tr
                 key={client.id}
                 className={cn(
-                  "cursor-pointer border-b border-border transition-colors hover:bg-muted/50",
-                  selected.includes(client.id) && "bg-muted/40",
+                  "cursor-pointer border-b border-border transition-colors hover:bg-secondary/50",
+                  selected.includes(client.id) && "bg-secondary/40",
                 )}
-                onClick={() => navigate({ to: "/client/$clientId", params: { clientId: client.id } })}
+                onClick={() => setProfileId(client.id)}
               >
                 <td className="px-4 py-4" onClick={(event) => event.stopPropagation()}>
                   <Checkbox
                     checked={selected.includes(client.id)}
-                    onCheckedChange={() => toggleRow(client.id)}
+                    onCheckedChange={() =>
+                      setSelected((prev) =>
+                        prev.includes(client.id)
+                          ? prev.filter((id) => id !== client.id)
+                          : [...prev, client.id],
+                      )
+                    }
                     aria-label={`Select ${fullName(client)}`}
                   />
                 </td>
-                <td className="px-4 py-4">
+                <td className="px-4 py-3">
                   <div className="flex items-center gap-4">
-                    <span
-                      className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-foreground"
-                      style={{ backgroundColor: client.avatar_color }}
-                    >
-                      {initials(client)}
+                    <span className="flex size-12 items-center justify-center rounded-full bg-[#ebe8ff] text-[0.9375rem] font-semibold text-primary">
+                      {client.first_name[0]?.toUpperCase()}
                     </span>
                     <span>
-                      <span className="block font-semibold text-foreground">
+                      <span className="block text-[0.9375rem] font-medium text-foreground">
                         {fullName(client)}
                       </span>
-                      {client.email && (
-                        <span className="block text-sm text-muted-foreground">{client.email}</span>
-                      )}
+                      {client.email ? (
+                        <span className="block text-[0.8125rem] text-muted-foreground">
+                          {client.email}
+                        </span>
+                      ) : null}
                     </span>
                   </div>
                 </td>
-                <td className="px-4 py-4 text-muted-foreground">{client.phone || "–"}</td>
-                <td className="px-4 py-4 text-muted-foreground">–</td>
-                <td className="px-4 py-4 text-foreground">{salesLabel(client.id)}</td>
-                <td className="px-4 py-4 text-foreground">
-                  {dateFormatter.format(new Date(client.created_at))}
+                <td className="px-4 py-4">
+                  {client.phone
+                    ? [client.phone_country_code, client.phone].filter(Boolean).join(" ")
+                    : "-"}
                 </td>
+                <td className="px-4 py-4">-</td>
+                <td className="px-4 py-4">{salesLabel(client.id)}</td>
+                <td className="px-4 py-4">{dateFormatter.format(new Date(client.created_at))}</td>
                 <td className="px-4 py-4" onClick={(event) => event.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 rounded-full"
+                      <button
+                        type="button"
                         aria-label="Client actions"
+                        className="flex size-9 items-center justify-center rounded-full hover:bg-secondary"
                       >
                         <DotsThreeVertical size={18} weight="bold" />
-                      </Button>
+                      </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-44 p-2">
+                    <DropdownMenuContent align="end" className="w-44 rounded-xl p-1.5">
                       <DropdownMenuItem
-                        className="px-3 py-2 text-sm font-medium"
-                        onClick={() => navigate({ to: "/client/$clientId", params: { clientId: client.id } })}
+                        onSelect={() => setProfileId(client.id)}
+                        className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                      >
+                        View profile
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={() =>
+                          navigate({ to: "/client/$clientId", params: { clientId: client.id } })
+                        }
+                        className="rounded-lg px-3 py-2 text-[0.9375rem]"
                       >
                         Edit
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        className="px-3 py-2 text-sm font-medium text-destructive focus:text-destructive"
-                        onClick={() => deleteClient.mutate(client.id)}
+                        onSelect={() => deleteClient.mutate(client.id)}
+                        className="rounded-lg px-3 py-2 text-[0.9375rem] text-destructive focus:text-destructive"
                       >
                         Delete
                       </DropdownMenuItem>
@@ -408,37 +561,134 @@ export function ClientsList() {
         </table>
       </div>
 
-      {/* Footer */}
-      <div className="flex flex-wrap items-center justify-center gap-4 pb-4 text-sm text-muted-foreground">
+      <div className="flex flex-wrap items-center justify-center gap-4 pb-4 text-[0.8125rem] text-muted-foreground">
         <span>
-          Viewing <span className="font-semibold text-foreground">{from}</span>–
-          <span className="font-semibold text-foreground">{to}</span> of{" "}
-          <span className="font-semibold text-foreground">{filtered.length}</span> results
+          Viewing{" "}
+          <span className="font-semibold text-foreground">
+            {from} - {to}
+          </span>{" "}
+          of <span className="font-semibold text-foreground">{filtered.length}</span> results
         </span>
-        {pageCount > 1 && (
+        {pageCount > 1 ? (
           <span className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              className="h-9 rounded-full border-border bg-white px-4 text-sm font-semibold"
+            <button
+              type="button"
               disabled={currentPage === 0}
               onClick={() => setPage(currentPage - 1)}
+              className="h-9 rounded-full border border-border px-4 font-semibold disabled:opacity-40"
             >
               Previous
-            </Button>
+            </button>
             <span className="font-semibold text-foreground">
               {currentPage + 1} / {pageCount}
             </span>
-            <Button
-              variant="outline"
-              className="h-9 rounded-full border-border bg-white px-4 text-sm font-semibold"
+            <button
+              type="button"
               disabled={currentPage >= pageCount - 1}
               onClick={() => setPage(currentPage + 1)}
+              className="h-9 rounded-full border border-border px-4 font-semibold disabled:opacity-40"
             >
               Next
-            </Button>
+            </button>
           </span>
-        )}
+        ) : null}
       </div>
+
+      {/* All filters drawer */}
+      {filtersOpen ? (
+        <div className="fixed inset-y-0 right-0 z-50 flex animate-in slide-in-from-right-8 duration-200">
+          <div className="pr-4 pt-4">
+            <button
+              type="button"
+              aria-label="Close"
+              onClick={() => setFiltersOpen(false)}
+              className="flex size-11 items-center justify-center rounded-full border border-border bg-card shadow-md hover:bg-secondary"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <div className="flex h-full w-[30rem] max-w-[calc(100vw-4rem)] flex-col border-l border-border bg-card shadow-[-12px_0_32px_-12px_rgb(0_0_0/0.2)]">
+            <h2 className="px-6 pb-4 pt-6 text-[1.75rem] font-bold tracking-tight">All filters</h2>
+            <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6">
+              {[
+                {
+                  key: "gender" as const,
+                  label: "Gender",
+                  options: [
+                    { value: "all", label: "All genders" },
+                    { value: "female", label: "Female" },
+                    { value: "male", label: "Male" },
+                    { value: "non-binary", label: "Non-binary" },
+                    { value: "prefer not to say", label: "Prefer not to say" },
+                  ],
+                },
+                {
+                  key: "source" as const,
+                  label: "Client source",
+                  options: [
+                    { value: "all", label: "All sources" },
+                    ...sources.map((source) => ({
+                      value: source,
+                      label: source.replace(/_/g, " "),
+                    })),
+                  ],
+                },
+                {
+                  key: "tag" as const,
+                  label: "Client tag",
+                  options: [
+                    { value: "all", label: "All tags" },
+                    ...(tagsQuery.data?.tags ?? []).map((tag) => ({
+                      value: tag.id,
+                      label: tag.name,
+                    })),
+                  ],
+                },
+              ].map((group) => (
+                <label key={group.key} className="block text-[0.9375rem] font-semibold">
+                  {group.label}
+                  <select
+                    value={draft[group.key]}
+                    onChange={(event) => setDraft({ ...draft, [group.key]: event.target.value })}
+                    className="mt-2 h-12 w-full rounded-lg border border-border bg-card px-4 text-[0.9375rem] font-normal capitalize"
+                  >
+                    {group.options.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ))}
+              <p className="text-[0.8125rem] text-muted-foreground">
+                Segment, group and blocked-client filters arrive with Client segments and Records.
+              </p>
+            </div>
+            <div className="flex gap-3 border-t border-border px-6 py-5">
+              <button
+                type="button"
+                onClick={() => setDraft({ gender: "all", source: "all", tag: "all" })}
+                className={cn(pillButton, "h-12 flex-1 border border-border hover:bg-secondary")}
+              >
+                Clear filters
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFilters(draft);
+                  setFiltersOpen(false);
+                  setPage(0);
+                }}
+                className={cn(pillButton, "h-12 flex-1 bg-ink text-ink-foreground hover:bg-ink/90")}
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      <ClientProfile clientId={profileId} onClose={() => setProfileId(null)} />
     </div>
   );
 }

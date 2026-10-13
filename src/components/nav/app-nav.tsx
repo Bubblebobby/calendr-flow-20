@@ -11,12 +11,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { navItems, type NavItem } from "./nav-items";
+import { navItems, type NavChild, type NavItem } from "./nav-items";
 
 export function AppNav() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const currentTab = useRouterState({
+    select: (s) => (s.location.search as Record<string, unknown>)["tab"] as string | undefined,
+  });
 
   const activeItem = navItems.find((item) => pathname.startsWith(item.to));
   const [openKey, setOpenKey] = useState<string | null>(
@@ -38,6 +41,21 @@ export function AppNav() {
     setRenderedItem(openItem);
     return;
   }, [openItem]);
+
+  // Follow the route: open the current section's sub-menu, close it for sections without one.
+  useEffect(() => {
+    const current = navItems.find((item) => pathname.startsWith(item.to));
+    setOpenKey(current?.groups ? current.key : null);
+  }, [pathname]);
+
+  /** One highlighted sub-item: the child whose tab matches, else the first child for this page. */
+  function isChildActive(item: NavItem, child: NavChild) {
+    if (!pathname.startsWith(child.to)) return false;
+    const children = item.groups?.flatMap((group) => group.children) ?? [];
+    const samePage = children.filter((entry) => pathname.startsWith(entry.to));
+    const byTab = samePage.find((entry) => entry.search?.["tab"] && entry.search["tab"] === currentTab);
+    return (byTab ?? samePage[0]) === child;
+  }
 
   async function handleSignOut() {
     await queryClient.cancelQueries();
@@ -151,8 +169,11 @@ export function AppNav() {
                             <Link
                               to={child.to}
                               search={child.search as never}
-                              activeOptions={{ includeSearch: Boolean(child.search) }}
-                              className="block mx-3 rounded-lg px-4 py-2.5 text-sm text-foreground/80 transition-colors hover:bg-secondary hover:text-foreground data-[status=active]:bg-primary/10 data-[status=active]:font-medium data-[status=active]:text-foreground"
+                              activeProps={{}}
+                              className={cn(
+                                "block mx-3 rounded-lg px-4 py-2.5 text-sm text-foreground/80 transition-colors hover:bg-secondary hover:text-foreground",
+                                isChildActive(renderedItem, child) && "bg-primary/10 font-medium text-foreground",
+                              )}
                             >
                               {child.title}
                             </Link>
