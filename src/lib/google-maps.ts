@@ -13,10 +13,10 @@ export function loadGoogleMaps(): Promise<any> {
   if (window.google?.maps) return Promise.resolve(window.google);
   if (loader) return loader;
 
-  const key = import.meta.env['VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY'] as
+  const key = import.meta.env['VITE_GOOGLE_MAPS_BROWSER_KEY'] as
     | string
     | undefined;
-  const channel = import.meta.env['VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_TRACKING_ID'] as
+  const channel = import.meta.env['VITE_GOOGLE_MAPS_TRACKING_ID'] as
     | string
     | undefined;
 

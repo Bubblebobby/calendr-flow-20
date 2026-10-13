@@ -30,3 +30,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Vercel
+.vercel
+
+# Local env (values live in Vercel for production)
+.env
+.env.local
+.env.*.local

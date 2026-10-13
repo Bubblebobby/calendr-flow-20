@@ -1104,7 +1104,7 @@ export function AppointmentPanel({
             onChange={(event) => {
               if (event.target.value !== "none") {
                 toast(
-                  "Repeating appointments need the next database update (see notes/lovable-prompts.md)",
+                  "Repeating appointments need the next database update (see supabase/migrations)",
                 );
                 event.target.value = "none";
               }
