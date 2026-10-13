@@ -102,7 +102,7 @@ const personName = (person: { first_name: string; last_name?: string | null }) =
   [person.first_name, person.last_name].filter(Boolean).join(" ");
 
 const pill =
-  "inline-flex h-12 items-center justify-center rounded-full px-6 text-[0.9375rem] font-semibold transition-colors disabled:opacity-50";
+  "inline-flex h-12 items-center justify-center rounded-full px-6 text-heading font-semibold transition-colors disabled:opacity-50";
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
@@ -443,7 +443,7 @@ export function CheckoutScreen({
 
   // ── Left pane ──
   const crumbs = (
-    <div className="flex items-center gap-2 text-[0.875rem]">
+    <div className="flex items-center gap-2 text-body">
       {(["cart", "tip", "payment"] as const).map((key, index) => (
         <span key={key} className="flex items-center gap-2">
           {index ? <CaretRight size={12} className="text-muted-foreground" /> : null}
@@ -475,8 +475,8 @@ export function CheckoutScreen({
     leftPane = (
       <div className="flex min-h-[70vh] flex-col items-center justify-center text-center">
         <CheckCircle size={72} weight="fill" className="text-primary" />
-        <h1 className="mt-6 text-[2rem] font-bold tracking-tight">Sale completed</h1>
-        <p className="mt-2 text-[0.9375rem] text-muted-foreground">
+        <h1 className="mt-6 text-[2rem] font-semibold tracking-tight">Sale completed</h1>
+        <p className="mt-2 text-body text-muted-foreground">
           {money(toPay)} paid
           {payments.length
             ? ` by ${payments.map((payment) => METHOD_LABEL[payment.method]).join(" + ")}`
@@ -499,12 +499,12 @@ export function CheckoutScreen({
           <button
             type="button"
             onClick={() => setBrowse(null)}
-            className="mt-4 inline-flex items-center gap-2 text-[0.875rem] font-medium hover:underline"
+            className="mt-4 inline-flex items-center gap-2 text-body font-medium hover:underline"
           >
             <ArrowLeft size={14} /> Back
           </button>
         ) : null}
-        <h1 className="mt-3 text-[1.75rem] font-semibold">
+        <h1 className="mt-3 text-display font-semibold">
           {browse === "services"
             ? "Services"
             : browse === "appointments"
@@ -518,7 +518,7 @@ export function CheckoutScreen({
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search"
-              className="h-full flex-1 bg-transparent text-[0.9375rem] outline-none placeholder:text-muted-foreground"
+              className="h-full flex-1 bg-transparent text-body outline-none placeholder:text-placeholder"
             />
           </label>
         ) : null}
@@ -526,7 +526,7 @@ export function CheckoutScreen({
         {browse === "appointments" ? (
           <div className="mt-6 space-y-2">
             {sellable.length === 0 ? (
-              <p className="py-10 text-center text-[0.9375rem] text-muted-foreground">
+              <p className="py-10 text-center text-body text-muted-foreground">
                 No unpaid appointments to check out.
               </p>
             ) : (
@@ -538,15 +538,15 @@ export function CheckoutScreen({
                   className="flex w-full items-center justify-between rounded-xl border border-border px-4 py-3 text-left hover:bg-secondary"
                 >
                   <span>
-                    <span className="block text-[0.9375rem] font-semibold">
+                    <span className="block text-body font-semibold">
                       {appointment.label}
                     </span>
-                    <span className="block text-[0.8125rem] text-muted-foreground">
+                    <span className="block text-caption text-muted-foreground">
                       {appointment.when} ·{" "}
                       {appointment.lines.map((line) => line.description).join(", ")}
                     </span>
                   </span>
-                  <span className="text-[0.9375rem] font-medium">
+                  <span className="text-body font-medium">
                     {money(appointment.lines.reduce((sum, line) => sum + line.price, 0))}
                   </span>
                 </button>
@@ -572,7 +572,7 @@ export function CheckoutScreen({
               .filter((group) => group.items.length)
               .map((group) => (
                 <div key={group.id}>
-                  <p className="mb-2 text-[1.0625rem] font-semibold">{group.name}</p>
+                  <p className="mb-2 text-heading font-semibold">{group.name}</p>
                   {group.items.map((service) => (
                     <button
                       key={service.id}
@@ -582,12 +582,12 @@ export function CheckoutScreen({
                       style={{ boxShadow: `inset 3px 0 0 ${group.color || "#a5d8f3"}` }}
                     >
                       <span>
-                        <span className="block text-[0.9375rem]">{service.name}</span>
-                        <span className="block text-[0.8125rem] text-muted-foreground">
+                        <span className="block text-body">{service.name}</span>
+                        <span className="block text-caption text-muted-foreground">
                           {service.duration_minutes}min
                         </span>
                       </span>
-                      <span className="text-[0.9375rem]">{money(Number(service.price ?? 0))}</span>
+                      <span className="text-body">{money(Number(service.price ?? 0))}</span>
                     </button>
                   ))}
                 </div>
@@ -618,16 +618,16 @@ export function CheckoutScreen({
                   className="flex h-24 flex-col justify-between rounded-xl border border-border p-4 text-left hover:bg-secondary"
                 >
                   <Icon size={20} />
-                  <span className="text-[0.9375rem] font-medium">{label}</span>
+                  <span className="text-body font-medium">{label}</span>
                 </button>
               ))}
             </div>
             <div className="mt-8 flex items-center justify-between">
-              <p className="text-[1.0625rem] font-semibold">Quick sale</p>
+              <p className="text-heading font-semibold">Quick sale</p>
               <button
                 type="button"
                 onClick={() => toast("Choose quick sale items in Settings → Sales")}
-                className="text-[0.875rem] font-medium text-primary hover:underline"
+                className="text-body font-medium text-primary hover:underline"
               >
                 Edit
               </button>
@@ -641,8 +641,8 @@ export function CheckoutScreen({
                   className="flex h-28 flex-col justify-center rounded-xl border border-border pl-5 pr-3 text-left hover:bg-secondary"
                   style={{ boxShadow: `inset 6px 0 0 ${colorFor(service.id)}` }}
                 >
-                  <span className="text-[0.9375rem] font-medium">{service.name}</span>
-                  <span className="text-[0.875rem] text-muted-foreground">
+                  <span className="text-body font-medium">{service.name}</span>
+                  <span className="text-body text-muted-foreground">
                     {money(Number(service.price ?? 0))}
                   </span>
                 </button>
@@ -656,8 +656,8 @@ export function CheckoutScreen({
     leftPane = (
       <>
         {crumbs}
-        <h1 className="mt-3 text-[1.75rem] font-semibold">Select tip</h1>
-        <p className="mt-6 text-[0.9375rem]">Select an amount for {staffNames || "your team"}</p>
+        <h1 className="mt-3 text-display font-semibold">Select tip</h1>
+        <p className="mt-6 text-body">Select an amount for {staffNames || "your team"}</p>
         <div className="mt-4 grid grid-cols-3 gap-3">
           {TIP_OPTIONS.map((percent) => (
             <button
@@ -671,11 +671,11 @@ export function CheckoutScreen({
                   : "border-border hover:bg-secondary",
               )}
             >
-              <span className="text-[1.0625rem] font-semibold">
+              <span className="text-heading font-semibold">
                 {percent ? `${percent}%` : "No tip"}
               </span>
               {percent ? (
-                <span className="text-[0.875rem] text-muted-foreground">
+                <span className="text-body text-muted-foreground">
                   {money(Math.round(afterDiscount * percent) / 100)}
                 </span>
               ) : null}
@@ -692,7 +692,7 @@ export function CheckoutScreen({
             )}
           >
             <PlusCircle size={20} />
-            <span className="text-[1.0625rem] font-semibold">Custom tip</span>
+            <span className="text-heading font-semibold">Custom tip</span>
           </button>
         </div>
         {tip === "custom" ? (
@@ -714,7 +714,7 @@ export function CheckoutScreen({
     leftPane = (
       <>
         {crumbs}
-        <h1 className="mt-3 text-[1.75rem] font-semibold">Select payment</h1>
+        <h1 className="mt-3 text-display font-semibold">Select payment</h1>
         <div className="mt-6 grid grid-cols-3 gap-3">
           {(
             [
@@ -737,7 +737,7 @@ export function CheckoutScreen({
                 } else setAmountModal(key);
               }}
               className={cn(
-                "flex aspect-[1.1] flex-col items-center justify-center gap-2 rounded-xl border text-[0.9375rem]",
+                "flex aspect-[1.1] flex-col items-center justify-center gap-2 rounded-xl border text-body",
                 key === "split" && splitMode
                   ? "border-primary ring-1 ring-primary"
                   : "border-border hover:bg-secondary",
@@ -751,11 +751,11 @@ export function CheckoutScreen({
         </div>
         {payments.length ? (
           <div className="mt-8">
-            <p className="mb-2 text-[1.0625rem] font-semibold">Payments</p>
+            <p className="mb-2 text-heading font-semibold">Payments</p>
             {payments.map((payment) => (
               <div
                 key={payment.key}
-                className="flex items-center justify-between border-b border-border py-3 text-[0.9375rem]"
+                className="flex items-center justify-between border-b border-border py-3 text-body"
               >
                 <span>{METHOD_LABEL[payment.method]}</span>
                 <span className="flex items-center gap-3">
@@ -783,7 +783,7 @@ export function CheckoutScreen({
   const clientBox = clientPicker ? (
     <div className="rounded-2xl border border-border p-4">
       <div className="flex items-center justify-between">
-        <p className="text-[1.0625rem] font-semibold">Select a client</p>
+        <p className="text-heading font-semibold">Select a client</p>
         <button
           type="button"
           aria-label="Close"
@@ -800,7 +800,7 @@ export function CheckoutScreen({
           value={clientQuery}
           onChange={(event) => setClientQuery(event.target.value)}
           placeholder="Search client or leave empty"
-          className="h-full flex-1 bg-transparent text-[0.9375rem] outline-none"
+          className="h-full flex-1 bg-transparent text-body outline-none"
         />
       </label>
       <div className="mt-2 max-h-64 overflow-y-auto">
@@ -815,7 +815,7 @@ export function CheckoutScreen({
           <span className="flex size-10 items-center justify-center rounded-full bg-accent text-primary">
             <UserPlus size={18} />
           </span>
-          <span className="text-[0.9375rem] font-semibold">Walk-In</span>
+          <span className="text-body font-semibold">Walk-In</span>
         </button>
         {clients
           .filter((row) => {
@@ -841,10 +841,10 @@ export function CheckoutScreen({
                 {row.first_name[0]}
               </span>
               <span className="min-w-0">
-                <span className="block truncate text-[0.9375rem] font-semibold">
+                <span className="block truncate text-body font-semibold">
                   {personName(row)}
                 </span>
-                <span className="block truncate text-[0.8125rem] text-muted-foreground">
+                <span className="block truncate text-caption text-muted-foreground">
                   {row.email || row.phone}
                 </span>
               </span>
@@ -860,10 +860,10 @@ export function CheckoutScreen({
       className="flex w-full items-center justify-between rounded-2xl border border-border px-5 py-5 text-left hover:bg-secondary/60"
     >
       <span>
-        <span className="block text-[1.0625rem] font-semibold">
+        <span className="block text-heading font-semibold">
           {client ? personName(client) : "Add client"}
         </span>
-        <span className="block text-[0.875rem] text-muted-foreground">
+        <span className="block text-body text-muted-foreground">
           {client ? client.email || client.phone || "Client" : "Leave empty for walk-ins"}
         </span>
       </span>
@@ -931,8 +931,8 @@ export function CheckoutScreen({
             {lines.length === 0 ? (
               <div className="flex flex-col items-center py-24 text-center">
                 <ShoppingCartSimple size={44} weight="duotone" className="text-primary" />
-                <p className="mt-4 text-[1.0625rem] font-semibold">Your cart is empty</p>
-                <p className="mt-1 max-w-xs text-[0.875rem] text-muted-foreground">
+                <p className="mt-4 text-heading font-semibold">Your cart is empty</p>
+                <p className="mt-1 max-w-xs text-body text-muted-foreground">
                   Tap an item to add to cart or add an existing client for smart recommendations
                 </p>
               </div>
@@ -944,11 +944,11 @@ export function CheckoutScreen({
                   style={{ boxShadow: `inset 3px 0 0 ${colorFor(line.serviceId)}` }}
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-[0.9375rem] font-medium">
+                    <p className="truncate text-heading font-medium">
                       {line.description}
                       {line.quantity > 1 ? ` × ${line.quantity}` : ""}
                     </p>
-                    <p className="truncate text-[0.8125rem] text-muted-foreground">
+                    <p className="truncate text-body text-muted-foreground">
                       {[
                         line.durationMinutes ? `${line.durationMinutes}min` : null,
                         line.teamMemberId ? memberById.get(line.teamMemberId)?.first_name : null,
@@ -979,7 +979,7 @@ export function CheckoutScreen({
                       </button>
                     </span>
                   ) : null}
-                  <span className="text-[0.9375rem] font-medium tabular-nums group-hover:hidden">
+                  <span className="text-heading font-medium tabular-nums group-hover:hidden">
                     {money(line.price * line.quantity)}
                   </span>
                 </div>
@@ -989,7 +989,7 @@ export function CheckoutScreen({
               <button
                 type="button"
                 onClick={() => setStep("cart")}
-                className="mt-2 inline-flex h-9 items-center gap-2 rounded-full border border-border px-4 text-[0.875rem] font-medium hover:bg-secondary"
+                className="mt-2 inline-flex h-9 items-center gap-2 rounded-full border border-border px-4 text-body font-medium hover:bg-secondary"
               >
                 <ShoppingCartSimple size={16} /> Add to cart
               </button>
@@ -998,7 +998,7 @@ export function CheckoutScreen({
         </div>
         <div className="border-t border-border px-6 pb-5 pt-3">
           {toPayOpen ? (
-            <div className="space-y-1 border-b border-border pb-3 text-[0.8125rem] text-muted-foreground">
+            <div className="space-y-1 border-b border-border pb-3 text-caption text-muted-foreground">
               <div className="flex justify-between">
                 <span>Subtotal</span>
                 <span>{money(subtotal)}</span>
@@ -1027,7 +1027,7 @@ export function CheckoutScreen({
               ) : null}
             </div>
           ) : (
-            <div className="flex justify-between text-[0.8125rem] text-muted-foreground">
+            <div className="flex justify-between text-caption text-muted-foreground">
               <span>Total</span>
               <span>{money(toPay)}</span>
             </div>
@@ -1037,7 +1037,7 @@ export function CheckoutScreen({
             onClick={() => setToPayOpen((value) => !value)}
             className="flex w-full items-center justify-between py-1"
           >
-            <span className="flex items-center gap-1 text-[0.9375rem] font-semibold">
+            <span className="flex items-center gap-1 text-body font-semibold">
               {paid ? "Left to pay" : "To pay"}{" "}
               {toPayOpen ? (
                 <CaretDown size={12} weight="bold" />
@@ -1045,7 +1045,7 @@ export function CheckoutScreen({
                 <CaretRight size={12} weight="bold" />
               )}
             </span>
-            <span className="text-[0.9375rem] font-semibold">
+            <span className="text-body font-semibold">
               {money(step === "done" ? 0 : leftToPay)}
             </span>
           </button>
@@ -1062,30 +1062,30 @@ export function CheckoutScreen({
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent side="top" align="start" className="w-60 rounded-xl p-1.5">
-                  <DropdownMenuLabel className="px-3 pb-1 pt-2 text-[0.9375rem] font-semibold">
+                  <DropdownMenuLabel className="px-3 pb-1 pt-2 text-heading font-semibold">
                     Quick actions
                   </DropdownMenuLabel>
                   <DropdownMenuItem
                     onSelect={() => setStep("tip")}
-                    className="gap-3 rounded-lg px-3 py-2 text-[0.9375rem]"
+                    className="gap-3 rounded-lg px-3 py-2 text-body"
                   >
                     <Money size={18} /> Add tip
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onSelect={() => setPrompt("discount")}
-                    className="gap-3 rounded-lg px-3 py-2 text-[0.9375rem]"
+                    className="gap-3 rounded-lg px-3 py-2 text-body"
                   >
                     <Tag size={18} /> Add cart discount
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onSelect={() => setPrompt("note")}
-                    className="gap-3 rounded-lg px-3 py-2 text-[0.9375rem]"
+                    className="gap-3 rounded-lg px-3 py-2 text-body"
                   >
                     <Receipt size={18} /> Add receipt note
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onSelect={() => toast("Service charges are set up in Settings → Sales")}
-                    className="gap-3 rounded-lg px-3 py-2 text-[0.9375rem]"
+                    className="gap-3 rounded-lg px-3 py-2 text-body"
                   >
                     <CurrencyCircleDollar size={18} /> Add service charge
                   </DropdownMenuItem>
@@ -1093,13 +1093,13 @@ export function CheckoutScreen({
                   <DropdownMenuItem
                     disabled={!lines.length}
                     onSelect={() => persist.mutate("draft")}
-                    className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                    className="rounded-lg px-3 py-2 text-body"
                   >
                     Save as draft
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onSelect={() => setConfirmDiscard(true)}
-                    className="rounded-lg px-3 py-2 text-[0.9375rem] text-destructive focus:text-destructive"
+                    className="rounded-lg px-3 py-2 text-body text-destructive focus:text-destructive"
                   >
                     Cancel sale
                   </DropdownMenuItem>
@@ -1136,9 +1136,9 @@ export function CheckoutScreen({
           </DialogDescription>
           {editLine ? (
             <div className="mt-2 space-y-4">
-              <p className="text-[0.9375rem] font-medium">{editLine.description}</p>
+              <p className="text-body font-medium">{editLine.description}</p>
               <div className="grid grid-cols-2 gap-3">
-                <label className="text-[0.875rem] font-semibold">
+                <label className="text-body font-semibold">
                   Price
                   <input
                     inputMode="decimal"
@@ -1152,7 +1152,7 @@ export function CheckoutScreen({
                     className="mt-1 h-11 w-full rounded-lg border border-border px-3 font-normal"
                   />
                 </label>
-                <label className="text-[0.875rem] font-semibold">
+                <label className="text-body font-semibold">
                   Quantity
                   <input
                     inputMode="numeric"
@@ -1168,7 +1168,7 @@ export function CheckoutScreen({
                   />
                 </label>
               </div>
-              <label className="block text-[0.875rem] font-semibold">
+              <label className="block text-body font-semibold">
                 Team member
                 <select
                   value={editLine.teamMemberId ?? ""}
@@ -1239,8 +1239,8 @@ export function CheckoutScreen({
       {/* Discard draft sale? */}
       <Dialog open={confirmDiscard} onOpenChange={setConfirmDiscard}>
         <DialogContent overlayClassName="z-[75]" className="z-[80] max-w-[30rem] rounded-2xl p-9">
-          <DialogTitle className="text-2xl font-bold">Discard draft sale?</DialogTitle>
-          <DialogDescription className="mt-3 text-[0.9375rem] text-foreground">
+          <DialogTitle className="text-2xl font-semibold">Discard draft sale?</DialogTitle>
+          <DialogDescription className="mt-3 text-body text-foreground">
             Your cart won&apos;t be saved. To keep your changes, save this sale as a draft
           </DialogDescription>
           <div className="mt-10 grid grid-cols-2 gap-3">
@@ -1354,7 +1354,7 @@ function AmountModal({
         </DialogTitle>
         <DialogDescription className="sr-only">Enter the amount received.</DialogDescription>
         <div className="mt-4 flex justify-center">
-          <span className="border-b-2 border-border pb-1 text-[2.25rem] font-bold tabular-nums">
+          <span className="border-b-2 border-border pb-1 text-[2.25rem] font-semibold tabular-nums">
             {currency} {value || "0"}
           </span>
         </div>
@@ -1364,7 +1364,7 @@ function AmountModal({
               key={entry}
               type="button"
               onClick={() => setValue(String(entry))}
-              className="shrink-0 rounded-full border border-border px-3 py-1.5 text-[0.8125rem] hover:bg-secondary"
+              className="shrink-0 rounded-full border border-border px-3 py-1.5 text-caption hover:bg-secondary"
             >
               {money(entry)}
             </button>
@@ -1382,12 +1382,12 @@ function AmountModal({
             </button>
           ))}
         </div>
-        <p className="mt-5 text-[0.8125rem] text-muted-foreground">
+        <p className="mt-5 text-caption text-muted-foreground">
           {method === "cash" ? "Cash" : "Payment"} received by ·{" "}
           <span className="text-primary">{receivedBy}</span>
         </p>
         <div className="mt-3 flex items-center justify-between">
-          <span className="text-[1.0625rem] font-semibold">
+          <span className="text-heading font-semibold">
             {change > 0
               ? `Change · ${money(change)}`
               : `Left to pay · ${money(Math.max(0, suggested - amount))}`}
@@ -1396,7 +1396,7 @@ function AmountModal({
             type="button"
             disabled={amount <= 0}
             onClick={() => onAdd(Math.min(amount, suggested))}
-            className="inline-flex h-11 items-center rounded-full bg-ink px-6 text-[0.9375rem] font-semibold text-ink-foreground disabled:opacity-40"
+            className="inline-flex h-11 items-center rounded-full bg-ink px-6 text-body font-semibold text-ink-foreground disabled:opacity-40"
           >
             Add
           </button>

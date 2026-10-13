@@ -65,7 +65,7 @@ function StatusBadge({ status }: { status: InviteStatus }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold",
+        "inline-flex items-center rounded-full border px-3 py-1 text-caption font-semibold",
         style.className,
       )}
     >
@@ -173,8 +173,8 @@ export function TeamMembersList() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">Team members</h2>
-          <span className="rounded-full border border-border bg-white px-3 py-1 text-sm font-semibold text-foreground">
+          <h2 className="text-3xl font-semibold tracking-tight text-foreground">Team members</h2>
+          <span className="rounded-full border border-border bg-white px-3 py-1 text-body font-semibold text-foreground">
             {members.length}
           </span>
         </div>
@@ -197,7 +197,7 @@ export function TeamMembersList() {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search team members"
-            className="h-12 w-[320px] rounded-full border-border bg-white pl-11 text-sm"
+            className="h-12 w-[320px] rounded-full border-border bg-white pl-11 text-body"
           />
         </div>
       </div>
@@ -216,7 +216,7 @@ export function TeamMembersList() {
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-16 text-center text-sm text-muted-foreground">
+                <td colSpan={5} className="px-4 py-16 text-center text-body text-muted-foreground">
                   {membersQuery.isLoading ? "Loading team…" : "No team members yet."}
                 </td>
               </tr>
@@ -227,7 +227,7 @@ export function TeamMembersList() {
                 <td className="px-4 py-4">
                   <div className="flex items-center gap-4">
                     <span
-                      className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-foreground"
+                      className="flex h-11 w-11 items-center justify-center rounded-full text-body font-semibold text-foreground"
                       style={{ backgroundColor: member.avatar_color }}
                       aria-hidden
                     >
@@ -246,7 +246,7 @@ export function TeamMembersList() {
                     {member.invite_status === "not_invited" && (
                       <button
                         type="button"
-                        className="text-sm font-semibold text-primary underline-offset-4 hover:underline"
+                        className="text-body font-semibold text-primary underline-offset-4 hover:underline"
                         onClick={() => openInvite(member)}
                       >
                         Invite
@@ -268,14 +268,14 @@ export function TeamMembersList() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48 p-2">
                       <DropdownMenuItem
-                        className="px-3 py-2 text-sm font-medium"
+                        className="px-3 py-2 text-body font-medium"
                         onClick={() => openEdit(member)}
                       >
                         Edit
                       </DropdownMenuItem>
                       {member.invite_status === "not_invited" && (
                         <DropdownMenuItem
-                          className="px-3 py-2 text-sm font-medium"
+                          className="px-3 py-2 text-body font-medium"
                           onClick={() => openInvite(member)}
                         >
                           Invite
@@ -283,7 +283,7 @@ export function TeamMembersList() {
                       )}
                       {member.invite_status === "invited" && (
                         <DropdownMenuItem
-                          className="px-3 py-2 text-sm font-medium"
+                          className="px-3 py-2 text-body font-medium"
                           onClick={() => resendInvite.mutate(member)}
                         >
                           Resend invite
@@ -291,7 +291,7 @@ export function TeamMembersList() {
                       )}
                       {member.invite_status === "active" && (
                         <DropdownMenuItem
-                          className="px-3 py-2 text-sm font-medium text-destructive focus:text-destructive"
+                          className="px-3 py-2 text-body font-medium text-destructive focus:text-destructive"
                           onClick={() => setRevokeTarget(member)}
                         >
                           Revoke access

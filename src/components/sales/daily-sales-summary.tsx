@@ -156,29 +156,29 @@ export function DailySalesSummary() {
       {/* Header — actions sit top-right, like Fresha */}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <h2 className="text-[1.75rem] font-semibold leading-9 text-foreground">Daily sales</h2>
-          <p className="mt-1 max-w-md text-[0.9375rem] text-muted-foreground">
+          <h2 className="text-display font-semibold leading-9 text-foreground">Daily sales</h2>
+          <p className="mt-1 max-w-md text-body text-muted-foreground">
             View, filter and export the transactions and cash movement for the day.
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="h-11 gap-2 rounded-full border-border bg-card px-5 text-[0.9375rem] font-semibold">
+              <Button variant="outline" className="h-11 gap-2 rounded-full border-border bg-card px-5 text-body font-semibold">
                 Export
                 <CaretDown size={14} weight="bold" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44 rounded-xl p-1.5">
               {["PDF", "CSV", "Excel"].map((label) => (
-                <DropdownMenuItem key={label} className="rounded-lg px-3 py-2 text-[0.9375rem]" onClick={() => soon(`Export ${label}`)}>
+                <DropdownMenuItem key={label} className="rounded-lg px-3 py-2 text-body" onClick={() => soon(`Export ${label}`)}>
                   {label}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
           <Button
-            className="h-11 rounded-full bg-ink px-6 text-[0.9375rem] font-semibold text-ink-foreground hover:bg-ink/90"
+            className="h-11 rounded-full bg-ink px-6 text-body font-semibold text-ink-foreground hover:bg-ink/90"
             onClick={() => setAddOpen(true)}
           >
             Add new
@@ -198,12 +198,12 @@ export function DailySalesSummary() {
         </button>
         <button
           type="button"
-          className="h-10 border-r border-border px-4 text-[0.875rem] font-medium text-foreground transition-colors hover:bg-muted/60"
+          className="h-10 border-r border-border px-4 text-body font-medium text-foreground transition-colors hover:bg-muted/60"
           onClick={() => setSelectedDate(new Date())}
         >
           Today
         </button>
-        <span className="h-10 px-4 text-[0.875rem] font-medium leading-10 text-foreground">{dateLabel}</span>
+        <span className="h-10 px-4 text-body font-medium leading-10 text-foreground">{dateLabel}</span>
         <button
           type="button"
           aria-label="Next day"
@@ -217,8 +217,8 @@ export function DailySalesSummary() {
 
       {/* Transaction summary */}
       <section className="rounded-2xl border border-border bg-card">
-        <h3 className="px-4 pb-1 pt-5 text-[1.0625rem] font-semibold text-foreground sm:px-5">Transaction summary</h3>
-        <div className="grid grid-cols-[1fr_5.5rem_5.5rem_8rem] border-b border-border px-4 py-3 text-[0.8125rem] font-semibold text-foreground sm:px-5">
+        <h3 className="px-4 pb-1 pt-5 text-title font-semibold text-foreground sm:px-5">Transaction summary</h3>
+        <div className="grid grid-cols-[1fr_6rem_6rem_9rem] border-b border-border px-4 py-3 text-body font-semibold text-foreground sm:px-5">
           <span>Item type</span>
           <span className="text-right">Sales qty</span>
           <span className="text-right">Refund qty</span>
@@ -226,14 +226,14 @@ export function DailySalesSummary() {
         </div>
         <div className="divide-y divide-border">
           {itemRows.map((row) => (
-            <div key={row.label} className="grid grid-cols-[1fr_5.5rem_5.5rem_8rem] px-4 py-3.5 text-[0.8125rem] sm:px-5">
+            <div key={row.label} className="grid grid-cols-[1fr_6rem_6rem_9rem] px-4 py-3.5 text-body sm:px-5">
               <span className="text-foreground">{row.label}</span>
               <span className="text-right tabular-nums text-foreground">{row.salesQty}</span>
               <span className="text-right tabular-nums text-foreground">{row.refundQty}</span>
               <span className="text-right tabular-nums text-foreground">{money(row.gross)}</span>
             </div>
           ))}
-          <div className="grid grid-cols-[1fr_5.5rem_5.5rem_8rem] px-4 py-3.5 text-[0.8125rem] font-semibold sm:px-5">
+          <div className="grid grid-cols-[1fr_6rem_6rem_9rem] px-4 py-3.5 text-body font-semibold sm:px-5">
             <span className="text-foreground">Total Sales</span>
             <span className="text-right tabular-nums text-foreground">{summary.totalSalesQty}</span>
             <span className="text-right tabular-nums text-foreground">{summary.totalRefundQty}</span>
@@ -244,26 +244,26 @@ export function DailySalesSummary() {
 
       {/* Cash movement summary */}
       <section className="rounded-2xl border border-border bg-card">
-        <h3 className="px-4 pb-1 pt-5 text-[1.0625rem] font-semibold text-foreground sm:px-5">Cash movement summary</h3>
-        <div className="grid grid-cols-[1fr_9rem_9rem] border-b border-border px-4 py-3 text-[0.8125rem] font-semibold text-foreground sm:px-5">
+        <h3 className="px-4 pb-1 pt-5 text-title font-semibold text-foreground sm:px-5">Cash movement summary</h3>
+        <div className="grid grid-cols-[1fr_10rem_10rem] border-b border-border px-4 py-3 text-body font-semibold text-foreground sm:px-5">
           <span>Payment type</span>
           <span className="text-right">Payments collected</span>
           <span className="text-right">Refunds paid</span>
         </div>
         <div className="divide-y divide-border">
           {paymentRows.map((row) => (
-            <div key={row.label} className="grid grid-cols-[1fr_9rem_9rem] px-4 py-3.5 text-[0.8125rem] sm:px-5">
+            <div key={row.label} className="grid grid-cols-[1fr_10rem_10rem] px-4 py-3.5 text-body sm:px-5">
               <span className="text-foreground">{row.label}</span>
               <span className="text-right tabular-nums text-foreground">{money(row.collected)}</span>
               <span className="text-right tabular-nums text-foreground">{money(row.refunded)}</span>
             </div>
           ))}
-          <div className="grid grid-cols-[1fr_9rem_9rem] px-4 py-3.5 text-[0.8125rem] font-semibold sm:px-5">
+          <div className="grid grid-cols-[1fr_10rem_10rem] px-4 py-3.5 text-body font-semibold sm:px-5">
             <span className="text-foreground">Payments collected</span>
             <span className="text-right tabular-nums text-foreground">{money(summary.collectedTotal)}</span>
             <span className="text-right tabular-nums text-foreground">{money(summary.refundsTotal)}</span>
           </div>
-          <div className="grid grid-cols-[1fr_9rem_9rem] px-4 py-3.5 text-[0.8125rem] font-semibold sm:px-5">
+          <div className="grid grid-cols-[1fr_10rem_10rem] px-4 py-3.5 text-body font-semibold sm:px-5">
             <span className="text-foreground">Of which tips</span>
             <span className="text-right tabular-nums text-foreground">{money(summary.tips)}</span>
             <span className="text-right tabular-nums text-foreground">{money(0)}</span>

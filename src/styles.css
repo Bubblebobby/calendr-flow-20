@@ -79,6 +79,18 @@
   --color-status-cancelled-foreground: var(--status-cancelled-foreground);
   --color-chart-appointments: var(--chart-appointments);
   --color-surface: var(--surface);
+  --color-placeholder: var(--placeholder);
+  /* Fresha type scale: size + fixed line height */
+  --text-display: 1.75rem;
+  --text-display--line-height: 2.25rem;
+  --text-title: 1.25rem;
+  --text-title--line-height: 1.75rem;
+  --text-heading: 1.0625rem;
+  --text-heading--line-height: 1.5rem;
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.25rem;
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1rem;
   --color-toolbar: var(--toolbar);
 }
 
@@ -99,12 +111,13 @@
   --muted-foreground: #767676;
   --accent: #f0f0ff;
   --accent-foreground: #0d0d0d;
-  --destructive: #d92d20;
+  --destructive: #d4163a;
   --destructive-foreground: #ffffff;
   --border: #e5e5e5;
   --input: #d3d3d3;
   --ring: #6950f3;
   --surface: #f5f5f5;
+  --placeholder: #bfbfbf;
   --toolbar: #f9f9f9;
   --chart-1: #6950f3;
   --chart-2: oklch(0.66 0.12 175);
@@ -154,6 +167,7 @@
 
 
 .dark {
+  --placeholder: oklch(0.55 0 0);
   --surface: oklch(0.2 0 0);
   --toolbar: oklch(0.22 0 0);
   --background: oklch(0.129 0.042 264.695);
@@ -320,14 +334,15 @@
   .data-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.8125rem;
+    font-size: 0.9375rem;
+    line-height: 1.25rem;
     color: var(--color-foreground);
   }
   .data-table th {
     height: 3.5rem;
     padding: 0 1rem;
     text-align: left;
-    font-weight: 700;
+    font-weight: 600;
     white-space: nowrap;
     border-bottom: 1px solid var(--color-border);
     background: var(--color-card);

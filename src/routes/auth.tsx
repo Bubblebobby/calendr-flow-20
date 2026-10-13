@@ -128,7 +128,7 @@ function AuthPage() {
             <MailCheck className="size-5" />
           </span>
           <h2 className="text-base font-semibold text-foreground">Check your email</h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-body text-muted-foreground">
             We sent a secure link to <span className="font-medium text-foreground">{sentTo}</span>. Open it to
             continue.
           </p>
@@ -151,7 +151,7 @@ function AuthPage() {
 
           <div className="my-4 flex items-center gap-2.5">
             <span className="h-px flex-1 bg-border" />
-            <span className="text-xs text-muted-foreground">or</span>
+            <span className="text-caption text-muted-foreground">or</span>
             <span className="h-px flex-1 bg-border" />
           </div>
 

@@ -272,7 +272,7 @@ export function TeamMemberForm() {
         type="button"
         onClick={() => (target ? setSection(target) : toast("Coming soon"))}
         className={cn(
-          "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors",
+          "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-body font-medium transition-colors",
           active
             ? "bg-accent/40 text-foreground"
             : "text-muted-foreground hover:bg-muted",
@@ -280,7 +280,7 @@ export function TeamMemberForm() {
       >
         <span>{label}</span>
         {badge !== undefined ? (
-          <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-foreground">
+          <span className="rounded-full bg-muted px-2 py-0.5 text-caption font-semibold text-foreground">
             {badge}
           </span>
         ) : null}
@@ -311,23 +311,23 @@ export function TeamMemberForm() {
       </header>
 
       <div className="mx-auto w-full max-w-6xl px-8 pb-24">
-        <h1 className="text-4xl font-bold tracking-tight text-foreground">Add team member</h1>
+        <h1 className="text-4xl font-semibold tracking-tight text-foreground">Add team member</h1>
 
         <div className="mt-10 grid gap-12 lg:grid-cols-[240px_minmax(0,1fr)]">
           <nav className="h-fit rounded-2xl border border-[#D3D3D3] bg-white p-3">
-            <p className="px-3 py-2 text-sm font-bold text-foreground">Personal</p>
+            <p className="px-3 py-2 text-body font-semibold text-foreground">Personal</p>
             {navItem("Profile", undefined, "profile")}
             {navItem("Addresses")}
             {navItem("Emergency contacts")}
 
             <div className="my-2 h-px bg-[#D3D3D3]" />
-            <p className="px-3 py-2 text-sm font-bold text-foreground">Workspace</p>
+            <p className="px-3 py-2 text-body font-semibold text-foreground">Workspace</p>
             {navItem("Services", selectedServices.length, "services")}
             {navItem("Locations", 1)}
             {navItem("Settings")}
 
             <div className="my-2 h-px bg-[#D3D3D3]" />
-            <p className="px-3 py-2 text-sm font-bold text-foreground">Pay</p>
+            <p className="px-3 py-2 text-body font-semibold text-foreground">Pay</p>
             {navItem("Wages and timesheets")}
             {navItem("Commissions")}
             {navItem("Pay runs")}
@@ -350,8 +350,8 @@ export function TeamMemberForm() {
 
             <section className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold tracking-tight text-foreground">Profile</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground">Profile</h2>
+                <p className="mt-1 text-body text-muted-foreground">
                   Manage your team member&apos;s personal profile
                 </p>
               </div>
@@ -391,7 +391,7 @@ export function TeamMemberForm() {
                     onBlur={() => setTouched((t) => ({ ...t, firstName: true }))}
                   />
                   {firstNameError ? (
-                    <p className="text-sm text-destructive">First name is required</p>
+                    <p className="text-body text-destructive">First name is required</p>
                   ) : null}
                 </div>
                 <div className="space-y-2">
@@ -419,7 +419,7 @@ export function TeamMemberForm() {
                     onBlur={() => setTouched((t) => ({ ...t, email: true }))}
                   />
                   {emailError ? (
-                    <p className="text-sm text-destructive">Enter a valid email address</p>
+                    <p className="text-body text-destructive">Enter a valid email address</p>
                   ) : null}
                 </div>
                 <div className="space-y-2">
@@ -614,7 +614,7 @@ export function TeamMemberForm() {
                   value={jobTitle}
                   onChange={(event) => setJobTitle(event.target.value)}
                 />
-                <p className="text-xs text-muted-foreground">Visible to clients online</p>
+                <p className="text-caption text-muted-foreground">Visible to clients online</p>
               </div>
             </section>
 
@@ -623,8 +623,8 @@ export function TeamMemberForm() {
             {/* Work details */}
             <section className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold tracking-tight text-foreground">Work details</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground">Work details</h2>
+                <p className="mt-1 text-body text-muted-foreground">
                   Manage your team member&apos;s start date, and employment details
                 </p>
               </div>
@@ -662,7 +662,7 @@ export function TeamMemberForm() {
                     value={externalId}
                     onChange={(event) => setExternalId(event.target.value)}
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-caption text-muted-foreground">
                     An identifier used for external systems like payroll
                   </p>
                 </div>
@@ -671,7 +671,7 @@ export function TeamMemberForm() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="tm-notes">Notes</Label>
-                  <span className="text-xs text-muted-foreground">{notes.length}/1000</span>
+                  <span className="text-caption text-muted-foreground">{notes.length}/1000</span>
                 </div>
                 <Textarea
                   id="tm-notes"

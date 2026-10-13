@@ -65,7 +65,7 @@ const BLOCK_TYPES = [
 
 const TIMES = Array.from({ length: 288 }, (_, index) => index * 5);
 const field =
-  "h-12 w-full rounded-lg border border-border bg-card px-4 text-[0.9375rem] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20";
+  "h-12 w-full rounded-lg border border-border bg-card px-4 text-body outline-none focus:border-primary focus:ring-2 focus:ring-primary/20";
 
 export type BlockDraft = {
   member: TeamMember;
@@ -187,14 +187,14 @@ export function BlockedTimeDrawer({
       </div>
       <div className="flex h-full w-[30rem] flex-col border-l border-border bg-card shadow-[-12px_0_32px_-12px_rgb(0_0_0/0.2)]">
         <div className="flex items-center justify-between px-6 pb-2 pt-6">
-          <h2 className="text-[1.75rem] font-semibold">
+          <h2 className="text-display font-semibold">
             {draft.existing ? "Edit blocked time" : "Add blocked time"}
           </h2>
           {draft.existing ? (
             <button
               type="button"
               onClick={() => remove.mutate()}
-              className="rounded-full px-3 py-1.5 text-[0.875rem] font-medium text-destructive hover:bg-destructive/5"
+              className="rounded-full px-3 py-1.5 text-body font-medium text-destructive hover:bg-destructive/5"
             >
               Delete
             </button>
@@ -202,7 +202,7 @@ export function BlockedTimeDrawer({
         </div>
         <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-4">
           <div>
-            <span className="mb-2 block text-[0.9375rem] font-semibold">Block time type</span>
+            <span className="mb-2 block text-body font-semibold">Block time type</span>
             <div className="flex items-center gap-3">
               {typeOffset > 0 ? (
                 <button
@@ -231,8 +231,8 @@ export function BlockedTimeDrawer({
                   )}
                 >
                   <span className="text-xl">{option.emoji}</span>
-                  <span className="mt-2 text-[0.9375rem] font-semibold">{option.label}</span>
-                  <span className="text-[0.8125rem] text-muted-foreground">{option.detail}</span>
+                  <span className="mt-2 text-body font-semibold">{option.label}</span>
+                  <span className="text-caption text-muted-foreground">{option.detail}</span>
                 </button>
               ))}
               {typeOffset + 2 < BLOCK_TYPES.length ? (
@@ -248,7 +248,7 @@ export function BlockedTimeDrawer({
                 <button
                   type="button"
                   onClick={() => toast("Custom block types are managed in Settings → Scheduling")}
-                  className="flex h-28 flex-1 flex-col items-center justify-center rounded-xl border border-dashed border-border text-[0.875rem] font-medium hover:bg-secondary"
+                  className="flex h-28 flex-1 flex-col items-center justify-center rounded-xl border border-dashed border-border text-body font-medium hover:bg-secondary"
                 >
                   <Plus size={18} />
                   New type
@@ -257,7 +257,7 @@ export function BlockedTimeDrawer({
             </div>
           </div>
           <label className="block">
-            <span className="mb-2 block text-[0.9375rem] font-semibold">
+            <span className="mb-2 block text-body font-semibold">
               Title <span className="font-normal text-muted-foreground">(Optional)</span>
             </span>
             <input
@@ -268,7 +268,7 @@ export function BlockedTimeDrawer({
             />
           </label>
           <label className="block">
-            <span className="mb-2 block text-[0.9375rem] font-semibold">Date</span>
+            <span className="mb-2 block text-body font-semibold">Date</span>
             <input
               type="date"
               value={date}
@@ -278,7 +278,7 @@ export function BlockedTimeDrawer({
           </label>
           <div className="grid grid-cols-2 gap-4">
             <label>
-              <span className="mb-2 block text-[0.9375rem] font-semibold">Start time</span>
+              <span className="mb-2 block text-body font-semibold">Start time</span>
               <select
                 value={start}
                 onChange={(event) => setStart(Number(event.target.value))}
@@ -292,7 +292,7 @@ export function BlockedTimeDrawer({
               </select>
             </label>
             <label>
-              <span className="mb-2 block text-[0.9375rem] font-semibold">End time</span>
+              <span className="mb-2 block text-body font-semibold">End time</span>
               <select
                 value={end}
                 onChange={(event) => setEnd(Number(event.target.value))}
@@ -304,7 +304,7 @@ export function BlockedTimeDrawer({
                   </option>
                 ))}
               </select>
-              <span className="mt-1 block text-[0.8125rem] text-muted-foreground">
+              <span className="mt-1 block text-caption text-muted-foreground">
                 {duration > 0
                   ? `${duration >= 60 ? `${Math.floor(duration / 60)} hr ` : ""}${duration % 60 ? `${duration % 60} min ` : ""}duration`
                   : "End must be after start"}
@@ -312,7 +312,7 @@ export function BlockedTimeDrawer({
             </label>
           </div>
           <label className="block">
-            <span className="mb-2 block text-[0.9375rem] font-semibold">Team members</span>
+            <span className="mb-2 block text-body font-semibold">Team members</span>
             <select
               value={memberId}
               onChange={(event) => setMemberId(event.target.value)}
@@ -326,7 +326,7 @@ export function BlockedTimeDrawer({
             </select>
           </label>
           <label className="block">
-            <span className="mb-2 block text-[0.9375rem] font-semibold">Frequency</span>
+            <span className="mb-2 block text-body font-semibold">Frequency</span>
             <select
               value={frequency}
               onChange={(event) => {
@@ -344,7 +344,7 @@ export function BlockedTimeDrawer({
             </select>
           </label>
           <label className="block">
-            <span className="mb-2 flex justify-between text-[0.9375rem] font-semibold">
+            <span className="mb-2 flex justify-between text-body font-semibold">
               <span>
                 Description <span className="font-normal text-muted-foreground">(Optional)</span>
               </span>
@@ -355,10 +355,10 @@ export function BlockedTimeDrawer({
               maxLength={255}
               onChange={(event) => setDescription(event.target.value)}
               placeholder="Add description or note"
-              className="min-h-28 w-full rounded-lg border border-border p-4 text-[0.9375rem] outline-none focus:border-primary"
+              className="min-h-28 w-full rounded-lg border border-border p-4 text-body outline-none focus:border-primary"
             />
           </label>
-          <label className="flex items-center gap-3 text-[0.9375rem]">
+          <label className="flex items-center gap-3 text-body">
             <input
               type="checkbox"
               checked={onlineAllowed}
@@ -373,7 +373,7 @@ export function BlockedTimeDrawer({
             type="button"
             disabled={save.isPending}
             onClick={() => save.mutate()}
-            className="inline-flex h-12 w-full items-center justify-center rounded-full bg-ink text-[0.9375rem] font-semibold text-ink-foreground hover:bg-ink/90 disabled:opacity-60"
+            className="inline-flex h-12 w-full items-center justify-center rounded-full bg-ink text-body font-semibold text-ink-foreground hover:bg-ink/90 disabled:opacity-60"
           >
             {save.isPending ? "Saving…" : "Save"}
           </button>
@@ -392,7 +392,7 @@ export function BlockedTimeChip({ block, onClick }: { block: BlockedTime; onClic
         onClick();
       }}
       onMouseMove={(event) => event.stopPropagation()}
-      className="flex h-full w-full flex-col justify-start overflow-hidden rounded-[4px] bg-[#c9c9cf] px-1.5 py-1 text-left text-[0.8125rem] leading-[1.15rem] text-[#0d0d0d] hover:brightness-95"
+      className="flex h-full w-full flex-col justify-start overflow-hidden rounded-[4px] bg-[#c9c9cf] px-1.5 py-1 text-left text-caption leading-4 text-[#0d0d0d] hover:brightness-95"
     >
       <span className="block truncate">
         {formatTime(minutesOfDay(new Date(block.start_time)))} -{" "}

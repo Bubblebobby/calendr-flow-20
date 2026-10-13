@@ -15,7 +15,19 @@ Values read with getComputedStyle on Fresha's partner app and applied in `src/st
 | `--surface` | `#f5f5f5` | Home dashboard background (list pages are white) |
 | `--radius` | `12px` | Cards, filter bars |
 
-**Type:** page title 28/36 semibold; subtitle 15/20 `#767676`; body 13–15px; sub-menu group heading 17/24 semibold; sub-menu item 13px.
+**Type scale** (Tailwind classes defined in `styles.css`, measured with a text census of Fresha pages):
+
+| Class | Size / line | Weights used | Roles |
+|---|---|---|---|
+| `text-display` | 28 / 36 | 600 | Page & drawer titles, big amounts |
+| `text-title` | 20 / 28 | 600 | Card titles, empty-state titles, banner titles |
+| `text-heading` | 17 / 24 | 600 · 500 | Section & sub-menu group headings, header buttons, list item names (600), service names & prices in panels (500), menu headings |
+| `text-body` | 15 / 20 | 400 · 500 · 600 | Body, table cells (400), sub-menu items, menu items, chips (500), table headers, form labels (600) |
+| `text-caption` | 13 / 16 | 400 · 500 · 600 | Status pills (500), calendar blocks, helper text, badges |
+
+Colours: text `#0d0d0d`; secondary `#767676`; placeholder `#bfbfbf`; links `#6950f3` (weight 400); destructive `#d4163a`. Bold (700) is not used except the logo.
+Avatars: client initials 17/600 `#6950f3` on `#f0f0ff`; team/top-bar initials 16–17/600 `#0075a8` on `#ebf8fe`.
+`cn()` is configured (src/lib/utils.ts) so `text-body text-foreground` keeps both size and colour.
 
 **Buttons:** primary = black, white 17px semibold label, 48px tall, fully rounded (header); toolbar chips = 36px, white, `#d3d3d3` border, 15px medium; icon buttons in toolbars are 36px circles.
 

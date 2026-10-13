@@ -102,7 +102,7 @@ export function ClientAddressesPanel({
     <section className="space-y-6">
       {bannerOpen ? (
         <div className="flex items-start gap-4 rounded-2xl bg-accent/40 p-5">
-          <p className="text-sm leading-relaxed text-foreground">
+          <p className="text-body leading-relaxed text-foreground">
             Client details will be saved exactly as entered. By adding them, you confirm they have
             agreed to receive messages (SMS or email) from your business that the platform may send
             on your behalf.
@@ -119,8 +119,8 @@ export function ClientAddressesPanel({
       ) : null}
 
       <div>
-        <h2 className="text-2xl font-bold tracking-tight text-foreground">Addresses</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Manage your client&apos;s address</p>
+        <h2 className="text-2xl font-semibold tracking-tight text-foreground">Addresses</h2>
+        <p className="mt-1 text-body text-muted-foreground">Manage your client&apos;s address</p>
       </div>
 
       {value ? (
@@ -130,7 +130,7 @@ export function ClientAddressesPanel({
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-base font-semibold text-foreground">{value.address_name}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{formatAddress(value)}</p>
+            <p className="mt-1 text-body text-muted-foreground">{formatAddress(value)}</p>
           </div>
           <div className="flex shrink-0 items-center gap-1">
             <button
@@ -228,7 +228,7 @@ function AddressModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90svh] w-full max-w-lg overflow-y-auto rounded-3xl p-0 [&>button]:hidden">
         <div className="flex items-start justify-between px-7 pt-7">
-          <h3 className="text-2xl font-bold tracking-tight text-foreground">New address</h3>
+          <h3 className="text-2xl font-semibold tracking-tight text-foreground">New address</h3>
           <button
             type="button"
             aria-label="Close"
@@ -262,7 +262,7 @@ function AddressModal({
                     </span>
                   ) : null}
                   <Icon size={22} className={active ? "text-primary" : "text-muted-foreground"} />
-                  <span className="text-sm font-semibold text-foreground">{type.label}</span>
+                  <span className="text-body font-semibold text-foreground">{type.label}</span>
                 </button>
               );
             })}
@@ -306,17 +306,17 @@ function AddressModal({
               return (
                 <div key={field.key} className="px-4 py-3">
                   <div className="flex items-center justify-between gap-4">
-                    <span className="text-sm font-medium text-foreground">{field.label}</span>
+                    <span className="text-body font-medium text-foreground">{field.label}</span>
                     {!isOpen ? (
                       <button
                         type="button"
                         onClick={() => setExpanded((prev) => [...prev, field.key])}
-                        className="text-sm font-semibold text-primary hover:underline"
+                        className="text-body font-semibold text-primary hover:underline"
                       >
                         + Add
                       </button>
                     ) : (
-                      <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      <span className="text-caption font-semibold uppercase tracking-wide text-muted-foreground">
                         Edit
                       </span>
                     )}
@@ -336,7 +336,7 @@ function AddressModal({
 
             <div className="px-4 py-3">
               <div className="flex items-center justify-between gap-4">
-                <span className="text-sm font-medium text-foreground">Country</span>
+                <span className="text-body font-medium text-foreground">Country</span>
               </div>
               <Select value={draft.country} onValueChange={(val) => set("country", val)}>
                 <SelectTrigger className={cn(FIELD, "mt-2 h-11")}>
@@ -353,7 +353,7 @@ function AddressModal({
             </div>
           </div>
 
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
+          {error ? <p className="text-body text-destructive">{error}</p> : null}
         </div>
 
         <div className="flex items-center justify-end gap-3 px-7 pb-7 pt-4">

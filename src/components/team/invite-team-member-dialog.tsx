@@ -186,7 +186,7 @@ export function InviteTeamMemberDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
+          <DialogTitle className="text-xl font-semibold">
             {mode === "edit"
               ? `Edit ${member ? memberName(member) : "team member"}`
               : member
@@ -204,7 +204,7 @@ export function InviteTeamMemberDialog({
 
         <div className="space-y-4 py-2">
           <div className="space-y-2">
-            <Label htmlFor="invite-name" className="text-sm font-semibold">
+            <Label htmlFor="invite-name" className="text-body font-semibold">
               Full name
             </Label>
             <Input
@@ -219,7 +219,7 @@ export function InviteTeamMemberDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="invite-email" className="text-sm font-semibold">
+            <Label htmlFor="invite-email" className="text-body font-semibold">
               Email
             </Label>
             <Input
@@ -234,7 +234,7 @@ export function InviteTeamMemberDialog({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-semibold">Role</Label>
+            <Label className="text-body font-semibold">Role</Label>
             <Select value={role} onValueChange={setRole}>
               <SelectTrigger className="h-12 rounded-xl text-base">
                 <SelectValue placeholder="Select a permission role" />
@@ -248,14 +248,14 @@ export function InviteTeamMemberDialog({
               </SelectContent>
             </Select>
             {roles.length === 0 && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-caption text-muted-foreground">
                 No roles set up yet — the default tiers will be created for your business.
               </p>
             )}
           </div>
 
           {error && (
-            <p role="alert" className="text-sm font-medium text-destructive">
+            <p role="alert" className="text-body font-medium text-destructive">
               {error}
             </p>
           )}

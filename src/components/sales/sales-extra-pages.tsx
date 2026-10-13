@@ -50,7 +50,7 @@ function OptionsMenu({ items }: { items: Array<{ label: string; onSelect: () => 
           <DropdownMenuItem
             key={item.label}
             onSelect={item.onSelect}
-            className="rounded-lg px-3 py-2 text-[0.9375rem]"
+            className="rounded-lg px-3 py-2 text-body"
           >
             {item.label}
           </DropdownMenuItem>
@@ -264,7 +264,7 @@ export function PaymentsList() {
         />
         <div className="grid grid-cols-2 gap-3">
           {(["from", "to"] as const).map((edge) => (
-            <label key={edge} className="text-[0.9375rem] font-semibold">
+            <label key={edge} className="text-body font-semibold">
               {edge === "from" ? "From amount" : "To amount"}
               <input
                 inputMode="decimal"
@@ -297,15 +297,15 @@ export function RegisterIntro() {
       onStart={() => toast("Registers need their own database table, coming in a later update")}
       art={
         <div className="rounded-3xl bg-card p-5 shadow-lg">
-          <p className="text-[0.9375rem] font-semibold">Register</p>
+          <p className="text-body font-semibold">Register</p>
           <div className="mt-3 rounded-2xl border border-border p-4">
             <p className="text-[0.75rem] text-muted-foreground">Front Desk balance</p>
-            <p className="text-2xl font-bold">₦325,500</p>
+            <p className="text-2xl font-semibold">₦325,500</p>
           </div>
           {["Tip payout", "Cash sale", "Cash sale", "Petty cash"].map((label, index) => (
             <div
               key={`${label}-${index}`}
-              className="mt-2 flex justify-between rounded-xl border border-border px-3 py-2 text-[0.8125rem]"
+              className="mt-2 flex justify-between rounded-xl border border-border px-3 py-2 text-caption"
             >
               <span>{label}</span>
               <span className="font-medium">
@@ -352,7 +352,7 @@ function SoldItemsPage({
         {statusFilter ? (
           <button
             type="button"
-            className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-card px-4 text-[0.875rem] font-medium"
+            className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-card px-4 text-body font-medium"
           >
             All statuses <CaretDown size={12} weight="bold" />
           </button>

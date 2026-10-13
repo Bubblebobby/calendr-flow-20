@@ -56,7 +56,7 @@ export function TopBar({ notifications = 3 }: { notifications?: number }) {
       <div className="flex items-center gap-1.5">
         <button
           type="button"
-          className="mr-1 hidden h-10 items-center gap-2 rounded-full bg-primary px-4 text-[0.9375rem] font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
+          className="mr-1 hidden h-10 items-center gap-2 rounded-full bg-primary px-4 text-body font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
         >
           <RocketLaunch size={18} />
           Continue setup
@@ -71,7 +71,7 @@ export function TopBar({ notifications = 3 }: { notifications?: number }) {
         <button type="button" aria-label={`Notifications (${notifications})`} className={iconButton}>
           <Bell size={24} />
           {notifications > 0 ? (
-            <span className="absolute right-0.5 top-0.5 flex min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[0.6875rem] font-semibold leading-5 text-destructive-foreground ring-2 ring-card">
+            <span className="absolute right-0.5 top-0.5 flex min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-caption font-semibold text-destructive-foreground ring-2 ring-card">
               {notifications}
             </span>
           ) : null}
@@ -82,17 +82,17 @@ export function TopBar({ notifications = 3 }: { notifications?: number }) {
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label="Account"
-            className="ml-1 flex size-10 items-center justify-center rounded-full bg-[#e5f0fb] text-[0.875rem] font-semibold text-[#2d5f99] transition-shadow hover:ring-2 hover:ring-border"
+            className="ml-1 flex size-12 items-center justify-center rounded-full border border-white bg-[#ebf8fe] text-[1rem] font-semibold leading-6 text-[#0075a8] transition-shadow hover:ring-2 hover:ring-border"
           >
             {initials}
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-60 rounded-xl p-1.5">
             <DropdownMenuLabel className="px-3 py-2">
-              <span className="block truncate text-[0.9375rem] font-semibold">{me?.name}</span>
-              <span className="block truncate text-[0.8125rem] font-normal text-muted-foreground">{me?.email}</span>
+              <span className="block truncate text-body font-semibold">{me?.name}</span>
+              <span className="block truncate text-caption font-normal text-muted-foreground">{me?.email}</span>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={() => void signOut()} className="gap-3 rounded-lg px-3 py-2 text-[0.9375rem]">
+            <DropdownMenuItem onSelect={() => void signOut()} className="gap-3 rounded-lg px-3 py-2 text-body">
               <SignOut size={18} />
               Sign out
             </DropdownMenuItem>

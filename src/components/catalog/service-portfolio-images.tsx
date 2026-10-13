@@ -188,7 +188,7 @@ export function PortfolioImagesSection({ businessId, draftId, serviceId }: Props
 
   return (
     <section className="rounded-3xl border border-border bg-card p-6 sm:p-8">
-      <h2 className="text-xl font-bold text-foreground">Portfolio images</h2>
+      <h2 className="text-xl font-semibold text-foreground">Portfolio images</h2>
       <p className="mt-1 text-base text-muted-foreground">
         Add and manage service imagery shown to clients when they browse and book this
         service online.
@@ -227,7 +227,7 @@ export function PortfolioImagesSection({ businessId, draftId, serviceId }: Props
           {images.length === 0 ? (
             <>
               <FileText size={32} weight="regular" className="text-foreground" />
-              <p className="mt-3 text-lg font-bold text-foreground">
+              <p className="mt-3 text-lg font-semibold text-foreground">
                 Add your images here
               </p>
               <Button
@@ -246,7 +246,7 @@ export function PortfolioImagesSection({ businessId, draftId, serviceId }: Props
           ) : (
             <div className="flex items-center justify-between gap-4 rounded-xl bg-muted/50 px-6 py-5">
               <div className="min-w-0">
-                <p className="text-lg font-bold text-foreground">
+                <p className="text-lg font-semibold text-foreground">
                   Drag and drop your images here
                 </p>
                 <p className="mt-0.5 text-base text-muted-foreground">
@@ -284,7 +284,7 @@ export function PortfolioImagesSection({ businessId, draftId, serviceId }: Props
 
 
       {fileError ? (
-        <p className="mt-2 text-sm font-medium text-destructive">{fileError}</p>
+        <p className="mt-2 text-body font-medium text-destructive">{fileError}</p>
       ) : null}
 
       {isLoading ? null : images.length === 0 ? null : (
@@ -306,7 +306,7 @@ export function PortfolioImagesSection({ businessId, draftId, serviceId }: Props
               />
 
               {image.is_primary ? (
-                <span className="absolute left-2 top-2 rounded-full bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground">
+                <span className="absolute left-2 top-2 rounded-full bg-primary px-2.5 py-1 text-caption font-semibold text-primary-foreground">
                   Primary
                 </span>
               ) : null}
@@ -318,7 +318,7 @@ export function PortfolioImagesSection({ businessId, draftId, serviceId }: Props
                   <button
                     type="button"
                     onClick={() => setPrimary.mutate(image)}
-                    className="flex items-center gap-1.5 rounded-full bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm"
+                    className="flex items-center gap-1.5 rounded-full bg-background/95 px-3 py-1.5 text-caption font-semibold text-foreground shadow-sm"
                   >
                     <Star size={14} weight="fill" /> Set as primary
                   </button>

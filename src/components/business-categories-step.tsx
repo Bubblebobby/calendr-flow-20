@@ -63,7 +63,7 @@ export function BusinessCategoriesStep({
               )}
             >
               {isSelected ? (
-                <span className="absolute right-3 top-3 rounded-full bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground">
+                <span className="absolute right-3 top-3 rounded-full bg-primary px-2.5 py-1 text-caption font-medium text-primary-foreground">
                   {CATEGORY_RANK_LABELS[index]}
                 </span>
               ) : null}

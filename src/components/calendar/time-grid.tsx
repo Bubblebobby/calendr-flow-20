@@ -52,7 +52,7 @@ export function DateHeader({ date, now, locale }: { date: Date; now: Date; local
     <div className="flex min-w-0 items-center gap-2 overflow-hidden px-3">
       <span
         className={cn(
-          "flex size-8 shrink-0 items-center justify-center rounded-full text-[0.9375rem] tabular-nums",
+          "flex size-8 shrink-0 items-center justify-center rounded-full text-body tabular-nums",
           isToday
             ? "bg-primary font-semibold text-primary-foreground"
             : isPast
@@ -64,7 +64,7 @@ export function DateHeader({ date, now, locale }: { date: Date; now: Date; local
       </span>
       <span
         className={cn(
-          "truncate text-[0.9375rem]",
+          "truncate text-body",
           isToday
             ? "font-medium text-primary"
             : isPast
@@ -185,7 +185,7 @@ export function TimeGrid({
               className="flex min-w-[7.5rem] flex-1 flex-col items-center gap-2 px-2 py-3"
             >
               <MemberAvatar member={column.member} size={56} className="ring-2" />
-              <span className="max-w-full truncate text-[0.8125rem] font-semibold text-foreground">
+              <span className="max-w-full truncate text-caption font-semibold text-foreground">
                 {memberName(column.member)}
               </span>
             </div>
@@ -219,7 +219,7 @@ export function TimeGrid({
               hour === 0 ? null : (
                 <span
                   key={hour}
-                  className="absolute right-2 text-[0.8125rem] font-semibold tabular-nums text-foreground"
+                  className="absolute right-2 text-caption font-semibold tabular-nums text-foreground"
                   style={{ top: hour * hourHeight + 4 }}
                 >
                   {formatTime(hour * 60)}
@@ -228,7 +228,7 @@ export function TimeGrid({
             )}
             {showsToday ? (
               <span
-                className="absolute right-1 z-10 -translate-y-1/2 rounded-full border border-destructive bg-card px-1.5 text-[0.75rem] font-medium leading-5 tabular-nums text-destructive"
+                className="absolute right-1 z-10 -translate-y-1/2 rounded-full border border-destructive bg-card px-1.5 py-0.5 text-caption font-semibold tabular-nums text-destructive"
                 style={{ top: y(nowMinutes) }}
               >
                 {formatTime(nowMinutes)}
@@ -343,7 +343,7 @@ export function TimeGrid({
                       type="button"
                       key={appointment.id}
                       className={cn(
-                        "absolute inset-x-1 z-10 flex flex-col justify-start overflow-hidden rounded-[4px] px-1.5 py-1 text-left text-[0.8125rem] leading-[1.15rem] transition-[filter,opacity] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "absolute inset-x-1 z-10 flex flex-col justify-start overflow-hidden rounded-[4px] px-1.5 py-1 text-left text-caption leading-4 transition-[filter,opacity] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         appointment.status === "no_show" && !faded && "opacity-60",
                         faded ? "pointer-events-none text-[#0d0d0d]/40" : "text-[#0d0d0d]",
                         highlighted && "ring-2 ring-primary",

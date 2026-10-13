@@ -44,7 +44,7 @@ import {
 export type AddAction = "appointment" | "group" | "blocked" | "sale" | "quick-payment";
 
 const outline =
-  "inline-flex h-9 items-center justify-center border border-border bg-card text-[0.9375rem] text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:bg-secondary";
+  "inline-flex h-9 items-center justify-center border border-input bg-card text-body font-medium text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:bg-secondary";
 
 export function IconButton({
   label,
@@ -83,14 +83,15 @@ export function MemberAvatar({
   return (
     <span
       className={cn(
-        "flex shrink-0 items-center justify-center overflow-hidden rounded-full font-semibold text-[#2d5f99] ring-1 ring-[#cfe3f7]",
+        "flex shrink-0 items-center justify-center overflow-hidden rounded-full font-semibold text-[#0075a8] ring-1 ring-white",
         className,
       )}
       style={{
         width: size,
         height: size,
         fontSize: Math.round(size * 0.3),
-        backgroundColor: "#eef6fd",
+        lineHeight: 1.4,
+        backgroundColor: "#ebf8fe",
       }}
     >
       {member.avatar_url ? (
@@ -159,7 +160,7 @@ function TeamSelector({
       type="button"
       onClick={() => onChange(value)}
       className={cn(
-        "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-[0.9375rem] text-foreground hover:bg-secondary",
+        "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-body text-foreground hover:bg-secondary",
         selection === value && "bg-accent/60 font-medium",
       )}
     >
@@ -187,7 +188,7 @@ function TeamSelector({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search"
-            className="h-full flex-1 bg-transparent text-[0.9375rem] outline-none placeholder:text-muted-foreground"
+            className="h-full flex-1 bg-transparent text-body outline-none placeholder:text-placeholder"
           />
         </label>
         <div className="mt-2 space-y-0.5">
@@ -198,7 +199,7 @@ function TeamSelector({
             : null}
         </div>
         <div className="my-2 h-px bg-border" />
-        <label className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-[0.9375rem] font-semibold hover:bg-secondary">
+        <label className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-body font-semibold hover:bg-secondary">
           <Checkbox checked={allPicked} onCheckedChange={() => onChange("all")} />
           All team members
         </label>
@@ -206,7 +207,7 @@ function TeamSelector({
           {visible.map((member) => (
             <label
               key={member.id}
-              className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-[0.9375rem] hover:bg-secondary"
+              className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-body hover:bg-secondary"
             >
               <Checkbox
                 checked={pickedIds.has(member.id)}
@@ -381,7 +382,7 @@ export function CalendarToolbar({
                   key={key}
                   onSelect={() => onViewChange(key)}
                   className={cn(
-                    "gap-3 rounded-lg px-3 py-2 text-[0.9375rem]",
+                    "gap-3 rounded-lg px-3 py-2 text-body",
                     view === key && "bg-accent/60",
                   )}
                 >
@@ -398,7 +399,7 @@ export function CalendarToolbar({
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className="inline-flex h-9 items-center gap-2 rounded-full bg-ink pl-5 pr-4 text-[0.9375rem] font-semibold text-ink-foreground transition-colors hover:bg-ink/90 data-[state=open]:bg-ink/90"
+              className="inline-flex h-9 items-center gap-2 rounded-full bg-ink pl-5 pr-4 text-body font-medium text-ink-foreground transition-colors hover:bg-ink/90 data-[state=open]:bg-ink/90"
             >
               Add
               <CaretDown size={13} weight="bold" />
@@ -417,7 +418,7 @@ export function CalendarToolbar({
               <DropdownMenuItem
                 key={action}
                 onSelect={() => onAdd(action)}
-                className="gap-3 rounded-lg px-3 py-2 text-[0.9375rem]"
+                className="gap-3 rounded-lg px-3 py-2 text-body"
               >
                 {icon}
                 {label}

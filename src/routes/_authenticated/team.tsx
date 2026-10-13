@@ -38,7 +38,7 @@ function TeamPage() {
             <span
               key={tab.key}
               className={cn(
-                "-mb-px border-b-2 px-4 py-3 text-sm font-semibold",
+                "-mb-px border-b-2 px-4 py-3 text-body font-semibold",
                 index === 0
                   ? "border-foreground text-foreground"
                   : "border-transparent text-muted-foreground",

@@ -216,7 +216,7 @@ export function SalesList() {
               <DropdownMenuContent align="end" className="w-52 rounded-xl p-1.5">
                 <DropdownMenuItem
                   onSelect={() => toast("Sales settings live in Settings → Sales")}
-                  className="gap-3 rounded-lg px-3 py-2 text-[0.9375rem]"
+                  className="gap-3 rounded-lg px-3 py-2 text-body"
                 >
                   <Gear size={18} /> Sales settings
                 </DropdownMenuItem>
@@ -245,7 +245,7 @@ export function SalesList() {
             type="button"
             onClick={() => setTab(key)}
             className={cn(
-              "h-9 rounded-full px-4 text-[0.875rem] font-semibold transition-colors",
+              "h-9 rounded-full px-4 text-body font-semibold transition-colors",
               tab === key ? "bg-ink text-ink-foreground" : "text-foreground hover:bg-secondary",
             )}
           >
@@ -267,7 +267,7 @@ export function SalesList() {
                 <DropdownMenuItem
                   key={key}
                   onSelect={() => setSort(key)}
-                  className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                  className="rounded-lg px-3 py-2 text-body"
                 >
                   <span className="flex-1">{SORT_LABELS[key]}</span>
                   {sort === key ? <Check size={14} weight="bold" /> : null}
@@ -360,7 +360,7 @@ export function SalesList() {
               ))}
             </tbody>
           </table>
-          <p className="border-t border-border pt-5 text-center text-[0.8125rem] text-muted-foreground">
+          <p className="border-t border-border pt-5 text-center text-caption text-muted-foreground">
             Viewing 1 - {rows.length} of {rows.length} results
           </p>
         </div>
@@ -388,7 +388,7 @@ export function SalesList() {
         />
         <div className="grid grid-cols-2 gap-3">
           {(["from", "to"] as const).map((edge) => (
-            <label key={edge} className="text-[0.9375rem] font-semibold">
+            <label key={edge} className="text-body font-semibold">
               {edge === "from" ? "From amount" : "To amount"}
               <span className="mt-2 flex h-12 items-center gap-2 rounded-lg border border-border px-4 font-normal">
                 <span className="text-muted-foreground">{business?.currency}</span>
@@ -425,14 +425,14 @@ export function SalesList() {
           <div className="flex h-full w-[30rem] max-w-[calc(100vw-4rem)] flex-col border-l border-border bg-card shadow-[-12px_0_32px_-12px_rgb(0_0_0/0.2)]">
             <div className="flex items-start justify-between gap-3 px-6 pb-4 pt-6">
               <div>
-                <h2 className="text-[1.75rem] font-semibold">
+                <h2 className="text-display font-semibold">
                   Sale {saleRef(viewing.id)}
                 </h2>
-                <p className="text-[0.875rem] text-muted-foreground">{stamp(viewing.sale_date)}</p>
+                <p className="text-body text-muted-foreground">{stamp(viewing.sale_date)}</p>
               </div>
               <span
                 className={cn(
-                  "mt-2 inline-flex h-7 items-center rounded-full px-3 text-[0.8125rem] font-medium",
+                  "mt-2 inline-flex h-7 items-center rounded-full px-3 text-caption font-medium",
                   STATUS_PILL[viewing.status],
                 )}
               >
@@ -441,16 +441,16 @@ export function SalesList() {
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto px-6">
               <div className="rounded-2xl border border-border p-4">
-                <p className="text-[0.9375rem] font-semibold">
+                <p className="text-body font-semibold">
                   {personName(viewing.clients) ?? "Walk-In"}
                 </p>
                 {viewing.clients?.email ? (
-                  <p className="text-[0.8125rem] text-muted-foreground">{viewing.clients.email}</p>
+                  <p className="text-caption text-muted-foreground">{viewing.clients.email}</p>
                 ) : null}
               </div>
               <div className="mt-5 divide-y divide-border">
                 {viewing.sale_items.map((item) => (
-                  <div key={item.id} className="flex justify-between py-3 text-[0.9375rem]">
+                  <div key={item.id} className="flex justify-between py-3 text-body">
                     <span>
                       {item.description}
                       {item.quantity > 1 ? ` × ${item.quantity}` : ""}
@@ -461,7 +461,7 @@ export function SalesList() {
                   </div>
                 ))}
               </div>
-              <div className="mt-2 space-y-1 border-t border-border pt-3 text-[0.9375rem]">
+              <div className="mt-2 space-y-1 border-t border-border pt-3 text-body">
                 <div className="flex justify-between font-semibold">
                   <span>Total</span>
                   <span>{money(Number(viewing.total))}</span>
@@ -472,7 +472,7 @@ export function SalesList() {
                 </div>
               </div>
               {viewing.notes ? (
-                <p className="mt-5 rounded-lg bg-secondary/60 px-4 py-3 text-[0.875rem]">
+                <p className="mt-5 rounded-lg bg-secondary/60 px-4 py-3 text-body">
                   {viewing.notes}
                 </p>
               ) : null}
@@ -491,20 +491,20 @@ export function SalesList() {
                 <DropdownMenuContent side="top" align="start" className="w-52 rounded-xl p-1.5">
                   <DropdownMenuItem
                     onSelect={() => window.print()}
-                    className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                    className="rounded-lg px-3 py-2 text-body"
                   >
                     Print receipt
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onSelect={() => toast("Emailing receipts arrives with Marketing → Automations")}
-                    className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                    className="rounded-lg px-3 py-2 text-body"
                   >
                     Email receipt
                   </DropdownMenuItem>
                   {viewing.status === "completed" ? (
                     <DropdownMenuItem
                       onSelect={() => setConfirmRefund(true)}
-                      className="rounded-lg px-3 py-2 text-[0.9375rem] text-destructive focus:text-destructive"
+                      className="rounded-lg px-3 py-2 text-body text-destructive focus:text-destructive"
                     >
                       Refund
                     </DropdownMenuItem>
@@ -531,7 +531,7 @@ export function SalesList() {
         >
           <div className="w-full max-w-[30rem] rounded-2xl bg-card p-9">
             <h3 className="text-xl font-semibold">Refund this sale?</h3>
-            <p className="mt-3 text-[0.9375rem]">
+            <p className="mt-3 text-body">
               {money(Number(viewing.total))} will be marked as refunded and taken out of
               today&apos;s totals.
             </p>

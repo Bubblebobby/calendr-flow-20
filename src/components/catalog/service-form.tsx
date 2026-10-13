@@ -329,7 +329,7 @@ export function ServiceForm({ serviceId }: { serviceId?: string }) {
     <div className="bg-background min-h-screen lg:flex lg:h-screen lg:flex-col lg:overflow-hidden">
       <header className="shrink-0 z-20 border-b border-border/60 bg-background/85 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-8 py-4">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             {isEdit ? "Edit service" : "New service"}
           </h1>
           <div className="flex items-center gap-3">
@@ -378,7 +378,7 @@ export function ServiceForm({ serviceId }: { serviceId?: string }) {
             })}
           </ul>
           <div className="my-3 h-px bg-border" />
-          <p className="px-3 py-2 text-base font-bold text-foreground">Settings</p>
+          <p className="px-3 py-2 text-base font-semibold text-foreground">Settings</p>
           <ul className="space-y-1">
             {NAV_SETTINGS.map((item) => (
               <li key={item.label}>
@@ -420,7 +420,7 @@ export function ServiceForm({ serviceId }: { serviceId?: string }) {
             <>
               {/* Basic details */}
               <section className="rounded-3xl border border-border bg-card p-6 sm:p-8">
-                <h2 className="text-xl font-bold text-foreground">Basic details</h2>
+                <h2 className="text-xl font-semibold text-foreground">Basic details</h2>
 
                 <div className="mt-6 space-y-6">
                   <Field
@@ -468,7 +468,7 @@ export function ServiceForm({ serviceId }: { serviceId?: string }) {
                           ) : null}
                           <button
                             type="button"
-                            className="flex w-full items-center gap-2 rounded-md px-2 py-2.5 text-sm font-semibold text-primary hover:bg-primary/10"
+                            className="flex w-full items-center gap-2 rounded-md px-2 py-2.5 text-body font-semibold text-primary hover:bg-primary/10"
                             onMouseDown={(event) => {
                               event.preventDefault();
                               setCategoryOpen(true);
@@ -492,7 +492,7 @@ export function ServiceForm({ serviceId }: { serviceId?: string }) {
                         <SelectContent className="max-h-96 rounded-2xl p-2">
                           {SORTED_TREATMENT_GROUPS.map((group) => (
                             <SelectGroup key={group.label}>
-                              <SelectLabel className="px-3 pt-3 pb-2 text-base font-bold text-foreground">
+                              <SelectLabel className="px-3 pt-3 pb-2 text-base font-semibold text-foreground">
                                 {group.label}
                               </SelectLabel>
                               {group.options.map((type) => (
@@ -529,7 +529,7 @@ export function ServiceForm({ serviceId }: { serviceId?: string }) {
 
               {/* Pricing and duration */}
               <section className="rounded-3xl border border-border bg-card p-6 sm:p-8">
-                <h2 className="text-xl font-bold text-foreground">Pricing and duration</h2>
+                <h2 className="text-xl font-semibold text-foreground">Pricing and duration</h2>
 
                 <div className="mt-6 grid gap-6 sm:grid-cols-3">
                   <Field label="Price type">
@@ -550,7 +550,7 @@ export function ServiceForm({ serviceId }: { serviceId?: string }) {
 
                   <Field label="Price" error={show("price")}>
                     <div className="relative">
-                      <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">
+                      <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-body font-medium text-muted-foreground">
                         {business?.currency ?? ""}
                       </span>
                       <Input
@@ -611,7 +611,7 @@ export function ServiceForm({ serviceId }: { serviceId?: string }) {
 
                 {segments.length > 0 ? (
                   <div className="mt-6 space-y-3">
-                    <p className="text-sm font-semibold text-foreground">Duration type</p>
+                    <p className="text-body font-semibold text-foreground">Duration type</p>
                     {segments.map((segment) => {
                       const meta = EXTRA_TIME_TYPES.find((t) => t.key === segment.type)!;
                       return (
@@ -620,10 +620,10 @@ export function ServiceForm({ serviceId }: { serviceId?: string }) {
                           className="flex flex-wrap items-center gap-3 rounded-2xl border border-border p-4"
                         >
                           <div className="min-w-52 flex-1">
-                            <p className="text-sm font-semibold text-foreground">
+                            <p className="text-body font-semibold text-foreground">
                               {meta.label}
                             </p>
-                            <p className="text-xs text-muted-foreground">{meta.hint}</p>
+                            <p className="text-caption text-muted-foreground">{meta.hint}</p>
                           </div>
                           <Select
                             value={String(segment.minutes)}
@@ -664,7 +664,7 @@ export function ServiceForm({ serviceId }: { serviceId?: string }) {
                         </div>
                       );
                     })}
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-body text-muted-foreground">
                       Total duration:{" "}
                       <span className="font-semibold text-foreground">
                         {formatDuration(totalDuration)}
@@ -692,10 +692,10 @@ export function ServiceForm({ serviceId }: { serviceId?: string }) {
                           disabled={segments.some((row) => row.type === type.key)}
                           onClick={() => addSegment(type.key)}
                         >
-                          <span className="text-sm font-semibold text-foreground">
+                          <span className="text-body font-semibold text-foreground">
                             {type.label}
                           </span>
-                          <span className="text-xs text-muted-foreground">{type.hint}</span>
+                          <span className="text-caption text-muted-foreground">{type.hint}</span>
                         </DropdownMenuItem>
                       ))}
                     </DropdownMenuContent>
@@ -716,7 +716,7 @@ export function ServiceForm({ serviceId }: { serviceId?: string }) {
                         (label) => (
                           <DropdownMenuItem
                             key={label}
-                            className="gap-3 px-4 py-2.5 text-sm font-medium text-foreground"
+                            className="gap-3 px-4 py-2.5 text-body font-medium text-foreground"
                             onClick={() => {
                               soon(label)();
                             }}
@@ -765,9 +765,9 @@ function NavRow({
         active ? "bg-primary/10 text-foreground" : "text-foreground hover:bg-muted",
       )}
     >
-      <span className="min-w-0 flex-1 truncate text-sm font-semibold">{label}</span>
+      <span className="min-w-0 flex-1 truncate text-body font-semibold">{label}</span>
       {badge != null ? (
-        <span className="h-6 w-6 rounded-full border border-border bg-card text-center text-xs font-medium leading-6 text-muted-foreground">
+        <span className="h-6 w-6 rounded-full border border-border bg-card text-center text-caption font-medium leading-6 text-muted-foreground">
           {badge}
         </span>
       ) : null}
@@ -793,21 +793,21 @@ function Field({
   return (
     <div className="space-y-2">
       <div className="flex items-end justify-between gap-3">
-        <Label className="text-sm font-semibold text-foreground">
+        <Label className="text-body font-semibold text-foreground">
           {label}
           {optional ? (
             <span className="ml-1 font-normal text-muted-foreground">(Optional)</span>
           ) : null}
         </Label>
         {counter ? (
-          <span className="text-xs text-muted-foreground">{counter}</span>
+          <span className="text-caption text-muted-foreground">{counter}</span>
         ) : null}
       </div>
       {children}
       {error ? (
-        <p className="text-xs font-medium text-destructive">{error}</p>
+        <p className="text-caption font-medium text-destructive">{error}</p>
       ) : hint ? (
-        <p className="text-xs text-muted-foreground">{hint}</p>
+        <p className="text-caption text-muted-foreground">{hint}</p>
       ) : null}
     </div>
   );

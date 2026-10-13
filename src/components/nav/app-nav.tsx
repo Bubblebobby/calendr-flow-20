@@ -70,7 +70,7 @@ export function AppNav() {
                 >
                   <item.icon size={26} weight="regular" />
                 </Link>
-                <span className="pointer-events-none absolute left-[calc(100%-4px)] top-1/2 z-50 hidden -translate-y-1/2 whitespace-nowrap rounded-md bg-ink px-2.5 py-1.5 text-[0.8125rem] font-medium text-ink-foreground shadow-lg group-hover/nav:block">
+                <span className="pointer-events-none absolute left-[calc(100%-4px)] top-1/2 z-50 hidden -translate-y-1/2 whitespace-nowrap rounded-md bg-ink px-2.5 py-1.5 text-caption font-medium text-ink-foreground shadow-lg group-hover/nav:block">
                   {item.title}
                 </span>
               </li>
@@ -101,7 +101,7 @@ export function AppNav() {
                 {renderedItem.groups?.map((group, index) => (
                   <div key={group.title}>
                     {index > 0 ? <div className="mx-4 my-4 border-t border-border" /> : null}
-                    <p className="px-4 pb-2 text-[1.0625rem] font-semibold leading-6 text-foreground">{group.title}</p>
+                    <p className="px-4 pb-2 text-heading font-semibold leading-6 text-foreground">{group.title}</p>
                     <ul>
                       {group.children.map((child) => (
                         <li key={child.title}>
@@ -110,7 +110,7 @@ export function AppNav() {
                             search={child.search as never}
                             activeProps={{}}
                             className={cn(
-                              "flex h-11 items-center rounded-lg px-4 text-[0.8125rem] text-foreground transition-colors",
+                              "flex h-11 items-center rounded-lg px-4 text-body font-medium text-foreground transition-colors",
                               isChildActive(renderedItem, child) ? "bg-accent" : "hover:bg-secondary",
                             )}
                           >

@@ -117,7 +117,7 @@ function Landing() {
           <div className="flex items-center gap-3">
             <a
               href="#preview"
-              className="hidden items-center gap-2 rounded-full border border-border bg-card/50 px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted active:bg-secondary sm:inline-flex"
+              className="hidden items-center gap-2 rounded-full border border-border bg-card/50 px-5 py-3 text-body font-semibold text-foreground transition-colors hover:bg-muted active:bg-secondary sm:inline-flex"
             >
               <Store className="size-4" />
               Marketplace
@@ -130,7 +130,7 @@ function Landing() {
             </Button>
             <button
               type="button"
-              className="hidden items-center gap-2 rounded-full border border-border bg-card/50 px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted active:bg-secondary md:inline-flex"
+              className="hidden items-center gap-2 rounded-full border border-border bg-card/50 px-5 py-3 text-body font-semibold text-foreground transition-colors hover:bg-muted active:bg-secondary md:inline-flex"
             >
               Menu
               <Menu className="size-4" />
@@ -176,7 +176,7 @@ function Landing() {
       </main>
 
       <footer className="border-t border-border">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-2 px-6 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-2 px-6 py-8 text-body text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <span>© {new Date().getFullYear()} Bookly. Booking software for every business.</span>
           <Link to="/auth" className="font-medium text-foreground hover:underline">
             Sign in to your dashboard
@@ -197,7 +197,7 @@ function DashboardPreview() {
           <Search className="size-4" />
           <span className="relative">
             <Bell className="size-4" />
-            <span className="absolute -right-1.5 -top-1.5 flex size-3.5 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
+            <span className="absolute -right-1.5 -top-1.5 flex size-3.5 items-center justify-center rounded-full bg-primary text-[9px] font-semibold text-primary-foreground">
               3
             </span>
           </span>
@@ -211,7 +211,7 @@ function DashboardPreview() {
         <Chip>Today</Chip>
         <div className="flex items-center gap-1 rounded-full border border-border px-2 py-1.5">
           <ChevronLeft className="size-4 text-muted-foreground" />
-          <span className="px-2 text-sm font-medium text-foreground">Wednesday 21 Jun</span>
+          <span className="px-2 text-body font-medium text-foreground">Wednesday 21 Jun</span>
           <ChevronRight className="size-4 text-muted-foreground" />
         </div>
         <Chip icon={<ChevronDown className="size-3.5" />}>Trendy salon</Chip>
@@ -221,7 +221,7 @@ function DashboardPreview() {
           <Chip icon={<Settings2 className="size-3.5" />} />
           <Chip icon={<RefreshCw className="size-3.5" />} />
           <Chip icon={<ChevronDown className="size-3.5" />}>Day</Chip>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-sm font-semibold text-ink-foreground">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-body font-semibold text-ink-foreground">
             <Plus className="size-3.5" />
             Add
           </span>
@@ -269,7 +269,7 @@ function DashboardPreview() {
                 }}
               >
                 <p className="truncate text-[10px] font-medium opacity-80">{slot.time}</p>
-                <p className="truncate text-xs font-semibold">{slot.client}</p>
+                <p className="truncate text-caption font-semibold">{slot.client}</p>
                 <p className="truncate text-[10px] opacity-80">{slot.service}</p>
               </div>
             ))}
@@ -282,7 +282,7 @@ function DashboardPreview() {
 
 function Chip({ children, icon }: { children?: React.ReactNode; icon?: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-2 text-sm font-medium text-foreground">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-2 text-body font-medium text-foreground">
       {children}
       {icon}
     </span>

@@ -145,8 +145,8 @@ function Empty({
   return (
     <div className="flex flex-col items-center rounded-2xl border border-border bg-card px-6 py-14 text-center">
       <span className="text-primary">{icon}</span>
-      <p className="mt-4 text-[1.0625rem] font-semibold">{title}</p>
-      <p className="mt-1 max-w-xs text-[0.875rem] text-muted-foreground">{body}</p>
+      <p className="mt-4 text-heading font-semibold">{title}</p>
+      <p className="mt-1 max-w-xs text-body text-muted-foreground">{body}</p>
       {action ? <div className="mt-4">{action}</div> : null}
     </div>
   );
@@ -169,7 +169,7 @@ function Pills<T extends string>({
           type="button"
           onClick={() => onChange(key)}
           className={cn(
-            "h-9 rounded-full px-4 text-[0.875rem] font-semibold",
+            "h-9 rounded-full px-4 text-body font-semibold",
             value === key ? "bg-ink text-ink-foreground" : "hover:bg-card",
           )}
         >
@@ -183,8 +183,8 @@ function Pills<T extends string>({
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <p className="text-[0.8125rem] font-semibold">{label}</p>
-      <p className="text-[0.875rem] text-muted-foreground">{value || "-"}</p>
+      <p className="text-caption font-semibold">{label}</p>
+      <p className="text-body text-muted-foreground">{value || "-"}</p>
     </div>
   );
 }
@@ -448,7 +448,7 @@ export function ClientProfile({
       type="button"
       onClick={() => setSection(key)}
       className={cn(
-        "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-[0.875rem]",
+        "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-body",
         section === key ? "bg-accent font-medium" : "hover:bg-secondary",
       )}
     >
@@ -464,29 +464,29 @@ export function ClientProfile({
   if (section === "overview") {
     content = (
       <>
-        <h2 className="text-[1.75rem] font-semibold">Overview</h2>
+        <h2 className="text-display font-semibold">Overview</h2>
         <div className="mt-5 flex items-center justify-between">
-          <p className="text-[1.0625rem] font-semibold">Wallet</p>
+          <p className="text-heading font-semibold">Wallet</p>
           <button
             type="button"
             onClick={() => setSection("wallet")}
-            className="text-[0.875rem] font-medium text-primary hover:underline"
+            className="text-body font-medium text-primary hover:underline"
           >
             View wallet
           </button>
         </div>
         <div className="mt-3 rounded-2xl border border-border bg-card p-5">
-          <p className="flex items-center justify-between text-[0.9375rem] font-semibold">
+          <p className="flex items-center justify-between text-body font-semibold">
             Balance <Info size={16} className="text-muted-foreground" />
           </p>
-          <p className="mt-2 text-[1.75rem] font-semibold">{money(0)}</p>
+          <p className="mt-2 text-display font-semibold">{money(0)}</p>
         </div>
-        <p className="mt-6 text-[1.0625rem] font-semibold">Summary</p>
+        <p className="mt-6 text-heading font-semibold">Summary</p>
         <div className="mt-3 rounded-2xl border border-border bg-card p-5">
-          <p className="flex items-center justify-between text-[0.9375rem] font-semibold">
+          <p className="flex items-center justify-between text-body font-semibold">
             Total sales <Info size={16} className="text-muted-foreground" />
           </p>
-          <p className="mt-2 text-[1.75rem] font-semibold">{money(stats.totalSales)}</p>
+          <p className="mt-2 text-display font-semibold">{money(stats.totalSales)}</p>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-3">
           {[
@@ -496,10 +496,10 @@ export function ClientProfile({
             ["No show", stats.noShow],
           ].map(([label, value]) => (
             <div key={label} className="rounded-2xl border border-border bg-card p-5">
-              <p className="flex items-center justify-between text-[0.9375rem] font-semibold">
+              <p className="flex items-center justify-between text-body font-semibold">
                 {label} <Info size={16} className="text-muted-foreground" />
               </p>
-              <p className="mt-2 text-[1.75rem] font-semibold">{value}</p>
+              <p className="mt-2 text-display font-semibold">{value}</p>
             </div>
           ))}
         </div>
@@ -522,7 +522,7 @@ export function ClientProfile({
     let lastMonth = "";
     content = (
       <>
-        <h2 className="text-[1.75rem] font-semibold">Appointments</h2>
+        <h2 className="text-display font-semibold">Appointments</h2>
         <div className="mt-4">
           <Pills
             value={apptFilter}
@@ -561,7 +561,7 @@ export function ClientProfile({
               return (
                 <div key={row.id}>
                   {header ? (
-                    <p className="mb-2 text-[0.875rem] text-muted-foreground">{header}</p>
+                    <p className="mb-2 text-body text-muted-foreground">{header}</p>
                   ) : null}
                   <div className="relative pl-8">
                     <span className="absolute left-0 top-4 flex size-6 items-center justify-center rounded-full bg-ink text-ink-foreground">
@@ -570,8 +570,8 @@ export function ClientProfile({
                     <div className="rounded-2xl border border-border bg-card p-4">
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <p className="text-[0.9375rem] font-semibold">Appointment</p>
-                          <p className="text-[0.8125rem] text-muted-foreground">
+                          <p className="text-body font-semibold">Appointment</p>
+                          <p className="text-caption text-muted-foreground">
                             {new Intl.DateTimeFormat("en-GB", {
                               weekday: "short",
                               day: "numeric",
@@ -586,12 +586,12 @@ export function ClientProfile({
                         <StatusBadge status={row.status} />
                       </div>
                       {row.items.map((item) => (
-                        <div key={item.id} className="mt-3 flex justify-between text-[0.875rem]">
+                        <div key={item.id} className="mt-3 flex justify-between text-body">
                           <span>
                             <span className="block font-medium">
                               {item.services?.name ?? "Service"}
                             </span>
-                            <span className="block text-[0.8125rem] text-muted-foreground">
+                            <span className="block text-caption text-muted-foreground">
                               {new Intl.DateTimeFormat("en-GB", {
                                 hour: "2-digit",
                                 minute: "2-digit",
@@ -633,7 +633,7 @@ export function ClientProfile({
                               })),
                             })
                           }
-                          className="mt-4 inline-flex h-9 items-center rounded-full border border-border px-4 text-[0.875rem] font-semibold hover:bg-secondary"
+                          className="mt-4 inline-flex h-9 items-center rounded-full border border-border px-4 text-body font-semibold hover:bg-secondary"
                         >
                           Checkout · {money(total)}
                         </button>
@@ -652,11 +652,11 @@ export function ClientProfile({
     content = (
       <>
         <div className="flex items-center justify-between">
-          <h2 className="text-[1.75rem] font-semibold">Sales</h2>
+          <h2 className="text-display font-semibold">Sales</h2>
           <button
             type="button"
             onClick={sell}
-            className="inline-flex h-9 items-center rounded-full border border-border bg-card px-4 text-[0.875rem] font-semibold hover:bg-secondary"
+            className="inline-flex h-9 items-center rounded-full border border-border bg-card px-4 text-body font-semibold hover:bg-secondary"
           >
             Sell
           </button>
@@ -710,10 +710,10 @@ export function ClientProfile({
                 className="flex w-full items-center justify-between rounded-2xl border border-border bg-card p-4 text-left"
               >
                 <span>
-                  <span className="block text-[0.9375rem] font-semibold">
+                  <span className="block text-body font-semibold">
                     Sale #{sale.id.slice(0, 8).toUpperCase()}
                   </span>
-                  <span className="block text-[0.8125rem] text-muted-foreground">
+                  <span className="block text-caption text-muted-foreground">
                     {new Intl.DateTimeFormat("en-GB", {
                       day: "numeric",
                       month: "short",
@@ -723,10 +723,10 @@ export function ClientProfile({
                   </span>
                 </span>
                 <span className="text-right">
-                  <span className="block text-[0.9375rem] font-semibold">
+                  <span className="block text-body font-semibold">
                     {money(Number(sale.total))}
                   </span>
-                  <span className="block text-[0.8125rem] capitalize text-muted-foreground">
+                  <span className="block text-caption capitalize text-muted-foreground">
                     {sale.status === "draft" ? "Unpaid" : sale.status}
                   </span>
                 </span>
@@ -740,16 +740,16 @@ export function ClientProfile({
     content = (
       <>
         <div className="flex items-center justify-between">
-          <h2 className="text-[1.75rem] font-semibold">Client details</h2>
+          <h2 className="text-display font-semibold">Client details</h2>
           <button
             type="button"
             onClick={goEdit}
-            className="inline-flex h-9 items-center rounded-full border border-border bg-card px-4 text-[0.875rem] font-semibold hover:bg-secondary"
+            className="inline-flex h-9 items-center rounded-full border border-border bg-card px-4 text-body font-semibold hover:bg-secondary"
           >
             Edit
           </button>
         </div>
-        <p className="mt-5 text-[1.0625rem] font-semibold">Profile</p>
+        <p className="mt-5 text-heading font-semibold">Profile</p>
         <div className="mt-3 grid grid-cols-2 gap-4">
           <Field label="Full name" value={name} />
           <Field label="Email" value={client.email} />
@@ -767,7 +767,7 @@ export function ClientProfile({
           <Field label="Joined" value={joined} />
         </div>
         <div className="my-6 h-px bg-border" />
-        <p className="text-[1.0625rem] font-semibold">Additional info</p>
+        <p className="text-heading font-semibold">Additional info</p>
         <div className="mt-3 grid grid-cols-2 gap-4">
           <Field label="Client source" value={client.client_source} />
           <Field label="Referred by" value={referrer ? fullName(referrer) : null} />
@@ -777,12 +777,12 @@ export function ClientProfile({
           <Field label="Additional email" value={client.additional_email} />
           <Field label="Additional phone" value={client.additional_phone} />
         </div>
-        <p className="mt-5 text-[0.8125rem] font-semibold">Tags</p>
+        <p className="mt-5 text-caption font-semibold">Tags</p>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           {assignedTags.map((tag) => (
             <span
               key={tag.id}
-              className="inline-flex h-7 items-center gap-1 rounded-full bg-accent pl-3 pr-1 text-[0.8125rem] text-primary"
+              className="inline-flex h-7 items-center gap-1 rounded-full bg-accent pl-3 pr-1 text-caption text-primary"
             >
               {tag.name}
               <button
@@ -799,7 +799,7 @@ export function ClientProfile({
             <PopoverTrigger asChild>
               <button
                 type="button"
-                className="inline-flex h-7 items-center gap-1 rounded-full border border-border px-3 text-[0.8125rem] hover:bg-secondary"
+                className="inline-flex h-7 items-center gap-1 rounded-full border border-border px-3 text-caption hover:bg-secondary"
               >
                 <Plus size={12} /> Add tag
               </button>
@@ -810,7 +810,7 @@ export function ClientProfile({
                   key={tag.id}
                   type="button"
                   onClick={() => addTag.mutate({ tagId: tag.id })}
-                  className="block w-full rounded-lg px-3 py-2 text-left text-[0.875rem] hover:bg-secondary"
+                  className="block w-full rounded-lg px-3 py-2 text-left text-body hover:bg-secondary"
                 >
                   {tag.name}
                 </button>
@@ -826,11 +826,11 @@ export function ClientProfile({
                   value={newTag}
                   onChange={(event) => setNewTag(event.target.value)}
                   placeholder="New tag"
-                  className="h-9 min-w-0 flex-1 rounded-lg border border-border px-3 text-[0.875rem]"
+                  className="h-9 min-w-0 flex-1 rounded-lg border border-border px-3 text-body"
                 />
                 <button
                   type="submit"
-                  className="h-9 rounded-lg bg-ink px-3 text-[0.8125rem] font-semibold text-ink-foreground"
+                  className="h-9 rounded-lg bg-ink px-3 text-caption font-semibold text-ink-foreground"
                 >
                   Add
                 </button>
@@ -839,15 +839,15 @@ export function ClientProfile({
           </Popover>
         </div>
         <div className="my-6 h-px bg-border" />
-        <p className="text-[1.0625rem] font-semibold">Addresses</p>
+        <p className="text-heading font-semibold">Addresses</p>
         {addresses.length === 0 ? (
-          <p className="mt-2 text-[0.875rem] text-muted-foreground">No addresses saved</p>
+          <p className="mt-2 text-body text-muted-foreground">No addresses saved</p>
         ) : (
           <div className="mt-3 space-y-2">
             {addresses.map((address) => (
               <div
                 key={address.id}
-                className="rounded-xl border border-border bg-card p-4 text-[0.875rem]"
+                className="rounded-xl border border-border bg-card p-4 text-body"
               >
                 <p className="font-semibold capitalize">
                   {address.address_name || address.address_type}
@@ -880,7 +880,7 @@ export function ClientProfile({
       );
     content = (
       <>
-        <h2 className="text-[1.75rem] font-semibold">Items</h2>
+        <h2 className="text-display font-semibold">Items</h2>
         <div className="mt-4">
           <Pills
             value={itemTab}
@@ -898,10 +898,10 @@ export function ClientProfile({
           {itemTab === "services" && services.length ? (
             <div className="divide-y divide-border rounded-2xl border border-border bg-card">
               {services.map((item) => (
-                <div key={item.id} className="flex justify-between p-4 text-[0.875rem]">
+                <div key={item.id} className="flex justify-between p-4 text-body">
                   <span>
                     <span className="block font-medium">{item.description}</span>
-                    <span className="block text-[0.8125rem] text-muted-foreground">
+                    <span className="block text-caption text-muted-foreground">
                       {new Intl.DateTimeFormat("en-GB", {
                         day: "numeric",
                         month: "short",
@@ -927,11 +927,11 @@ export function ClientProfile({
     content = (
       <>
         <div className="flex items-center justify-between">
-          <h2 className="text-[1.75rem] font-semibold">Notes</h2>
+          <h2 className="text-display font-semibold">Notes</h2>
           <button
             type="button"
             onClick={() => setNoteDraft(client?.notes ?? "")}
-            className="inline-flex h-9 items-center gap-1 rounded-full border border-border bg-card px-4 text-[0.875rem] font-semibold hover:bg-secondary"
+            className="inline-flex h-9 items-center gap-1 rounded-full border border-border bg-card px-4 text-body font-semibold hover:bg-secondary"
           >
             <Plus size={14} /> {client?.notes ? "Edit" : "Add"}
           </button>
@@ -943,7 +943,7 @@ export function ClientProfile({
               value={noteDraft}
               onChange={(event) => setNoteDraft(event.target.value)}
               placeholder="Add a note visible to your team only"
-              className="min-h-40 w-full resize-y rounded-xl border border-border p-3 text-[0.9375rem] outline-none focus:border-primary"
+              className="min-h-40 w-full resize-y rounded-xl border border-border p-3 text-body outline-none focus:border-primary"
             />
             <div className="mt-3 flex justify-end gap-2">
               <button
@@ -964,7 +964,7 @@ export function ClientProfile({
             </div>
           </div>
         ) : client?.notes ? (
-          <div className="mt-5 whitespace-pre-wrap rounded-2xl border border-border bg-card p-5 text-[0.9375rem]">
+          <div className="mt-5 whitespace-pre-wrap rounded-2xl border border-border bg-card p-5 text-body">
             {client.notes}
           </div>
         ) : (
@@ -988,11 +988,11 @@ export function ClientProfile({
     content = (
       <>
         <div className="flex items-center justify-between">
-          <h2 className="text-[1.75rem] font-semibold">{label}</h2>
+          <h2 className="text-display font-semibold">{label}</h2>
           <button
             type="button"
             onClick={() => toast(NEEDS_DB)}
-            className="inline-flex h-9 items-center gap-1 rounded-full border border-border bg-card px-4 text-[0.875rem] font-semibold hover:bg-secondary"
+            className="inline-flex h-9 items-center gap-1 rounded-full border border-border bg-card px-4 text-body font-semibold hover:bg-secondary"
           >
             <Plus size={14} /> Add
           </button>
@@ -1010,17 +1010,17 @@ export function ClientProfile({
     content = (
       <>
         <div className="flex items-center justify-between">
-          <h2 className="text-[1.75rem] font-semibold">Wallet</h2>
+          <h2 className="text-display font-semibold">Wallet</h2>
           <button
             type="button"
             onClick={() => toast("Wallet top-ups and saved cards arrive with online payments")}
-            className="inline-flex h-9 items-center gap-1 rounded-full border border-border bg-card px-4 text-[0.875rem] font-semibold hover:bg-secondary"
+            className="inline-flex h-9 items-center gap-1 rounded-full border border-border bg-card px-4 text-body font-semibold hover:bg-secondary"
           >
             Actions <CaretDown size={12} weight="bold" />
           </button>
         </div>
-        <p className="mt-4 text-[1.75rem] font-semibold">{money(0)}</p>
-        <p className="text-[0.875rem] text-muted-foreground">Available balance.</p>
+        <p className="mt-4 text-display font-semibold">{money(0)}</p>
+        <p className="text-body text-muted-foreground">Available balance.</p>
         <div className="mt-5">
           <Empty
             icon={<Wallet size={40} weight="duotone" />}
@@ -1028,8 +1028,8 @@ export function ClientProfile({
             body="Client cards will appear here."
           />
         </div>
-        <p className="mt-6 text-[1.0625rem] font-semibold">Rewards</p>
-        <p className="mt-1 text-[0.875rem] text-muted-foreground">
+        <p className="mt-6 text-heading font-semibold">Rewards</p>
+        <p className="mt-1 text-body text-muted-foreground">
           Loyalty rewards appear here once Client loyalty is set up.
         </p>
       </>
@@ -1037,7 +1037,7 @@ export function ClientProfile({
   } else if (section === "loyalty") {
     content = (
       <>
-        <h2 className="text-[1.75rem] font-semibold">Loyalty</h2>
+        <h2 className="text-display font-semibold">Loyalty</h2>
         <div className="mt-5">
           <Empty
             icon={<Star size={40} weight="duotone" />}
@@ -1059,7 +1059,7 @@ export function ClientProfile({
   } else {
     content = (
       <>
-        <h2 className="text-[1.75rem] font-semibold">Reviews</h2>
+        <h2 className="text-display font-semibold">Reviews</h2>
         <div className="mt-5">
           <Empty
             icon={<Star size={40} weight="duotone" />}
@@ -1088,14 +1088,14 @@ export function ClientProfile({
           <span className="flex size-24 items-center justify-center rounded-full bg-accent text-[2rem] font-semibold text-primary">
             {client?.first_name[0]?.toUpperCase()}
           </span>
-          <p className="mt-4 text-[1.0625rem] font-semibold">{name}</p>
-          <p className="text-[0.875rem] text-muted-foreground">{client?.email || client?.phone}</p>
+          <p className="mt-4 text-heading font-semibold">{name}</p>
+          <p className="text-body text-muted-foreground">{client?.email || client?.phone}</p>
           <div className="mt-5 flex gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="inline-flex h-10 items-center gap-1.5 rounded-full border border-border px-4 text-[0.875rem] font-semibold hover:bg-secondary data-[state=open]:bg-secondary"
+                  className="inline-flex h-10 items-center gap-1.5 rounded-full border border-border px-4 text-body font-semibold hover:bg-secondary data-[state=open]:bg-secondary"
                 >
                   Actions <CaretDown size={12} weight="bold" />
                 </button>
@@ -1103,17 +1103,17 @@ export function ClientProfile({
               <DropdownMenuContent align="start" className="w-56 rounded-xl p-1.5">
                 <DropdownMenuItem
                   onSelect={() => toast("Two-way messaging arrives with Marketing")}
-                  className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                  className="rounded-lg px-3 py-2 text-body"
                 >
                   Messages
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={sell} className="rounded-lg px-3 py-2 text-[0.9375rem]">
+                <DropdownMenuItem onSelect={sell} className="rounded-lg px-3 py-2 text-body">
                   Sell
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={() => toast(NEEDS_DB)}
-                  className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                  className="rounded-lg px-3 py-2 text-body"
                 >
                   Add staff alert
                 </DropdownMenuItem>
@@ -1123,56 +1123,56 @@ export function ClientProfile({
                     setRecordsOpen(true);
                     setNoteDraft(client?.notes ?? "");
                   }}
-                  className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                  className="rounded-lg px-3 py-2 text-body"
                 >
                   Add simple note
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={() => toast(NEEDS_DB)}
-                  className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                  className="rounded-lg px-3 py-2 text-body"
                 >
                   Add allergy
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={() => toast(NEEDS_DB)}
-                  className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                  className="rounded-lg px-3 py-2 text-body"
                 >
                   Add patch test
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={() => setSection("details")}
-                  className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                  className="rounded-lg px-3 py-2 text-body"
                 >
                   Add tag
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={() => toast("Rewards arrive with Client loyalty")}
-                  className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                  className="rounded-lg px-3 py-2 text-body"
                 >
                   Add reward
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onSelect={goEdit}
-                  className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                  className="rounded-lg px-3 py-2 text-body"
                 >
                   Edit client details
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={() => toast("Merging profiles is coming in a later update")}
-                  className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                  className="rounded-lg px-3 py-2 text-body"
                 >
                   Merge profiles
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={() => toast(NEEDS_DB)}
-                  className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                  className="rounded-lg px-3 py-2 text-body"
                 >
                   Block client
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={() => setConfirmDelete(true)}
-                  className="rounded-lg px-3 py-2 text-[0.9375rem] text-destructive focus:text-destructive"
+                  className="rounded-lg px-3 py-2 text-body text-destructive focus:text-destructive"
                 >
                   Delete client
                 </DropdownMenuItem>
@@ -1181,13 +1181,13 @@ export function ClientProfile({
             <button
               type="button"
               onClick={bookNow}
-              className="inline-flex h-10 items-center rounded-full bg-ink px-5 text-[0.875rem] font-semibold text-ink-foreground hover:bg-ink/90"
+              className="inline-flex h-10 items-center rounded-full bg-ink px-5 text-body font-semibold text-ink-foreground hover:bg-ink/90"
             >
               Book now
             </button>
           </div>
         </div>
-        <div className="space-y-4 border-t border-border px-6 py-5 text-[0.875rem]">
+        <div className="space-y-4 border-t border-border px-6 py-5 text-body">
           <button
             type="button"
             onClick={goEdit}
@@ -1218,7 +1218,7 @@ export function ClientProfile({
         <button
           type="button"
           onClick={() => setRecordsOpen((open) => !open)}
-          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-[0.875rem] hover:bg-secondary"
+          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-body hover:bg-secondary"
         >
           Records {recordsOpen ? <CaretUp size={12} /> : <CaretDown size={12} />}
         </button>
@@ -1243,7 +1243,7 @@ export function ClientProfile({
         >
           <div className="w-full max-w-[30rem] rounded-2xl bg-card p-9">
             <h3 className="text-xl font-semibold">Delete {name}?</h3>
-            <p className="mt-3 text-[0.9375rem]">
+            <p className="mt-3 text-body">
               Their profile is removed. Past appointments and sales stay, shown as walk-ins.
             </p>
             <div className="mt-10 grid grid-cols-2 gap-3">

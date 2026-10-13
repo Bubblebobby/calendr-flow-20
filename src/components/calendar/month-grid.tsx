@@ -44,7 +44,7 @@ export function MonthGrid({
     <div className="flex min-h-0 flex-1 flex-col overflow-auto bg-card">
       <div className="sticky top-0 z-10 grid min-w-[42rem] grid-cols-7 bg-card shadow-[0_6px_8px_-6px_rgb(0_0_0/0.12)]">
         {days.slice(0, 7).map((date) => (
-          <div key={date.toISOString()} className="px-3 py-3 text-[0.9375rem] text-foreground">
+          <div key={date.toISOString()} className="px-3 py-3 text-body text-foreground">
             {weekday.format(date)}
           </div>
         ))}

@@ -78,7 +78,7 @@ function ComingSoon({ label }: { label: string }) {
         <Receipt size={22} />
       </span>
       <h2 className="mt-2 text-base font-semibold text-foreground">{label}</h2>
-      <p className="text-sm text-muted-foreground">This section is coming soon.</p>
+      <p className="text-body text-muted-foreground">This section is coming soon.</p>
     </div>
   );
 }

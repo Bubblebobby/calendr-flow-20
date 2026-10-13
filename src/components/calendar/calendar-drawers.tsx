@@ -53,7 +53,7 @@ function DrawerShell({
       </div>
       <div className="flex h-full w-[30rem] max-w-[calc(100vw-4rem)] flex-col border-l border-border bg-card shadow-[-12px_0_32px_-12px_rgb(0_0_0/0.2)]">
         <div className="flex items-center justify-between gap-3 px-6 pb-3 pt-6">
-          <h2 className="text-[1.75rem] font-semibold">{title}</h2>
+          <h2 className="text-display font-semibold">{title}</h2>
           {headerAction}
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
@@ -64,7 +64,7 @@ function DrawerShell({
 }
 
 const pill =
-  "inline-flex h-12 items-center justify-center rounded-full px-6 text-[0.9375rem] font-semibold transition-colors disabled:opacity-50";
+  "inline-flex h-12 items-center justify-center rounded-full px-6 text-body font-semibold transition-colors disabled:opacity-50";
 
 // ─── Visibility filters ────────────────────────────────────────────────────
 
@@ -110,7 +110,7 @@ function Section({
         type="button"
         onClick={onToggle}
         className={cn(
-          "flex w-full items-center gap-3 px-6 py-4 text-left text-[0.9375rem]",
+          "flex w-full items-center gap-3 px-6 py-4 text-left text-body",
           open && "bg-secondary/60",
         )}
       >
@@ -138,7 +138,7 @@ function CheckRow({
   onChange: () => void;
 }) {
   return (
-    <label className="flex cursor-pointer items-center gap-3 rounded-lg px-1 py-2 text-[0.9375rem] hover:bg-secondary/60">
+    <label className="flex cursor-pointer items-center gap-3 rounded-lg px-1 py-2 text-body hover:bg-secondary/60">
       <input
         type="checkbox"
         checked={checked}
@@ -186,7 +186,7 @@ export function FiltersDrawer({
         <button
           type="button"
           onClick={() => toast("Saved filters arrive with the next database update")}
-          className="inline-flex h-10 items-center gap-2 rounded-full border border-border px-4 text-[0.875rem] font-medium hover:bg-secondary"
+          className="inline-flex h-10 items-center gap-2 rounded-full border border-border px-4 text-body font-medium hover:bg-secondary"
         >
           Saved filters <CaretDown size={12} weight="bold" />
         </button>
@@ -270,7 +270,7 @@ export function FiltersDrawer({
             />
           ))
         ) : (
-          <p className="py-2 text-sm text-muted-foreground">No services yet.</p>
+          <p className="py-2 text-body text-muted-foreground">No services yet.</p>
         )}
       </Section>
       {[
@@ -284,7 +284,7 @@ export function FiltersDrawer({
           key={label}
           type="button"
           onClick={() => toast(`${label} filtering arrives with the tab that records it`)}
-          className="flex w-full items-center gap-3 border-b border-border/70 px-6 py-4 text-left text-[0.9375rem] text-muted-foreground"
+          className="flex w-full items-center gap-3 border-b border-border/70 px-6 py-4 text-left text-body text-muted-foreground"
         >
           <span className="size-5" />
           <span className="flex-1">{label}</span>
@@ -359,7 +359,7 @@ export function SettingsDrawer({
       }
     >
       <div className="px-6 py-4">
-        <div className="flex items-center justify-between text-[0.9375rem]">
+        <div className="flex items-center justify-between text-body">
           <span className="font-semibold">Calendar zoom</span>
           <span>{ZOOM_LEVELS[draft.zoom]?.label}</span>
         </div>
@@ -376,8 +376,8 @@ export function SettingsDrawer({
         <div className="my-6 h-px bg-border" />
         <label className="flex cursor-pointer items-start justify-between gap-6">
           <span>
-            <span className="block text-[0.9375rem]">Show quick actions on calendar</span>
-            <span className="block text-[0.8125rem] text-muted-foreground">
+            <span className="block text-body">Show quick actions on calendar</span>
+            <span className="block text-caption text-muted-foreground">
               Quickly add appointments or blocked time by clicking on a calendar slot
             </span>
           </span>
@@ -563,7 +563,7 @@ export function WaitlistDrawer({
           ) : undefined
         }
       >
-        <div className="flex items-center gap-2 px-6 pb-4 text-[0.875rem]">
+        <div className="flex items-center gap-2 px-6 pb-4 text-body">
           {steps.map(([key, label], index) => (
             <span key={key} className="flex items-center gap-2">
               {index ? <CaretRight size={12} className="text-muted-foreground" /> : null}
@@ -597,7 +597,7 @@ export function WaitlistDrawer({
                 <span className="flex size-12 items-center justify-center rounded-full bg-accent text-primary">
                   <Plus size={20} />
                 </span>
-                <span className="text-[0.9375rem] font-semibold">Walk-In</span>
+                <span className="text-body font-semibold">Walk-In</span>
               </button>
               {(clients.data ?? [])
                 .filter(
@@ -621,10 +621,10 @@ export function WaitlistDrawer({
                       {client.first_name[0]}
                     </span>
                     <span>
-                      <span className="block text-[0.9375rem] font-semibold">
+                      <span className="block text-body font-semibold">
                         {client.first_name} {client.last_name}
                       </span>
-                      <span className="block text-[0.8125rem] text-muted-foreground">
+                      <span className="block text-caption text-muted-foreground">
                         {client.email}
                       </span>
                     </span>
@@ -635,7 +635,7 @@ export function WaitlistDrawer({
         ) : step === "time" ? (
           <div className="grid grid-cols-2 gap-4 px-6">
             <label>
-              <span className="mb-2 block text-[0.9375rem] font-semibold">Date</span>
+              <span className="mb-2 block text-body font-semibold">Date</span>
               <input
                 type="date"
                 value={picked.date}
@@ -644,7 +644,7 @@ export function WaitlistDrawer({
               />
             </label>
             <label>
-              <span className="mb-2 block text-[0.9375rem] font-semibold">Start time</span>
+              <span className="mb-2 block text-body font-semibold">Start time</span>
               <select
                 value={picked.time}
                 onChange={(event) => setPicked({ ...picked, time: event.target.value })}
@@ -673,8 +673,8 @@ export function WaitlistDrawer({
                     : "border-border hover:bg-secondary",
                 )}
               >
-                <span className="text-[0.9375rem] font-medium">{service.name}</span>
-                <span className="text-[0.8125rem] text-muted-foreground">
+                <span className="text-body font-medium">{service.name}</span>
+                <span className="text-caption text-muted-foreground">
                   {service.duration_minutes} min
                 </span>
               </button>
@@ -709,7 +709,7 @@ export function WaitlistDrawer({
               setPicked({ client: null, date: "", time: "any", serviceId: "" });
               setStep("client");
             }}
-            className="inline-flex h-10 items-center rounded-full bg-ink px-5 text-[0.875rem] font-semibold text-ink-foreground"
+            className="inline-flex h-10 items-center rounded-full bg-ink px-5 text-body font-semibold text-ink-foreground"
           >
             Add
           </button>
@@ -719,13 +719,13 @@ export function WaitlistDrawer({
       <div className="flex items-center justify-between gap-3 px-6 pb-4">
         <button
           type="button"
-          className="inline-flex h-10 items-center gap-2 rounded-full border border-border px-4 text-[0.875rem]"
+          className="inline-flex h-10 items-center gap-2 rounded-full border border-border px-4 text-body"
         >
           All upcoming <CaretDown size={12} />
         </button>
         <button
           type="button"
-          className="inline-flex h-10 items-center gap-2 rounded-full border border-border px-4 text-[0.875rem]"
+          className="inline-flex h-10 items-center gap-2 rounded-full border border-border px-4 text-body"
         >
           Created (oldest first)
         </button>
@@ -737,7 +737,7 @@ export function WaitlistDrawer({
             type="button"
             onClick={() => setTab(key)}
             className={cn(
-              "-mb-px border-b-2 pb-3 text-[0.9375rem] capitalize",
+              "-mb-px border-b-2 pb-3 text-body capitalize",
               tab === key
                 ? "border-foreground font-semibold"
                 : "border-transparent text-muted-foreground",
@@ -749,14 +749,14 @@ export function WaitlistDrawer({
         ))}
       </div>
       {entries.data?.missing ? (
-        <div className="m-6 rounded-xl bg-[#fff6e5] p-4 text-[0.875rem] text-[#7a4b00]">
+        <div className="m-6 rounded-xl bg-[#fff6e5] p-4 text-body text-[#7a4b00]">
           {MISSING_TABLE_MESSAGE}
         </div>
       ) : visible.length === 0 ? (
         <div className="flex flex-col items-center px-6 py-20 text-center">
           <ClockCountdown size={40} className="text-primary" />
-          <p className="mt-4 text-[1.0625rem] font-semibold">No waitlist entries</p>
-          <p className="mt-1 text-[0.875rem] text-muted-foreground">
+          <p className="mt-4 text-heading font-semibold">No waitlist entries</p>
+          <p className="mt-1 text-body text-muted-foreground">
             You don&apos;t have any clients on the waitlist
           </p>
         </div>
@@ -764,12 +764,12 @@ export function WaitlistDrawer({
         <div className="divide-y divide-border">
           {visible.map((entry) => (
             <div key={entry.id} className="px-6 py-4">
-              <p className="text-[0.9375rem] font-semibold">
+              <p className="text-body font-semibold">
                 {entry.clients
                   ? `${entry.clients.first_name} ${entry.clients.last_name ?? ""}`
                   : "Walk-In"}
               </p>
-              <p className="text-[0.8125rem] text-muted-foreground">
+              <p className="text-caption text-muted-foreground">
                 {entry.services?.name ?? "Any service"} · {entry.preferred_date ?? "Any date"} ·{" "}
                 {entry.preferred_time ?? "Any time"}
               </p>

@@ -110,7 +110,7 @@ const upcomingChartConfig = {
   cancelled: { label: "Cancelled", color: "var(--color-destructive)" },
 } satisfies ChartConfig;
 
-const AXIS_TICK = { fontSize: 11, fill: "var(--color-muted-foreground)" };
+const AXIS_TICK = { fontSize: 12, fill: "var(--color-muted-foreground)" };
 
 function compactMoney(value: number, currency: string) {
   try {
@@ -128,7 +128,7 @@ function compactMoney(value: number, currency: string) {
 
 function ChartLegend({ items }: { items: Array<{ label: string; color: string }> }) {
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-5 text-[0.8125rem] text-foreground">
+    <div className="mt-3 flex flex-wrap items-center gap-5 text-body text-foreground">
       {items.map((item) => (
         <span key={item.label} className="flex items-center gap-2">
           <span className="size-2 rounded-full" style={{ background: item.color }} />
@@ -244,7 +244,7 @@ function DashboardCard({
         <div className="min-w-0">
           <CardTitle className="text-xl font-semibold leading-7">{title}</CardTitle>
           {subtitle ? (
-            <CardDescription className="text-[0.9375rem] leading-5">{subtitle}</CardDescription>
+            <CardDescription className="text-body leading-5">{subtitle}</CardDescription>
           ) : null}
         </div>
         {action ?? (menu ? (
@@ -296,9 +296,9 @@ function TimePeriodFilter({
         sideOffset={2}
         className="w-[19.25rem] rounded-lg border-border bg-popover p-4 shadow-card"
       >
-        <label className="text-sm font-semibold leading-none text-popover-foreground">Time period</label>
+        <label className="text-body font-semibold leading-none text-popover-foreground">Time period</label>
         <Select value={draft} onValueChange={(next) => setDraft(next as TimePeriod)}>
-          <SelectTrigger className="mt-2 h-11 rounded-md border-input bg-card px-4 text-sm font-medium">
+          <SelectTrigger className="mt-2 h-11 rounded-md border-input bg-card px-4 text-body font-medium">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -313,14 +313,14 @@ function TimePeriodFilter({
           <Button
             type="button"
             variant="outline"
-            className="h-11 rounded-full px-5 text-sm font-semibold"
+            className="h-11 rounded-full px-5 text-body font-semibold"
             onClick={() => setOpen(false)}
           >
             Close
           </Button>
           <Button
             type="button"
-            className="h-11 rounded-full bg-ink px-6 text-sm font-semibold text-ink-foreground shadow-none hover:bg-ink/90"
+            className="h-11 rounded-full bg-ink px-6 text-body font-semibold text-ink-foreground shadow-none hover:bg-ink/90"
             onClick={() => {
               onApply(draft);
               setOpen(false);
@@ -346,8 +346,8 @@ function EmptyState({
   return (
     <div className="flex min-h-52 flex-1 flex-col items-center justify-center px-6 pb-6 text-center">
       <Icon size={40} weight="regular" className="text-primary" />
-      <p className="mt-4 text-[1.0625rem] font-semibold leading-6 text-foreground">{title}</p>
-      <p className="mt-1 max-w-xs text-[0.8125rem] leading-5 text-muted-foreground">{children}</p>
+      <p className="mt-4 text-title font-semibold text-foreground">{title}</p>
+      <p className="mt-1 max-w-xs text-body text-muted-foreground">{children}</p>
     </div>
   );
 }
@@ -366,7 +366,7 @@ export function StatusBadge({ status }: { status: string }) {
   return (
     <span
       className={cn(
-        "inline-flex h-6 items-center rounded-full px-3 text-[0.8125rem] font-medium leading-4",
+        "inline-flex h-6 items-center rounded-full px-3 text-caption font-medium leading-4",
         STATUS_PILL[status] ?? "bg-muted text-muted-foreground",
       )}
     >
@@ -406,25 +406,25 @@ function AppointmentList({
           className="flex gap-4 border-b border-border/70 px-0 py-4 last:border-b-0"
         >
           <div className="w-7 shrink-0 pt-2.5 text-center">
-            <span className="block text-[0.9375rem] font-semibold leading-5 tabular-nums text-foreground">
+            <span className="block text-heading font-semibold tabular-nums text-foreground">
               {day.format(appointment.start)}
             </span>
-            <span className="block text-[0.8125rem] leading-5 text-foreground">
+            <span className="block text-body text-foreground">
               {month.format(appointment.start)}
             </span>
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[0.8125rem] leading-5 text-muted-foreground">
+              <span className="text-body text-muted-foreground">
                 {compactDate ? weekday.format(appointment.start) : fullDate.format(appointment.start)}{" "}
                 {time.format(appointment.start)}
               </span>
               <StatusBadge status={appointment.status} />
             </div>
-            <p className="mt-0.5 truncate text-[0.9375rem] font-semibold leading-6 text-foreground">
+            <p className="mt-0.5 truncate text-heading font-semibold text-foreground">
               {appointment.serviceNames.join(", ")}
             </p>
-            <p className="truncate text-[0.8125rem] leading-5 text-muted-foreground">
+            <p className="truncate text-body text-muted-foreground">
               {appointment.clientName}, {formatDuration(appointment.durationMinutes)} with{" "}
               {appointment.teamNames.map((name) => name.split(" ")[0]).join(", ")}
             </p>
@@ -446,7 +446,7 @@ function RankTable({
 }) {
   return (
     <div className="flex flex-1 flex-col">
-      <div className="grid grid-cols-[1fr_7rem_7rem] border-b border-border/70 px-6 py-4 text-[0.8125rem] font-semibold text-foreground">
+      <div className="grid grid-cols-[1fr_7rem_7rem] border-b border-border/70 px-6 py-4 text-body font-semibold text-foreground">
         <span>{label}</span>
         <span className="text-right">This month</span>
         <span className="text-right">Last month</span>
@@ -456,7 +456,7 @@ function RankTable({
           {rows.map((row) => (
             <div
               key={row.key}
-              className="grid grid-cols-[1fr_7rem_7rem] border-b border-border/70 px-6 py-3.5 text-[0.8125rem] text-foreground last:border-b-0"
+              className="grid grid-cols-[1fr_7rem_7rem] border-b border-border/70 px-6 py-3.5 text-caption text-foreground last:border-b-0"
             >
               <span className="truncate">{row.name}</span>
               <span className="text-right tabular-nums">{row.current}</span>
@@ -664,7 +664,7 @@ export function HomeDashboard() {
     return (
       <div className="mx-auto w-full max-w-6xl p-6">
         <Card className="rounded-lg shadow-none">
-          <CardContent className="p-8 text-sm text-muted-foreground">
+          <CardContent className="p-8 text-body text-muted-foreground">
             The dashboard could not be loaded. Please refresh and try again.
           </CardContent>
         </Card>
@@ -687,10 +687,10 @@ export function HomeDashboard() {
           action={<TimePeriodFilter value={timePeriod} onApply={setTimePeriod} />}
         >
           <CardContent className="flex flex-1 flex-col px-6 pb-6 pt-0">
-            <p className="text-[1.75rem] font-semibold leading-9 tabular-nums text-foreground">
+            <p className="text-display font-semibold leading-9 tabular-nums text-foreground">
               {money(dashboard.recentSalesTotal)}
             </p>
-            <div className="mt-6 text-[0.8125rem] leading-5 text-muted-foreground">
+            <div className="mt-6 text-body text-muted-foreground">
               <p>
                 Appointments <span className="font-semibold text-foreground">{dashboard.recentCount}</span>
               </p>
@@ -736,10 +736,10 @@ export function HomeDashboard() {
         <DashboardCard title="Upcoming appointments" subtitle="Next 7 days" menu className="lg:min-h-[33.75rem]">
           {upcomingTotal ? (
             <CardContent className="flex flex-1 flex-col px-6 pb-6 pt-0">
-              <p className="text-[1.75rem] font-semibold leading-9 tabular-nums text-foreground">
+              <p className="text-display font-semibold leading-9 tabular-nums text-foreground">
                 {upcomingTotal} booked
               </p>
-              <div className="mt-6 text-[0.8125rem] leading-5 text-muted-foreground">
+              <div className="mt-6 text-body text-muted-foreground">
                 <p>
                   Confirmed appointments{" "}
                   <span className="font-semibold text-foreground">{dashboard.upcomingTotals.confirmed}</span>

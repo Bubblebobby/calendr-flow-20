@@ -212,7 +212,7 @@ export function ClientSegments() {
             type="button"
             onClick={() => setTab(key)}
             className={cn(
-              "h-9 rounded-full px-4 text-[0.875rem] font-semibold",
+              "h-9 rounded-full px-4 text-body font-semibold",
               tab === key ? "bg-ink text-ink-foreground" : "hover:bg-secondary",
             )}
           >
@@ -224,19 +224,19 @@ export function ClientSegments() {
         {list.map((segment) => (
           <div key={segment.title} className="flex items-center justify-between gap-4 px-5 py-4">
             <div className="min-w-0">
-              <p className="flex items-center gap-2 text-[0.9375rem] font-semibold">
+              <p className="flex items-center gap-2 text-body font-semibold">
                 {segment.title}
                 <span className="rounded-full bg-secondary px-2 text-[0.75rem] font-medium text-muted-foreground">
                   {segment.ids.length}
                 </span>
               </p>
-              <p className="text-[0.8125rem] text-muted-foreground">{segment.body}</p>
+              <p className="text-caption text-muted-foreground">{segment.body}</p>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-border px-4 text-[0.875rem] font-semibold hover:bg-secondary"
+                  className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-border px-4 text-body font-semibold hover:bg-secondary"
                 >
                   Actions <CaretDown size={12} weight="bold" />
                 </button>
@@ -244,13 +244,13 @@ export function ClientSegments() {
               <DropdownMenuContent align="end" className="w-52 rounded-xl p-1.5">
                 <DropdownMenuItem
                   onSelect={() => setViewing({ title: segment.title, ids: segment.ids })}
-                  className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                  className="rounded-lg px-3 py-2 text-body"
                 >
                   View clients
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={() => toast("Blast campaigns arrive with Marketing")}
-                  className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                  className="rounded-lg px-3 py-2 text-body"
                 >
                   Send a campaign
                 </DropdownMenuItem>
@@ -273,15 +273,15 @@ export function ClientSegments() {
             </button>
           </div>
           <div className="flex h-full w-[30rem] max-w-[calc(100vw-4rem)] flex-col border-l border-border bg-card shadow-[-12px_0_32px_-12px_rgb(0_0_0/0.2)]">
-            <h2 className="px-6 pb-1 pt-6 text-[1.75rem] font-semibold">
+            <h2 className="px-6 pb-1 pt-6 text-display font-semibold">
               {viewing.title}
             </h2>
-            <p className="px-6 pb-4 text-[0.875rem] text-muted-foreground">
+            <p className="px-6 pb-4 text-body text-muted-foreground">
               {segmentClients.length} clients
             </p>
             <div className="min-h-0 flex-1 overflow-y-auto px-3">
               {segmentClients.length === 0 ? (
-                <p className="px-3 py-10 text-center text-[0.875rem] text-muted-foreground">
+                <p className="px-3 py-10 text-center text-body text-muted-foreground">
                   No clients in this segment yet.
                 </p>
               ) : (
@@ -296,10 +296,10 @@ export function ClientSegments() {
                       {client.first_name[0]}
                     </span>
                     <span>
-                      <span className="block text-[0.9375rem] font-medium">
+                      <span className="block text-body font-medium">
                         {[client.first_name, client.last_name].filter(Boolean).join(" ")}
                       </span>
-                      <span className="block text-[0.8125rem] text-muted-foreground">
+                      <span className="block text-caption text-muted-foreground">
                         {client.email}
                       </span>
                     </span>
@@ -333,8 +333,8 @@ export function ClientLoyalty() {
       }
       art={
         <div className="rounded-3xl bg-card p-5 shadow-lg">
-          <p className="text-[0.8125rem] text-muted-foreground">Gold member</p>
-          <p className="text-2xl font-bold">2,450 pts</p>
+          <p className="text-caption text-muted-foreground">Gold member</p>
+          <p className="text-2xl font-semibold">2,450 pts</p>
           <div className="mt-3 h-2 rounded-full bg-secondary">
             <div className="h-2 w-2/3 rounded-full bg-primary" />
           </div>
@@ -342,7 +342,7 @@ export function ClientLoyalty() {
           {["Free blow dry", "10% off colour", "Refer a friend"].map((reward) => (
             <div
               key={reward}
-              className="mt-2 flex items-center justify-between rounded-xl border border-border px-3 py-2 text-[0.8125rem]"
+              className="mt-2 flex items-center justify-between rounded-xl border border-border px-3 py-2 text-caption"
             >
               {reward}
               <Star size={14} weight="fill" className="text-primary" />
@@ -371,13 +371,13 @@ export function OnlineReputation() {
           <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-card text-primary">
             <Play size={20} weight="fill" />
           </span>
-          <p className="text-[0.9375rem]">
+          <p className="text-body">
             Explore tools to get client reviews that grow your business.
           </p>
           <button
             type="button"
             onClick={() => setVideoOpen(false)}
-            className="ml-auto text-[0.875rem] font-semibold hover:underline"
+            className="ml-auto text-body font-semibold hover:underline"
           >
             Dismiss
           </button>
@@ -395,7 +395,7 @@ export function OnlineReputation() {
             type="button"
             onClick={() => setTab(key)}
             className={cn(
-              "h-9 rounded-full px-4 text-[0.875rem] font-semibold",
+              "h-9 rounded-full px-4 text-body font-semibold",
               tab === key ? "bg-ink text-ink-foreground" : "hover:bg-secondary",
             )}
           >
@@ -412,16 +412,16 @@ export function OnlineReputation() {
               ["Response rate", "—"],
             ].map(([label, value]) => (
               <div key={label} className="rounded-2xl border border-border bg-card p-5">
-                <p className="text-[0.9375rem] font-semibold">{label}</p>
-                <p className="mt-2 text-[1.75rem] font-semibold">{value}</p>
+                <p className="text-body font-semibold">{label}</p>
+                <p className="mt-2 text-display font-semibold">{value}</p>
               </div>
             ))}
           </div>
           <div className="rounded-2xl border border-border bg-card p-5">
-            <p className="text-[1.0625rem] font-semibold">No reviews yet</p>
+            <p className="text-heading font-semibold">No reviews yet</p>
             <div className="mt-4 space-y-2">
               {[5, 4, 3, 2, 1].map((stars) => (
-                <div key={stars} className="flex items-center gap-3 text-[0.875rem]">
+                <div key={stars} className="flex items-center gap-3 text-body">
                   <span className="w-3">{stars}</span>
                   <Star size={14} weight="fill" className="text-[#f5b301]" />
                   <div className="h-2 flex-1 rounded-full bg-secondary" />
@@ -434,8 +434,8 @@ export function OnlineReputation() {
             <div className="flex items-center gap-3">
               <GoogleLogo size={28} weight="bold" />
               <div>
-                <p className="text-[0.9375rem] font-semibold">Link your Google account</p>
-                <p className="text-[0.8125rem] text-muted-foreground">
+                <p className="text-body font-semibold">Link your Google account</p>
+                <p className="text-caption text-muted-foreground">
                   View and manage your Google reviews in one place
                 </p>
               </div>
@@ -452,8 +452,8 @@ export function OnlineReputation() {
       ) : (
         <div className="flex flex-col items-center rounded-2xl border border-border bg-card px-6 py-16 text-center">
           <Star size={40} weight="duotone" className="text-primary" />
-          <p className="mt-4 text-[1.0625rem] font-semibold">No reviews yet</p>
-          <p className="mt-1 max-w-sm text-[0.875rem] text-muted-foreground">
+          <p className="mt-4 text-heading font-semibold">No reviews yet</p>
+          <p className="mt-1 max-w-sm text-body text-muted-foreground">
             Reviews appear here once clients rate their visits after online booking.
           </p>
         </div>

@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 
 /** Header-size button (48px, 17px semibold), Fresha's Options/Add. Add colour classes on top. */
 export const pillButton =
-  "inline-flex h-12 items-center justify-center gap-2 rounded-full px-5 text-[1.0625rem] font-semibold transition-colors disabled:opacity-50";
+  "inline-flex h-12 items-center justify-center gap-2 rounded-full px-5 text-heading font-semibold transition-colors disabled:opacity-50";
 
 /** Title + subtitle on the left, actions on the right — Fresha's list page header. */
 export function PageHeader({
@@ -25,13 +25,13 @@ export function PageHeader({
   return (
     <div className="flex items-start justify-between gap-4">
       <div className="min-w-0 flex-1">
-        <h1 className="text-[1.75rem] font-semibold leading-9 text-foreground">
+        <h1 className="text-display font-semibold leading-9 text-foreground">
           {title}
         </h1>
-        <p className="mt-1 max-w-xl text-[0.9375rem] text-muted-foreground">
+        <p className="mt-1 max-w-xl text-body text-muted-foreground">
           {subtitle}{" "}
           {learnMore ? (
-            <span className="cursor-pointer font-medium text-primary hover:underline">
+            <span className="cursor-pointer text-primary hover:underline">
               Learn more
             </span>
           ) : null}
@@ -74,7 +74,7 @@ export function SearchBox({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="h-full min-w-0 flex-1 bg-transparent text-[0.9375rem] outline-none placeholder:text-muted-foreground"
+        className="h-full min-w-0 flex-1 bg-transparent text-body outline-none placeholder:text-placeholder"
       />
     </label>
   );
@@ -94,7 +94,7 @@ export function ChipButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex h-9 items-center gap-2 rounded-full border bg-card px-4 text-[0.9375rem] font-medium transition-colors hover:bg-secondary data-[state=open]:bg-secondary",
+        "inline-flex h-9 items-center gap-2 rounded-full border bg-card px-4 text-body font-medium transition-colors hover:bg-secondary data-[state=open]:bg-secondary",
         active ? "border-primary text-primary" : "border-input",
       )}
     >
@@ -270,7 +270,7 @@ export function DateRangeButton({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="inline-flex h-9 items-center gap-2 rounded-full border border-input bg-card px-4 text-[0.9375rem] font-medium transition-colors hover:bg-secondary data-[state=open]:bg-secondary"
+          className="inline-flex h-9 items-center gap-2 rounded-full border border-input bg-card px-4 text-body font-medium transition-colors hover:bg-secondary data-[state=open]:bg-secondary"
         >
           {rangeLabel(value)}
           <CaretDown size={12} weight="bold" />
@@ -281,12 +281,12 @@ export function DateRangeButton({
         sideOffset={6}
         className="w-[min(40rem,calc(100vw-2rem))] rounded-2xl p-4 shadow-xl"
       >
-        <label className="block text-[0.875rem] font-semibold">
+        <label className="block text-body font-semibold">
           Date range
           <select
             value={draft.preset}
             onChange={(event) => setDraft(makeRange(event.target.value as RangePreset))}
-            className="mt-2 h-11 w-full rounded-lg border border-border bg-card px-3 text-[0.9375rem] font-normal"
+            className="mt-2 h-11 w-full rounded-lg border border-border bg-card px-3 text-body font-normal"
           >
             {(Object.keys(RANGE_LABELS) as RangePreset[]).map((key) => (
               <option key={key} value={key}>
@@ -297,7 +297,7 @@ export function DateRangeButton({
         </label>
         <div className="mt-3 grid grid-cols-2 gap-3">
           {(["from", "to"] as const).map((edge) => (
-            <label key={edge} className="text-[0.875rem] font-semibold">
+            <label key={edge} className="text-body font-semibold">
               {edge === "from" ? "Starting Date" : "Ending Date"}
               <input
                 type="date"
@@ -305,7 +305,7 @@ export function DateRangeButton({
                 onChange={(event) =>
                   setDraft({ ...draft, preset: "custom", [edge]: fromIso(event.target.value) })
                 }
-                className="mt-2 h-11 w-full rounded-lg border border-border px-3 text-[0.9375rem] font-normal"
+                className="mt-2 h-11 w-full rounded-lg border border-border px-3 text-body font-normal"
               />
             </label>
           ))}
@@ -413,12 +413,12 @@ export function FilterSelect({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="block text-[0.9375rem] font-semibold">
+    <label className="block text-body font-semibold">
       {label}
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-2 h-12 w-full rounded-lg border border-border bg-card px-4 text-[0.9375rem] font-normal"
+        className="mt-2 h-12 w-full rounded-lg border border-border bg-card px-4 text-body font-normal"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
@@ -445,8 +445,8 @@ export function EmptyCard({
   return (
     <div className="flex flex-col items-center rounded-2xl border border-border bg-card px-6 py-16 text-center">
       <span className="text-primary">{icon}</span>
-      <p className="mt-4 text-[1.0625rem] font-semibold">{title}</p>
-      {body ? <p className="mt-1 max-w-sm text-[0.875rem] text-muted-foreground">{body}</p> : null}
+      <p className="mt-4 text-heading font-semibold">{title}</p>
+      {body ? <p className="mt-1 max-w-sm text-body text-muted-foreground">{body}</p> : null}
       {action ? <div className="mt-4">{action}</div> : null}
     </div>
   );
@@ -473,12 +473,12 @@ export function FeatureIntro({
   return (
     <div className="grid items-center gap-10 py-6 lg:grid-cols-[1fr_minmax(16rem,22rem)]">
       <div>
-        <p className="text-[0.8125rem] font-semibold tracking-wide text-[#1f8a3e]">{eyebrow}</p>
+        <p className="text-caption font-semibold tracking-wide text-[#1f8a3e]">{eyebrow}</p>
         <h1 className="mt-3 text-[2.25rem] font-semibold leading-tight">{title}</h1>
         <p className="mt-4 max-w-lg text-[1rem] text-muted-foreground">{body}</p>
         <ul className="mt-5 space-y-3">
           {bullets.map((bullet) => (
-            <li key={bullet} className="flex items-start gap-3 text-[0.9375rem]">
+            <li key={bullet} className="flex items-start gap-3 text-body">
               <span className="mt-0.5 text-foreground">✓</span>
               {bullet}
             </li>
@@ -492,7 +492,7 @@ export function FeatureIntro({
           >
             {cta}
           </button>
-          <span className="cursor-pointer text-[0.9375rem] font-semibold hover:underline">
+          <span className="cursor-pointer text-body font-semibold hover:underline">
             Learn more
           </span>
         </div>

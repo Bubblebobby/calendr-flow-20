@@ -314,7 +314,7 @@ export function CalendarPage({
         <div className="surface-card flex max-w-md flex-col items-center gap-3 p-10 text-center">
           <UsersThree size={32} className="text-muted-foreground" />
           <p className="text-base font-semibold text-foreground">No team members yet</p>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-body text-muted-foreground">
             The calendar shows one column per active team member. Add your first team member to
             start scheduling appointments.
           </p>
@@ -452,7 +452,7 @@ export function CalendarPage({
           style={{ left: hovered.x, top: hovered.y }}
           role="status"
         >
-          <div className="flex h-11 items-center justify-between bg-primary px-5 text-sm text-primary-foreground">
+          <div className="flex h-11 items-center justify-between bg-primary px-5 text-body text-primary-foreground">
             <span>
               {formatDateTime(hovered.appointment.start)} -{" "}
               {formatDateTime(hovered.appointment.end)}
@@ -469,7 +469,7 @@ export function CalendarPage({
                   {hovered.appointment.title}
                 </p>
                 {hovered.appointment.email ? (
-                  <p className="truncate text-sm text-muted-foreground">
+                  <p className="truncate text-body text-muted-foreground">
                     {hovered.appointment.email}
                   </p>
                 ) : null}
@@ -480,7 +480,7 @@ export function CalendarPage({
                 <p className="font-semibold text-popover-foreground">
                   {hovered.appointment.serviceName}
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-body text-muted-foreground">
                   {memberName(hovered.member)} ·{" "}
                   {Math.max(
                     0,
@@ -520,7 +520,7 @@ export function CalendarPage({
             tabIndex={-1}
           >
             <div className="flex items-center justify-between bg-secondary/80 px-5 py-3.5">
-              <p className="text-[1.0625rem] font-semibold">{formatTime(quickAction.minutes)}</p>
+              <p className="text-heading font-semibold">{formatTime(quickAction.minutes)}</p>
               <button
                 type="button"
                 aria-label="Close"
@@ -543,7 +543,7 @@ export function CalendarPage({
                   type="button"
                   role="menuitem"
                   onClick={() => handleQuickAction(action)}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-[0.9375rem] hover:bg-secondary"
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-body hover:bg-secondary"
                 >
                   <Icon size={18} />
                   {label}
@@ -555,7 +555,7 @@ export function CalendarPage({
                   setQuickAction(null);
                   setDrawer("settings");
                 }}
-                className="px-3 pb-2 pt-1 text-[0.875rem] font-medium text-primary hover:underline"
+                className="px-3 pb-2 pt-1 text-body font-medium text-primary hover:underline"
               >
                 Quick actions settings
               </button>
@@ -595,10 +595,10 @@ export function CalendarPage({
         <button
           type="button"
           onClick={() => setPanelMinimized(false)}
-          className="fixed bottom-4 left-1/2 z-[60] flex -translate-x-1/2 items-center gap-3 rounded-full border border-border bg-card px-5 py-3 text-sm font-medium text-foreground shadow-lg transition-colors hover:bg-secondary"
+          className="fixed bottom-4 left-1/2 z-[60] flex -translate-x-1/2 items-center gap-3 rounded-full border border-border bg-card px-5 py-3 text-body font-medium text-foreground shadow-lg transition-colors hover:bg-secondary"
         >
           {panel.kind === "new" ? "New appointment" : "Appointment"}
-          <span className="text-xs text-muted-foreground">Reopen</span>
+          <span className="text-caption text-muted-foreground">Reopen</span>
         </button>
       ) : null}
 

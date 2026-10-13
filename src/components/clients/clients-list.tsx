@@ -248,16 +248,16 @@ export function ClientsList() {
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h2 className="text-[1.75rem] font-semibold leading-9 text-foreground">
+            <h2 className="text-display font-semibold leading-9 text-foreground">
               Clients list
             </h2>
-            <span className="rounded-full bg-secondary px-2 text-[0.8125rem] font-semibold text-muted-foreground">
+            <span className="rounded-full bg-secondary px-2 text-caption font-semibold text-muted-foreground">
               {clients.length}
             </span>
           </div>
-          <p className="mt-1 text-[0.9375rem] text-muted-foreground">
+          <p className="mt-1 text-body text-muted-foreground">
             View, add, edit and delete your client&apos;s details.{" "}
-            <span className="cursor-pointer font-medium text-primary hover:underline">
+            <span className="cursor-pointer text-primary hover:underline">
               Learn more
             </span>
           </p>
@@ -280,23 +280,23 @@ export function ClientsList() {
                 onSelect={() =>
                   toast("Client import (CSV/Excel upload) is coming in a later update")
                 }
-                className="gap-3 rounded-lg px-3 py-2 text-[0.9375rem]"
+                className="gap-3 rounded-lg px-3 py-2 text-body"
               >
                 <UploadSimple size={18} /> Import clients
               </DropdownMenuItem>
               <DropdownMenuItem
                 onSelect={() => toast("Merging duplicate profiles is coming in a later update")}
-                className="gap-3 rounded-lg px-3 py-2 text-[0.9375rem]"
+                className="gap-3 rounded-lg px-3 py-2 text-body"
               >
                 <ArrowsMerge size={18} /> Merge clients
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuLabel className="px-3 py-1.5 text-[0.875rem] font-semibold">
+              <DropdownMenuLabel className="px-3 py-1.5 text-body font-semibold">
                 Export
               </DropdownMenuLabel>
               <DropdownMenuItem
                 onSelect={() => toast("Excel export arrives with Reports, CSV works now")}
-                className="gap-3 rounded-lg px-3 py-2 text-[0.9375rem]"
+                className="gap-3 rounded-lg px-3 py-2 text-body"
               >
                 <FileXls size={18} /> Excel
               </DropdownMenuItem>
@@ -307,7 +307,7 @@ export function ClientsList() {
                     `Exported ${filtered.length} client${filtered.length === 1 ? "" : "s"}`,
                   );
                 }}
-                className="gap-3 rounded-lg px-3 py-2 text-[0.9375rem]"
+                className="gap-3 rounded-lg px-3 py-2 text-body"
               >
                 <FileCsv size={18} /> CSV
               </DropdownMenuItem>
@@ -343,8 +343,8 @@ export function ClientsList() {
             <X size={16} weight="bold" />
           </button>
           <div className="relative max-w-sm">
-            <h3 className="text-xl font-bold">Import your client list</h3>
-            <p className="mt-1 text-[0.875rem] text-white/80">
+            <h3 className="text-xl font-semibold">Import your client list</h3>
+            <p className="mt-1 text-body text-white/80">
               Takes a few minutes and brings your existing clients&apos; details, history and notes
               into Bookly
             </p>
@@ -354,11 +354,11 @@ export function ClientsList() {
                 onClick={() =>
                   toast("Client import (CSV/Excel upload) is coming in a later update")
                 }
-                className="inline-flex h-10 items-center gap-2 rounded-full bg-white px-5 text-[0.875rem] font-semibold text-[#111]"
+                className="inline-flex h-10 items-center gap-2 rounded-full bg-white px-5 text-body font-medium text-[#0d0d0d]"
               >
                 <DownloadSimple size={16} /> Start import
               </button>
-              <span className="cursor-pointer text-[0.875rem] font-semibold hover:underline">
+              <span className="cursor-pointer text-body font-medium hover:underline">
                 Learn more
               </span>
             </div>
@@ -379,7 +379,7 @@ export function ClientsList() {
                 <DropdownMenuItem
                   key={key}
                   onSelect={() => setSort(key)}
-                  className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                  className="rounded-lg px-3 py-2 text-body"
                 >
                   <span className="flex-1">{SORT_LABELS[key]}</span>
                   {sort === key ? <Check size={14} weight="bold" /> : null}
@@ -407,7 +407,7 @@ export function ClientsList() {
       </ListToolbar>
 
       {selected.length > 0 ? (
-        <div className="flex items-center justify-between rounded-2xl border border-border bg-card px-5 py-3 text-[0.875rem]">
+        <div className="flex items-center justify-between rounded-2xl border border-border bg-card px-5 py-3 text-body">
           <span className="font-semibold">{selected.length} selected</span>
           <div className="flex items-center gap-2">
             <button
@@ -450,7 +450,7 @@ export function ClientsList() {
               {["Client name", "Mobile number", "Reviews", "Sales", "Created at"].map((label) => (
                 <th
                   key={label}
-                  className="px-4 py-4 text-[0.8125rem] font-semibold text-foreground"
+                  className="px-4 py-4"
                 >
                   {label}
                 </th>
@@ -463,7 +463,7 @@ export function ClientsList() {
               <tr>
                 <td
                   colSpan={7}
-                  className="px-4 py-16 text-center text-[0.875rem] text-muted-foreground"
+                  className="px-4 py-16 text-center text-body text-muted-foreground"
                 >
                   {clientsQuery.isLoading
                     ? "Loading clients…"
@@ -497,15 +497,15 @@ export function ClientsList() {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-4">
-                    <span className="flex size-14 items-center justify-center rounded-full bg-accent text-[0.9375rem] font-semibold text-primary">
+                    <span className="flex size-14 items-center justify-center rounded-full bg-accent text-heading font-semibold text-primary">
                       {client.first_name[0]?.toUpperCase()}
                     </span>
                     <span>
-                      <span className="block text-[0.9375rem] font-medium text-foreground">
+                      <span className="block text-body font-medium text-foreground">
                         {fullName(client)}
                       </span>
                       {client.email ? (
-                        <span className="block text-[0.8125rem] text-muted-foreground">
+                        <span className="block text-body text-muted-foreground">
                           {client.email}
                         </span>
                       ) : null}
@@ -534,7 +534,7 @@ export function ClientsList() {
                     <DropdownMenuContent align="end" className="w-44 rounded-xl p-1.5">
                       <DropdownMenuItem
                         onSelect={() => setProfileId(client.id)}
-                        className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                        className="rounded-lg px-3 py-2 text-body"
                       >
                         View profile
                       </DropdownMenuItem>
@@ -542,13 +542,13 @@ export function ClientsList() {
                         onSelect={() =>
                           navigate({ to: "/client/$clientId", params: { clientId: client.id } })
                         }
-                        className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                        className="rounded-lg px-3 py-2 text-body"
                       >
                         Edit
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onSelect={() => deleteClient.mutate(client.id)}
-                        className="rounded-lg px-3 py-2 text-[0.9375rem] text-destructive focus:text-destructive"
+                        className="rounded-lg px-3 py-2 text-body text-destructive focus:text-destructive"
                       >
                         Delete
                       </DropdownMenuItem>
@@ -561,13 +561,13 @@ export function ClientsList() {
         </table>
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-4 pb-4 text-[0.8125rem] text-muted-foreground">
+      <div className="flex flex-wrap items-center justify-center gap-4 pb-4 text-body text-muted-foreground">
         <span>
           Viewing{" "}
-          <span className="font-semibold text-foreground">
+          <span className="font-semibold">
             {from} - {to}
           </span>{" "}
-          of <span className="font-semibold text-foreground">{filtered.length}</span> results
+          of <span className="font-semibold">{filtered.length}</span> results
         </span>
         {pageCount > 1 ? (
           <span className="flex items-center gap-2">
@@ -608,7 +608,7 @@ export function ClientsList() {
             </button>
           </div>
           <div className="flex h-full w-[30rem] max-w-[calc(100vw-4rem)] flex-col border-l border-border bg-card shadow-[-12px_0_32px_-12px_rgb(0_0_0/0.2)]">
-            <h2 className="px-6 pb-4 pt-6 text-[1.75rem] font-semibold">All filters</h2>
+            <h2 className="px-6 pb-4 pt-6 text-display font-semibold">All filters</h2>
             <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6">
               {[
                 {
@@ -645,12 +645,12 @@ export function ClientsList() {
                   ],
                 },
               ].map((group) => (
-                <label key={group.key} className="block text-[0.9375rem] font-semibold">
+                <label key={group.key} className="block text-body font-semibold">
                   {group.label}
                   <select
                     value={draft[group.key]}
                     onChange={(event) => setDraft({ ...draft, [group.key]: event.target.value })}
-                    className="mt-2 h-12 w-full rounded-lg border border-border bg-card px-4 text-[0.9375rem] font-normal capitalize"
+                    className="mt-2 h-12 w-full rounded-lg border border-border bg-card px-4 text-body font-normal capitalize"
                   >
                     {group.options.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -660,7 +660,7 @@ export function ClientsList() {
                   </select>
                 </label>
               ))}
-              <p className="text-[0.8125rem] text-muted-foreground">
+              <p className="text-caption text-muted-foreground">
                 Segment, group and blocked-client filters arrive with Client segments and Records.
               </p>
             </div>
