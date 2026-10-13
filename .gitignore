@@ -39,3 +39,4 @@ dist-ssr
 .env.local
 .env.*.local
 .env.lovable-backup
+.env*
