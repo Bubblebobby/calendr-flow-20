@@ -27,10 +27,15 @@ export type BlockedTime = {
 
 export function isMissingTable(error: { code?: string; message?: string } | null | undefined) {
   if (!error) return false;
-  return error.code === "42P01" || error.code === "PGRST205" || /could not find the table|does not exist/i.test(error.message ?? "");
+  return (
+    error.code === "42P01" ||
+    error.code === "PGRST205" ||
+    /could not find the table|does not exist/i.test(error.message ?? "")
+  );
 }
 
-export const MISSING_TABLE_MESSAGE = "This needs a database update first: see notes/lovable-prompts.md";
+export const MISSING_TABLE_MESSAGE =
+  "This needs a database update first: see notes/lovable-prompts.md";
 
 export function useBlockedTimes(businessId: string | undefined, from: Date, to: Date) {
   return useQuery({
@@ -62,7 +67,12 @@ const TIMES = Array.from({ length: 288 }, (_, index) => index * 5);
 const field =
   "h-12 w-full rounded-lg border border-border bg-card px-4 text-[0.9375rem] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20";
 
-export type BlockDraft = { member: TeamMember; date: Date; minutes: number; existing?: BlockedTime };
+export type BlockDraft = {
+  member: TeamMember;
+  date: Date;
+  minutes: number;
+  existing?: BlockedTime;
+};
 
 export function BlockedTimeDrawer({
   draft,
@@ -95,7 +105,9 @@ export function BlockedTimeDrawer({
     const day = existing ? new Date(existing.start_time) : draft.date;
     setType(existing?.block_type ?? "custom");
     setTitle(existing?.title ?? "");
-    setDate(`${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`);
+    setDate(
+      `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`,
+    );
     const startMinutes = existing ? minutesOfDay(new Date(existing.start_time)) : draft.minutes;
     setStart(startMinutes);
     setEnd(existing ? minutesOfDay(new Date(existing.end_time)) : startMinutes + 15);
@@ -139,7 +151,9 @@ export function BlockedTimeDrawer({
       onClose();
     },
     onError: (error: { code?: string; message?: string }) =>
-      toast.error(isMissingTable(error) ? MISSING_TABLE_MESSAGE : (error.message ?? "Could not save")),
+      toast.error(
+        isMissingTable(error) ? MISSING_TABLE_MESSAGE : (error.message ?? "Could not save"),
+      ),
   });
 
   const remove = useMutation({
@@ -173,7 +187,9 @@ export function BlockedTimeDrawer({
       </div>
       <div className="flex h-full w-[30rem] flex-col border-l border-border bg-card shadow-[-12px_0_32px_-12px_rgb(0_0_0/0.2)]">
         <div className="flex items-center justify-between px-6 pb-2 pt-6">
-          <h2 className="text-[1.75rem] font-bold tracking-tight">{draft.existing ? "Edit blocked time" : "Add blocked time"}</h2>
+          <h2 className="text-[1.75rem] font-bold tracking-tight">
+            {draft.existing ? "Edit blocked time" : "Add blocked time"}
+          </h2>
           {draft.existing ? (
             <button
               type="button"
@@ -189,7 +205,12 @@ export function BlockedTimeDrawer({
             <span className="mb-2 block text-[0.9375rem] font-semibold">Block time type</span>
             <div className="flex items-center gap-3">
               {typeOffset > 0 ? (
-                <button type="button" aria-label="Previous" onClick={() => setTypeOffset(0)} className="flex size-10 shrink-0 items-center justify-center rounded-full border border-border">
+                <button
+                  type="button"
+                  aria-label="Previous"
+                  onClick={() => setTypeOffset(0)}
+                  className="flex size-10 shrink-0 items-center justify-center rounded-full border border-border"
+                >
                   <CaretLeft size={16} />
                 </button>
               ) : null}
@@ -204,7 +225,9 @@ export function BlockedTimeDrawer({
                   }}
                   className={cn(
                     "flex h-28 flex-1 flex-col items-center justify-center rounded-xl border text-center",
-                    type === option.id ? "border-primary ring-1 ring-primary" : "border-border hover:bg-secondary",
+                    type === option.id
+                      ? "border-primary ring-1 ring-primary"
+                      : "border-border hover:bg-secondary",
                   )}
                 >
                   <span className="text-xl">{option.emoji}</span>
@@ -237,16 +260,30 @@ export function BlockedTimeDrawer({
             <span className="mb-2 block text-[0.9375rem] font-semibold">
               Title <span className="font-normal text-muted-foreground">(Optional)</span>
             </span>
-            <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="e.g. Lunch meeting" className={field} />
+            <input
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder="e.g. Lunch meeting"
+              className={field}
+            />
           </label>
           <label className="block">
             <span className="mb-2 block text-[0.9375rem] font-semibold">Date</span>
-            <input type="date" value={date} onChange={(event) => setDate(event.target.value)} className={field} />
+            <input
+              type="date"
+              value={date}
+              onChange={(event) => setDate(event.target.value)}
+              className={field}
+            />
           </label>
           <div className="grid grid-cols-2 gap-4">
             <label>
               <span className="mb-2 block text-[0.9375rem] font-semibold">Start time</span>
-              <select value={start} onChange={(event) => setStart(Number(event.target.value))} className={field}>
+              <select
+                value={start}
+                onChange={(event) => setStart(Number(event.target.value))}
+                className={field}
+              >
                 {TIMES.map((minutes) => (
                   <option key={minutes} value={minutes}>
                     {formatTime(minutes)}
@@ -256,7 +293,11 @@ export function BlockedTimeDrawer({
             </label>
             <label>
               <span className="mb-2 block text-[0.9375rem] font-semibold">End time</span>
-              <select value={end} onChange={(event) => setEnd(Number(event.target.value))} className={field}>
+              <select
+                value={end}
+                onChange={(event) => setEnd(Number(event.target.value))}
+                className={field}
+              >
                 {TIMES.map((minutes) => (
                   <option key={minutes} value={minutes}>
                     {formatTime(minutes)}
@@ -264,13 +305,19 @@ export function BlockedTimeDrawer({
                 ))}
               </select>
               <span className="mt-1 block text-[0.8125rem] text-muted-foreground">
-                {duration > 0 ? `${duration >= 60 ? `${Math.floor(duration / 60)} hr ` : ""}${duration % 60 ? `${duration % 60} min ` : ""}duration` : "End must be after start"}
+                {duration > 0
+                  ? `${duration >= 60 ? `${Math.floor(duration / 60)} hr ` : ""}${duration % 60 ? `${duration % 60} min ` : ""}duration`
+                  : "End must be after start"}
               </span>
             </label>
           </div>
           <label className="block">
             <span className="mb-2 block text-[0.9375rem] font-semibold">Team members</span>
-            <select value={memberId} onChange={(event) => setMemberId(event.target.value)} className={field}>
+            <select
+              value={memberId}
+              onChange={(event) => setMemberId(event.target.value)}
+              className={field}
+            >
               {team.map((member) => (
                 <option key={member.id} value={member.id}>
                   {memberName(member)}
@@ -283,7 +330,8 @@ export function BlockedTimeDrawer({
             <select
               value={frequency}
               onChange={(event) => {
-                if (event.target.value !== "none") toast("Repeating blocked time arrives with the next database update");
+                if (event.target.value !== "none")
+                  toast("Repeating blocked time arrives with the next database update");
                 setFrequency("none");
               }}
               className={field}
@@ -311,7 +359,12 @@ export function BlockedTimeDrawer({
             />
           </label>
           <label className="flex items-center gap-3 text-[0.9375rem]">
-            <input type="checkbox" checked={onlineAllowed} onChange={(event) => setOnlineAllowed(event.target.checked)} className="size-5 accent-[var(--color-primary)]" />
+            <input
+              type="checkbox"
+              checked={onlineAllowed}
+              onChange={(event) => setOnlineAllowed(event.target.checked)}
+              className="size-5 accent-[var(--color-primary)]"
+            />
             Online booking allowed during blocked time
           </label>
         </div>
@@ -342,7 +395,8 @@ export function BlockedTimeChip({ block, onClick }: { block: BlockedTime; onClic
       className="flex h-full w-full flex-col justify-start overflow-hidden rounded-[4px] bg-[#c9c9cf] px-1.5 py-1 text-left text-[0.8125rem] leading-[1.15rem] text-[#0d0d0d] hover:brightness-95"
     >
       <span className="block truncate">
-        {formatTime(minutesOfDay(new Date(block.start_time)))} - {formatTime(minutesOfDay(new Date(block.end_time)))}{" "}
+        {formatTime(minutesOfDay(new Date(block.start_time)))} -{" "}
+        {formatTime(minutesOfDay(new Date(block.end_time)))}{" "}
         <span className="font-semibold">{block.title || "Blocked time"}</span>
       </span>
     </button>

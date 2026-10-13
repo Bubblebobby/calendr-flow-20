@@ -26,7 +26,11 @@ export function EventChip({
   appointment: CalendarEvent;
   member: TeamMember | undefined;
   showEnd: boolean;
-  onHover: (event: React.MouseEvent<HTMLElement>, appointment: CalendarEvent, member: TeamMember) => void;
+  onHover: (
+    event: React.MouseEvent<HTMLElement>,
+    appointment: CalendarEvent,
+    member: TeamMember,
+  ) => void;
   onLeave: () => void;
   onClick: (appointment: CalendarEvent) => void;
 }) {
@@ -46,7 +50,8 @@ export function EventChip({
       }}
     >
       {formatDateTime(appointment.start)}
-      {showEnd ? ` - ${formatDateTime(appointment.end)}` : ""} <span className="font-semibold">{appointment.title}</span>
+      {showEnd ? ` - ${formatDateTime(appointment.end)}` : ""}{" "}
+      <span className="font-semibold">{appointment.title}</span>
     </button>
   );
 }
@@ -73,7 +78,11 @@ export function RosterGrid({
   now: Date;
   locale: string;
   onCellClick: (member: TeamMember, date: Date) => void;
-  onEventHover: (event: React.MouseEvent<HTMLElement>, appointment: CalendarEvent, member: TeamMember) => void;
+  onEventHover: (
+    event: React.MouseEvent<HTMLElement>,
+    appointment: CalendarEvent,
+    member: TeamMember,
+  ) => void;
   onEventLeave: () => void;
   onEventClick: (appointment: CalendarEvent) => void;
 }) {
@@ -87,7 +96,10 @@ export function RosterGrid({
         >
           <div />
           {days.map((date) => (
-            <div key={date.toISOString()} className="flex h-[4.25rem] min-w-0 items-center overflow-hidden">
+            <div
+              key={date.toISOString()}
+              className="flex h-[4.25rem] min-w-0 items-center overflow-hidden"
+            >
               <DateHeader date={date} now={now} locale={locale} />
             </div>
           ))}
@@ -107,7 +119,8 @@ export function RosterGrid({
             </div>
             {days.map((date) => {
               const cellEvents = events.filter(
-                (appointment) => appointment.teamMemberId === member.id && sameDay(appointment.start, date),
+                (appointment) =>
+                  appointment.teamMemberId === member.id && sameDay(appointment.start, date),
               );
               return (
                 <div

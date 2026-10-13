@@ -4,6 +4,13 @@ import { Receipt } from "@phosphor-icons/react";
 import { DailySalesSummary } from "@/components/sales/daily-sales-summary";
 import { SalesAppointmentsList } from "@/components/sales/sales-appointments-list";
 import { SalesList } from "@/components/sales/sales-list";
+import {
+  GiftCardsSold,
+  MembershipsSold,
+  PackagesSold,
+  PaymentsList,
+  RegisterIntro,
+} from "@/components/sales/sales-extra-pages";
 
 const TAB_LABELS: Record<string, string> = {
   daily: "Daily sales summary",
@@ -47,6 +54,16 @@ function SalesPage() {
         <SalesAppointmentsList />
       ) : tab === "sales" ? (
         <SalesList />
+      ) : tab === "payments" ? (
+        <PaymentsList />
+      ) : tab === "register" ? (
+        <RegisterIntro />
+      ) : tab === "gift-cards" ? (
+        <GiftCardsSold />
+      ) : tab === "packages" ? (
+        <PackagesSold />
+      ) : tab === "memberships" ? (
+        <MembershipsSold />
       ) : (
         <ComingSoon label={TAB_LABELS[tab] ?? "This section"} />
       )}

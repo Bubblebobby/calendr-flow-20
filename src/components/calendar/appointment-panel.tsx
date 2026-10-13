@@ -8,18 +8,15 @@ import {
   CaretRight,
   Check,
   ClockCounterClockwise,
-  CreditCard,
   Crosshair,
   DotsThreeVertical,
   Heart,
   MagnifyingGlass,
-  Money,
   NotePencil,
   PencilSimple,
   Plus,
   Trash,
   UserPlus,
-  Wallet,
   X,
 } from "@phosphor-icons/react";
 import { toast } from "sonner";
@@ -40,6 +37,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import type { CheckoutStart } from "@/components/sales/checkout-screen";
 import { formatTime, memberName, minutesOfDay, startOfDay, type TeamMember } from "./calendar-data";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -116,8 +114,7 @@ type View =
   | { name: "services"; replaceKey?: string }
   | { name: "edit"; key: string }
   | { name: "activity" }
-  | { name: "repeat" }
-  | { name: "checkout"; step: "cart" | "tip" | "payment" };
+  | { name: "repeat" };
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -155,12 +152,30 @@ const CANCEL_REASONS = [
   "Client not available",
 ];
 
-const TIP_OPTIONS = [0, 10, 18, 25] as const;
-
 const TIME_OPTIONS = Array.from({ length: 288 }, (_, index) => index * 5);
 const DURATION_OPTIONS = [
   ...Array.from({ length: 23 }, (_, index) => (index + 1) * 5), // 5 … 115 min
-  120, 135, 150, 165, 180, 195, 210, 225, 240, 270, 300, 330, 360, 390, 420, 450, 480, 540, 600, 660, 720,
+  120,
+  135,
+  150,
+  165,
+  180,
+  195,
+  210,
+  225,
+  240,
+  270,
+  300,
+  330,
+  360,
+  390,
+  420,
+  450,
+  480,
+  540,
+  600,
+  660,
+  720,
 ];
 
 function durationLabel(minutes: number) {
@@ -220,12 +235,22 @@ function ConfirmModal({
     <Dialog open={open} onOpenChange={(next) => !next && onCancel()}>
       <DialogContent className="max-w-[30rem] rounded-2xl p-9 [&>button]:right-8 [&>button]:top-8">
         <DialogTitle className="text-xl font-semibold">{title}</DialogTitle>
-        <DialogDescription className="mt-3 text-[0.9375rem] leading-6 text-foreground">{body}</DialogDescription>
+        <DialogDescription className="mt-3 text-[0.9375rem] leading-6 text-foreground">
+          {body}
+        </DialogDescription>
         <div className="mt-14 grid grid-cols-2 gap-3">
-          <button type="button" onClick={onCancel} className={cn(pill, "border border-border bg-card hover:bg-secondary")}>
+          <button
+            type="button"
+            onClick={onCancel}
+            className={cn(pill, "border border-border bg-card hover:bg-secondary")}
+          >
             {cancelLabel}
           </button>
-          <button type="button" onClick={onConfirm} className={cn(pill, "bg-ink text-ink-foreground hover:bg-ink/90")}>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className={cn(pill, "bg-ink text-ink-foreground hover:bg-ink/90")}
+          >
             {confirmLabel}
           </button>
         </div>
@@ -269,6 +294,7 @@ export function AppointmentPanel({
   onFocusDate,
   onReschedule,
   onRebook,
+  onCheckout,
 }: {
   target: PanelTarget | null;
   business: CurrentBusiness | null | undefined;
@@ -280,12 +306,13 @@ export function AppointmentPanel({
   onFocusDate: (date: Date) => void;
   onReschedule: (appointmentId: string, itemIds: string[]) => void;
   onRebook: (request: RebookRequest) => void;
+  /** Opens the shared full-width checkout (Sales) for this appointment. */
+  onCheckout: (start: CheckoutStart) => void;
 }) {
   const queryClient = useQueryClient();
   const businessId = business?.id;
   const currency = business?.currency ?? "NGN";
   const money = (value: number) => formatMoney(value, currency, business?.country ?? "");
-  const locale = typeof navigator !== "undefined" ? navigator.language : "en";
   const isNew = target?.kind === "new";
   const appointmentId = target?.kind === "existing" ? target.appointmentId : null;
 
@@ -346,7 +373,10 @@ export function AppointmentPanel({
     },
   });
 
-  const serviceById = useMemo(() => new Map(services.map((service) => [service.id, service])), [services]);
+  const serviceById = useMemo(
+    () => new Map(services.map((service) => [service.id, service])),
+    [services],
+  );
   const memberById = useMemo(() => new Map(team.map((member) => [member.id, member])), [team]);
   const categoryColor = (serviceId: string) => {
     const categoryId = serviceById.get(serviceId)?.category_id;
@@ -371,9 +401,6 @@ export function AppointmentPanel({
   const [cancelOpen, setCancelOpen] = useState(false);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [conflict, setConflict] = useState<string | null>(null);
-  const [tipPercent, setTipPercent] = useState<number | "custom">(0);
-  const [customTip, setCustomTip] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "card" | "other">("cash");
   const [editDraft, setEditDraft] = useState<Line | null>(null);
 
   const targetKey =
@@ -391,9 +418,6 @@ export function AppointmentPanel({
     setServiceQuery("");
     setToPayOpen(false);
     setConflict(null);
-    setTipPercent(0);
-    setCustomTip("");
-    setPaymentMethod("cash");
     if (target?.kind === "new") {
       setDate(startOfDay(target.date));
       setNotes("");
@@ -416,7 +440,11 @@ export function AppointmentPanel({
           return line;
         }),
       );
-      setClient(target.prefill?.clientId ? (clients.find((row) => row.id === target.prefill!.clientId) ?? null) : null);
+      setClient(
+        target.prefill?.clientId
+          ? (clients.find((row) => row.id === target.prefill!.clientId) ?? null)
+          : null,
+      );
       if (prefilled.length) setDirty(true);
     }
     // Existing appointments are initialised from the query below.
@@ -445,14 +473,17 @@ export function AppointmentPanel({
         return line;
       }),
     );
-    if (target.prefill.clientId) setClient(clients.find((row) => row.id === target.prefill!.clientId) ?? null);
+    if (target.prefill.clientId)
+      setClient(clients.find((row) => row.id === target.prefill!.clientId) ?? null);
     setDirty(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [services.length, clients.length, targetKey]);
 
   useEffect(() => {
     if (target?.kind !== "existing" || !existing || existing.id !== target.appointmentId) return;
-    const items = [...existing.appointment_items].sort((a, b) => a.start_time.localeCompare(b.start_time));
+    const items = [...existing.appointment_items].sort((a, b) =>
+      a.start_time.localeCompare(b.start_time),
+    );
     const first = items[0];
     const baseDate = first ? startOfDay(new Date(first.start_time)) : startOfDay(new Date());
     let next: Line[] = items.map((item) => ({
@@ -461,7 +492,9 @@ export function AppointmentPanel({
       serviceId: item.service_id,
       teamMemberId: item.team_member_id,
       start: minutesOfDay(new Date(item.start_time)),
-      duration: Math.round((new Date(item.end_time).getTime() - new Date(item.start_time).getTime()) / 60000),
+      duration: Math.round(
+        (new Date(item.end_time).getTime() - new Date(item.start_time).getTime()) / 60000,
+      ),
       price: Number(item.price ?? 0),
     }));
     let nextDate = baseDate;
@@ -472,7 +505,8 @@ export function AppointmentPanel({
       next = next.map((line) => ({
         ...line,
         start: line.start + offset,
-        teamMemberId: line.teamMemberId === fromMember ? target.moveTo!.member.id : line.teamMemberId,
+        teamMemberId:
+          line.teamMemberId === fromMember ? target.moveTo!.member.id : line.teamMemberId,
       }));
       nextDate = startOfDay(target.moveTo.date);
       moved = true;
@@ -488,11 +522,11 @@ export function AppointmentPanel({
   // ── Derived ──
   const status = existing?.status ?? "booked";
   const total = lines.reduce((sum, line) => sum + line.price, 0);
-  const totalMinutes = lines.reduce((sum, line) => sum + line.duration, 0);
-  const firstStart = lines.length ? Math.min(...lines.map((line) => line.start)) : target?.kind === "new" ? target.minutes : 0;
-  const lastEnd = lines.length ? Math.max(...lines.map((line) => line.start + line.duration)) : firstStart;
-  const tipAmount =
-    tipPercent === "custom" ? Math.max(0, Number(customTip) || 0) : Math.round(total * tipPercent) / 100;
+  const firstStart = lines.length
+    ? Math.min(...lines.map((line) => line.start))
+    : target?.kind === "new"
+      ? target.minutes
+      : 0;
   const isLocked = status === "completed" || status === "cancelled";
   const clientLabel = client ? personName(client) : "Walk-In";
 
@@ -500,20 +534,25 @@ export function AppointmentPanel({
     const term = clientQuery.trim().toLowerCase();
     if (!term) return clients;
     return clients.filter((row) =>
-      [personName(row), row.email, row.phone].filter(Boolean).some((value) => value!.toLowerCase().includes(term)),
+      [personName(row), row.email, row.phone]
+        .filter(Boolean)
+        .some((value) => value!.toLowerCase().includes(term)),
     );
   }, [clients, clientQuery]);
 
   const groupedServices = useMemo(() => {
     const term = serviceQuery.trim().toLowerCase();
-    const visible = services.filter((service) => (term ? service.name.toLowerCase().includes(term) : true));
+    const visible = services.filter((service) =>
+      term ? service.name.toLowerCase().includes(term) : true,
+    );
     const buckets: Array<{ id: string; name: string; items: ServiceRow[] }> = [];
     for (const category of categories) {
       const items = visible.filter((service) => service.category_id === category.id);
       if (items.length) buckets.push({ id: category.id, name: category.name, items });
     }
     const other = visible.filter(
-      (service) => !service.category_id || !categories.some((category) => category.id === service.category_id),
+      (service) =>
+        !service.category_id || !categories.some((category) => category.id === service.category_id),
     );
     if (other.length) buckets.push({ id: "other", name: "Other services", items: other });
     return buckets;
@@ -539,7 +578,12 @@ export function AppointmentPanel({
       if (replaceKey) {
         return current.map((line) =>
           line.key === replaceKey
-            ? { ...line, serviceId: service.id, duration: service.duration_minutes, price: Number(service.price ?? 0) }
+            ? {
+                ...line,
+                serviceId: service.id,
+                duration: service.duration_minutes,
+                price: Number(service.price ?? 0),
+              }
             : line,
         );
       }
@@ -620,7 +664,10 @@ export function AppointmentPanel({
         .eq("id", id);
       if (headerError) throw headerError;
       const previous = existing?.appointment_items ?? [];
-      const { error: deleteError } = await supabase.from("appointment_items").delete().eq("appointment_id", id);
+      const { error: deleteError } = await supabase
+        .from("appointment_items")
+        .delete()
+        .eq("appointment_id", id);
       if (deleteError) throw deleteError;
       const { error: insertError } = await supabase
         .from("appointment_items")
@@ -648,7 +695,9 @@ export function AppointmentPanel({
     onError: (error: unknown) => {
       const err = error as { code?: string; message?: string };
       if (err.code === "23P01" || /exclusion|overlap/i.test(err.message ?? "")) {
-        setConflict("This team member is already booked at that time. Pick another time or team member.");
+        setConflict(
+          "This team member is already booked at that time. Pick another time or team member.",
+        );
         toast.error("Time not available");
         return;
       }
@@ -658,21 +707,30 @@ export function AppointmentPanel({
 
   const setStatus = useMutation({
     mutationFn: async (next: string) => {
-      const { error } = await supabase.from("appointments").update({ status: next }).eq("id", appointmentId!);
+      const { error } = await supabase
+        .from("appointments")
+        .update({ status: next })
+        .eq("id", appointmentId!);
       if (error) throw error;
       return next;
     },
     onSuccess: (next) => {
       refresh();
-      toast.success(`Appointment ${next === "cancelled" ? "cancelled" : `marked as ${STATUS_LABEL[next]?.toLowerCase()}`}`);
+      toast.success(
+        `Appointment ${next === "cancelled" ? "cancelled" : `marked as ${STATUS_LABEL[next]?.toLowerCase()}`}`,
+      );
     },
-    onError: (error: unknown) => toast.error((error as Error).message ?? "Could not update the status"),
+    onError: (error: unknown) =>
+      toast.error((error as Error).message ?? "Could not update the status"),
   });
 
   const saveNote = useMutation({
     mutationFn: async (value: string) => {
       if (!appointmentId) return;
-      const { error } = await supabase.from("appointments").update({ notes: value.trim() || null }).eq("id", appointmentId);
+      const { error } = await supabase
+        .from("appointments")
+        .update({ notes: value.trim() || null })
+        .eq("id", appointmentId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -682,71 +740,42 @@ export function AppointmentPanel({
     onError: (error: unknown) => toast.error((error as Error).message),
   });
 
-  const pay = useMutation({
-    mutationFn: async () => {
-      if (!businessId) throw new Error("No business");
+  // Like Fresha: save first if needed, then hand over to the full-width checkout at the Tip step.
+  async function handleCheckout() {
+    try {
       let id = appointmentId;
-      if (!id || dirty) id = await save.mutateAsync();
-      const { data: fresh, error: freshError } = await supabase
+      if (!id || dirty) {
+        id = await save.mutateAsync();
+        refresh();
+        setDirty(false);
+      }
+      const { data, error } = await supabase
         .from("appointment_items")
-        .select("id, service_id, price, team_member_id, start_time")
+        .select("id, service_id, team_member_id, price, start_time, end_time")
         .eq("appointment_id", id!)
         .order("start_time", { ascending: true });
-      if (freshError) throw freshError;
-      const saleTotal = (fresh ?? []).reduce((sum, item) => sum + Number(item.price ?? 0), 0);
-      const tipNote =
-        tipAmount > 0
-          ? `Tip ${money(tipAmount)} for ${(fresh ?? [])
-              .map((item) => memberById.get(item.team_member_id)?.first_name)
-              .filter(Boolean)
-              .filter((name, index, all) => all.indexOf(name) === index)
-              .join(", ")}`
-          : null;
-      const { data: sale, error } = await supabase
-        .from("sales")
-        .insert({
-          business_id: businessId,
-          client_id: client?.id ?? null,
-          appointment_id: id,
-          is_walk_in: !client,
-          status: "completed",
-          payment_method: paymentMethod,
-          total: saleTotal,
-          team_member_id: fresh?.[0]?.team_member_id ?? null,
-          notes: tipNote,
-          created_by: currentUserId ?? null,
-        })
-        .select("id")
-        .single();
       if (error) throw error;
-      const { error: itemsError } = await supabase.from("sale_items").insert(
-        (fresh ?? []).map((item, index) => ({
-          sale_id: sale.id,
-          business_id: businessId,
-          service_id: item.service_id,
-          appointment_item_id: item.id,
+      onCheckout({
+        appointmentId: id,
+        clientId: client?.id ?? null,
+        step: "tip",
+        lines: (data ?? []).map((item) => ({
+          key: item.id,
+          serviceId: item.service_id,
           description: (item.service_id && serviceById.get(item.service_id)?.name) || "Service",
           price: Number(item.price ?? 0),
           quantity: 1,
-          sort_order: index,
+          durationMinutes: Math.round(
+            (new Date(item.end_time).getTime() - new Date(item.start_time).getTime()) / 60000,
+          ),
+          teamMemberId: item.team_member_id,
+          appointmentItemId: item.id,
         })),
-      );
-      if (itemsError) throw itemsError;
-      const { error: statusError } = await supabase.from("appointments").update({ status: "completed" }).eq("id", id!);
-      if (statusError) throw statusError;
-    },
-    onSuccess: () => {
-      refresh();
-      queryClient.invalidateQueries({ queryKey: ["sales", businessId] });
-      queryClient.invalidateQueries({ queryKey: ["daily-sales", businessId] });
-      toast.success("Sale completed");
-      onClose();
-    },
-    onError: (error: unknown) => {
-      const message = (error as Error).message ?? "Payment failed";
-      toast.error(/duplicate key/i.test(message) ? "This appointment has already been checked out." : message);
-    },
-  });
+      });
+    } catch {
+      // save's onError already explained the problem
+    }
+  }
 
   // ── Close handling ──
   function requestClose() {
@@ -769,7 +798,11 @@ export function AppointmentPanel({
 
   const showClientColumnWide = clientPickerOpen;
   const timeLine = `${formatTime(firstStart)} · Doesn't repeat`;
-  const dateTitle = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short" }).format(date);
+  const dateTitle = new Intl.DateTimeFormat("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  }).format(date);
 
   // ── Right column views ──
   let right: React.ReactNode;
@@ -778,7 +811,12 @@ export function AppointmentPanel({
     right = (
       <div className="flex min-h-0 flex-1 flex-col">
         {view.name === "services" ? (
-          <BackHeader title="Select a service" onBack={() => setView(replaceKey ? { name: "edit", key: replaceKey } : { name: "main" })} />
+          <BackHeader
+            title="Select a service"
+            onBack={() =>
+              setView(replaceKey ? { name: "edit", key: replaceKey } : { name: "main" })
+            }
+          />
         ) : (
           <div className="px-6 pb-4 pt-6">
             <h2 className="text-[1.75rem] font-bold leading-9 tracking-tight">Select a service</h2>
@@ -798,7 +836,9 @@ export function AppointmentPanel({
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto border-t border-border/70 px-6 pb-6">
           {groupedServices.length === 0 ? (
-            <p className="py-10 text-center text-sm text-muted-foreground">No services match your search.</p>
+            <p className="py-10 text-center text-sm text-muted-foreground">
+              No services match your search.
+            </p>
           ) : (
             groupedServices.map((group) => (
               <div key={group.id} className="pt-6">
@@ -823,7 +863,9 @@ export function AppointmentPanel({
                           {durationLabel(service.duration_minutes)}
                         </span>
                       </span>
-                      <span className="text-[0.9375rem] font-medium tabular-nums">{money(Number(service.price ?? 0))}</span>
+                      <span className="text-[0.9375rem] font-medium tabular-nums">
+                        {money(Number(service.price ?? 0))}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -834,7 +876,10 @@ export function AppointmentPanel({
       </div>
     );
   } else if (view.name === "edit") {
-    const draft = editDraft && editDraft.key === view.key ? editDraft : lines.find((line) => line.key === view.key);
+    const draft =
+      editDraft && editDraft.key === view.key
+        ? editDraft
+        : lines.find((line) => line.key === view.key);
     if (!draft) {
       right = null;
     } else {
@@ -879,7 +924,9 @@ export function AppointmentPanel({
                   type="button"
                   aria-label="Preferred team member"
                   title="Preferred team member"
-                  onClick={() => toast("Preferred team member is saved with the next database update")}
+                  onClick={() =>
+                    toast("Preferred team member is saved with the next database update")
+                  }
                   className="flex size-12 shrink-0 items-center justify-center rounded-lg border border-border hover:bg-secondary"
                 >
                   <Heart size={18} />
@@ -894,7 +941,9 @@ export function AppointmentPanel({
                   <input
                     inputMode="decimal"
                     value={String(draft.price)}
-                    onChange={(event) => update({ price: Number(event.target.value.replace(/[^\d.]/g, "")) || 0 })}
+                    onChange={(event) =>
+                      update({ price: Number(event.target.value.replace(/[^\d.]/g, "")) || 0 })
+                    }
                     className="h-full w-full bg-transparent text-[0.9375rem] outline-none"
                   />
                 </span>
@@ -907,7 +956,11 @@ export function AppointmentPanel({
               </label>
               <label>
                 <FieldLabel>Start time</FieldLabel>
-                <select value={draft.start} onChange={(event) => update({ start: Number(event.target.value) })} className={fieldClass}>
+                <select
+                  value={draft.start}
+                  onChange={(event) => update({ start: Number(event.target.value) })}
+                  className={fieldClass}
+                >
                   {TIME_OPTIONS.map((minutes) => (
                     <option key={minutes} value={minutes}>
                       {formatTime(minutes)}
@@ -934,7 +987,9 @@ export function AppointmentPanel({
             </div>
             <button
               type="button"
-              onClick={() => toast("Extra time (processing/blocked) is saved with the next database update")}
+              onClick={() =>
+                toast("Extra time (processing/blocked) is saved with the next database update")
+              }
               className="inline-flex h-10 items-center gap-2 rounded-full border border-border px-4 text-[0.875rem] font-medium hover:bg-secondary"
             >
               <Plus size={14} /> Add extra time
@@ -960,7 +1015,9 @@ export function AppointmentPanel({
               <button
                 type="button"
                 onClick={() => {
-                  setLines((current) => current.map((line) => (line.key === draft.key ? draft : line)));
+                  setLines((current) =>
+                    current.map((line) => (line.key === draft.key ? draft : line)),
+                  );
                   setDirty(true);
                   setEditDraft(null);
                   setView({ name: "main" });
@@ -977,10 +1034,23 @@ export function AppointmentPanel({
   } else if (view.name === "activity") {
     const created = existing ? new Date(existing.created_at) : null;
     const updated = existing ? new Date(existing.updated_at) : null;
-    const stamp = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+    const stamp = new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    });
     const entries = [
       ...(existing && existing.status !== "booked" && updated
-        ? [{ title: `Marked as ${STATUS_LABEL[existing.status]?.toLowerCase() ?? existing.status}`, at: updated, detail: "Status updated" }]
+        ? [
+            {
+              title: `Marked as ${STATUS_LABEL[existing.status]?.toLowerCase() ?? existing.status}`,
+              at: updated,
+              detail: "Status updated",
+            },
+          ]
         : []),
       ...(created
         ? [
@@ -1008,7 +1078,9 @@ export function AppointmentPanel({
               </li>
             ))}
           </ol>
-          <p className="mt-4 text-[0.8125rem] text-muted-foreground">Activity for this appointment in the last 12 months</p>
+          <p className="mt-4 text-[0.8125rem] text-muted-foreground">
+            Activity for this appointment in the last 12 months
+          </p>
         </div>
       </div>
     );
@@ -1023,7 +1095,9 @@ export function AppointmentPanel({
             defaultValue="none"
             onChange={(event) => {
               if (event.target.value !== "none") {
-                toast("Repeating appointments need the next database update (see notes/lovable-prompts.md)");
+                toast(
+                  "Repeating appointments need the next database update (see notes/lovable-prompts.md)",
+                );
                 event.target.value = "none";
               }
             }}
@@ -1036,163 +1110,13 @@ export function AppointmentPanel({
           </select>
         </div>
         <div className="border-t border-border px-6 py-5">
-          <button type="button" onClick={() => setView({ name: "main" })} className={cn(pill, "w-full bg-ink text-ink-foreground")}>
+          <button
+            type="button"
+            onClick={() => setView({ name: "main" })}
+            className={cn(pill, "w-full bg-ink text-ink-foreground")}
+          >
             Apply changes
           </button>
-        </div>
-      </div>
-    );
-  } else if (view.name === "checkout") {
-    const steps = ["cart", "tip", "payment"] as const;
-    const memberNames = [...new Set(lines.map((line) => memberById.get(line.teamMemberId)?.first_name).filter(Boolean))].join(", ");
-    right = (
-      <div className="flex min-h-0 flex-1 flex-col">
-        <div className="px-6 pb-2 pt-5">
-          <div className="flex items-center gap-2 text-[0.875rem]">
-            {steps.map((step, index) => (
-              <span key={step} className="flex items-center gap-2">
-                {index ? <CaretRight size={12} className="text-muted-foreground" /> : null}
-                <span className={cn("capitalize", view.step === step ? "font-semibold text-foreground" : "text-muted-foreground")}>
-                  {step}
-                </span>
-              </span>
-            ))}
-          </div>
-          <h2 className="mt-3 text-[1.75rem] font-bold leading-9 tracking-tight">
-            {view.step === "cart" ? "Cart" : view.step === "tip" ? "Select tip" : "Select payment"}
-          </h2>
-        </div>
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
-          {view.step === "cart" ? (
-            <div className="space-y-2">
-              {lines.map((line) => (
-                <div
-                  key={line.key}
-                  className="flex items-start justify-between rounded-lg bg-secondary/60 py-3 pl-4 pr-3"
-                  style={{ boxShadow: `inset 3px 0 0 ${categoryColor(line.serviceId)}` }}
-                >
-                  <span>
-                    <span className="block text-[0.9375rem] font-medium">{serviceById.get(line.serviceId)?.name}</span>
-                    <span className="block text-[0.8125rem] text-muted-foreground">
-                      {durationLabel(line.duration)} · {memberById.get(line.teamMemberId)?.first_name}
-                    </span>
-                  </span>
-                  <span className="text-[0.9375rem] font-medium tabular-nums">{money(line.price)}</span>
-                </div>
-              ))}
-            </div>
-          ) : view.step === "tip" ? (
-            <>
-              <p className="mb-4 text-[0.9375rem] font-semibold">Select an amount for {memberNames || "the team"}</p>
-              <div className="grid grid-cols-2 gap-3">
-                {TIP_OPTIONS.map((percent) => (
-                  <button
-                    key={percent}
-                    type="button"
-                    onClick={() => setTipPercent(percent)}
-                    className={cn(
-                      "rounded-xl border px-4 py-5 text-center transition-colors",
-                      tipPercent === percent ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-secondary",
-                    )}
-                  >
-                    <span className="block text-[1.0625rem] font-semibold">{percent ? `${percent}%` : "No tip"}</span>
-                    {percent ? (
-                      <span className="block text-[0.8125rem] text-muted-foreground">{money(Math.round(total * percent) / 100)}</span>
-                    ) : null}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => setTipPercent("custom")}
-                  className={cn(
-                    "col-span-2 rounded-xl border px-4 py-4 text-center text-[1.0625rem] font-semibold",
-                    tipPercent === "custom" ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-secondary",
-                  )}
-                >
-                  Custom tip
-                </button>
-                {tipPercent === "custom" ? (
-                  <span className="col-span-2 flex h-12 items-center gap-2 rounded-lg border border-border px-4">
-                    <span className="text-muted-foreground">{currency}</span>
-                    <input
-                      autoFocus
-                      inputMode="decimal"
-                      value={customTip}
-                      onChange={(event) => setCustomTip(event.target.value.replace(/[^\d.]/g, ""))}
-                      className="h-full w-full bg-transparent outline-none"
-                      placeholder="0.00"
-                    />
-                  </span>
-                ) : null}
-              </div>
-            </>
-          ) : (
-            <div className="grid grid-cols-3 gap-3">
-              {(
-                [
-                  ["cash", "Cash", Money],
-                  ["card", "Card", CreditCard],
-                  ["other", "Other", Wallet],
-                ] as const
-              ).map(([value, label, Icon]) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setPaymentMethod(value)}
-                  className={cn(
-                    "flex flex-col items-center gap-2 rounded-xl border px-3 py-6 text-[0.9375rem] font-semibold",
-                    paymentMethod === value ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-secondary",
-                  )}
-                >
-                  <Icon size={24} />
-                  {label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-        <div className="border-t border-border px-6 py-5">
-          <div className="space-y-1 text-[0.9375rem]">
-            <div className="flex justify-between text-muted-foreground">
-              <span>Subtotal</span>
-              <span>{money(total)}</span>
-            </div>
-            {tipAmount > 0 ? (
-              <div className="flex justify-between text-muted-foreground">
-                <span>Tip</span>
-                <span>{money(tipAmount)}</span>
-              </div>
-            ) : null}
-            <div className="flex justify-between font-semibold">
-              <span>To pay</span>
-              <span>{money(total + tipAmount)}</span>
-            </div>
-          </div>
-          <div className="mt-4 flex gap-3">
-            <button
-              type="button"
-              onClick={() =>
-                setView(
-                  view.step === "cart" ? { name: "main" } : { name: "checkout", step: view.step === "payment" ? "tip" : "cart" },
-                )
-              }
-              className={cn(pill, "border border-border bg-card hover:bg-secondary")}
-            >
-              Back
-            </button>
-            <button
-              type="button"
-              disabled={pay.isPending || !lines.length}
-              onClick={() => {
-                if (view.step === "cart") setView({ name: "checkout", step: "tip" });
-                else if (view.step === "tip") setView({ name: "checkout", step: "payment" });
-                else pay.mutate();
-              }}
-              className={cn(pill, "flex-1 bg-ink text-ink-foreground hover:bg-ink/90")}
-            >
-              {view.step === "payment" ? (pay.isPending ? "Processing…" : `Pay ${money(total + tipAmount)}`) : "Continue"}
-            </button>
-          </div>
         </div>
       </div>
     );
@@ -1203,14 +1127,19 @@ export function AppointmentPanel({
         <div
           className={cn(
             "px-6 pb-5 pt-6",
-            isNew ? "border-b border-border/70" : cn(STATUS_HEADER[status] ?? STATUS_HEADER["booked"], "text-white"),
+            isNew
+              ? "border-b border-border/70"
+              : cn(STATUS_HEADER[status] ?? STATUS_HEADER["booked"], "text-white"),
           )}
         >
           <div className="flex items-start justify-between gap-3">
             <div>
               <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
                 <PopoverTrigger asChild disabled={isLocked}>
-                  <button type="button" className="inline-flex items-center gap-2 text-[1.75rem] font-bold leading-9 tracking-tight">
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-2 text-[1.75rem] font-bold leading-9 tracking-tight"
+                  >
                     {dateTitle}
                     <CaretDown size={16} weight="bold" />
                   </button>
@@ -1232,7 +1161,11 @@ export function AppointmentPanel({
                 type="button"
                 disabled={isLocked}
                 onClick={() => setView({ name: "repeat" })}
-                className={cn("mt-1 block text-[0.875rem]", isNew ? "text-foreground" : "text-white/90", "hover:underline")}
+                className={cn(
+                  "mt-1 block text-[0.875rem]",
+                  isNew ? "text-foreground" : "text-white/90",
+                  "hover:underline",
+                )}
               >
                 {timeLine}
               </button>
@@ -1289,10 +1222,14 @@ export function AppointmentPanel({
                   style={{ boxShadow: `inset 3px 0 0 ${categoryColor(line.serviceId)}` }}
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-[0.9375rem] font-medium">{serviceById.get(line.serviceId)?.name ?? "Service"}</p>
+                    <p className="truncate text-[0.9375rem] font-medium">
+                      {serviceById.get(line.serviceId)?.name ?? "Service"}
+                    </p>
                     <p className="truncate text-[0.8125rem] text-muted-foreground">
                       {formatTime(line.start)} · {durationLabel(line.duration)} ·{" "}
-                      {memberById.get(line.teamMemberId) ? memberName(memberById.get(line.teamMemberId)!) : "Team member"}
+                      {memberById.get(line.teamMemberId)
+                        ? memberName(memberById.get(line.teamMemberId)!)
+                        : "Team member"}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-1">
@@ -1319,7 +1256,9 @@ export function AppointmentPanel({
                         </button>
                       </span>
                     ) : null}
-                    <span className="text-[0.9375rem] font-medium tabular-nums group-hover:hidden">{money(line.price)}</span>
+                    <span className="text-[0.9375rem] font-medium tabular-nums group-hover:hidden">
+                      {money(line.price)}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -1333,11 +1272,17 @@ export function AppointmentPanel({
               <Plus size={14} /> Add service
             </button>
           ) : null}
-          {conflict ? <p className="mt-4 rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">{conflict}</p> : null}
+          {conflict ? (
+            <p className="mt-4 rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {conflict}
+            </p>
+          ) : null}
           {notes ? (
             <div className="mt-6">
               <h3 className="mb-2 text-[1.0625rem] font-semibold">Appointment notes</h3>
-              <p className="whitespace-pre-wrap rounded-lg bg-secondary/60 px-4 py-3 text-[0.875rem]">{notes}</p>
+              <p className="whitespace-pre-wrap rounded-lg bg-secondary/60 px-4 py-3 text-[0.875rem]">
+                {notes}
+              </p>
             </div>
           ) : null}
         </div>
@@ -1372,11 +1317,17 @@ export function AppointmentPanel({
               <span>{money(total)}</span>
             </div>
           )}
-          <button type="button" onClick={() => setToPayOpen((open) => !open)} className="flex w-full items-center justify-between py-1">
+          <button
+            type="button"
+            onClick={() => setToPayOpen((open) => !open)}
+            className="flex w-full items-center justify-between py-1"
+          >
             <span className="flex items-center gap-1 text-[0.9375rem] font-semibold">
               To pay {toPayOpen ? null : <CaretRight size={12} weight="bold" />}
             </span>
-            <span className="text-[0.9375rem] font-semibold">{money(status === "completed" ? 0 : total)}</span>
+            <span className="text-[0.9375rem] font-semibold">
+              {money(status === "completed" ? 0 : total)}
+            </span>
           </button>
           <div className="mt-3 flex items-center gap-3">
             <DropdownMenu>
@@ -1390,7 +1341,9 @@ export function AppointmentPanel({
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" side="top" className="w-60 rounded-xl p-1.5">
-                <DropdownMenuLabel className="px-3 pb-1 pt-2 text-[0.9375rem] font-semibold">Quick actions</DropdownMenuLabel>
+                <DropdownMenuLabel className="px-3 pb-1 pt-2 text-[0.9375rem] font-semibold">
+                  Quick actions
+                </DropdownMenuLabel>
                 <DropdownMenuItem
                   onSelect={() => {
                     setNoteDraft(notes);
@@ -1402,18 +1355,29 @@ export function AppointmentPanel({
                 </DropdownMenuItem>
                 {isNew ? null : (
                   <>
-                    <DropdownMenuItem onSelect={() => toast("Forms arrive with the next database update")} className="rounded-lg px-3 py-2 text-[0.9375rem]">
+                    <DropdownMenuItem
+                      onSelect={() => toast("Forms arrive with the next database update")}
+                      className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                    >
                       Add a form
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onSelect={() => setView({ name: "activity" })} className="gap-3 rounded-lg px-3 py-2 text-[0.9375rem]">
+                    <DropdownMenuItem
+                      onSelect={() => setView({ name: "activity" })}
+                      className="gap-3 rounded-lg px-3 py-2 text-[0.9375rem]"
+                    >
                       <ClockCounterClockwise size={18} /> View appointment activity
                     </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => setView({ name: "repeat" })} className="rounded-lg px-3 py-2 text-[0.9375rem]">
+                    <DropdownMenuItem
+                      onSelect={() => setView({ name: "repeat" })}
+                      className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                    >
                       Set as repeating
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onSelect={() => toast("Group appointments arrive with the next database update")}
+                      onSelect={() =>
+                        toast("Group appointments arrive with the next database update")
+                      }
                       className="rounded-lg px-3 py-2 text-[0.9375rem]"
                     >
                       Add to group appointment
@@ -1422,7 +1386,9 @@ export function AppointmentPanel({
                       onSelect={() =>
                         onRebook({
                           clientId: client?.id ?? null,
-                          serviceIds: [...lines].sort((a, b) => a.start - b.start).map((line) => line.serviceId),
+                          serviceIds: [...lines]
+                            .sort((a, b) => a.start - b.start)
+                            .map((line) => line.serviceId),
                           label: clientLabel,
                         })
                       }
@@ -1434,7 +1400,12 @@ export function AppointmentPanel({
                     {!isLocked ? (
                       <>
                         <DropdownMenuItem
-                          onSelect={() => onReschedule(appointmentId!, lines.map((line) => line.appointmentItemId ?? line.key))}
+                          onSelect={() =>
+                            onReschedule(
+                              appointmentId!,
+                              lines.map((line) => line.appointmentItemId ?? line.key),
+                            )
+                          }
                           className="rounded-lg px-3 py-2 text-[0.9375rem]"
                         >
                           Reschedule
@@ -1462,7 +1433,7 @@ export function AppointmentPanel({
                 <button
                   type="button"
                   disabled={!lines.length || save.isPending}
-                  onClick={() => setView({ name: "checkout", step: "cart" })}
+                  onClick={() => void handleCheckout()}
                   className={cn(pill, "flex-1 border border-border bg-card hover:bg-secondary")}
                 >
                   Checkout
@@ -1483,7 +1454,7 @@ export function AppointmentPanel({
             ) : (
               <button
                 type="button"
-                onClick={() => setView({ name: "checkout", step: "cart" })}
+                onClick={() => void handleCheckout()}
                 className={cn(pill, "flex-1 bg-ink text-ink-foreground hover:bg-ink/90")}
               >
                 Checkout
@@ -1503,7 +1474,12 @@ export function AppointmentPanel({
         <div className="px-5 pb-4 pt-6">
           <div className="flex items-center justify-between">
             <h3 className="text-[1.0625rem] font-semibold">Select a client</h3>
-            <button type="button" aria-label="Close client search" onClick={() => setClientPickerOpen(false)} className="rounded-full p-1 hover:bg-secondary">
+            <button
+              type="button"
+              aria-label="Close client search"
+              onClick={() => setClientPickerOpen(false)}
+              className="rounded-full p-1 hover:bg-secondary"
+            >
               <X size={16} />
             </button>
           </div>
@@ -1555,8 +1531,12 @@ export function AppointmentPanel({
             >
               <Avatar name={personName(row)} size={56} />
               <span className="min-w-0">
-                <span className="block truncate text-[0.9375rem] font-semibold">{personName(row)}</span>
-                <span className="block truncate text-[0.8125rem] text-muted-foreground">{row.email || row.phone}</span>
+                <span className="block truncate text-[0.9375rem] font-semibold">
+                  {personName(row)}
+                </span>
+                <span className="block truncate text-[0.8125rem] text-muted-foreground">
+                  {row.email || row.phone}
+                </span>
               </span>
             </button>
           ))}
@@ -1574,7 +1554,9 @@ export function AppointmentPanel({
         <span className="flex size-14 items-center justify-center rounded-full bg-[#ebe8ff] text-primary">
           <UserPlus size={22} />
         </span>
-        <span className="mt-3 text-[0.9375rem] font-semibold">{isNew ? "Add client" : "Walk-In"}</span>
+        <span className="mt-3 text-[0.9375rem] font-semibold">
+          {isNew ? "Add client" : "Walk-In"}
+        </span>
         <span className="mt-1 text-[0.8125rem] leading-5 text-muted-foreground">
           {isNew ? "Or leave empty for walk-ins" : "Add a client to this appointment"}
         </span>
@@ -1589,31 +1571,42 @@ export function AppointmentPanel({
         <div className="mt-4 flex flex-wrap justify-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button type="button" className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border px-4 text-[0.875rem] font-medium hover:bg-secondary data-[state=open]:bg-secondary">
+              <button
+                type="button"
+                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border px-4 text-[0.875rem] font-medium hover:bg-secondary data-[state=open]:bg-secondary"
+              >
                 Actions <CaretDown size={12} weight="bold" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56 rounded-xl p-1.5">
               {!isLocked ? (
-                <DropdownMenuItem onSelect={() => change(setClient)(null)} className="rounded-lg px-3 py-2 text-[0.9375rem]">
+                <DropdownMenuItem
+                  onSelect={() => change(setClient)(null)}
+                  className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                >
                   Remove client
                 </DropdownMenuItem>
               ) : null}
               {!isLocked ? (
-                <DropdownMenuItem onSelect={() => setClientPickerOpen(true)} className="rounded-lg px-3 py-2 text-[0.9375rem]">
+                <DropdownMenuItem
+                  onSelect={() => setClientPickerOpen(true)}
+                  className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                >
                   Change client
                 </DropdownMenuItem>
               ) : null}
               <DropdownMenuSeparator />
-              {["Messages", "Add staff alert", "Add allergy", "Add patch test", "Add tag"].map((label) => (
-                <DropdownMenuItem
-                  key={label}
-                  onSelect={() => toast(`${label} arrives with the Clients tab`)}
-                  className="rounded-lg px-3 py-2 text-[0.9375rem]"
-                >
-                  {label}
-                </DropdownMenuItem>
-              ))}
+              {["Messages", "Add staff alert", "Add allergy", "Add patch test", "Add tag"].map(
+                (label) => (
+                  <DropdownMenuItem
+                    key={label}
+                    onSelect={() => toast(`${label} arrives with the Clients tab`)}
+                    className="rounded-lg px-3 py-2 text-[0.9375rem]"
+                  >
+                    {label}
+                  </DropdownMenuItem>
+                ),
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild className="rounded-lg px-3 py-2 text-[0.9375rem]">
                 <Link to="/client/$clientId" params={{ clientId: client.id }}>
@@ -1632,7 +1625,12 @@ export function AppointmentPanel({
         </div>
         {client.created_at ? (
           <p className="mt-6 self-start text-[0.8125rem] text-muted-foreground">
-            Created {new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date(client.created_at))}
+            Created{" "}
+            {new Intl.DateTimeFormat("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            }).format(new Date(client.created_at))}
           </p>
         ) : null}
       </div>
@@ -1647,7 +1645,11 @@ export function AppointmentPanel({
           {[
             { label: "Close", icon: <X size={18} />, onClick: requestClose },
             { label: "Minimise", icon: <ArrowsInSimple size={18} />, onClick: onMinimize },
-            { label: "Focus appointment", icon: <Crosshair size={18} />, onClick: () => onFocusDate(date) },
+            {
+              label: "Focus appointment",
+              icon: <Crosshair size={18} />,
+              onClick: () => onFocusDate(date),
+            },
           ].map((control) => (
             <button
               key={control.label}
@@ -1691,8 +1693,12 @@ export function AppointmentPanel({
       {/* Add a note */}
       <Dialog open={noteOpen} onOpenChange={setNoteOpen}>
         <DialogContent className="max-w-[44rem] rounded-2xl p-6">
-          <DialogTitle className="text-lg font-semibold">{notes ? "Edit note" : "Add a note"}</DialogTitle>
-          <DialogDescription className="sr-only">Notes are visible to your team only.</DialogDescription>
+          <DialogTitle className="text-lg font-semibold">
+            {notes ? "Edit note" : "Add a note"}
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            Notes are visible to your team only.
+          </DialogDescription>
           <textarea
             autoFocus
             value={noteDraft}
@@ -1710,7 +1716,10 @@ export function AppointmentPanel({
                 if (isNew) setDirty(true);
                 else saveNote.mutate(noteDraft);
               }}
-              className={cn(pill, "h-10 bg-ink px-5 text-ink-foreground disabled:bg-muted disabled:text-muted-foreground")}
+              className={cn(
+                pill,
+                "h-10 bg-ink px-5 text-ink-foreground disabled:bg-muted disabled:text-muted-foreground",
+              )}
             >
               Save
             </button>
@@ -1739,7 +1748,9 @@ export function AppointmentPanel({
       <Dialog open={clientFormOpen} onOpenChange={setClientFormOpen}>
         <DialogContent className="left-0 top-0 h-svh w-full max-w-none translate-x-0 translate-y-0 gap-0 overflow-y-auto rounded-none border-0 p-0 sm:max-w-none sm:rounded-none [&>button]:hidden">
           <DialogTitle className="sr-only">Add a new client</DialogTitle>
-          <DialogDescription className="sr-only">Create a new client profile for this business.</DialogDescription>
+          <DialogDescription className="sr-only">
+            Create a new client profile for this business.
+          </DialogDescription>
           <ClientForm
             onClose={() => setClientFormOpen(false)}
             onSaved={async (id) => {
@@ -1779,19 +1790,34 @@ function CancelScreen({
     <div className="fixed inset-0 z-[80] overflow-y-auto bg-card animate-in fade-in-0">
       <div className="mx-auto max-w-[72rem] px-6 py-6 sm:px-10">
         <div className="flex justify-end">
-          <button type="button" onClick={onClose} className={cn(pill, "h-11 border border-border bg-card hover:bg-secondary")}>
+          <button
+            type="button"
+            onClick={onClose}
+            className={cn(pill, "h-11 border border-border bg-card hover:bg-secondary")}
+          >
             Close
           </button>
         </div>
-        <h1 className="mt-6 text-[2.25rem] font-bold leading-tight tracking-tight">Are you sure you want to cancel?</h1>
+        <h1 className="mt-6 text-[2.25rem] font-bold leading-tight tracking-tight">
+          Are you sure you want to cancel?
+        </h1>
         <div className="mt-8 grid gap-8 lg:grid-cols-2">
           <div className="space-y-6">
             <p className="flex items-center gap-3 rounded-xl bg-[#ebe8ff] px-4 py-3 text-[0.9375rem]">
-              <span className="flex size-5 items-center justify-center rounded-full border border-primary text-[0.75rem] text-primary">i</span>
+              <span className="flex size-5 items-center justify-center rounded-full border border-primary text-[0.75rem] text-primary">
+                i
+              </span>
               No policy was applied to this appointment
             </p>
-            <label className="flex items-start gap-3 opacity-60" title="Client notifications arrive with Marketing → Automations">
-              <input type="checkbox" disabled className="mt-1 size-5 accent-[var(--color-primary)]" />
+            <label
+              className="flex items-start gap-3 opacity-60"
+              title="Client notifications arrive with Marketing → Automations"
+            >
+              <input
+                type="checkbox"
+                disabled
+                className="mt-1 size-5 accent-[var(--color-primary)]"
+              />
               <span>
                 <span className="block text-[0.9375rem]">Send a cancellation notification</span>
                 <span className="block text-[0.8125rem] text-muted-foreground">
@@ -1801,7 +1827,11 @@ function CancelScreen({
             </label>
             <label className="block">
               <FieldLabel>Cancellation reason</FieldLabel>
-              <select value={reason} onChange={(event) => setReason(event.target.value)} className={fieldClass}>
+              <select
+                value={reason}
+                onChange={(event) => setReason(event.target.value)}
+                className={fieldClass}
+              >
                 {CANCEL_REASONS.map((item) => (
                   <option key={item}>{item}</option>
                 ))}

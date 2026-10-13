@@ -199,7 +199,7 @@ export function SalesAppointmentsList() {
         id: appt.id,
         ref: `#${appt.id.replace(/-/g, "").slice(0, 8).toUpperCase()}`,
         clientId: appt.clients?.id ?? null,
-        clientName: appt.is_walk_in ? "Walk-In" : fullName(appt.clients),
+        clientName: appt.is_walk_in || !appt.clients ? "Walk-In" : fullName(appt.clients),
         serviceName: serviceNames.join(", ") || "—",
         createdBy: appt.profiles?.full_name?.trim() || "—",
         createdAt: new Date(appt.created_at),
@@ -273,7 +273,7 @@ export function SalesAppointmentsList() {
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-secondary/70 p-3">
         <div className="relative">
           <MagnifyingGlass
             size={15}

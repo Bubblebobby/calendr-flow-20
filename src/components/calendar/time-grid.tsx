@@ -22,7 +22,8 @@ const GUTTER = "w-16";
 /** Diagonal hatching for hours nobody can be booked (Fresha's closed-time pattern). */
 export const HATCH_STYLE: React.CSSProperties = {
   backgroundColor: "var(--hatch-bg)",
-  backgroundImage: "repeating-linear-gradient(135deg, var(--hatch-line) 0 1px, transparent 1px 9px)",
+  backgroundImage:
+    "repeating-linear-gradient(135deg, var(--hatch-line) 0 1px, transparent 1px 9px)",
 };
 
 function gridLines(slotHeight: number): React.CSSProperties {
@@ -52,7 +53,11 @@ export function DateHeader({ date, now, locale }: { date: Date; now: Date; local
       <span
         className={cn(
           "flex size-8 shrink-0 items-center justify-center rounded-full text-[0.9375rem] tabular-nums",
-          isToday ? "bg-primary font-semibold text-primary-foreground" : isPast ? "text-muted-foreground" : "text-foreground",
+          isToday
+            ? "bg-primary font-semibold text-primary-foreground"
+            : isPast
+              ? "text-muted-foreground"
+              : "text-foreground",
         )}
       >
         {date.getDate()}
@@ -60,7 +65,11 @@ export function DateHeader({ date, now, locale }: { date: Date; now: Date; local
       <span
         className={cn(
           "truncate text-[0.9375rem]",
-          isToday ? "font-medium text-primary" : isPast ? "text-muted-foreground" : "text-foreground",
+          isToday
+            ? "font-medium text-primary"
+            : isPast
+              ? "text-muted-foreground"
+              : "text-foreground",
         )}
       >
         {new Intl.DateTimeFormat(locale, { weekday: "long" }).format(date)}
@@ -103,7 +112,11 @@ export function TimeGrid({
   /** The slot whose quick-actions popover is open. */
   selectedSlot?: { columnKey: string; minutes: number } | null;
   onSlotClick: (event: React.MouseEvent<HTMLElement>, column: GridColumn, minutes: number) => void;
-  onEventHover: (event: React.MouseEvent<HTMLElement>, appointment: CalendarEvent, member: TeamMember) => void;
+  onEventHover: (
+    event: React.MouseEvent<HTMLElement>,
+    appointment: CalendarEvent,
+    member: TeamMember,
+  ) => void;
   onEventLeave: () => void;
   onEventClick: (appointment: CalendarEvent) => void;
   onBlockClick?: (block: BlockedTime, member: TeamMember) => void;
@@ -147,7 +160,10 @@ export function TimeGrid({
   function slotFromPointer(event: React.MouseEvent<HTMLElement>) {
     const rect = event.currentTarget.getBoundingClientRect();
     const offset = event.clientY - rect.top;
-    return Math.max(0, Math.min(24 * 60 - SLOT_MINUTES, Math.floor(offset / slotHeight) * SLOT_MINUTES));
+    return Math.max(
+      0,
+      Math.min(24 * 60 - SLOT_MINUTES, Math.floor(offset / slotHeight) * SLOT_MINUTES),
+    );
   }
 
   const singleMember = headerMode === "dates" ? columns[0]?.member : undefined;
@@ -156,17 +172,28 @@ export function TimeGrid({
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-card">
       {/* Column headers */}
-      <div className="relative z-20 flex shrink-0 bg-card shadow-[0_6px_8px_-6px_rgb(0_0_0/0.12)]" style={{ paddingRight: scrollbar }}>
+      <div
+        className="relative z-20 flex shrink-0 bg-card shadow-[0_6px_8px_-6px_rgb(0_0_0/0.12)]"
+        style={{ paddingRight: scrollbar }}
+      >
         {singleMember ? <div className="w-20 shrink-0" /> : null}
         <div className={cn(GUTTER, "shrink-0")} />
         {columns.map((column) =>
           headerMode === "members" ? (
-            <div key={column.key} className="flex min-w-[7.5rem] flex-1 flex-col items-center gap-2 px-2 py-3">
+            <div
+              key={column.key}
+              className="flex min-w-[7.5rem] flex-1 flex-col items-center gap-2 px-2 py-3"
+            >
               <MemberAvatar member={column.member} size={56} className="ring-2" />
-              <span className="max-w-full truncate text-[0.8125rem] font-semibold text-foreground">{memberName(column.member)}</span>
+              <span className="max-w-full truncate text-[0.8125rem] font-semibold text-foreground">
+                {memberName(column.member)}
+              </span>
             </div>
           ) : (
-            <div key={column.key} className="flex h-[4.25rem] min-w-[6.5rem] flex-1 basis-0 items-center overflow-hidden">
+            <div
+              key={column.key}
+              className="flex h-[4.25rem] min-w-[6.5rem] flex-1 basis-0 items-center overflow-hidden"
+            >
               <DateHeader date={column.date} now={now} locale={locale} />
             </div>
           ),
@@ -180,7 +207,9 @@ export function TimeGrid({
             <div className="w-20 shrink-0 bg-card">
               <div className="sticky top-0 flex flex-col items-center gap-1.5 px-1 pt-3 text-center">
                 <MemberAvatar member={singleMember} size={40} />
-                <span className="line-clamp-2 text-[0.75rem] font-semibold leading-4">{memberName(singleMember)}</span>
+                <span className="line-clamp-2 text-[0.75rem] font-semibold leading-4">
+                  {memberName(singleMember)}
+                </span>
               </div>
             </div>
           ) : null}
@@ -210,15 +239,20 @@ export function TimeGrid({
           {columns.map((column) => {
             const range = openRange(hours, column.date);
             const columnEvents = events.filter(
-              (appointment) => appointment.teamMemberId === column.member.id && sameDay(appointment.start, column.date),
+              (appointment) =>
+                appointment.teamMemberId === column.member.id &&
+                sameDay(appointment.start, column.date),
             );
             const columnBlocks = blocks.filter(
-              (block) => block.team_member_id === column.member.id && sameDay(new Date(block.start_time), column.date),
+              (block) =>
+                block.team_member_id === column.member.id &&
+                sameDay(new Date(block.start_time), column.date),
             );
             const isToday = sameDay(column.date, now);
             const hovered = hover?.column === column.key ? hover.minutes : null;
             const selected = selectedSlot?.columnKey === column.key ? selectedSlot.minutes : null;
-            const withinHours = (minutes: number) => range !== null && minutes >= range[0] && minutes < range[1];
+            const withinHours = (minutes: number) =>
+              range !== null && minutes >= range[0] && minutes < range[1];
 
             return (
               <div
@@ -244,8 +278,14 @@ export function TimeGrid({
                   <div className="pointer-events-none absolute inset-0" style={HATCH_STYLE} />
                 ) : (
                   <>
-                    <div className="pointer-events-none absolute inset-x-0 top-0" style={{ ...HATCH_STYLE, height: y(range[0]) }} />
-                    <div className="pointer-events-none absolute inset-x-0 bottom-0" style={{ ...HATCH_STYLE, top: y(range[1]) }} />
+                    <div
+                      className="pointer-events-none absolute inset-x-0 top-0"
+                      style={{ ...HATCH_STYLE, height: y(range[0]) }}
+                    />
+                    <div
+                      className="pointer-events-none absolute inset-x-0 bottom-0"
+                      style={{ ...HATCH_STYLE, top: y(range[1]) }}
+                    />
                   </>
                 )}
 
@@ -276,16 +316,24 @@ export function TimeGrid({
                     <div
                       key={block.id}
                       className={cn("absolute inset-x-1 z-10", picking && "opacity-50")}
-                      style={{ top: y(start) + 1, height: Math.max(slotHeight, y(end - start) - 2) }}
+                      style={{
+                        top: y(start) + 1,
+                        height: Math.max(slotHeight, y(end - start) - 2),
+                      }}
                     >
-                      <BlockedTimeChip block={block} onClick={() => onBlockClick?.(block, column.member)} />
+                      <BlockedTimeChip
+                        block={block}
+                        onClick={() => onBlockClick?.(block, column.member)}
+                      />
                     </div>
                   );
                 })}
 
                 {columnEvents.map((appointment) => {
                   const start = minutesOfDay(appointment.start);
-                  const end = sameDay(appointment.start, appointment.end) ? minutesOfDay(appointment.end) : 24 * 60;
+                  const end = sameDay(appointment.start, appointment.end)
+                    ? minutesOfDay(appointment.end)
+                    : 24 * 60;
                   const height = Math.max(slotHeight, y(end - start) - 2);
                   const roomy = height >= slotHeight * 3;
                   const highlighted = highlightIds?.has(appointment.id) ?? false;
@@ -304,9 +352,15 @@ export function TimeGrid({
                         top: y(start) + 1,
                         height,
                         backgroundColor: column.member.calendar_color || "#a5d8f3",
-                        ...(faded ? { backgroundColor: `color-mix(in srgb, ${column.member.calendar_color || "#a5d8f3"} 35%, white)` } : {}),
+                        ...(faded
+                          ? {
+                              backgroundColor: `color-mix(in srgb, ${column.member.calendar_color || "#a5d8f3"} 35%, white)`,
+                            }
+                          : {}),
                       }}
-                      onMouseEnter={(event) => !picking && onEventHover(event, appointment, column.member)}
+                      onMouseEnter={(event) =>
+                        !picking && onEventHover(event, appointment, column.member)
+                      }
                       onMouseLeave={onEventLeave}
                       onMouseMove={(event) => event.stopPropagation()}
                       onClick={(event) => {
@@ -325,9 +379,12 @@ export function TimeGrid({
                       ) : (
                         <>
                           <span className="block truncate">
-                            {formatTime(start)} - {formatTime(end)} <span className="font-semibold">{appointment.title}</span>
+                            {formatTime(start)} - {formatTime(end)}{" "}
+                            <span className="font-semibold">{appointment.title}</span>
                           </span>
-                          {roomy || height > slotHeight * 1.5 ? <span className="block truncate">{appointment.serviceName}</span> : null}
+                          {roomy || height > slotHeight * 1.5 ? (
+                            <span className="block truncate">{appointment.serviceName}</span>
+                          ) : null}
                         </>
                       )}
                     </button>
@@ -336,7 +393,10 @@ export function TimeGrid({
 
                 {/* Current time */}
                 {isToday || (headerMode === "members" && showsToday) ? (
-                  <div className="pointer-events-none absolute inset-x-0 z-[15] h-px bg-destructive" style={{ top: y(nowMinutes) }} />
+                  <div
+                    className="pointer-events-none absolute inset-x-0 z-[15] h-px bg-destructive"
+                    style={{ top: y(nowMinutes) }}
+                  />
                 ) : null}
               </div>
             );

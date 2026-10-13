@@ -58,13 +58,27 @@ export function IconButton({
   className?: string;
 }) {
   return (
-    <button type="button" aria-label={label} title={label} onClick={onClick} className={cn(outline, "size-9 rounded-full", className)}>
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      onClick={onClick}
+      className={cn(outline, "size-9 rounded-full", className)}
+    >
       {children}
     </button>
   );
 }
 
-export function MemberAvatar({ member, size = 32, className }: { member: TeamMember; size?: number; className?: string }) {
+export function MemberAvatar({
+  member,
+  size = 32,
+  className,
+}: {
+  member: TeamMember;
+  size?: number;
+  className?: string;
+}) {
   const name = memberName(member);
   return (
     <span
@@ -72,7 +86,12 @@ export function MemberAvatar({ member, size = 32, className }: { member: TeamMem
         "flex shrink-0 items-center justify-center overflow-hidden rounded-full font-semibold text-[#2d5f99] ring-1 ring-[#cfe3f7]",
         className,
       )}
-      style={{ width: size, height: size, fontSize: Math.round(size * 0.3), backgroundColor: "#eef6fd" }}
+      style={{
+        width: size,
+        height: size,
+        fontSize: Math.round(size * 0.3),
+        backgroundColor: "#eef6fd",
+      }}
     >
       {member.avatar_url ? (
         <img src={member.avatar_url} alt="" className="size-full object-cover" />
@@ -85,7 +104,11 @@ export function MemberAvatar({ member, size = 32, className }: { member: TeamMem
 
 function rangeLabel(view: CalendarView, days: Date[], anchor: Date, locale: string) {
   if (view === "day") {
-    return new Intl.DateTimeFormat(locale, { weekday: "short", month: "short", day: "numeric" }).format(anchor);
+    return new Intl.DateTimeFormat(locale, {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    }).format(anchor);
   }
   if (view === "month") {
     return new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" }).format(anchor);
@@ -113,11 +136,14 @@ function TeamSelector({
   const [query, setQuery] = useState("");
   const me = members.find((member) => member.user_id && member.user_id === currentUserId);
   const pickedIds = useMemo(() => {
-    if (selection === "all" || selection === "scheduled") return new Set(members.map((member) => member.id));
+    if (selection === "all" || selection === "scheduled")
+      return new Set(members.map((member) => member.id));
     if (selection === "me") return new Set(me ? [me.id] : []);
     return new Set(selection.split(",").filter(Boolean));
   }, [members, me, selection]);
-  const visible = members.filter((member) => memberName(member).toLowerCase().includes(query.trim().toLowerCase()));
+  const visible = members.filter((member) =>
+    memberName(member).toLowerCase().includes(query.trim().toLowerCase()),
+  );
   const allPicked = members.length > 0 && members.every((member) => pickedIds.has(member.id));
 
   function toggle(id: string) {
@@ -145,7 +171,12 @@ function TeamSelector({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button type="button" aria-label="Team members" title="Team members" className={cn(outline, "size-9 rounded-full")}>
+        <button
+          type="button"
+          aria-label="Team members"
+          title="Team members"
+          className={cn(outline, "size-9 rounded-full")}
+        >
           <UsersThree size={18} />
         </button>
       </PopoverTrigger>
@@ -162,7 +193,9 @@ function TeamSelector({
         <div className="mt-2 space-y-0.5">
           {option("scheduled", "Scheduled team", <CalendarDots size={18} />)}
           {option("all", "All team", <UsersFour size={18} />)}
-          {me ? option("me", `${memberName(me)} (You)`, <MemberAvatar member={me} size={22} />) : null}
+          {me
+            ? option("me", `${memberName(me)} (You)`, <MemberAvatar member={me} size={22} />)
+            : null}
         </div>
         <div className="my-2 h-px bg-border" />
         <label className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-[0.9375rem] font-semibold hover:bg-secondary">
@@ -175,7 +208,10 @@ function TeamSelector({
               key={member.id}
               className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-[0.9375rem] hover:bg-secondary"
             >
-              <Checkbox checked={pickedIds.has(member.id)} onCheckedChange={() => toggle(member.id)} />
+              <Checkbox
+                checked={pickedIds.has(member.id)}
+                onCheckedChange={() => toggle(member.id)}
+              />
               <MemberAvatar member={member} size={24} />
               <span className="truncate">{memberName(member)}</span>
             </label>
@@ -236,11 +272,20 @@ export function CalendarToolbar({
   filtersOn?: boolean;
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
-  const unit = view === "day" ? "day" : view === "month" ? "month" : view === "week" ? "week" : "3 days";
+  const unit =
+    view === "day" ? "day" : view === "month" ? "month" : view === "week" ? "week" : "3 days";
 
   return (
     <div className="flex min-h-[3.25rem] shrink-0 flex-wrap items-center gap-2 bg-background px-4 py-3 sm:px-5">
-      <button type="button" disabled={locked} onClick={onToday} className={cn(outline, "rounded-full px-4 disabled:pointer-events-none disabled:opacity-40")}>
+      <button
+        type="button"
+        disabled={locked}
+        onClick={onToday}
+        className={cn(
+          outline,
+          "rounded-full px-4 disabled:pointer-events-none disabled:opacity-40",
+        )}
+      >
         Today
       </button>
 
@@ -255,7 +300,10 @@ export function CalendarToolbar({
         </button>
         <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
           <PopoverTrigger asChild>
-            <button type="button" className={cn(outline, "-mx-px min-w-[8.5rem] px-5 sm:min-w-[11rem]")}>
+            <button
+              type="button"
+              className={cn(outline, "-mx-px min-w-[8.5rem] px-5 sm:min-w-[11rem]")}
+            >
               {rangeLabel(view, days, anchor, locale)}
             </button>
           </PopoverTrigger>
@@ -288,9 +336,15 @@ export function CalendarToolbar({
         currentUserId={currentUserId}
         onChange={onSelectionChange}
       />
-      <IconButton label="Visibility filters" onClick={onFilters} className={cn("relative", filtersOn && "border-primary text-primary")}>
+      <IconButton
+        label="Visibility filters"
+        onClick={onFilters}
+        className={cn("relative", filtersOn && "border-primary text-primary")}
+      >
         <FadersHorizontal size={18} />
-        {filtersOn ? <span className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-primary ring-2 ring-background" /> : null}
+        {filtersOn ? (
+          <span className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-primary ring-2 ring-background" />
+        ) : null}
       </IconButton>
 
       <div className="ml-auto flex items-center gap-2">
@@ -313,7 +367,10 @@ export function CalendarToolbar({
           </button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button type="button" className={cn(outline, "-ml-px gap-2 rounded-r-full pl-4 pr-3.5")}>
+              <button
+                type="button"
+                className={cn(outline, "-ml-px gap-2 rounded-r-full pl-4 pr-3.5")}
+              >
                 {VIEW_LABELS[view]}
                 <CaretDown size={13} weight="bold" />
               </button>
@@ -323,7 +380,10 @@ export function CalendarToolbar({
                 <DropdownMenuItem
                   key={key}
                   onSelect={() => onViewChange(key)}
-                  className={cn("gap-3 rounded-lg px-3 py-2 text-[0.9375rem]", view === key && "bg-accent/60")}
+                  className={cn(
+                    "gap-3 rounded-lg px-3 py-2 text-[0.9375rem]",
+                    view === key && "bg-accent/60",
+                  )}
                 >
                   {VIEW_ICONS[key]}
                   <span className="flex-1">{VIEW_LABELS[key]}</span>

@@ -109,11 +109,18 @@ function Section({
       <button
         type="button"
         onClick={onToggle}
-        className={cn("flex w-full items-center gap-3 px-6 py-4 text-left text-[0.9375rem]", open && "bg-secondary/60")}
+        className={cn(
+          "flex w-full items-center gap-3 px-6 py-4 text-left text-[0.9375rem]",
+          open && "bg-secondary/60",
+        )}
       >
         {icon}
         <span className="flex-1 font-medium">{title}</span>
-        {count ? <span className="rounded-full bg-primary px-2 text-[0.75rem] font-semibold text-primary-foreground">{count}</span> : null}
+        {count ? (
+          <span className="rounded-full bg-primary px-2 text-[0.75rem] font-semibold text-primary-foreground">
+            {count}
+          </span>
+        ) : null}
         <CaretDown size={14} className={cn("transition-transform", open && "rotate-180")} />
       </button>
       {open ? <div className="space-y-1 px-6 pb-4 pt-1">{children}</div> : null}
@@ -121,10 +128,23 @@ function Section({
   );
 }
 
-function CheckRow({ checked, label, onChange }: { checked: boolean; label: string; onChange: () => void }) {
+function CheckRow({
+  checked,
+  label,
+  onChange,
+}: {
+  checked: boolean;
+  label: string;
+  onChange: () => void;
+}) {
   return (
     <label className="flex cursor-pointer items-center gap-3 rounded-lg px-1 py-2 text-[0.9375rem] hover:bg-secondary/60">
-      <input type="checkbox" checked={checked} onChange={onChange} className="size-5 accent-[var(--color-primary)]" />
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className="size-5 accent-[var(--color-primary)]"
+      />
       {label}
     </label>
   );
@@ -153,7 +173,9 @@ export function FiltersDrawer({
   const toggle = (key: keyof CalendarFilters, item: string) =>
     setDraft((current) => ({
       ...current,
-      [key]: current[key].includes(item) ? current[key].filter((entry) => entry !== item) : [...current[key], item],
+      [key]: current[key].includes(item)
+        ? current[key].filter((entry) => entry !== item)
+        : [...current[key], item],
     }));
 
   return (
@@ -179,7 +201,11 @@ export function FiltersDrawer({
           >
             <DotsThreeVertical size={20} weight="bold" />
           </button>
-          <button type="button" onClick={() => setDraft(EMPTY_FILTERS)} className={cn(pill, "flex-1 border border-border hover:bg-secondary")}>
+          <button
+            type="button"
+            onClick={() => setDraft(EMPTY_FILTERS)}
+            className={cn(pill, "flex-1 border border-border hover:bg-secondary")}
+          >
             Clear filters
           </button>
           <button
@@ -203,7 +229,12 @@ export function FiltersDrawer({
         onToggle={() => setSection(section === "status" ? null : "status")}
       >
         {FILTER_STATUSES.map(([key, label]) => (
-          <CheckRow key={key} checked={draft.statuses.includes(key)} label={label} onChange={() => toggle("statuses", key)} />
+          <CheckRow
+            key={key}
+            checked={draft.statuses.includes(key)}
+            label={label}
+            onChange={() => toggle("statuses", key)}
+          />
         ))}
       </Section>
       <Section
@@ -214,7 +245,12 @@ export function FiltersDrawer({
         onToggle={() => setSection(section === "type" ? null : "type")}
       >
         {FILTER_TYPES.map(([key, label]) => (
-          <CheckRow key={key} checked={draft.types.includes(key)} label={label} onChange={() => toggle("types", key)} />
+          <CheckRow
+            key={key}
+            checked={draft.types.includes(key)}
+            label={label}
+            onChange={() => toggle("types", key)}
+          />
         ))}
       </Section>
       <Section
@@ -237,7 +273,13 @@ export function FiltersDrawer({
           <p className="py-2 text-sm text-muted-foreground">No services yet.</p>
         )}
       </Section>
-      {["Channel", "Payment status", "Appointment creation date", "Requested team member", "Client segments"].map((label) => (
+      {[
+        "Channel",
+        "Payment status",
+        "Appointment creation date",
+        "Requested team member",
+        "Client segments",
+      ].map((label) => (
         <button
           key={label}
           type="button"
@@ -374,7 +416,12 @@ type WaitlistEntry = {
   services: { name: string } | null;
 };
 
-type ClientOption = { id: string; first_name: string; last_name: string | null; email: string | null };
+type ClientOption = {
+  id: string;
+  first_name: string;
+  last_name: string | null;
+  email: string | null;
+};
 
 export function WaitlistDrawer({
   open,
@@ -393,7 +440,12 @@ export function WaitlistDrawer({
   const [tab, setTab] = useState<"waiting" | "expired" | "booked">("waiting");
   const [step, setStep] = useState<null | "client" | "time" | "service">(null);
   const [clientQuery, setClientQuery] = useState("");
-  const [picked, setPicked] = useState<{ client: ClientOption | null; date: string; time: string; serviceId: string }>({
+  const [picked, setPicked] = useState<{
+    client: ClientOption | null;
+    date: string;
+    time: string;
+    serviceId: string;
+  }>({
     client: null,
     date: "",
     time: "any",
@@ -411,7 +463,9 @@ export function WaitlistDrawer({
     queryFn: async (): Promise<{ rows: WaitlistEntry[]; missing: boolean }> => {
       const { data, error } = await db
         .from("waitlist_entries")
-        .select("id, status, preferred_date, preferred_time, created_at, clients(first_name, last_name), services(name)")
+        .select(
+          "id, status, preferred_date, preferred_time, created_at, clients(first_name, last_name), services(name)",
+        )
         .eq("business_id", businessId)
         .order("created_at", { ascending: true });
       if (isMissingTable(error)) return { rows: [], missing: true };
@@ -454,7 +508,11 @@ export function WaitlistDrawer({
       setStep(null);
     },
     onError: (error: { code?: string; message?: string }) =>
-      toast.error(isMissingTable(error) ? MISSING_TABLE_MESSAGE : (error.message ?? "Could not add to the waitlist")),
+      toast.error(
+        isMissingTable(error)
+          ? MISSING_TABLE_MESSAGE
+          : (error.message ?? "Could not add to the waitlist"),
+      ),
   });
 
   if (!open) return null;
@@ -476,11 +534,21 @@ export function WaitlistDrawer({
     const term = clientQuery.trim().toLowerCase();
     return (
       <DrawerShell
-        title={step === "client" ? "Select a client" : step === "time" ? "Select date and time" : "Select a service"}
+        title={
+          step === "client"
+            ? "Select a client"
+            : step === "time"
+              ? "Select date and time"
+              : "Select a service"
+        }
         onClose={() => setStep(null)}
         footer={
           step === "time" ? (
-            <button type="button" onClick={() => setStep("service")} className={cn(pill, "w-full bg-ink text-ink-foreground")}>
+            <button
+              type="button"
+              onClick={() => setStep("service")}
+              className={cn(pill, "w-full bg-ink text-ink-foreground")}
+            >
               Next
             </button>
           ) : step === "service" ? (
@@ -499,7 +567,9 @@ export function WaitlistDrawer({
           {steps.map(([key, label], index) => (
             <span key={key} className="flex items-center gap-2">
               {index ? <CaretRight size={12} className="text-muted-foreground" /> : null}
-              <span className={step === key ? "font-semibold" : "text-muted-foreground"}>{label}</span>
+              <span className={step === key ? "font-semibold" : "text-muted-foreground"}>
+                {label}
+              </span>
             </span>
           ))}
         </div>
@@ -530,7 +600,13 @@ export function WaitlistDrawer({
                 <span className="text-[0.9375rem] font-semibold">Walk-In</span>
               </button>
               {(clients.data ?? [])
-                .filter((client) => !term || `${client.first_name} ${client.last_name ?? ""} ${client.email ?? ""}`.toLowerCase().includes(term))
+                .filter(
+                  (client) =>
+                    !term ||
+                    `${client.first_name} ${client.last_name ?? ""} ${client.email ?? ""}`
+                      .toLowerCase()
+                      .includes(term),
+                )
                 .map((client) => (
                   <button
                     key={client.id}
@@ -548,7 +624,9 @@ export function WaitlistDrawer({
                       <span className="block text-[0.9375rem] font-semibold">
                         {client.first_name} {client.last_name}
                       </span>
-                      <span className="block text-[0.8125rem] text-muted-foreground">{client.email}</span>
+                      <span className="block text-[0.8125rem] text-muted-foreground">
+                        {client.email}
+                      </span>
                     </span>
                   </button>
                 ))}
@@ -590,11 +668,15 @@ export function WaitlistDrawer({
                 onClick={() => setPicked({ ...picked, serviceId: service.id })}
                 className={cn(
                   "flex w-full items-center justify-between rounded-lg border py-3 pl-4 pr-3 text-left",
-                  picked.serviceId === service.id ? "border-primary ring-1 ring-primary" : "border-border hover:bg-secondary",
+                  picked.serviceId === service.id
+                    ? "border-primary ring-1 ring-primary"
+                    : "border-border hover:bg-secondary",
                 )}
               >
                 <span className="text-[0.9375rem] font-medium">{service.name}</span>
-                <span className="text-[0.8125rem] text-muted-foreground">{service.duration_minutes} min</span>
+                <span className="text-[0.8125rem] text-muted-foreground">
+                  {service.duration_minutes} min
+                </span>
               </button>
             ))}
           </div>
@@ -635,10 +717,16 @@ export function WaitlistDrawer({
       }
     >
       <div className="flex items-center justify-between gap-3 px-6 pb-4">
-        <button type="button" className="inline-flex h-10 items-center gap-2 rounded-full border border-border px-4 text-[0.875rem]">
+        <button
+          type="button"
+          className="inline-flex h-10 items-center gap-2 rounded-full border border-border px-4 text-[0.875rem]"
+        >
           All upcoming <CaretDown size={12} />
         </button>
-        <button type="button" className="inline-flex h-10 items-center gap-2 rounded-full border border-border px-4 text-[0.875rem]">
+        <button
+          type="button"
+          className="inline-flex h-10 items-center gap-2 rounded-full border border-border px-4 text-[0.875rem]"
+        >
           Created (oldest first)
         </button>
       </div>
@@ -650,30 +738,40 @@ export function WaitlistDrawer({
             onClick={() => setTab(key)}
             className={cn(
               "-mb-px border-b-2 pb-3 text-[0.9375rem] capitalize",
-              tab === key ? "border-foreground font-semibold" : "border-transparent text-muted-foreground",
+              tab === key
+                ? "border-foreground font-semibold"
+                : "border-transparent text-muted-foreground",
             )}
           >
-            {key} <span className="ml-1 rounded-full bg-muted px-1.5 text-[0.75rem]">{counts[key]}</span>
+            {key}{" "}
+            <span className="ml-1 rounded-full bg-muted px-1.5 text-[0.75rem]">{counts[key]}</span>
           </button>
         ))}
       </div>
       {entries.data?.missing ? (
-        <div className="m-6 rounded-xl bg-[#fff6e5] p-4 text-[0.875rem] text-[#7a4b00]">{MISSING_TABLE_MESSAGE}</div>
+        <div className="m-6 rounded-xl bg-[#fff6e5] p-4 text-[0.875rem] text-[#7a4b00]">
+          {MISSING_TABLE_MESSAGE}
+        </div>
       ) : visible.length === 0 ? (
         <div className="flex flex-col items-center px-6 py-20 text-center">
           <ClockCountdown size={40} className="text-primary" />
           <p className="mt-4 text-[1.0625rem] font-semibold">No waitlist entries</p>
-          <p className="mt-1 text-[0.875rem] text-muted-foreground">You don&apos;t have any clients on the waitlist</p>
+          <p className="mt-1 text-[0.875rem] text-muted-foreground">
+            You don&apos;t have any clients on the waitlist
+          </p>
         </div>
       ) : (
         <div className="divide-y divide-border">
           {visible.map((entry) => (
             <div key={entry.id} className="px-6 py-4">
               <p className="text-[0.9375rem] font-semibold">
-                {entry.clients ? `${entry.clients.first_name} ${entry.clients.last_name ?? ""}` : "Walk-In"}
+                {entry.clients
+                  ? `${entry.clients.first_name} ${entry.clients.last_name ?? ""}`
+                  : "Walk-In"}
               </p>
               <p className="text-[0.8125rem] text-muted-foreground">
-                {entry.services?.name ?? "Any service"} · {entry.preferred_date ?? "Any date"} · {entry.preferred_time ?? "Any time"}
+                {entry.services?.name ?? "Any service"} · {entry.preferred_date ?? "Any date"} ·{" "}
+                {entry.preferred_time ?? "Any time"}
               </p>
             </div>
           ))}

@@ -1,7 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { CalendarPage, type CalendarSearch } from "@/components/calendar/calendar-page";
-import { VIEW_LABELS, fromDateParam, toDateParam, type CalendarView } from "@/components/calendar/calendar-data";
+import {
+  VIEW_LABELS,
+  fromDateParam,
+  toDateParam,
+  type CalendarView,
+} from "@/components/calendar/calendar-data";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   validateSearch: (search: Record<string, unknown>): CalendarSearch => {

@@ -70,7 +70,11 @@ export function addDays(date: Date, days: number) {
 }
 
 export function sameDay(a: Date, b: Date) {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
 }
 
 /** Monday-first week, like Fresha's default "first day of the week". */
@@ -139,7 +143,9 @@ export function useTeamMembers(businessId: string | undefined) {
     queryFn: async (): Promise<TeamMember[]> => {
       const { data, error } = await supabase
         .from("team_members")
-        .select("id, first_name, last_name, avatar_color, avatar_url, calendar_color, initials, job_title, user_id")
+        .select(
+          "id, first_name, last_name, avatar_color, avatar_url, calendar_color, initials, job_title, user_id",
+        )
         .eq("business_id", businessId!)
         .eq("is_active", true)
         .order("created_at", { ascending: true });
@@ -178,21 +184,25 @@ export function useCalendarEvents(businessId: string | undefined, from: Date, to
       if (error) throw error;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (data ?? []).filter((row: any) => row.appointments?.status !== "cancelled").map((row: any) => {
-        const client = row.appointments?.clients;
-        return {
-          id: row.id,
-          appointmentId: row.appointment_id,
-          teamMemberId: row.team_member_id,
-          start: new Date(row.start_time),
-          end: new Date(row.end_time),
-          title: client ? [client.first_name, client.last_name].filter(Boolean).join(" ") : "Walk-in",
-          email: client?.email ?? null,
-          serviceName: row.services?.name ?? "Service",
-          status: row.appointments?.status ?? "booked",
-          price: row.price,
-        } satisfies CalendarEvent;
-      });
+      return (data ?? [])
+        .filter((row: any) => row.appointments?.status !== "cancelled")
+        .map((row: any) => {
+          const client = row.appointments?.clients;
+          return {
+            id: row.id,
+            appointmentId: row.appointment_id,
+            teamMemberId: row.team_member_id,
+            start: new Date(row.start_time),
+            end: new Date(row.end_time),
+            title: client
+              ? [client.first_name, client.last_name].filter(Boolean).join(" ")
+              : "Walk-in",
+            email: client?.email ?? null,
+            serviceName: row.services?.name ?? "Service",
+            status: row.appointments?.status ?? "booked",
+            price: row.price,
+          } satisfies CalendarEvent;
+        });
     },
   });
 }

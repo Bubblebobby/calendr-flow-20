@@ -10,6 +10,7 @@ import { useBusinessHours } from "@/lib/business-hours";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CheckoutScreen, type CheckoutStart } from "@/components/sales/checkout-screen";
 import { AppointmentPanel, type PanelTarget, type RebookRequest } from "./appointment-panel";
 import { BlockedTimeDrawer, useBlockedTimes, type BlockDraft } from "./blocked-time";
 import {
@@ -117,7 +118,10 @@ export function CalendarPage({
       const { data, error } = await supabase
         .from("appointment_items")
         .select("id, service_id")
-        .in("id", rawEvents.map((event) => event.id));
+        .in(
+          "id",
+          rawEvents.map((event) => event.id),
+        );
       if (error) throw error;
       return new Map((data ?? []).map((row) => [row.id, row.service_id as string]));
     },
@@ -133,19 +137,31 @@ export function CalendarPage({
     return rawEvents.filter(
       (event) =>
         (!filters.statuses.length || filters.statuses.includes(event.status)) &&
-        (!filters.serviceIds.length || filters.serviceIds.includes(serviceIdByItem.get(event.id) ?? "")),
+        (!filters.serviceIds.length ||
+          filters.serviceIds.includes(serviceIdByItem.get(event.id) ?? "")),
     );
   }, [rawEvents, filters, serviceIdByItem]);
   const blocks = filters.types.length && !filters.types.includes("blocked") ? [] : rawBlocks;
 
   // Interaction state
   const [pick, setPick] = useState<PickMode | null>(null);
-  const [quickAction, setQuickAction] = useState<{ column: GridColumn; minutes: number; x: number; y: number } | null>(null);
+  const [quickAction, setQuickAction] = useState<{
+    column: GridColumn;
+    minutes: number;
+    x: number;
+    y: number;
+  } | null>(null);
   const [panel, setPanel] = useState<PanelTarget | null>(null);
   const [panelMinimized, setPanelMinimized] = useState(false);
   const [blockDraft, setBlockDraft] = useState<BlockDraft | null>(null);
-  const [hovered, setHovered] = useState<{ appointment: CalendarEvent; member: TeamMember; x: number; y: number } | null>(null);
+  const [hovered, setHovered] = useState<{
+    appointment: CalendarEvent;
+    member: TeamMember;
+    x: number;
+    y: number;
+  } | null>(null);
   const [drawer, setDrawer] = useState<null | "filters" | "settings" | "waitlist">(null);
+  const [checkout, setCheckout] = useState<CheckoutStart | null>(null);
 
   useEffect(() => {
     if (!pick) return;
@@ -159,15 +175,32 @@ export function CalendarPage({
     if (action === "appointment") setPick({ kind: "book" });
     else if (action === "blocked") setPick({ kind: "block" });
     else if (action === "group") setPick({ kind: "group" });
-    else toast(action === "sale" ? "New sales open from Sales → Daily sales → Add new" : "Quick payment arrives with Sales payments");
+    else
+      toast(
+        action === "sale"
+          ? "New sales open from Sales → Daily sales → Add new"
+          : "Quick payment arrives with Sales payments",
+      );
   }
 
-  function showAppointment(event: React.MouseEvent<HTMLElement>, appointment: CalendarEvent, member: TeamMember) {
+  function showAppointment(
+    event: React.MouseEvent<HTMLElement>,
+    appointment: CalendarEvent,
+    member: TeamMember,
+  ) {
     const rect = event.currentTarget.getBoundingClientRect();
     const width = 372;
-    const x = Math.min(Math.max(16, rect.left + rect.width / 2 - width / 2), window.innerWidth - width - 16);
+    const x = Math.min(
+      Math.max(16, rect.left + rect.width / 2 - width / 2),
+      window.innerWidth - width - 16,
+    );
     const preferredTop = rect.top - 220;
-    setHovered({ appointment, member, x, y: preferredTop >= 16 ? preferredTop : Math.min(window.innerHeight - 210, rect.bottom + 10) });
+    setHovered({
+      appointment,
+      member,
+      x,
+      y: preferredTop >= 16 ? preferredTop : Math.min(window.innerHeight - 210, rect.bottom + 10),
+    });
   }
 
   function openAppointment(appointment: CalendarEvent) {
@@ -176,22 +209,40 @@ export function CalendarPage({
     setPanel({ kind: "existing", appointmentId: appointment.appointmentId });
   }
 
-  function openNew(member: TeamMember, date: Date, minutes: number, prefill?: { clientId: string | null; serviceIds: string[] }) {
+  function openNew(
+    member: TeamMember,
+    date: Date,
+    minutes: number,
+    prefill?: { clientId: string | null; serviceIds: string[] },
+  ) {
     setPanelMinimized(false);
     setPanel({ kind: "new", member, date, minutes, ...(prefill ? { prefill } : {}) });
   }
 
-  function handleSlotClick(event: React.MouseEvent<HTMLElement>, column: GridColumn, minutes: number) {
+  function handleSlotClick(
+    event: React.MouseEvent<HTMLElement>,
+    column: GridColumn,
+    minutes: number,
+  ) {
     if (pick) {
       const mode = pick;
       setPick(null);
-      if (mode.kind === "block") setBlockDraft({ member: column.member, date: column.date, minutes });
+      if (mode.kind === "block")
+        setBlockDraft({ member: column.member, date: column.date, minutes });
       else if (mode.kind === "reschedule")
-        setPanel({ kind: "existing", appointmentId: mode.appointmentId, moveTo: { member: column.member, date: column.date, minutes } });
+        setPanel({
+          kind: "existing",
+          appointmentId: mode.appointmentId,
+          moveTo: { member: column.member, date: column.date, minutes },
+        });
       else if (mode.kind === "rebook")
-        openNew(column.member, column.date, minutes, { clientId: mode.request.clientId, serviceIds: mode.request.serviceIds });
+        openNew(column.member, column.date, minutes, {
+          clientId: mode.request.clientId,
+          serviceIds: mode.request.serviceIds,
+        });
       else {
-        if (mode.kind === "group") toast("Saved as a regular appointment until group bookings get their database update");
+        if (mode.kind === "group")
+          toast("Saved as a regular appointment until group bookings get their database update");
         openNew(column.member, column.date, minutes);
       }
       return;
@@ -211,9 +262,11 @@ export function CalendarPage({
     const slot = quickAction;
     setQuickAction(null);
     if (!slot) return;
-    if (action === "block") setBlockDraft({ member: slot.column.member, date: slot.column.date, minutes: slot.minutes });
+    if (action === "block")
+      setBlockDraft({ member: slot.column.member, date: slot.column.date, minutes: slot.minutes });
     else {
-      if (action === "group") toast("Saved as a regular appointment until group bookings get their database update");
+      if (action === "group")
+        toast("Saved as a regular appointment until group bookings get their database update");
       openNew(slot.column.member, slot.column.date, slot.minutes);
     }
   }
@@ -223,10 +276,16 @@ export function CalendarPage({
 
   const currency = business?.currency;
   const formatPrice = (value: number | null) =>
-    value === null || !currency ? null : new Intl.NumberFormat(locale, { style: "currency", currency }).format(value);
+    value === null || !currency
+      ? null
+      : new Intl.NumberFormat(locale, { style: "currency", currency }).format(value);
 
   const pickTitle =
-    pick?.kind === "block" ? "Select a time to block" : pick?.kind === "reschedule" ? "Select a time to reschedule" : "Select a time to book";
+    pick?.kind === "block"
+      ? "Select a time to block"
+      : pick?.kind === "reschedule"
+        ? "Select a time to reschedule"
+        : "Select a time to book";
   const highlightIds = pick?.kind === "reschedule" ? new Set(pick.itemIds) : undefined;
 
   let body: React.ReactNode;
@@ -244,7 +303,8 @@ export function CalendarPage({
           <UsersThree size={32} className="text-muted-foreground" />
           <p className="text-base font-semibold text-foreground">No team members yet</p>
           <p className="text-sm text-muted-foreground">
-            The calendar shows one column per active team member. Add your first team member to start scheduling appointments.
+            The calendar shows one column per active team member. Add your first team member to
+            start scheduling appointments.
           </p>
           <Button asChild className="mt-2">
             <Link to="/team">Add team members</Link>
@@ -286,11 +346,22 @@ export function CalendarPage({
     );
   } else {
     // Picking always happens on a time grid: day view, or a single member's days.
-    const gridDays = view === "day" || view === "month" || (pick && members.length > 1) ? [startOfDay(anchor)] : days;
+    const gridDays =
+      view === "day" || view === "month" || (pick && members.length > 1)
+        ? [startOfDay(anchor)]
+        : days;
     const asMembers = gridDays.length === 1;
     const columns: GridColumn[] = asMembers
-      ? members.map((member) => ({ key: `${member.id}-${gridDays[0]!.toDateString()}`, member, date: gridDays[0]! }))
-      : gridDays.map((date) => ({ key: `${members[0]!.id}-${date.toDateString()}`, member: members[0]!, date }));
+      ? members.map((member) => ({
+          key: `${member.id}-${gridDays[0]!.toDateString()}`,
+          member,
+          date: gridDays[0]!,
+        }))
+      : gridDays.map((date) => ({
+          key: `${members[0]!.id}-${date.toDateString()}`,
+          member: members[0]!,
+          date,
+        }));
     body = (
       <TimeGrid
         columns={columns}
@@ -303,19 +374,25 @@ export function CalendarPage({
         slotHeight={slotHeight}
         picking={Boolean(pick)}
         {...(highlightIds ? { highlightIds } : {})}
-        selectedSlot={quickAction ? { columnKey: quickAction.column.key, minutes: quickAction.minutes } : null}
+        selectedSlot={
+          quickAction ? { columnKey: quickAction.column.key, minutes: quickAction.minutes } : null
+        }
         onSlotClick={handleSlotClick}
         onEventHover={showAppointment}
         onEventLeave={() => setHovered(null)}
         onEventClick={openAppointment}
-        onBlockClick={(block, member) => setBlockDraft({ member, date: new Date(block.start_time), minutes: 0, existing: block })}
+        onBlockClick={(block, member) =>
+          setBlockDraft({ member, date: new Date(block.start_time), minutes: 0, existing: block })
+        }
       />
     );
   }
 
   return (
     // While picking a time the calendar covers the app chrome, like Fresha.
-    <div className={cn("flex min-h-0 flex-col bg-background", pick ? "fixed inset-0 z-40" : "h-full")}>
+    <div
+      className={cn("flex min-h-0 flex-col bg-background", pick ? "fixed inset-0 z-40" : "h-full")}
+    >
       {pick ? (
         <div className="relative flex h-16 shrink-0 items-center justify-center bg-primary px-16 text-primary-foreground">
           <span className="text-lg font-semibold">{pickTitle}</span>
@@ -365,7 +442,8 @@ export function CalendarPage({
         >
           <div className="flex h-11 items-center justify-between bg-primary px-5 text-sm text-primary-foreground">
             <span>
-              {formatDateTime(hovered.appointment.start)} - {formatDateTime(hovered.appointment.end)}
+              {formatDateTime(hovered.appointment.start)} -{" "}
+              {formatDateTime(hovered.appointment.end)}
             </span>
             <span className="capitalize">{hovered.appointment.status.replace("_", " ")}</span>
           </div>
@@ -375,20 +453,37 @@ export function CalendarPage({
                 {deriveInitials(hovered.appointment.title)}
               </span>
               <div className="min-w-0">
-                <p className="truncate text-base font-semibold text-popover-foreground">{hovered.appointment.title}</p>
-                {hovered.appointment.email ? <p className="truncate text-sm text-muted-foreground">{hovered.appointment.email}</p> : null}
+                <p className="truncate text-base font-semibold text-popover-foreground">
+                  {hovered.appointment.title}
+                </p>
+                {hovered.appointment.email ? (
+                  <p className="truncate text-sm text-muted-foreground">
+                    {hovered.appointment.email}
+                  </p>
+                ) : null}
               </div>
             </div>
             <div className="mt-5 flex items-start justify-between gap-4">
               <div>
-                <p className="font-semibold text-popover-foreground">{hovered.appointment.serviceName}</p>
+                <p className="font-semibold text-popover-foreground">
+                  {hovered.appointment.serviceName}
+                </p>
                 <p className="text-sm text-muted-foreground">
                   {memberName(hovered.member)} ·{" "}
-                  {Math.max(0, Math.round((hovered.appointment.end.getTime() - hovered.appointment.start.getTime()) / 60000))} min
+                  {Math.max(
+                    0,
+                    Math.round(
+                      (hovered.appointment.end.getTime() - hovered.appointment.start.getTime()) /
+                        60000,
+                    ),
+                  )}{" "}
+                  min
                 </p>
               </div>
               {formatPrice(hovered.appointment.price) ? (
-                <p className="font-semibold text-popover-foreground">{formatPrice(hovered.appointment.price)}</p>
+                <p className="font-semibold text-popover-foreground">
+                  {formatPrice(hovered.appointment.price)}
+                </p>
               ) : null}
             </div>
           </div>
@@ -473,6 +568,10 @@ export function CalendarPage({
           setPanel(null);
           setPick({ kind: "reschedule", appointmentId, itemIds });
         }}
+        onCheckout={(start) => {
+          setPanel(null);
+          setCheckout(start);
+        }}
         onRebook={(request) => {
           setPanel(null);
           setPick({ kind: "rebook", request });
@@ -515,6 +614,8 @@ export function CalendarPage({
         }}
         onClose={() => setDrawer(null)}
       />
+      <CheckoutScreen open={checkout !== null} start={checkout} onClose={() => setCheckout(null)} />
+
       <WaitlistDrawer
         open={drawer === "waitlist"}
         businessId={business?.id}

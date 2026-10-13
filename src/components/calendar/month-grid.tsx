@@ -27,7 +27,11 @@ export function MonthGrid({
   now: Date;
   locale: string;
   onDayClick: (date: Date) => void;
-  onEventHover: (event: React.MouseEvent<HTMLElement>, appointment: CalendarEvent, member: TeamMember) => void;
+  onEventHover: (
+    event: React.MouseEvent<HTMLElement>,
+    appointment: CalendarEvent,
+    member: TeamMember,
+  ) => void;
   onEventLeave: () => void;
   onEventClick: (appointment: CalendarEvent) => void;
 }) {
@@ -72,10 +76,16 @@ export function MonthGrid({
               <span
                 className={cn(
                   "inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[0.75rem] font-semibold tabular-nums",
-                  isToday ? "bg-primary text-primary-foreground" : outside || closed ? "text-muted-foreground" : "text-foreground",
+                  isToday
+                    ? "bg-primary text-primary-foreground"
+                    : outside || closed
+                      ? "text-muted-foreground"
+                      : "text-foreground",
                 )}
               >
-                {date.getDate() === 1 ? `${date.getDate()} ${monthName.format(date)}` : date.getDate()}
+                {date.getDate() === 1
+                  ? `${date.getDate()} ${monthName.format(date)}`
+                  : date.getDate()}
               </span>
               {dayEvents.slice(0, MAX_CHIPS).map((appointment) => (
                 <EventChip
