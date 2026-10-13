@@ -199,7 +199,7 @@ export function SalesAppointmentsList() {
         id: appt.id,
         ref: `#${appt.id.replace(/-/g, "").slice(0, 8).toUpperCase()}`,
         clientId: appt.clients?.id ?? null,
-        clientName: appt.is_walk_in ? "Walk-In" : fullName(appt.clients),
+        clientName: appt.is_walk_in || !appt.clients ? "Walk-In" : fullName(appt.clients),
         serviceName: serviceNames.join(", ") || "—",
         createdBy: appt.profiles?.full_name?.trim() || "—",
         createdAt: new Date(appt.created_at),
@@ -244,14 +244,14 @@ export function SalesAppointmentsList() {
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Appointments</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Appointments</h1>
+          <p className="mt-1 text-body text-muted-foreground">
             View, filter and export appointments booked by your clients.
           </p>
         </div>
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="rounded-full">
+            <Button variant="outline" size="sm" className="h-9 px-4 text-body font-medium">
               Export
               <CaretDown size={14} className="ml-1" />
             </Button>
@@ -262,7 +262,7 @@ export function SalesAppointmentsList() {
                 key={format}
                 type="button"
                 onClick={() => toast(`${format} export — coming soon`)}
-                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted/60"
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-body text-foreground hover:bg-muted/60"
               >
                 <Export size={15} className="text-muted-foreground" />
                 Export as {format}
@@ -273,7 +273,7 @@ export function SalesAppointmentsList() {
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2 rounded-xl bg-toolbar p-4">
         <div className="relative">
           <MagnifyingGlass
             size={15}
@@ -283,12 +283,12 @@ export function SalesAppointmentsList() {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search by Reference or Client"
-            className="w-64 rounded-full pl-9"
+            className="h-9 w-64 rounded-full border-input bg-card pl-9 text-body"
           />
         </div>
 
         <Select value={period} onValueChange={(value) => setPeriod(value as Period)}>
-          <SelectTrigger className="w-40 rounded-full">
+          <SelectTrigger className="h-9 w-auto gap-2 rounded-full border-input bg-card px-4 text-body font-medium">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -302,7 +302,7 @@ export function SalesAppointmentsList() {
 
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="rounded-full">
+            <Button variant="outline" size="sm" className="h-9 px-4 text-body font-medium">
               <Funnel size={14} className="mr-1.5" />
               Filters
               {activeFilterCount > 0 && (
@@ -313,15 +313,15 @@ export function SalesAppointmentsList() {
             </Button>
           </PopoverTrigger>
           <PopoverContent align="start" className="w-56 p-3">
-            <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <p className="mb-2 px-1 text-caption font-semibold uppercase tracking-wide text-muted-foreground">
               Status
             </p>
-            <p className="mb-2 px-1 text-xs text-muted-foreground">Uncheck to hide a status.</p>
+            <p className="mb-2 px-1 text-caption text-muted-foreground">Uncheck to hide a status.</p>
             <div className="flex flex-col gap-1">
               {STATUSES.map((status) => (
                 <label
                   key={status.value}
-                  className="flex cursor-pointer items-center gap-2.5 rounded-md px-1 py-1.5 text-sm hover:bg-muted/60"
+                  className="flex cursor-pointer items-center gap-2.5 rounded-md px-1 py-1.5 text-body hover:bg-muted/60"
                 >
                   <Checkbox
                     checked={!excludedStatuses.has(status.value)}
@@ -336,7 +336,7 @@ export function SalesAppointmentsList() {
 
         <div className="ml-auto">
           <Select value={sort} onValueChange={(value) => setSort(value as Sort)}>
-            <SelectTrigger className="w-64 rounded-full">
+            <SelectTrigger className="h-9 w-auto gap-2 rounded-full border-input bg-card px-4 text-body font-medium">
               <SelectValue />
             </SelectTrigger>
             <SelectContent align="end">
@@ -351,10 +351,10 @@ export function SalesAppointmentsList() {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-border bg-card">
-        <table className="w-full min-w-[64rem] text-left text-sm">
+      <div className="overflow-x-auto">
+        <table className="data-table min-w-[64rem] whitespace-nowrap">
           <thead>
-            <tr className="border-b border-border text-[0.8125rem] font-semibold text-foreground">
+            <tr>
               <th className="px-5 py-3.5">Ref #</th>
               <th className="px-4 py-3.5">Client</th>
               <th className="px-4 py-3.5">Service</th>
@@ -428,7 +428,7 @@ export function SalesAppointmentsList() {
           </tbody>
         </table>
         {!appointmentsQuery.isLoading && filtered.length > 0 && (
-          <p className="px-5 py-4 text-center text-sm text-muted-foreground">
+          <p className="px-5 py-4 text-center text-body text-muted-foreground">
             Viewing 1 – {filtered.length} of {filtered.length} results
           </p>
         )}

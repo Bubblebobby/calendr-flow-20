@@ -108,9 +108,9 @@ function Section({
 }) {
   return (
     <section className="rounded-3xl border border-border bg-card p-8">
-      <h2 className="text-lg font-bold tracking-tight text-foreground">{title}</h2>
+      <h2 className="text-lg font-semibold tracking-tight text-foreground">{title}</h2>
       {description ? (
-        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+        <p className="mt-1 text-body text-muted-foreground">{description}</p>
       ) : null}
       <div className="mt-6 space-y-5">{children}</div>
     </section>
@@ -257,8 +257,10 @@ export function ClientForm({
     },
   });
 
+  // Separate cache key: this is a slim name-only list for "Referred by", and must not
+  // overwrite the full list the Clients page caches under ["clients", businessId].
   const clientsQuery = useQuery({
-    queryKey: ["clients", businessId],
+    queryKey: ["clients-referral-options", businessId],
     enabled: Boolean(businessId),
     queryFn: async () => {
       const { data, error } = await supabase
@@ -527,7 +529,7 @@ export function ClientForm({
             Close
           </Button>
           <Button
-            className="h-11 rounded-full px-7 text-base font-semibold"
+            className="h-11 rounded-full bg-ink px-7 text-base font-semibold text-ink-foreground hover:bg-ink/90"
             onClick={onSave}
             disabled={save.isPending}
           >
@@ -537,19 +539,19 @@ export function ClientForm({
       </header>
 
       <div className="mx-auto w-full max-w-6xl px-8 pb-24">
-        <h1 className="text-4xl font-bold tracking-tight text-foreground">
+        <h1 className="text-4xl font-semibold tracking-tight text-foreground">
           {isEdit ? "Edit client" : "Add a new client"}
         </h1>
 
         <div className="mt-10 grid gap-12 lg:grid-cols-[240px_minmax(0,1fr)]">
           {/* Left navigation */}
           <nav className="h-fit rounded-2xl border border-[#D3D3D3] bg-white p-3">
-            <p className="px-3 py-2 text-sm font-bold text-foreground">Personal</p>
+            <p className="px-3 py-2 text-body font-semibold text-foreground">Personal</p>
             <button
               type="button"
               onClick={() => setSection("profile")}
               className={cn(
-                "w-full rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors",
+                "w-full rounded-lg px-3 py-2 text-left text-body font-medium transition-colors",
                 section === "profile"
                   ? "bg-accent/40 text-foreground"
                   : "text-muted-foreground hover:bg-muted",
@@ -561,7 +563,7 @@ export function ClientForm({
               type="button"
               onClick={() => setSection("addresses")}
               className={cn(
-                "w-full rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors",
+                "w-full rounded-lg px-3 py-2 text-left text-body font-medium transition-colors",
                 section === "addresses"
                   ? "bg-accent/40 text-foreground"
                   : "text-muted-foreground hover:bg-muted",
@@ -572,7 +574,7 @@ export function ClientForm({
             <button
               type="button"
               onClick={() => toast("Coming soon")}
-              className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted"
+              className="w-full rounded-lg px-3 py-2 text-left text-body font-medium text-muted-foreground transition-colors hover:bg-muted"
             >
               Emergency contacts
             </button>
@@ -580,7 +582,7 @@ export function ClientForm({
             <button
               type="button"
               onClick={() => toast("Coming soon")}
-              className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted"
+              className="w-full rounded-lg px-3 py-2 text-left text-body font-medium text-muted-foreground transition-colors hover:bg-muted"
             >
               Settings
             </button>
@@ -597,8 +599,8 @@ export function ClientForm({
             ) : null}
             <section className={cn("space-y-6", section !== "profile" && "hidden")}>
               <div>
-                <h2 className="text-2xl font-bold tracking-tight text-foreground">Profile</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground">Profile</h2>
+                <p className="mt-1 text-body text-muted-foreground">
                   Manage your client&apos;s personal profile
                 </p>
               </div>
@@ -637,7 +639,7 @@ export function ClientForm({
                     onBlur={() => setTouched((t) => ({ ...t, firstName: true }))}
                   />
                   {firstNameError ? (
-                    <p className="text-sm text-destructive">First name is required</p>
+                    <p className="text-body text-destructive">First name is required</p>
                   ) : null}
                 </div>
                 <div className="space-y-2">
@@ -651,7 +653,7 @@ export function ClientForm({
                     onBlur={() => setTouched((t) => ({ ...t, lastName: true }))}
                   />
                   {lastNameError ? (
-                    <p className="text-sm text-destructive">Last name is required</p>
+                    <p className="text-body text-destructive">Last name is required</p>
                   ) : null}
                 </div>
               </div>
@@ -778,10 +780,10 @@ export function ClientForm({
 
             <section className={cn("space-y-6", section !== "profile" && "hidden")}>
               <div>
-                <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
                   Additional info
                 </h2>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="mt-1 text-body text-muted-foreground">
                   Edit additional information about the client
                 </p>
               </div>
@@ -801,7 +803,7 @@ export function ClientForm({
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-caption text-muted-foreground">
                     Choose how this client found your business.
                   </p>
                 </div>
@@ -811,7 +813,7 @@ export function ClientForm({
                     <button
                       type="button"
                       onClick={() => setQuickAddOpen((v) => !v)}
-                      className="text-sm font-semibold text-primary"
+                      className="text-body font-semibold text-primary"
                     >
                       Add
                     </button>
@@ -822,7 +824,7 @@ export function ClientForm({
                     </SelectTrigger>
                     <SelectContent className="max-h-72">
                       {referralOptions.length === 0 ? (
-                        <div className="px-3 py-2 text-sm text-muted-foreground">
+                        <div className="px-3 py-2 text-body text-muted-foreground">
                           No other clients
                         </div>
                       ) : (
@@ -852,7 +854,7 @@ export function ClientForm({
                       </Button>
                     </div>
                   ) : null}
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-caption text-muted-foreground">
                     Choose who referred this client to your business.
                   </p>
                 </div>
@@ -865,7 +867,7 @@ export function ClientForm({
                     <button
                       type="button"
                       onClick={() => setAddLanguageOpen((v) => !v)}
-                      className="text-sm font-semibold text-primary"
+                      className="text-body font-semibold text-primary"
                     >
                       Add
                     </button>
@@ -908,14 +910,14 @@ export function ClientForm({
                       </Button>
                     </div>
                   ) : null}
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-caption text-muted-foreground">
                     Set the language of automated client notifications.
                   </p>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="occupation">Occupation</Label>
-                    <span className="text-xs text-muted-foreground">{occupation.length}/255</span>
+                    <span className="text-caption text-muted-foreground">{occupation.length}/255</span>
                   </div>
                   <Input
                     id="occupation"
@@ -1000,7 +1002,7 @@ export function ClientForm({
                           )
                         }
                         className={cn(
-                          "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+                          "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-body font-medium transition-colors",
                           active
                             ? "border-primary bg-primary text-primary-foreground"
                             : "border-[#D3D3D3] text-foreground hover:bg-muted",
@@ -1029,7 +1031,7 @@ export function ClientForm({
                     Add
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-caption text-muted-foreground">
                   Add tags to group clients and filter them across the platform.
                 </p>
               </div>

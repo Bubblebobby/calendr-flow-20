@@ -32,13 +32,13 @@ export const Route = createFileRoute("/_authenticated/team")({
 function TeamPage() {
   return (
     <div className="min-h-full w-full bg-white">
-      <div className="mx-auto w-full max-w-6xl px-8 py-10">
+      <div className="w-full px-8 pb-10 pt-8">
         <nav className="mb-8 flex items-center gap-2 border-b border-border">
           {TABS.map((tab, index) => (
             <span
               key={tab.key}
               className={cn(
-                "-mb-px border-b-2 px-4 py-3 text-sm font-semibold",
+                "-mb-px border-b-2 px-4 py-3 text-body font-semibold",
                 index === 0
                   ? "border-foreground text-foreground"
                   : "border-transparent text-muted-foreground",

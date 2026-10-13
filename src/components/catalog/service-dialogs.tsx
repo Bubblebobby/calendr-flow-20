@@ -202,7 +202,7 @@ export function ServiceDialog({
               <Label htmlFor="service-category">Category</Label>
               <button
                 type="button"
-                className="text-sm font-semibold text-primary hover:underline"
+                className="text-body font-semibold text-primary hover:underline"
                 onClick={onCreateCategory}
               >
                 Create new category
@@ -214,7 +214,7 @@ export function ServiceDialog({
               onChange={(event) =>
                 setDraft({ ...draft, categoryId: event.target.value || null })
               }
-              className="h-11 w-full rounded-xl border border-input bg-transparent px-3 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="h-11 w-full rounded-xl border border-input bg-transparent px-3 text-body text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="">Uncategorised</option>
               {categories.map((category) => (
@@ -240,10 +240,10 @@ export function ServiceDialog({
                       : "border-border hover:bg-muted",
                   )}
                 >
-                  <span className="block text-sm font-semibold text-foreground">
+                  <span className="block text-body font-semibold text-foreground">
                     {option.label}
                   </span>
-                  <span className="block text-xs text-muted-foreground">{option.hint}</span>
+                  <span className="block text-caption text-muted-foreground">{option.hint}</span>
                 </button>
               ))}
             </div>
@@ -274,7 +274,7 @@ export function ServiceDialog({
                   value={draft.hours}
                   onChange={(event) => setDraft({ ...draft, hours: event.target.value })}
                 />
-                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-caption text-muted-foreground">
                   hr
                 </span>
               </div>
@@ -286,7 +286,7 @@ export function ServiceDialog({
                   value={draft.minutes}
                   onChange={(event) => setDraft({ ...draft, minutes: event.target.value })}
                 />
-                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-caption text-muted-foreground">
                   min
                 </span>
               </div>

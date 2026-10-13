@@ -366,7 +366,7 @@ function BundleFormPage() {
     <div className="bg-background min-h-screen lg:flex lg:h-screen lg:flex-col lg:overflow-hidden">
       <header className="shrink-0 z-20 border-b border-border/60 bg-background/85 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-8 py-4">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             {editing ? "Edit bundle" : "New bundle"}
           </h1>
           <div className="flex items-center gap-3">
@@ -391,7 +391,7 @@ function BundleFormPage() {
       <div className="mx-auto w-full max-w-3xl space-y-6 overflow-y-auto px-8 pb-16 pt-12 lg:flex-1">
         {/* Basic details */}
         <section className="rounded-3xl border border-border bg-card p-6 sm:p-8">
-          <h2 className="text-xl font-bold text-foreground">Basic details</h2>
+          <h2 className="text-xl font-semibold text-foreground">Basic details</h2>
           <div className="mt-6 space-y-6">
             <Field
               label="Bundle name"
@@ -427,7 +427,7 @@ function BundleFormPage() {
                   {categories.length > 0 ? <div className="my-2 h-px bg-border" /> : null}
                   <button
                     type="button"
-                    className="flex w-full items-center gap-2 rounded-md px-2 py-2.5 text-sm font-semibold text-primary hover:bg-primary/10"
+                    className="flex w-full items-center gap-2 rounded-md px-2 py-2.5 text-body font-semibold text-primary hover:bg-primary/10"
                     onMouseDown={(event) => {
                       event.preventDefault();
                       setCategoryOpen(true);
@@ -454,15 +454,15 @@ function BundleFormPage() {
 
         {/* Services */}
         <section className="rounded-3xl border border-border bg-card p-6 sm:p-8">
-          <h2 className="text-xl font-bold text-foreground">Services</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h2 className="text-xl font-semibold text-foreground">Services</h2>
+          <p className="mt-1 text-body text-muted-foreground">
             Select which services to include in this bundle and how they should be sequenced when
             booked.
           </p>
 
           <div className="mt-6 space-y-4">
             {selected.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-border px-6 py-8 text-center text-sm text-muted-foreground">
+              <div className="rounded-2xl border border-dashed border-border px-6 py-8 text-center text-body text-muted-foreground">
                 No services added yet.
               </div>
             ) : (
@@ -479,7 +479,7 @@ function BundleFormPage() {
                     <p className="truncate text-base font-medium text-foreground">
                       {service.name}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-body text-muted-foreground">
                       {formatDuration(service.duration_minutes)}
                     </p>
                   </div>
@@ -542,7 +542,7 @@ function BundleFormPage() {
           </div>
 
           {touched && errors.services ? (
-            <p className="mt-3 text-xs font-medium text-destructive">{errors.services}</p>
+            <p className="mt-3 text-caption font-medium text-destructive">{errors.services}</p>
           ) : null}
 
           {pickerOpen ? (
@@ -562,7 +562,7 @@ function BundleFormPage() {
               </div>
               <ul className="mt-3 max-h-64 space-y-1 overflow-y-auto">
                 {pickerResults.length === 0 ? (
-                  <li className="px-3 py-4 text-sm text-muted-foreground">
+                  <li className="px-3 py-4 text-body text-muted-foreground">
                     No services match that search.
                   </li>
                 ) : (
@@ -581,13 +581,13 @@ function BundleFormPage() {
                               : "hover:bg-muted",
                           )}
                         >
-                          <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+                          <span className="min-w-0 flex-1 truncate text-body font-medium text-foreground">
                             {service.name}
                           </span>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-caption text-muted-foreground">
                             {formatDuration(service.duration_minutes)}
                           </span>
-                          <span className="text-sm font-semibold text-foreground">
+                          <span className="text-body font-semibold text-foreground">
                             {isSelected ? "Added" : money(Number(service.price ?? 0))}
                           </span>
                         </button>
@@ -598,7 +598,7 @@ function BundleFormPage() {
               </ul>
               <Button
                 variant="ghost"
-                className="mt-2 text-sm font-semibold"
+                className="mt-2 text-body font-semibold"
                 onClick={() => setPickerOpen(false)}
               >
                 Done
@@ -615,7 +615,7 @@ function BundleFormPage() {
                 Add service
               </Button>
               {selected.length > 0 ? (
-                <div className="flex items-center gap-4 text-sm">
+                <div className="flex items-center gap-4 text-body">
                   <span className="text-muted-foreground">
                     Total duration:{" "}
                     <span className="font-semibold text-muted-foreground">
@@ -633,7 +633,7 @@ function BundleFormPage() {
 
         {/* Scheduling */}
         <section className="rounded-3xl border border-border bg-card p-6 sm:p-8">
-          <h2 className="text-xl font-bold text-foreground">Scheduling</h2>
+          <h2 className="text-xl font-semibold text-foreground">Scheduling</h2>
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             {(
               [
@@ -662,11 +662,11 @@ function BundleFormPage() {
                 )}
               >
                 <p className="text-base font-semibold text-foreground">{option.label}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{option.hint}</p>
+                <p className="mt-1 text-body text-muted-foreground">{option.hint}</p>
               </button>
             ))}
           </div>
-          <p className="mt-4 text-sm text-muted-foreground">
+          <p className="mt-4 text-body text-muted-foreground">
             Total duration:{" "}
             <span className="font-semibold text-foreground">
               {formatDuration(totalDuration)}
@@ -676,7 +676,7 @@ function BundleFormPage() {
 
         {/* Pricing */}
         <section className="rounded-3xl border border-border bg-card p-6 sm:p-8">
-          <h2 className="text-xl font-bold text-foreground">Pricing</h2>
+          <h2 className="text-xl font-semibold text-foreground">Pricing</h2>
           <div className="mt-6 grid gap-6 sm:grid-cols-2">
             <Field label="Pricing mode">
               <Select
@@ -698,7 +698,7 @@ function BundleFormPage() {
             {pricingMode === "custom" ? (
               <Field label="Price">
                 <div className="relative">
-                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">
+                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-body font-medium text-muted-foreground">
                     {business?.currency ?? ""}
                   </span>
                   <Input
@@ -720,7 +720,7 @@ function BundleFormPage() {
                     value={discount}
                     onChange={(event) => setDiscount(event.target.value)}
                   />
-                  <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">
+                  <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-body font-medium text-muted-foreground">
                     %
                   </span>
                 </div>
@@ -733,7 +733,7 @@ function BundleFormPage() {
           </div>
 
           <div className="mt-6 space-y-1 rounded-2xl border border-border bg-muted/40 px-5 py-4">
-            <p className="flex items-center justify-between text-sm text-muted-foreground">
+            <p className="flex items-center justify-between text-body text-muted-foreground">
               Services subtotal
               <span className="font-medium text-foreground">{money(subtotal)}</span>
             </p>
@@ -748,8 +748,8 @@ function BundleFormPage() {
         <section className="rounded-3xl border border-border bg-card p-6 sm:p-8">
           <div className="flex items-start justify-between gap-6">
             <div>
-              <h2 className="text-xl font-bold text-foreground">Online booking</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <h2 className="text-xl font-semibold text-foreground">Online booking</h2>
+              <p className="mt-1 text-body text-muted-foreground">
                 Enable online booking for this bundle so clients can book it directly
                 online.
               </p>
@@ -764,8 +764,8 @@ function BundleFormPage() {
 
         {/* Portfolio image */}
         <section className="rounded-3xl border border-border bg-card p-6 sm:p-8">
-          <h2 className="text-xl font-bold text-foreground">Portfolio image</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h2 className="text-xl font-semibold text-foreground">Portfolio image</h2>
+          <p className="mt-1 text-body text-muted-foreground">
             One cover image shown to clients when they browse this bundle online.
           </p>
 
@@ -811,7 +811,7 @@ function BundleFormPage() {
               className="mt-6 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border px-6 py-12 text-center"
             >
               <ImageIcon size={32} className="text-foreground" />
-              <p className="mt-3 text-lg font-bold text-foreground">
+              <p className="mt-3 text-lg font-semibold text-foreground">
                 Add your cover image here
               </p>
               <Button
@@ -839,7 +839,7 @@ function BundleFormPage() {
             }}
           />
           {fileError ? (
-            <p className="mt-2 text-sm font-medium text-destructive">{fileError}</p>
+            <p className="mt-2 text-body font-medium text-destructive">{fileError}</p>
           ) : null}
         </section>
       </div>
@@ -873,19 +873,19 @@ function Field({
   return (
     <div className="space-y-2">
       <div className="flex items-end justify-between gap-3">
-        <Label className="text-sm font-semibold text-foreground">
+        <Label className="text-body font-semibold text-foreground">
           {label}
           {optional ? (
             <span className="ml-1 font-normal text-muted-foreground">(Optional)</span>
           ) : null}
         </Label>
-        {counter ? <span className="text-xs text-muted-foreground">{counter}</span> : null}
+        {counter ? <span className="text-caption text-muted-foreground">{counter}</span> : null}
       </div>
       {children}
       {error ? (
-        <p className="text-xs font-medium text-destructive">{error}</p>
+        <p className="text-caption font-medium text-destructive">{error}</p>
       ) : hint ? (
-        <p className="text-xs text-muted-foreground">{hint}</p>
+        <p className="text-caption text-muted-foreground">{hint}</p>
       ) : null}
     </div>
   );

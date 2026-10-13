@@ -56,7 +56,7 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
   component: Consent,
   errorComponent: ({ error }) => (
     <AuthShell title="Authorization failed" subtitle="We couldn't load this authorization request.">
-      <p className="text-sm text-muted-foreground">{String((error as Error)?.message ?? error)}</p>
+      <p className="text-body text-muted-foreground">{String((error as Error)?.message ?? error)}</p>
     </AuthShell>
   ),
 });
@@ -95,12 +95,12 @@ function Consent() {
       subtitle={`${clientName} wants to connect to your Bookly account.`}
     >
       <div className="space-y-4 text-center">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-body text-muted-foreground">
           This lets <span className="font-medium text-foreground">{clientName}</span> read and update your
           business profile and team members as you.
         </p>
         {error ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-body text-destructive">
             {error}
           </p>
         ) : null}

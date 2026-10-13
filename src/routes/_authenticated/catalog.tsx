@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/catalog")({
 
 function CatalogPage() {
   return (
-    <div className="mx-auto w-full max-w-6xl px-8 py-10">
+    <div className="w-full px-8 pb-10 pt-8">
       <ServiceMenu />
     </div>
   );

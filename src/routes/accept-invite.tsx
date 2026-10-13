@@ -83,20 +83,20 @@ function AcceptInvitePage() {
     <main className="flex min-h-screen items-center justify-center bg-muted/40 px-6 py-14">
       <div className="w-full max-w-md rounded-3xl border border-border bg-white p-8 shadow-sm">
         {invite.isLoading && (
-          <p className="py-10 text-center text-sm text-muted-foreground">Checking your invite…</p>
+          <p className="py-10 text-center text-body text-muted-foreground">Checking your invite…</p>
         )}
 
         {(!token || invite.isError) && !invite.isLoading && (
           <div className="space-y-4 py-6 text-center">
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="text-2xl font-semibold text-foreground">
               This invite link is invalid or has expired
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-body text-muted-foreground">
               Ask your manager to send you a fresh invite — it only takes a moment.
             </p>
             <Link
               to="/auth"
-              className="inline-block text-sm font-semibold text-primary underline-offset-4 hover:underline"
+              className="inline-block text-body font-semibold text-primary underline-offset-4 hover:underline"
             >
               Back to sign in
             </Link>
@@ -108,7 +108,7 @@ function AcceptInvitePage() {
             <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <Sparkle size={24} weight="fill" />
             </span>
-            <h1 className="mt-5 text-3xl font-bold tracking-tight text-foreground">
+            <h1 className="mt-5 text-3xl font-semibold tracking-tight text-foreground">
               Welcome, {invite.data.first_name}!
             </h1>
             <p className="mt-2 text-base text-muted-foreground">
@@ -119,7 +119,7 @@ function AcceptInvitePage() {
 
             <form onSubmit={submit} className="mt-7 space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="new-password" className="text-sm font-semibold">
+                <Label htmlFor="new-password" className="text-body font-semibold">
                   Create a password
                 </Label>
                 <div className="relative">
@@ -144,7 +144,7 @@ function AcceptInvitePage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirm-password" className="text-sm font-semibold">
+                <Label htmlFor="confirm-password" className="text-body font-semibold">
                   Confirm password
                 </Label>
                 <Input
@@ -159,7 +159,7 @@ function AcceptInvitePage() {
               </div>
 
               {error && (
-                <p role="alert" className="text-sm font-medium text-destructive">
+                <p role="alert" className="text-body font-medium text-destructive">
                   {error}
                 </p>
               )}
@@ -172,7 +172,7 @@ function AcceptInvitePage() {
                 {accept.isPending ? "Setting you up…" : "Join the team"}
               </Button>
 
-              <p className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+              <p className="flex items-center justify-center gap-2 text-caption text-muted-foreground">
                 <CheckCircle size={14} weight="fill" className="text-primary" />
                 Your password is private — only you will know it.
               </p>

@@ -76,7 +76,7 @@ function AuthCallback() {
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-3 text-center">
         <Loader2 className="size-5 animate-spin text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">Signing you in…</p>
+        <p className="text-body text-muted-foreground">Signing you in…</p>
       </div>
     </div>
   );

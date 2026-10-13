@@ -24,7 +24,7 @@ export function AuthShell({ title, subtitle, children }: AuthShellProps) {
         </Link>
 
         <div className="flex w-full max-w-[440px] flex-1 flex-col justify-center py-8 text-center">
-          <h1 className="text-[2rem] font-bold leading-[1.08] tracking-[-0.03em] text-foreground sm:text-[2.5rem] lg:text-[3rem]">
+          <h1 className="text-[2rem] font-semibold leading-[1.08] tracking-[-0.03em] text-foreground sm:text-[2.5rem] lg:text-[3rem]">
             {title}
           </h1>
           <p className="mt-3 text-base font-medium leading-snug text-muted-foreground sm:text-lg">

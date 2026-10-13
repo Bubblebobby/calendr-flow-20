@@ -205,8 +205,8 @@ export function TeamMembersSection({
 
   return (
     <section className="rounded-3xl border border-border bg-card p-6 sm:p-8">
-      <h2 className="text-xl font-bold text-foreground">Team members required</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
+      <h2 className="text-xl font-semibold text-foreground">Team members required</h2>
+      <p className="mt-1 text-body text-muted-foreground">
         Choose which team members will perform this service
       </p>
 
@@ -219,15 +219,15 @@ export function TeamMembersSection({
             className="size-6 rounded-md border-2"
           />
           <span className="text-base font-semibold text-foreground">All team members</span>
-          <span className="flex size-6 items-center justify-center rounded-full border border-border text-xs font-medium text-muted-foreground">
+          <span className="flex size-6 items-center justify-center rounded-full border border-border text-caption font-medium text-muted-foreground">
             {countBadge}
           </span>
         </label>
 
         {loading ? (
-          <p className="py-4 text-sm text-muted-foreground">Loading team…</p>
+          <p className="py-4 text-body text-muted-foreground">Loading team…</p>
         ) : members.length === 0 ? (
-          <p className="py-4 text-sm text-muted-foreground">
+          <p className="py-4 text-body text-muted-foreground">
             No team members yet — add one below.
           </p>
         ) : (
@@ -265,7 +265,7 @@ export function TeamMembersSection({
 
         {adding ? (
           <div className="mt-4 max-w-sm space-y-2">
-            <Label className="text-sm font-semibold text-foreground">Full name</Label>
+            <Label className="text-body font-semibold text-foreground">Full name</Label>
             <Input
               ref={inputRef}
               className="h-12 rounded-xl border border-border bg-transparent text-base"
@@ -281,7 +281,7 @@ export function TeamMembersSection({
             />
             <div className="flex items-center gap-2 pt-1">
               <Button
-                className="h-10 rounded-full px-5 text-sm font-semibold"
+                className="h-10 rounded-full px-5 text-body font-semibold"
                 onClick={submitNew}
                 disabled={createMember.isPending}
               >
@@ -289,7 +289,7 @@ export function TeamMembersSection({
               </Button>
               <Button
                 variant="ghost"
-                className="h-10 rounded-full px-4 text-sm font-medium"
+                className="h-10 rounded-full px-4 text-body font-medium"
                 onClick={() => {
                   setAdding(false);
                   setFullName("");
@@ -302,7 +302,7 @@ export function TeamMembersSection({
         ) : (
           <button
             type="button"
-            className="mt-4 text-sm font-semibold text-primary underline-offset-4 hover:underline"
+            className="mt-4 text-body font-semibold text-primary underline-offset-4 hover:underline"
             onClick={() => setAdding(true)}
           >
             Add team member

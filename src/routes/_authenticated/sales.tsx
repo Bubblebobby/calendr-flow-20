@@ -4,6 +4,13 @@ import { Receipt } from "@phosphor-icons/react";
 import { DailySalesSummary } from "@/components/sales/daily-sales-summary";
 import { SalesAppointmentsList } from "@/components/sales/sales-appointments-list";
 import { SalesList } from "@/components/sales/sales-list";
+import {
+  GiftCardsSold,
+  MembershipsSold,
+  PackagesSold,
+  PaymentsList,
+  RegisterIntro,
+} from "@/components/sales/sales-extra-pages";
 
 const TAB_LABELS: Record<string, string> = {
   daily: "Daily sales summary",
@@ -40,13 +47,23 @@ function SalesPage() {
   const { tab } = Route.useSearch();
 
   return (
-    <div className="min-w-0 px-8 py-10">
+    <div className="min-w-0 px-8 pb-10 pt-8">
       {tab === "daily" ? (
         <DailySalesSummary />
       ) : tab === "appointments" ? (
         <SalesAppointmentsList />
       ) : tab === "sales" ? (
         <SalesList />
+      ) : tab === "payments" ? (
+        <PaymentsList />
+      ) : tab === "register" ? (
+        <RegisterIntro />
+      ) : tab === "gift-cards" ? (
+        <GiftCardsSold />
+      ) : tab === "packages" ? (
+        <PackagesSold />
+      ) : tab === "memberships" ? (
+        <MembershipsSold />
       ) : (
         <ComingSoon label={TAB_LABELS[tab] ?? "This section"} />
       )}
@@ -61,7 +78,7 @@ function ComingSoon({ label }: { label: string }) {
         <Receipt size={22} />
       </span>
       <h2 className="mt-2 text-base font-semibold text-foreground">{label}</h2>
-      <p className="text-sm text-muted-foreground">This section is coming soon.</p>
+      <p className="text-body text-muted-foreground">This section is coming soon.</p>
     </div>
   );
 }

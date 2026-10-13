@@ -158,8 +158,8 @@ export function TeamMemberServicesSection({
   return (
     <section className="space-y-6">
       <div>
-        <h2 className="text-lg font-bold tracking-tight text-foreground">Services</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h2 className="text-lg font-semibold tracking-tight text-foreground">Services</h2>
+        <p className="mt-1 text-body text-muted-foreground">
           Choose the services this team member provides
         </p>
       </div>
@@ -185,14 +185,14 @@ export function TeamMemberServicesSection({
             disabled={services.length === 0}
             className="size-5 rounded-md border-2 border-muted-foreground/30 bg-background data-[state=checked]:border-primary data-[state=checked]:bg-primary"
           />
-          <span className="flex-1 text-sm font-bold text-foreground">All services</span>
+          <span className="flex-1 text-body font-semibold text-foreground">All services</span>
           <CountBadge>{services.length}</CountBadge>
         </label>
 
         {loading ? (
-          <p className="py-6 text-sm text-muted-foreground">Loading services…</p>
+          <p className="py-6 text-body text-muted-foreground">Loading services…</p>
         ) : groups.length === 0 ? (
-          <p className="py-6 text-sm text-muted-foreground">
+          <p className="py-6 text-body text-muted-foreground">
             {services.length === 0
               ? "No services yet — add services in your catalog first."
               : "No services match your search."}
@@ -212,7 +212,7 @@ export function TeamMemberServicesSection({
                     onCheckedChange={() => toggleGroup(ids, fully)}
                     className="size-5 rounded-md border-2 border-muted-foreground/30 bg-background data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=indeterminate]:border-primary data-[state=indeterminate]:bg-primary"
                   />
-                  <span className="flex-1 text-sm font-bold text-foreground">
+                  <span className="flex-1 text-body font-semibold text-foreground">
                     {group.name}
                   </span>
                   <CountBadge>
@@ -230,14 +230,14 @@ export function TeamMemberServicesSection({
                           className="size-5 rounded-md border-2 border-muted-foreground/30 bg-background data-[state=checked]:border-primary data-[state=checked]:bg-primary"
                         />
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-medium text-foreground">
+                          <span className="block truncate text-body font-medium text-foreground">
                             {service.name}
                           </span>
-                          <span className="block text-xs text-muted-foreground">
+                          <span className="block text-caption text-muted-foreground">
                             {formatDuration(service.duration_minutes)}
                           </span>
                         </span>
-                        <span className="text-sm font-medium text-foreground">
+                        <span className="text-body font-medium text-foreground">
                           {service.price === null
                             ? "Free"
                             : formatMoney(Number(service.price), currency, country)}

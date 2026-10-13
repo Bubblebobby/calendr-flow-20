@@ -9,6 +9,8 @@ import {
   TrendUp,
 } from "@phosphor-icons/react";
 import {
+  Bar,
+  BarChart,
   CartesianGrid,
   Line,
   LineChart,
@@ -21,7 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatDuration, formatMoney } from "@/lib/format";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
-import { statusTone } from "@/components/calendar/appointment-detail";
+import { statusTone } from "@/components/calendar/calendar-data";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -98,9 +100,44 @@ const TIME_PERIODS: Array<{ value: TimePeriod; label: string }> = [
 ];
 
 const chartConfig = {
-  sales: { label: "Sales", color: "var(--color-chart-1)" },
-  appointments: { label: "Appointments", color: "var(--color-chart-2)" },
+  sales: { label: "Sales", color: "var(--color-primary)" },
+  appointments: { label: "Appointments", color: "var(--color-chart-appointments)" },
 } satisfies ChartConfig;
+
+const upcomingChartConfig = {
+  confirmed: { label: "Confirmed", color: "var(--color-chart-appointments)" },
+  booked: { label: "Booked", color: "var(--color-primary)" },
+  cancelled: { label: "Cancelled", color: "var(--color-destructive)" },
+} satisfies ChartConfig;
+
+const AXIS_TICK = { fontSize: 12, fill: "var(--color-muted-foreground)" };
+
+function compactMoney(value: number, currency: string) {
+  try {
+    return new Intl.NumberFormat("en", {
+      style: "currency",
+      currency,
+      currencyDisplay: "narrowSymbol",
+      notation: "compact",
+      maximumFractionDigits: 1,
+    }).format(value);
+  } catch {
+    return `${currency} ${value}`;
+  }
+}
+
+function ChartLegend({ items }: { items: Array<{ label: string; color: string }> }) {
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-5 text-body text-foreground">
+      {items.map((item) => (
+        <span key={item.label} className="flex items-center gap-2">
+          <span className="size-2 rounded-full" style={{ background: item.color }} />
+          {item.label}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 function dateKey(date: Date, timeZone: string) {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -190,28 +227,35 @@ function DashboardCard({
   children,
 }: {
   title: string;
-  subtitle?: string;
+  subtitle?: string | undefined;
   menu?: boolean;
   action?: React.ReactNode;
   className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <Card className={cn("flex min-h-[19rem] flex-col overflow-hidden rounded-lg shadow-none", className)}>
-      <CardHeader className="flex-row items-start justify-between space-y-0 px-5 pb-3 pt-5">
+    <Card
+      className={cn(
+        "flex min-h-[17rem] flex-col overflow-hidden rounded-xl border-border/70 shadow-none",
+        className,
+      )}
+    >
+      <CardHeader className="flex-row items-start justify-between space-y-0 px-6 pb-4 pt-6">
         <div className="min-w-0">
-          <CardTitle className="text-base font-semibold leading-tight">{title}</CardTitle>
-          {subtitle ? <CardDescription className="mt-1 text-[0.8125rem] leading-none">{subtitle}</CardDescription> : null}
+          <CardTitle className="text-xl font-semibold leading-7">{title}</CardTitle>
+          {subtitle ? (
+            <CardDescription className="text-body leading-5">{subtitle}</CardDescription>
+          ) : null}
         </div>
         {action ?? (menu ? (
           <Button
             variant="ghost"
             size="icon"
-            className="-mr-2 -mt-2 size-8"
+            className="-mr-2 -mt-1 size-9 shrink-0 rounded-full"
             aria-label={`${title} menu`}
             onClick={() => toast("Coming soon")}
           >
-            <DotsThreeVertical size={18} weight="bold" />
+            <DotsThreeVertical size={20} weight="bold" />
           </Button>
         ) : null)}
       </CardHeader>
@@ -239,10 +283,10 @@ function TimePeriodFilter({
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
           size="icon"
-          className="-mr-1 -mt-1 size-10 shrink-0 rounded-full border-foreground bg-card hover:bg-secondary"
-          aria-label="Filter recent sales by time period"
+          className="-mr-2 -mt-1 size-9 shrink-0 rounded-full data-[state=open]:bg-secondary"
+          aria-label="Filter by time period"
         >
           <DotsThreeVertical size={20} weight="bold" />
         </Button>
@@ -252,9 +296,9 @@ function TimePeriodFilter({
         sideOffset={2}
         className="w-[19.25rem] rounded-lg border-border bg-popover p-4 shadow-card"
       >
-        <label className="text-sm font-semibold leading-none text-popover-foreground">Time period</label>
+        <label className="text-body font-semibold leading-none text-popover-foreground">Time period</label>
         <Select value={draft} onValueChange={(next) => setDraft(next as TimePeriod)}>
-          <SelectTrigger className="mt-2 h-11 rounded-md border-input bg-card px-4 text-sm font-medium">
+          <SelectTrigger className="mt-2 h-11 rounded-md border-input bg-card px-4 text-body font-medium">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -269,14 +313,14 @@ function TimePeriodFilter({
           <Button
             type="button"
             variant="outline"
-            className="h-11 rounded-full px-5 text-sm font-semibold"
+            className="h-11 rounded-full px-5 text-body font-semibold"
             onClick={() => setOpen(false)}
           >
             Close
           </Button>
           <Button
             type="button"
-            className="h-11 rounded-full bg-ink px-6 text-sm font-semibold text-ink-foreground shadow-none hover:bg-ink/90"
+            className="h-11 rounded-full bg-ink px-6 text-body font-semibold text-ink-foreground shadow-none hover:bg-ink/90"
             onClick={() => {
               onApply(draft);
               setOpen(false);
@@ -300,29 +344,33 @@ function EmptyState({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-52 flex-1 flex-col items-center justify-center px-6 text-center">
-      <Icon size={36} weight="duotone" className="text-primary" />
-      <p className="mt-3 text-sm font-semibold text-foreground">{title}</p>
-      <p className="mt-1 max-w-xs text-xs leading-5 text-muted-foreground">{children}</p>
+    <div className="flex min-h-52 flex-1 flex-col items-center justify-center px-6 pb-6 text-center">
+      <Icon size={40} weight="regular" className="text-primary" />
+      <p className="mt-4 text-title font-semibold text-foreground">{title}</p>
+      <p className="mt-1 max-w-xs text-body text-muted-foreground">{children}</p>
     </div>
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const tone = statusTone(status);
+const STATUS_PILL: Record<string, string> = {
+  booked: "bg-status-booked text-status-booked-foreground",
+  confirmed: "bg-status-booked text-status-booked-foreground",
+  arrived: "bg-status-arrived text-status-arrived-foreground",
+  started: "bg-status-arrived text-status-arrived-foreground",
+  completed: "bg-status-completed text-status-completed-foreground",
+  no_show: "bg-status-cancelled text-status-cancelled-foreground",
+  cancelled: "bg-status-cancelled text-status-cancelled-foreground",
+};
+
+export function StatusBadge({ status }: { status: string }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[0.6875rem] font-medium",
-        status === "completed" && "bg-slot-mint text-slot-mint-foreground",
-        (status === "arrived" || status === "started") && "bg-slot-amber text-slot-amber-foreground",
-        (status === "booked" || status === "confirmed") && "bg-slot-blue text-slot-blue-foreground",
-        status === "no_show" && "bg-muted text-muted-foreground",
-        status === "cancelled" && "bg-destructive/10 text-destructive",
+        "inline-flex h-6 items-center rounded-full px-3 text-caption font-medium leading-4",
+        STATUS_PILL[status] ?? "bg-muted text-muted-foreground",
       )}
     >
-      <span className={cn("size-1.5 rounded-full", tone.dot)} />
-      {tone.label}
+      {statusTone(status).label}
     </span>
   );
 }
@@ -331,48 +379,94 @@ function AppointmentList({
   appointments,
   locale,
   timeZone,
+  compactDate = false,
 }: {
   appointments: DashboardAppointment[];
   locale: string;
   timeZone: string;
+  /** "Tue 11:00" instead of "Tue, 13 Oct 2026 11:00" — used for today's list. */
+  compactDate?: boolean;
 }) {
-  const day = new Intl.DateTimeFormat(locale, { day: "2-digit", timeZone });
+  const day = new Intl.DateTimeFormat(locale, { day: "numeric", timeZone });
   const month = new Intl.DateTimeFormat(locale, { month: "short", timeZone });
-  const dateTime = new Intl.DateTimeFormat(locale, {
+  const weekday = new Intl.DateTimeFormat(locale, { weekday: "short", timeZone });
+  const fullDate = new Intl.DateTimeFormat(locale, {
     weekday: "short",
     day: "numeric",
     month: "short",
     year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
     timeZone,
   });
+  const time = new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone });
   return (
-    <div className="max-h-[17.5rem] divide-y divide-border overflow-y-auto">
+    <div className="max-h-[22rem] overflow-y-auto px-3 pb-3">
       {appointments.map((appointment) => (
-        <div key={appointment.id} className="flex gap-4 px-5 py-3">
-          <div className="w-8 shrink-0 text-center">
-            <span className="block text-base font-semibold tabular-nums text-foreground">
+        <div
+          key={appointment.id}
+          className="flex gap-4 border-b border-border/70 px-0 py-4 last:border-b-0"
+        >
+          <div className="w-7 shrink-0 pt-2.5 text-center">
+            <span className="block text-heading font-semibold tabular-nums text-foreground">
               {day.format(appointment.start)}
             </span>
-            <span className="block text-[0.625rem] uppercase text-muted-foreground">
+            <span className="block text-body text-foreground">
               {month.format(appointment.start)}
             </span>
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs text-muted-foreground">{dateTime.format(appointment.start)}</span>
+              <span className="text-body text-muted-foreground">
+                {compactDate ? weekday.format(appointment.start) : fullDate.format(appointment.start)}{" "}
+                {time.format(appointment.start)}
+              </span>
               <StatusBadge status={appointment.status} />
             </div>
-            <p className="mt-1 truncate text-sm font-semibold text-foreground">
+            <p className="mt-0.5 truncate text-heading font-semibold text-foreground">
               {appointment.serviceNames.join(", ")}
             </p>
-            <p className="mt-0.5 truncate text-xs text-muted-foreground">
-              {appointment.clientName}, {formatDuration(appointment.durationMinutes)} with {appointment.teamNames.join(", ")}
+            <p className="truncate text-body text-muted-foreground">
+              {appointment.clientName}, {formatDuration(appointment.durationMinutes)} with{" "}
+              {appointment.teamNames.map((name) => name.split(" ")[0]).join(", ")}
             </p>
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function RankTable({
+  label,
+  rows,
+  empty,
+}: {
+  label: string;
+  rows: Array<{ key: string; name: string; current: React.ReactNode; previous: React.ReactNode }>;
+  empty: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-1 flex-col">
+      <div className="grid grid-cols-[1fr_7rem_7rem] border-b border-border/70 px-6 py-4 text-body font-semibold text-foreground">
+        <span>{label}</span>
+        <span className="text-right">This month</span>
+        <span className="text-right">Last month</span>
+      </div>
+      {rows.length ? (
+        <div className="max-h-72 overflow-y-auto">
+          {rows.map((row) => (
+            <div
+              key={row.key}
+              className="grid grid-cols-[1fr_7rem_7rem] border-b border-border/70 px-6 py-3.5 text-caption text-foreground last:border-b-0"
+            >
+              <span className="truncate">{row.name}</span>
+              <span className="text-right tabular-nums">{row.current}</span>
+              <span className="text-right tabular-nums">{row.previous}</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        empty
+      )}
     </div>
   );
 }
@@ -454,6 +548,31 @@ export function HomeDashboard() {
       .sort((a, b) => a.start.getTime() - b.start.getTime());
     const today = upcoming.filter((appointment) => dateKey(appointment.start, timeZone) === todayKey);
 
+    // Like Fresha, "Upcoming appointments" covers the next 7 days starting tomorrow,
+    // and counts cancellations too (they are excluded from every other card).
+    const upcomingDates = Array.from({ length: 7 }, (_, index) => addDays(now, index + 1));
+    const upcomingKeys = upcomingDates.map((date) => dateKey(date, timeZone));
+    const upcomingAll = groupAppointments(
+      items.filter((item) => upcomingKeys.includes(dateKey(new Date(item.start_time), timeZone))),
+    );
+    const upcomingChart = upcomingDates.map((date, index) => {
+      const onDay = upcomingAll.filter((appointment) => dateKey(appointment.start, timeZone) === upcomingKeys[index]);
+      return {
+        label: new Intl.DateTimeFormat(locale, { day: "numeric", weekday: "short", timeZone }).format(date),
+        confirmed: onDay.filter((appointment) => appointment.status === "confirmed").length,
+        booked: onDay.filter((appointment) => !["confirmed", "cancelled"].includes(appointment.status)).length,
+        cancelled: onDay.filter((appointment) => appointment.status === "cancelled").length,
+      };
+    });
+    const upcomingTotals = upcomingChart.reduce(
+      (sum, day) => ({
+        confirmed: sum.confirmed + day.confirmed,
+        booked: sum.booked + day.booked,
+        cancelled: sum.cancelled + day.cancelled,
+      }),
+      { confirmed: 0, booked: 0, cancelled: 0 },
+    );
+
     const sales = data?.sales ?? [];
     const chart = recentKeys.map((key) => ({
       key,
@@ -516,7 +635,8 @@ export function HomeDashboard() {
         .filter((sale) => recentKeys.includes(dateKey(new Date(sale.sale_date), timeZone)))
         .reduce((sum, sale) => sum + Number(sale.total ?? 0), 0),
       topMembers,
-      upcoming,
+      upcomingChart,
+      upcomingTotals,
       today,
       activity: appointments
         .filter((appointment) => activityKeys.has(dateKey(appointment.start, timeZone)))
@@ -544,7 +664,7 @@ export function HomeDashboard() {
     return (
       <div className="mx-auto w-full max-w-6xl p-6">
         <Card className="rounded-lg shadow-none">
-          <CardContent className="p-8 text-sm text-muted-foreground">
+          <CardContent className="p-8 text-body text-muted-foreground">
             The dashboard could not be loaded. Please refresh and try again.
           </CardContent>
         </Card>
@@ -552,48 +672,101 @@ export function HomeDashboard() {
     );
   }
 
+  const currency = business.currency;
+  const money = (value: number) => formatMoney(value, business.currency, business.country);
+  const upcomingTotal =
+    dashboard.upcomingTotals.confirmed + dashboard.upcomingTotals.booked + dashboard.upcomingTotals.cancelled;
+
   return (
-    <div className="min-h-full bg-background">
-      <div className="mx-auto grid w-full max-w-6xl gap-4 p-4 sm:p-6 lg:grid-cols-2">
+    <div className="min-h-full bg-surface">
+      <div className="mx-auto grid w-full max-w-6xl items-start gap-x-8 gap-y-4 p-4 sm:p-6 lg:grid-cols-2">
         <DashboardCard
           title="Recent sales"
           subtitle={timePeriodLabel}
+          className="lg:min-h-[33.75rem]"
           action={<TimePeriodFilter value={timePeriod} onApply={setTimePeriod} />}
         >
-          <CardContent className="flex flex-1 flex-col px-5 pb-4 pt-0">
-            <p className="text-2xl font-semibold leading-tight tabular-nums text-foreground">
-              {formatMoney(dashboard.recentSalesTotal, business.currency, business.country)}
+          <CardContent className="flex flex-1 flex-col px-6 pb-6 pt-0">
+            <p className="text-display font-semibold leading-9 tabular-nums text-foreground">
+              {money(dashboard.recentSalesTotal)}
             </p>
-            <div className="mt-4 space-y-1 text-xs text-muted-foreground">
-              <p>Appointments <span className="font-semibold text-foreground">{dashboard.recentCount}</span></p>
+            <div className="mt-6 text-body text-muted-foreground">
+              <p>
+                Appointments <span className="font-semibold text-foreground">{dashboard.recentCount}</span>
+              </p>
               <p>
                 Appointments value{" "}
-                <span className="font-semibold text-foreground">
-                  {formatMoney(dashboard.recentValue, business.currency, business.country)}
-                </span>
+                <span className="font-semibold text-foreground">{money(dashboard.recentValue)}</span>
               </p>
             </div>
-            <ChartContainer config={chartConfig} className="mt-3 h-44 w-full aspect-auto">
-              <LineChart data={dashboard.chart} margin={{ top: 8, right: 10, left: -24, bottom: 0 }}>
-                <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={10} />
-                <YAxis tickLine={false} axisLine={false} fontSize={10} />
+            <ChartContainer config={chartConfig} className="mt-6 aspect-auto h-60 w-full">
+              <LineChart data={dashboard.chart} margin={{ top: 8, right: 8, left: 4, bottom: 0 }}>
+                <CartesianGrid stroke="var(--color-border)" strokeOpacity={0.6} />
+                <XAxis
+                  dataKey="label"
+                  tickLine={false}
+                  axisLine={false}
+                  tick={AXIS_TICK}
+                  angle={-45}
+                  textAnchor="end"
+                  height={44}
+                  interval="preserveStartEnd"
+                />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  tick={AXIS_TICK}
+                  width={64}
+                  tickFormatter={(value: number) => compactMoney(value, currency)}
+                />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Line type="monotone" dataKey="sales" stroke="var(--color-sales)" strokeWidth={2} dot={{ r: 2 }} />
-                <Line type="monotone" dataKey="appointments" stroke="var(--color-appointments)" strokeWidth={2} dot={{ r: 2 }} />
+                <Line type="linear" dataKey="appointments" stroke="var(--color-appointments)" strokeWidth={2} dot={{ r: 3, strokeWidth: 0, fill: "var(--color-appointments)" }} />
+                <Line type="linear" dataKey="sales" stroke="var(--color-sales)" strokeWidth={2} dot={{ r: 3, strokeWidth: 0, fill: "var(--color-sales)" }} />
               </LineChart>
             </ChartContainer>
-            <div className="mt-1 flex items-center gap-5 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-chart-1" />Sales</span>
-              <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-chart-2" />Appointments</span>
-            </div>
+            <ChartLegend
+              items={[
+                { label: "Sales", color: "var(--color-primary)" },
+                { label: "Appointments", color: "var(--color-chart-appointments)" },
+              ]}
+            />
           </CardContent>
         </DashboardCard>
 
-        <DashboardCard title="Upcoming appointments" subtitle="Next 7 days" menu>
-          {dashboard.upcoming.length ? (
-            <CardContent className="px-0 pb-0">
-              <AppointmentList appointments={dashboard.upcoming} locale={locale} timeZone={timeZone} />
+        <DashboardCard title="Upcoming appointments" subtitle="Next 7 days" menu className="lg:min-h-[33.75rem]">
+          {upcomingTotal ? (
+            <CardContent className="flex flex-1 flex-col px-6 pb-6 pt-0">
+              <p className="text-display font-semibold leading-9 tabular-nums text-foreground">
+                {upcomingTotal} booked
+              </p>
+              <div className="mt-6 text-body text-muted-foreground">
+                <p>
+                  Confirmed appointments{" "}
+                  <span className="font-semibold text-foreground">{dashboard.upcomingTotals.confirmed}</span>
+                </p>
+                <p>
+                  Cancelled appointments{" "}
+                  <span className="font-semibold text-foreground">{dashboard.upcomingTotals.cancelled}</span>
+                </p>
+              </div>
+              <ChartContainer config={upcomingChartConfig} className="mt-6 aspect-auto h-60 w-full">
+                <BarChart data={dashboard.upcomingChart} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+                  <CartesianGrid vertical={false} stroke="var(--color-border)" strokeOpacity={0.6} />
+                  <XAxis dataKey="label" tickLine={false} axisLine={false} tick={AXIS_TICK} angle={-45} textAnchor="end" height={44} />
+                  <YAxis tickLine={false} axisLine={false} tick={AXIS_TICK} allowDecimals={false} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="confirmed" stackId="a" fill="var(--color-confirmed)" maxBarSize={28} />
+                  <Bar dataKey="booked" stackId="a" fill="var(--color-booked)" maxBarSize={28} />
+                  <Bar dataKey="cancelled" stackId="a" fill="var(--color-cancelled)" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                </BarChart>
+              </ChartContainer>
+              <ChartLegend
+                items={[
+                  { label: "Confirmed", color: "var(--color-chart-appointments)" },
+                  { label: "Booked", color: "var(--color-primary)" },
+                  { label: "Cancelled", color: "var(--color-destructive)" },
+                ]}
+              />
             </CardContent>
           ) : (
             <EmptyState icon={ChartBar} title="Your schedule is empty">
@@ -604,8 +777,9 @@ export function HomeDashboard() {
 
         <DashboardCard
           title="Appointments activity"
-          subtitle={activityPeriodLabel}
           action={<TimePeriodFilter value={activityPeriod} onApply={setActivityPeriod} />}
+          subtitle={activityPeriod === "last-7-days" ? undefined : activityPeriodLabel}
+          className="min-h-0"
         >
           {dashboard.activity.length ? (
             <AppointmentList appointments={dashboard.activity} locale={locale} timeZone={timeZone} />
@@ -616,9 +790,9 @@ export function HomeDashboard() {
           )}
         </DashboardCard>
 
-        <DashboardCard title="Today's next appointments">
+        <DashboardCard title="Today's next appointments" className="min-h-0">
           {dashboard.today.length ? (
-            <AppointmentList appointments={dashboard.today} locale={locale} timeZone={timeZone} />
+            <AppointmentList appointments={dashboard.today} locale={locale} timeZone={timeZone} compactDate />
           ) : (
             <EmptyState icon={CalendarBlank} title="No Appointments Today">
               Visit the{" "}
@@ -630,50 +804,40 @@ export function HomeDashboard() {
           )}
         </DashboardCard>
 
-        <DashboardCard title="Top services">
-          <CardContent className="px-0 pb-0">
-            <div className="grid grid-cols-[1fr_6rem_6rem] border-y border-border bg-muted/40 px-5 py-2 text-[0.6875rem] font-semibold text-muted-foreground">
-              <span>Service</span><span className="text-right">This month</span><span className="text-right">Last month</span>
-            </div>
-            <div className="max-h-56 divide-y divide-border overflow-y-auto">
-              {dashboard.serviceCounts.length ? dashboard.serviceCounts.map((service) => (
-                <div key={service.id} className="grid grid-cols-[1fr_6rem_6rem] px-5 py-3 text-xs">
-                  <span className="truncate font-medium text-foreground">{service.name}</span>
-                  <span className="text-right tabular-nums text-foreground">{service.current}</span>
-                  <span className="text-right tabular-nums text-muted-foreground">{service.previous}</span>
-                </div>
-              )) : (
-                <p className="px-5 py-8 text-center text-xs text-muted-foreground">No services yet</p>
-              )}
-            </div>
-          </CardContent>
+        <DashboardCard title="Top services" className="min-h-[17.5rem]">
+          <RankTable
+            label="Service"
+            rows={dashboard.serviceCounts.map((service) => ({
+              key: service.id,
+              name: service.name,
+              current: service.current,
+              previous: service.previous,
+            }))}
+            empty={
+              <EmptyState icon={ChartBar} title="No services yet">
+                Add services to your menu for data to appear
+              </EmptyState>
+            }
+          />
         </DashboardCard>
 
-        <DashboardCard title="Top team member">
-          {dashboard.topMembers.length ? (
-            <CardContent className="px-0 pb-0">
-              <div className="grid grid-cols-[1fr_6rem_6rem] border-y border-border bg-muted/40 px-5 py-2 text-[0.6875rem] font-semibold text-muted-foreground">
-                <span>Team member</span><span className="text-right">This month</span><span className="text-right">Last month</span>
-              </div>
-              <div className="max-h-56 divide-y divide-border overflow-y-auto">
-                {dashboard.topMembers.map((member, index) => (
-                  <div key={`${member.name}-${index}`} className="grid grid-cols-[1fr_6rem_6rem] px-5 py-3 text-xs">
-                    <span className="truncate font-medium text-foreground">{member.name}</span>
-                    <span className="text-right tabular-nums text-foreground">
-                      {formatMoney(member.current, business.currency, business.country)}
-                    </span>
-                    <span className="text-right tabular-nums text-muted-foreground">
-                      {formatMoney(member.previous, business.currency, business.country)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          ) : (
-            <EmptyState icon={TrendUp} title="No sales this month">
-              Create some sales for sales data to appear
-            </EmptyState>
-          )}
+        <DashboardCard title="Top team member" className="min-h-[17.5rem]">
+          <RankTable
+            label="Team member"
+            rows={dashboard.topMembers
+              .filter((member) => member.current > 0 || member.previous > 0)
+              .map((member, index) => ({
+                key: `${member.name}-${index}`,
+                name: member.name,
+                current: money(member.current),
+                previous: money(member.previous),
+              }))}
+            empty={
+              <EmptyState icon={TrendUp} title="No sales this month">
+                Create some sales for sales data to appear
+              </EmptyState>
+            }
+          />
         </DashboardCard>
       </div>
     </div>

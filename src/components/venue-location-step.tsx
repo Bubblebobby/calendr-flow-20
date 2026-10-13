@@ -193,7 +193,7 @@ export function VenueLocationStep({
         locations can be added later.
       </p>
 
-      <h2 className="mt-8 text-xl font-bold text-foreground">Business location</h2>
+      <h2 className="mt-8 text-xl font-semibold text-foreground">Business location</h2>
 
       <div className="mt-5 space-y-2">
         <Label htmlFor="venue-address" className="text-[15px] font-semibold">
@@ -224,7 +224,7 @@ export function VenueLocationStep({
                   <button
                     type="button"
                     onClick={() => void selectSuggestion(s)}
-                    className="flex w-full items-start gap-3 px-4 py-3 text-left text-sm hover:bg-secondary"
+                    className="flex w-full items-start gap-3 px-4 py-3 text-left text-body hover:bg-secondary"
                   >
                     <MapPin className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
                     <span>{s.placePrediction?.text?.text ?? ""}</span>
@@ -254,7 +254,7 @@ export function VenueLocationStep({
               </Button>
             </div>
           </div>
-          <p className="mt-3 text-sm text-muted-foreground">
+          <p className="mt-3 text-body text-muted-foreground">
             Drag the map to adjust the pin position
           </p>
         </div>
@@ -263,7 +263,7 @@ export function VenueLocationStep({
       <Dialog open={editing} onOpenChange={setEditing}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">Edit business location</DialogTitle>
+            <DialogTitle className="text-2xl font-semibold">Edit business location</DialogTitle>
           </DialogHeader>
 
           <div className="grid gap-5 sm:grid-cols-2">
@@ -313,7 +313,7 @@ export function VenueLocationStep({
           <div className="mt-2 space-y-2">
             <div className="flex items-center justify-between">
               <Label className="text-[15px] font-semibold">Directions</Label>
-              <span className="text-sm text-muted-foreground">{draft.directions.length}/200</span>
+              <span className="text-body text-muted-foreground">{draft.directions.length}/200</span>
             </div>
             <Textarea
               maxLength={200}
@@ -365,7 +365,7 @@ function Field({
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <Label className="text-[15px] font-semibold">{label}</Label>
-        {counter ? <span className="text-sm text-muted-foreground">{counter}</span> : null}
+        {counter ? <span className="text-body text-muted-foreground">{counter}</span> : null}
       </div>
       <Input
         value={value}

@@ -403,7 +403,7 @@ function BusinessSetupPage() {
         <div className="flex size-20 items-center justify-center rounded-full bg-gradient-to-br from-accent via-primary to-primary shadow-lg">
           <Check className="size-9 text-primary-foreground" strokeWidth={3} />
         </div>
-        <h1 className="mt-6 text-3xl font-bold tracking-tight text-foreground">
+        <h1 className="mt-6 text-3xl font-semibold tracking-tight text-foreground">
           Your business is set up!
         </h1>
         <p className="mt-2 text-base text-muted-foreground">

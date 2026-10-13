@@ -110,7 +110,7 @@ function CountryPicker({
                 >
                   <span className="mr-2">{flagEmoji(country.code)}</span>
                   <span className="flex-1 truncate">{country.name}</span>
-                  <span className="ml-2 text-xs text-muted-foreground">+{country.dial}</span>
+                  <span className="ml-2 text-caption text-muted-foreground">+{country.dial}</span>
                   <Check className={cn("ml-2 size-4", value === country.code ? "opacity-100" : "opacity-0")} />
                 </CommandItem>
               ))}

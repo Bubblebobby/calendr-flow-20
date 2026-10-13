@@ -17,7 +17,7 @@ export function PageShell({
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
           {description ? (
-            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{description}</p>
+            <p className="mt-1 max-w-2xl text-body text-muted-foreground">{description}</p>
           ) : null}
         </div>
         {action}
@@ -30,8 +30,8 @@ export function PageShell({
 export function PlaceholderPanel({ label }: { label: string }) {
   return (
     <div className="surface-card flex min-h-64 flex-col items-center justify-center gap-2 p-10 text-center">
-      <p className="text-sm font-medium text-foreground">{label} coming soon</p>
-      <p className="max-w-md text-sm text-muted-foreground">
+      <p className="text-body font-medium text-foreground">{label} coming soon</p>
+      <p className="max-w-md text-body text-muted-foreground">
         This section is scaffolded and ready for its first feature.
       </p>
     </div>

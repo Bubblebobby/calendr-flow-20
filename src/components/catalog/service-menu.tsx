@@ -257,8 +257,8 @@ export function ServiceMenu() {
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">Service menu</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <h2 className="text-3xl font-semibold tracking-tight text-foreground">Service menu</h2>
+          <p className="mt-2 text-body text-muted-foreground">
             View and manage the services offered by your business.{" "}
             <a href="#" className="font-semibold text-primary hover:underline">
               Learn more
@@ -287,7 +287,7 @@ export function ServiceMenu() {
               ].map((label) => (
                 <DropdownMenuItem
                   key={label}
-                  className="px-4 py-2.5 text-sm font-medium text-foreground gap-3"
+                  className="px-4 py-2.5 text-body font-medium text-foreground gap-3"
                   onClick={soon(label)}
                 >
                   {label}
@@ -305,20 +305,20 @@ export function ServiceMenu() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 p-3">
               <DropdownMenuItem
-                className="px-4 py-2.5 text-sm font-medium text-foreground gap-3"
+                className="px-4 py-2.5 text-body font-medium text-foreground gap-3"
                 onClick={() => navigate({ to: "/service/new" })}
               >
                 Single service
               </DropdownMenuItem>
               <DropdownMenuItem
-                className="px-4 py-2.5 text-sm font-medium text-foreground gap-3"
+                className="px-4 py-2.5 text-body font-medium text-foreground gap-3"
                 onClick={() => navigate({ to: "/bundle/new", search: { id: undefined } })}
               >
                 Bundle
               </DropdownMenuItem>
 
               <DropdownMenuItem
-                className="px-4 py-2.5 text-sm font-medium text-foreground gap-3"
+                className="px-4 py-2.5 text-body font-medium text-foreground gap-3"
                 onClick={() => setCategoryDialog({ ...emptyCategory })}
               >
                 Category
@@ -351,7 +351,7 @@ export function ServiceMenu() {
       <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
         {/* Categories */}
         <aside className="h-fit rounded-2xl border border-border bg-card p-4">
-          <h3 className="px-2 text-lg font-bold text-foreground">Categories</h3>
+          <h3 className="px-2 text-lg font-semibold text-foreground">Categories</h3>
           <ul className="mt-3 space-y-1">
             <li>
               <CategoryRow
@@ -375,7 +375,7 @@ export function ServiceMenu() {
           </ul>
           <button
             type="button"
-            className="mt-3 px-2 py-1 text-sm font-semibold text-primary hover:underline"
+            className="mt-3 px-2 py-1 text-body font-semibold text-primary hover:underline"
             onClick={() => setCategoryDialog({ ...emptyCategory })}
           >
             Add category
@@ -385,7 +385,7 @@ export function ServiceMenu() {
         {/* Services */}
         <section>
           <div className="flex items-center justify-between gap-3">
-            <h3 className="text-xl font-bold text-foreground">
+            <h3 className="text-xl font-semibold text-foreground">
               {activeCategory ? activeCategory.name : "All services"}
             </h3>
             <DropdownMenu>
@@ -407,11 +407,11 @@ export function ServiceMenu() {
 
           <div className="mt-4 space-y-3">
             {servicesQuery.isLoading || bundlesQuery.isLoading ? (
-              <p className="text-sm text-muted-foreground">Loading services…</p>
+              <p className="text-body text-muted-foreground">Loading services…</p>
             ) : filtered.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border p-10 text-center">
-                <p className="text-sm font-medium text-foreground">No services yet</p>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="text-body font-medium text-foreground">No services yet</p>
+                <p className="mt-1 text-body text-muted-foreground">
                   Add a single service or a bundle to start building your menu.
                 </p>
               </div>
@@ -432,16 +432,16 @@ export function ServiceMenu() {
                       <p className="flex items-center gap-2 truncate font-semibold text-foreground">
                         <span className="truncate">{item.name}</span>
                         {item.kind === "bundle" ? (
-                          <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                          <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-0.5 text-caption font-semibold text-primary">
                             Bundle
                           </span>
                         ) : null}
                       </p>
-                      <p className="mt-0.5 text-sm text-muted-foreground">
+                      <p className="mt-0.5 text-body text-muted-foreground">
                         {formatDuration(itemDuration(item))}
                       </p>
                     </div>
-                    <p className="whitespace-nowrap text-sm font-semibold text-foreground">
+                    <p className="whitespace-nowrap text-body font-semibold text-foreground">
                       {priceLabel(item)}
                     </p>
                     <DropdownMenu>
@@ -527,8 +527,8 @@ function CategoryRow({
           style={{ backgroundColor: color }}
         />
       ) : null}
-      <span className="min-w-0 flex-1 truncate text-sm font-semibold">{label}</span>
-      <span className="h-6 w-6 rounded-full border border-border bg-card text-center text-xs font-medium leading-6 text-muted-foreground">
+      <span className="min-w-0 flex-1 truncate text-body font-semibold">{label}</span>
+      <span className="h-6 w-6 rounded-full border border-border bg-card text-center text-caption font-medium leading-6 text-muted-foreground">
         {count}
       </span>
     </button>

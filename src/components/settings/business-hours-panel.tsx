@@ -97,7 +97,7 @@ export function BusinessHoursPanel() {
                   }
                   aria-label={`${DAY_LABELS[row.day_of_week]} open`}
                 />
-                <span className="text-sm font-medium text-foreground">
+                <span className="text-body font-medium text-foreground">
                   {DAY_LABELS[row.day_of_week]}
                 </span>
               </div>
@@ -108,25 +108,25 @@ export function BusinessHoursPanel() {
                     type="time"
                     value={toInputTime(row.open_time)}
                     onChange={(e) => update(row.day_of_week, { open_time: e.target.value })}
-                    className="h-10 rounded-lg border border-input bg-background px-3 text-sm text-foreground"
+                    className="h-10 rounded-lg border border-input bg-background px-3 text-body text-foreground"
                     aria-label={`${DAY_LABELS[row.day_of_week]} opening time`}
                   />
-                  <span className="text-sm text-muted-foreground">to</span>
+                  <span className="text-body text-muted-foreground">to</span>
                   <input
                     type="time"
                     value={toInputTime(row.close_time)}
                     onChange={(e) => update(row.day_of_week, { close_time: e.target.value })}
-                    className="h-10 rounded-lg border border-input bg-background px-3 text-sm text-foreground"
+                    className="h-10 rounded-lg border border-input bg-background px-3 text-body text-foreground"
                     aria-label={`${DAY_LABELS[row.day_of_week]} closing time`}
                   />
                   {rowInvalid ? (
-                    <span className="text-xs font-medium text-destructive">
+                    <span className="text-caption font-medium text-destructive">
                       Closing time must be after opening time
                     </span>
                   ) : null}
                 </div>
               ) : (
-                <span className="text-sm text-muted-foreground">Closed</span>
+                <span className="text-body text-muted-foreground">Closed</span>
               )}
             </li>
           );
