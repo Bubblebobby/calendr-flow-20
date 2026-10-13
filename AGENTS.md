@@ -1,10 +1,6 @@
-<!-- LOVABLE:BEGIN -->
-> [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
->
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
-<!-- LOVABLE:END -->
+# Bookly
+
+- Deployed on Vercel from `main`; every push to `main` goes live. Do work on branches and open PRs.
+- Don't force-push or rewrite pushed history.
+- Database: Supabase. Schema changes go in a new file in `supabase/migrations`, then `npm run db:setup-sql`.
+- Never commit secrets (service role key). Only `VITE_`-prefixed values reach the browser.

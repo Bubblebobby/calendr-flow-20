@@ -9,7 +9,7 @@ import { formatTime, memberName, minutesOfDay, startOfDay, type TeamMember } fro
 
 /**
  * Blocked time lives in `blocked_times`, which Bookly's database doesn't have yet.
- * Until it's created (see notes/lovable-prompts.md) reads return nothing and saves
+ * Until it's created (see supabase/migrations) reads return nothing and saves
  * explain what's missing instead of failing silently.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,7 +35,7 @@ export function isMissingTable(error: { code?: string; message?: string } | null
 }
 
 export const MISSING_TABLE_MESSAGE =
-  "This needs a database update first: see notes/lovable-prompts.md";
+  "This needs a database update first: see supabase/migrations";
 
 export function useBlockedTimes(businessId: string | undefined, from: Date, to: Date) {
   return useQuery({
