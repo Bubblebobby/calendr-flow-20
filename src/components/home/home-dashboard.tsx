@@ -23,7 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatDuration, formatMoney } from "@/lib/format";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
-import { statusTone } from "@/components/calendar/appointment-detail";
+import { statusTone } from "@/components/calendar/calendar-data";
 import { Button } from "@/components/ui/button";
 import {
   Card,

@@ -212,3 +212,23 @@ export function selectMembers(
   const picked = members.filter((member) => ids.has(member.id));
   return picked.length ? picked : members;
 }
+
+/** Label + dot colour for an appointment status. */
+export function statusTone(status: string) {
+  switch (status) {
+    case "booked":
+      return { label: "Booked", dot: "bg-primary/60" };
+    case "confirmed":
+      return { label: "Confirmed", dot: "bg-primary/60" };
+    case "arrived":
+      return { label: "Arrived", dot: "bg-accent" };
+    case "started":
+      return { label: "Started", dot: "bg-accent" };
+    case "completed":
+      return { label: "Completed", dot: "bg-primary" };
+    case "no_show":
+      return { label: "No-show", dot: "bg-muted-foreground" };
+    default:
+      return { label: "Cancelled", dot: "bg-destructive" };
+  }
+}

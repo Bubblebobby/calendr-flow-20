@@ -208,7 +208,11 @@ export function CalendarToolbar({
   onSelectionChange,
   onRefresh,
   onAdd,
-  onSoon,
+  onFilters,
+  onSettings,
+  onWaitlist,
+  locked = false,
+  filtersOn = false,
 }: {
   view: CalendarView;
   anchor: Date;
@@ -224,18 +228,23 @@ export function CalendarToolbar({
   onSelectionChange: (selection: TeamSelection) => void;
   onRefresh: () => void;
   onAdd: (action: AddAction) => void;
-  onSoon: (feature: string) => void;
+  onFilters: () => void;
+  onSettings: () => void;
+  onWaitlist: () => void;
+  /** "Select a time" mode: date navigation and view switching are disabled, like Fresha. */
+  locked?: boolean;
+  filtersOn?: boolean;
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const unit = view === "day" ? "day" : view === "month" ? "month" : view === "week" ? "week" : "3 days";
 
   return (
     <div className="flex min-h-[3.25rem] shrink-0 flex-wrap items-center gap-2 bg-background px-4 py-3 sm:px-5">
-      <button type="button" onClick={onToday} className={cn(outline, "rounded-full px-4")}>
+      <button type="button" disabled={locked} onClick={onToday} className={cn(outline, "rounded-full px-4 disabled:pointer-events-none disabled:opacity-40")}>
         Today
       </button>
 
-      <div className="flex items-center">
+      <div className={cn("flex items-center", locked && "pointer-events-none opacity-40")}>
         <button
           type="button"
           aria-label={`Previous ${unit}`}
@@ -279,19 +288,20 @@ export function CalendarToolbar({
         currentUserId={currentUserId}
         onChange={onSelectionChange}
       />
-      <IconButton label="Visibility filters" onClick={() => onSoon("Visibility filters")}>
+      <IconButton label="Visibility filters" onClick={onFilters} className={cn("relative", filtersOn && "border-primary text-primary")}>
         <FadersHorizontal size={18} />
+        {filtersOn ? <span className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-primary ring-2 ring-background" /> : null}
       </IconButton>
 
       <div className="ml-auto flex items-center gap-2">
-        <IconButton label="Calendar settings" onClick={() => onSoon("Calendar settings")}>
+        <IconButton label="Calendar settings" onClick={onSettings}>
           <Gear size={18} />
         </IconButton>
-        <IconButton label="Waitlist" onClick={() => onSoon("Waitlist")}>
+        <IconButton label="Waitlist" onClick={onWaitlist}>
           <ClockCountdown size={18} />
         </IconButton>
 
-        <div className="flex items-center">
+        <div className={cn("flex items-center", locked && "pointer-events-none opacity-40")}>
           <button
             type="button"
             aria-label="Refresh calendar"
