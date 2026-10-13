@@ -69,6 +69,15 @@
   --color-slot-pink-foreground: var(--slot-pink-foreground);
   --color-slot-mint: var(--slot-mint);
   --color-slot-mint-foreground: var(--slot-mint-foreground);
+  --color-status-booked: var(--status-booked);
+  --color-status-booked-foreground: var(--status-booked-foreground);
+  --color-status-arrived: var(--status-arrived);
+  --color-status-arrived-foreground: var(--status-arrived-foreground);
+  --color-status-completed: var(--status-completed);
+  --color-status-completed-foreground: var(--status-completed-foreground);
+  --color-status-cancelled: var(--status-cancelled);
+  --color-status-cancelled-foreground: var(--status-cancelled-foreground);
+  --color-chart-appointments: var(--chart-appointments);
 }
 
 :root {
@@ -119,6 +128,16 @@
   --slot-pink-foreground: oklch(0.38 0.1 10);
   --slot-mint: oklch(0.87 0.07 175);
   --slot-mint-foreground: oklch(0.36 0.07 180);
+  /* Appointment status pills (Fresha-style tinted pills) */
+  --status-booked: #eaf1fd;
+  --status-booked-foreground: #2d76ec;
+  --status-arrived: #fdf3e2;
+  --status-arrived-foreground: #b26b00;
+  --status-completed: #e6f5ea;
+  --status-completed-foreground: #1f8a3e;
+  --status-cancelled: #fdecec;
+  --status-cancelled-foreground: #d92d20;
+  --chart-appointments: #3c7d3a;
   --gradient-halo: radial-gradient(60% 55% at 50% 0%, oklch(0.93 0.05 300 / 0.55), transparent 70%);
 }
 
@@ -167,6 +186,15 @@
   --slot-pink-foreground: oklch(0.95 0.02 10);
   --slot-mint: oklch(0.42 0.06 178);
   --slot-mint-foreground: oklch(0.94 0.02 178);
+  --status-booked: oklch(0.32 0.07 255);
+  --status-booked-foreground: oklch(0.85 0.08 255);
+  --status-arrived: oklch(0.33 0.06 70);
+  --status-arrived-foreground: oklch(0.86 0.1 75);
+  --status-completed: oklch(0.32 0.06 150);
+  --status-completed-foreground: oklch(0.85 0.1 150);
+  --status-cancelled: oklch(0.32 0.08 25);
+  --status-cancelled-foreground: oklch(0.85 0.09 25);
+  --chart-appointments: oklch(0.7 0.13 145);
 }
 
 @layer base {
