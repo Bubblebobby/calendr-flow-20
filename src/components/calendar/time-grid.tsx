@@ -47,7 +47,7 @@ export function DateHeader({ date, now, locale }: { date: Date; now: Date; local
   const isToday = sameDay(date, now);
   const isPast = !isToday && date < now;
   return (
-    <div className="flex items-center gap-2 px-3">
+    <div className="flex min-w-0 items-center gap-2 overflow-hidden px-3">
       <span
         className={cn(
           "flex size-8 items-center justify-center rounded-full text-[0.9375rem] tabular-nums",
@@ -142,6 +142,7 @@ export function TimeGrid({
         className="relative z-20 flex shrink-0 bg-card shadow-[0_6px_8px_-6px_rgb(0_0_0/0.12)]"
         style={{ paddingRight: scrollbar }}
       >
+        {singleMember ? <div className="w-20 shrink-0" /> : null}
         <div className={cn(GUTTER, "shrink-0")} />
         {columns.map((column) =>
           headerMode === "members" ? (
@@ -152,7 +153,7 @@ export function TimeGrid({
               </span>
             </div>
           ) : (
-            <div key={column.key} className="flex h-[4.25rem] min-w-[6.5rem] flex-1 items-center">
+            <div key={column.key} className="flex h-[4.25rem] min-w-[6.5rem] flex-1 basis-0 items-center overflow-hidden">
               <DateHeader date={column.date} now={now} locale={locale} />
             </div>
           ),
@@ -161,14 +162,17 @@ export function TimeGrid({
 
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-auto">
         <div className="relative flex" style={{ height: DAY_HEIGHT }}>
-          {/* Time gutter — single-member views pin the member's avatar at the top */}
-          <div className={cn(GUTTER, "relative shrink-0 bg-card")}>
-            {singleMember ? (
-              <div className="sticky top-0 z-10 flex flex-col items-center gap-1 bg-card pb-2 pt-1">
+          {/* Single-member views get their own column with the member pinned at the top, like Fresha */}
+          {singleMember ? (
+            <div className="w-20 shrink-0 bg-card">
+              <div className="sticky top-0 flex flex-col items-center gap-1.5 px-1 pt-3 text-center">
                 <MemberAvatar member={singleMember} size={40} />
-                <span className="max-w-full truncate px-1 text-[0.75rem] font-semibold">{singleMember.first_name}</span>
+                <span className="line-clamp-2 text-[0.75rem] font-semibold leading-4">{memberName(singleMember)}</span>
               </div>
-            ) : null}
+            </div>
+          ) : null}
+          {/* Time gutter */}
+          <div className={cn(GUTTER, "relative shrink-0 bg-card")}>
             {Array.from({ length: 24 }, (_, hour) =>
               hour === 0 ? null : (
                 <span
@@ -251,7 +255,7 @@ export function TimeGrid({
                       type="button"
                       key={appointment.id}
                       className={cn(
-                        "absolute inset-x-1 z-10 overflow-hidden rounded-[4px] px-1.5 py-1 text-left text-[0.8125rem] leading-[1.15rem] text-[#0d0d0d] transition-[filter] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "absolute inset-x-1 z-10 flex flex-col justify-start overflow-hidden rounded-[4px] px-1.5 py-1 text-left text-[0.8125rem] leading-[1.15rem] text-[#0d0d0d] transition-[filter] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         appointment.status === "no_show" && "opacity-60",
                       )}
                       style={{

@@ -77,17 +77,17 @@ export function RosterGrid({
   onEventLeave: () => void;
   onEventClick: (appointment: CalendarEvent) => void;
 }) {
-  const template = `5rem repeat(${days.length}, minmax(${view === "week" ? "7rem" : "10rem"}, 1fr))`;
+  const template = `5rem repeat(${days.length}, minmax(${view === "week" ? "5.25rem" : "10rem"}, 1fr))`;
   return (
     <div className="min-h-0 flex-1 overflow-auto bg-card">
-      <div className="min-w-max">
+      <div className="min-w-full">
         <div
           className="sticky top-0 z-20 grid bg-card shadow-[0_6px_8px_-6px_rgb(0_0_0/0.12)]"
           style={{ gridTemplateColumns: template }}
         >
           <div />
           {days.map((date) => (
-            <div key={date.toISOString()} className="flex h-[4.25rem] items-center">
+            <div key={date.toISOString()} className="flex h-[4.25rem] min-w-0 items-center overflow-hidden">
               <DateHeader date={date} now={now} locale={locale} />
             </div>
           ))}
