@@ -251,7 +251,7 @@ export function SalesAppointmentsList() {
         </div>
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="rounded-full">
+            <Button variant="outline" size="sm" className="h-9 px-4 text-[0.9375rem] font-medium">
               Export
               <CaretDown size={14} className="ml-1" />
             </Button>
@@ -273,7 +273,7 @@ export function SalesAppointmentsList() {
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-secondary/70 p-3">
+      <div className="flex flex-wrap items-center gap-2 rounded-xl bg-toolbar p-4">
         <div className="relative">
           <MagnifyingGlass
             size={15}
@@ -283,12 +283,12 @@ export function SalesAppointmentsList() {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search by Reference or Client"
-            className="w-64 rounded-full pl-9"
+            className="h-9 w-64 rounded-full border-input bg-card pl-9 text-[0.9375rem]"
           />
         </div>
 
         <Select value={period} onValueChange={(value) => setPeriod(value as Period)}>
-          <SelectTrigger className="w-40 rounded-full">
+          <SelectTrigger className="h-9 w-auto gap-2 rounded-full border-input bg-card px-4 text-[0.9375rem] font-medium">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -302,7 +302,7 @@ export function SalesAppointmentsList() {
 
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="rounded-full">
+            <Button variant="outline" size="sm" className="h-9 px-4 text-[0.9375rem] font-medium">
               <Funnel size={14} className="mr-1.5" />
               Filters
               {activeFilterCount > 0 && (
@@ -336,7 +336,7 @@ export function SalesAppointmentsList() {
 
         <div className="ml-auto">
           <Select value={sort} onValueChange={(value) => setSort(value as Sort)}>
-            <SelectTrigger className="w-64 rounded-full">
+            <SelectTrigger className="h-9 w-auto gap-2 rounded-full border-input bg-card px-4 text-[0.9375rem] font-medium">
               <SelectValue />
             </SelectTrigger>
             <SelectContent align="end">
