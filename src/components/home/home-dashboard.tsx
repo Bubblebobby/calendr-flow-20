@@ -113,7 +113,17 @@ const upcomingChartConfig = {
 const AXIS_TICK = { fontSize: 11, fill: "var(--color-muted-foreground)" };
 
 function compactMoney(value: number, currency: string) {
-  return `${currency} ${new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(value)}`;
+  try {
+    return new Intl.NumberFormat("en", {
+      style: "currency",
+      currency,
+      currencyDisplay: "narrowSymbol",
+      notation: "compact",
+      maximumFractionDigits: 1,
+    }).format(value);
+  } catch {
+    return `${currency} ${value}`;
+  }
 }
 
 function ChartLegend({ items }: { items: Array<{ label: string; color: string }> }) {
