@@ -138,6 +138,11 @@
   --status-cancelled: #fdecec;
   --status-cancelled-foreground: #d92d20;
   --chart-appointments: #3c7d3a;
+  /* Calendar grid */
+  --grid-line: #f0f0f0;
+  --grid-line-strong: #e2e2e2;
+  --hatch-bg: #f4f4f4;
+  --hatch-line: #e1e1e1;
   --gradient-halo: radial-gradient(60% 55% at 50% 0%, oklch(0.93 0.05 300 / 0.55), transparent 70%);
 }
 
@@ -195,6 +200,10 @@
   --status-cancelled: oklch(0.32 0.08 25);
   --status-cancelled-foreground: oklch(0.85 0.09 25);
   --chart-appointments: oklch(0.7 0.13 145);
+  --grid-line: oklch(0.3 0 0);
+  --grid-line-strong: oklch(0.36 0 0);
+  --hatch-bg: oklch(0.24 0 0);
+  --hatch-line: oklch(0.32 0 0);
 }
 
 @layer base {

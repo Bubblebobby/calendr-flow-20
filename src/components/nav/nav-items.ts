@@ -31,21 +31,9 @@ export type NavItem = {
 
 export const navItems: NavItem[] = [
   { key: "home", title: "Home", to: "/home", icon: House },
-  {
-    key: "calendar",
-    title: "Calendar",
-    to: "/calendar",
-    icon: CalendarBlank,
-    groups: [
-      {
-        title: "Scheduling",
-        children: [
-          { title: "Calendar view", to: "/calendar" },
-          { title: "Waitlist", to: "/calendar" },
-        ],
-      },
-    ],
-  },
+  // Like Fresha, the calendar has no sub-menu: it takes the full width, and the
+  // waitlist lives in the calendar toolbar.
+  { key: "calendar", title: "Calendar", to: "/calendar", icon: CalendarBlank },
   {
     key: "sales",
     title: "Sales",
