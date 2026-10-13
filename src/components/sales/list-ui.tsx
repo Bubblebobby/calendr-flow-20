@@ -6,8 +6,9 @@ import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
+/** Header-size button (48px, 17px semibold), Fresha's Options/Add. Add colour classes on top. */
 export const pillButton =
-  "inline-flex h-11 items-center justify-center gap-2 rounded-full px-5 text-[0.9375rem] font-semibold transition-colors disabled:opacity-50";
+  "inline-flex h-12 items-center justify-center gap-2 rounded-full px-5 text-[1.0625rem] font-semibold transition-colors disabled:opacity-50";
 
 /** Title + subtitle on the left, actions on the right — Fresha's list page header. */
 export function PageHeader({
@@ -24,7 +25,7 @@ export function PageHeader({
   return (
     <div className="flex items-start justify-between gap-4">
       <div className="min-w-0 flex-1">
-        <h1 className="text-[1.75rem] font-bold leading-9 tracking-tight text-foreground">
+        <h1 className="text-[1.75rem] font-semibold leading-9 text-foreground">
           {title}
         </h1>
         <p className="mt-1 max-w-xl text-[0.9375rem] text-muted-foreground">
@@ -50,7 +51,7 @@ export function ListToolbar({
   right?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-secondary/70 p-3">
+    <div className="flex flex-wrap items-center gap-2 rounded-xl bg-toolbar p-4">
       {children}
       {right ? <div className="ml-auto flex items-center gap-2">{right}</div> : null}
     </div>
@@ -67,13 +68,13 @@ export function SearchBox({
   placeholder: string;
 }) {
   return (
-    <label className="flex h-10 w-full max-w-[16rem] items-center gap-2 rounded-full border border-border bg-card px-4 focus-within:border-primary">
+    <label className="flex h-9 w-full max-w-[16rem] items-center gap-2 rounded-full border border-input bg-card px-4 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15">
       <MagnifyingGlass size={16} className="shrink-0 text-muted-foreground" />
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="h-full min-w-0 flex-1 bg-transparent text-[0.875rem] outline-none placeholder:text-muted-foreground"
+        className="h-full min-w-0 flex-1 bg-transparent text-[0.9375rem] outline-none placeholder:text-muted-foreground"
       />
     </label>
   );
@@ -93,8 +94,8 @@ export function ChipButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex h-10 items-center gap-2 rounded-full border bg-card px-4 text-[0.875rem] font-medium hover:bg-secondary data-[state=open]:bg-secondary",
-        active ? "border-primary text-primary" : "border-border",
+        "inline-flex h-9 items-center gap-2 rounded-full border bg-card px-4 text-[0.9375rem] font-medium transition-colors hover:bg-secondary data-[state=open]:bg-secondary",
+        active ? "border-primary text-primary" : "border-input",
       )}
     >
       {children}
@@ -269,7 +270,7 @@ export function DateRangeButton({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-card px-4 text-[0.875rem] font-medium hover:bg-secondary data-[state=open]:bg-secondary"
+          className="inline-flex h-9 items-center gap-2 rounded-full border border-input bg-card px-4 text-[0.9375rem] font-medium transition-colors hover:bg-secondary data-[state=open]:bg-secondary"
         >
           {rangeLabel(value)}
           <CaretDown size={12} weight="bold" />
@@ -383,7 +384,7 @@ export function FilterModal({
           <button
             type="button"
             onClick={onClear}
-            className={cn(pillButton, "border border-border hover:bg-secondary")}
+            className={cn(pillButton, "border border-input hover:bg-secondary")}
           >
             Clear filters
           </button>
@@ -473,7 +474,7 @@ export function FeatureIntro({
     <div className="grid items-center gap-10 py-6 lg:grid-cols-[1fr_minmax(16rem,22rem)]">
       <div>
         <p className="text-[0.8125rem] font-semibold tracking-wide text-[#1f8a3e]">{eyebrow}</p>
-        <h1 className="mt-3 text-[2.25rem] font-bold leading-tight tracking-tight">{title}</h1>
+        <h1 className="mt-3 text-[2.25rem] font-semibold leading-tight">{title}</h1>
         <p className="mt-4 max-w-lg text-[1rem] text-muted-foreground">{body}</p>
         <ul className="mt-5 space-y-3">
           {bullets.map((bullet) => (

@@ -351,8 +351,8 @@ export function SalesAppointmentsList() {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-border bg-card">
-        <table className="w-full min-w-[64rem] text-left text-sm">
+      <div className="overflow-x-auto">
+        <table className="data-table min-w-[64rem] whitespace-nowrap">
           <thead>
             <tr className="border-b border-border text-[0.8125rem] font-semibold text-foreground">
               <th className="px-5 py-3.5">Ref #</th>

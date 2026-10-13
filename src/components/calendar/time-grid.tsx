@@ -292,7 +292,7 @@ export function TimeGrid({
                 {/* Hovered slot with its start time, like Fresha */}
                 {hovered !== null && selected === null && (picking || withinHours(hovered)) ? (
                   <div
-                    className="pointer-events-none absolute inset-x-1 z-[25] flex items-center rounded-[4px] bg-[#ebe8ff] px-1.5 text-[0.75rem] font-medium text-primary"
+                    className="pointer-events-none absolute inset-x-1 z-[25] flex items-center rounded-[4px] bg-accent px-1.5 text-[0.75rem] font-medium text-primary"
                     style={{ top: y(hovered), height: slotHeight }}
                   >
                     {formatTime(hovered)}

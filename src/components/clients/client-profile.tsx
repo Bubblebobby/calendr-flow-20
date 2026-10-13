@@ -449,7 +449,7 @@ export function ClientProfile({
       onClick={() => setSection(key)}
       className={cn(
         "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-[0.875rem]",
-        section === key ? "bg-[#ebe8ff] font-medium" : "hover:bg-secondary",
+        section === key ? "bg-accent font-medium" : "hover:bg-secondary",
       )}
     >
       {label}
@@ -464,7 +464,7 @@ export function ClientProfile({
   if (section === "overview") {
     content = (
       <>
-        <h2 className="text-[1.75rem] font-bold tracking-tight">Overview</h2>
+        <h2 className="text-[1.75rem] font-semibold">Overview</h2>
         <div className="mt-5 flex items-center justify-between">
           <p className="text-[1.0625rem] font-semibold">Wallet</p>
           <button
@@ -479,14 +479,14 @@ export function ClientProfile({
           <p className="flex items-center justify-between text-[0.9375rem] font-semibold">
             Balance <Info size={16} className="text-muted-foreground" />
           </p>
-          <p className="mt-2 text-[1.75rem] font-bold">{money(0)}</p>
+          <p className="mt-2 text-[1.75rem] font-semibold">{money(0)}</p>
         </div>
         <p className="mt-6 text-[1.0625rem] font-semibold">Summary</p>
         <div className="mt-3 rounded-2xl border border-border bg-card p-5">
           <p className="flex items-center justify-between text-[0.9375rem] font-semibold">
             Total sales <Info size={16} className="text-muted-foreground" />
           </p>
-          <p className="mt-2 text-[1.75rem] font-bold">{money(stats.totalSales)}</p>
+          <p className="mt-2 text-[1.75rem] font-semibold">{money(stats.totalSales)}</p>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-3">
           {[
@@ -499,7 +499,7 @@ export function ClientProfile({
               <p className="flex items-center justify-between text-[0.9375rem] font-semibold">
                 {label} <Info size={16} className="text-muted-foreground" />
               </p>
-              <p className="mt-2 text-[1.75rem] font-bold">{value}</p>
+              <p className="mt-2 text-[1.75rem] font-semibold">{value}</p>
             </div>
           ))}
         </div>
@@ -522,7 +522,7 @@ export function ClientProfile({
     let lastMonth = "";
     content = (
       <>
-        <h2 className="text-[1.75rem] font-bold tracking-tight">Appointments</h2>
+        <h2 className="text-[1.75rem] font-semibold">Appointments</h2>
         <div className="mt-4">
           <Pills
             value={apptFilter}
@@ -652,7 +652,7 @@ export function ClientProfile({
     content = (
       <>
         <div className="flex items-center justify-between">
-          <h2 className="text-[1.75rem] font-bold tracking-tight">Sales</h2>
+          <h2 className="text-[1.75rem] font-semibold">Sales</h2>
           <button
             type="button"
             onClick={sell}
@@ -740,7 +740,7 @@ export function ClientProfile({
     content = (
       <>
         <div className="flex items-center justify-between">
-          <h2 className="text-[1.75rem] font-bold tracking-tight">Client details</h2>
+          <h2 className="text-[1.75rem] font-semibold">Client details</h2>
           <button
             type="button"
             onClick={goEdit}
@@ -782,7 +782,7 @@ export function ClientProfile({
           {assignedTags.map((tag) => (
             <span
               key={tag.id}
-              className="inline-flex h-7 items-center gap-1 rounded-full bg-[#ebe8ff] pl-3 pr-1 text-[0.8125rem] text-primary"
+              className="inline-flex h-7 items-center gap-1 rounded-full bg-accent pl-3 pr-1 text-[0.8125rem] text-primary"
             >
               {tag.name}
               <button
@@ -880,7 +880,7 @@ export function ClientProfile({
       );
     content = (
       <>
-        <h2 className="text-[1.75rem] font-bold tracking-tight">Items</h2>
+        <h2 className="text-[1.75rem] font-semibold">Items</h2>
         <div className="mt-4">
           <Pills
             value={itemTab}
@@ -927,7 +927,7 @@ export function ClientProfile({
     content = (
       <>
         <div className="flex items-center justify-between">
-          <h2 className="text-[1.75rem] font-bold tracking-tight">Notes</h2>
+          <h2 className="text-[1.75rem] font-semibold">Notes</h2>
           <button
             type="button"
             onClick={() => setNoteDraft(client?.notes ?? "")}
@@ -988,7 +988,7 @@ export function ClientProfile({
     content = (
       <>
         <div className="flex items-center justify-between">
-          <h2 className="text-[1.75rem] font-bold tracking-tight">{label}</h2>
+          <h2 className="text-[1.75rem] font-semibold">{label}</h2>
           <button
             type="button"
             onClick={() => toast(NEEDS_DB)}
@@ -1010,7 +1010,7 @@ export function ClientProfile({
     content = (
       <>
         <div className="flex items-center justify-between">
-          <h2 className="text-[1.75rem] font-bold tracking-tight">Wallet</h2>
+          <h2 className="text-[1.75rem] font-semibold">Wallet</h2>
           <button
             type="button"
             onClick={() => toast("Wallet top-ups and saved cards arrive with online payments")}
@@ -1019,7 +1019,7 @@ export function ClientProfile({
             Actions <CaretDown size={12} weight="bold" />
           </button>
         </div>
-        <p className="mt-4 text-[1.75rem] font-bold">{money(0)}</p>
+        <p className="mt-4 text-[1.75rem] font-semibold">{money(0)}</p>
         <p className="text-[0.875rem] text-muted-foreground">Available balance.</p>
         <div className="mt-5">
           <Empty
@@ -1037,7 +1037,7 @@ export function ClientProfile({
   } else if (section === "loyalty") {
     content = (
       <>
-        <h2 className="text-[1.75rem] font-bold tracking-tight">Loyalty</h2>
+        <h2 className="text-[1.75rem] font-semibold">Loyalty</h2>
         <div className="mt-5">
           <Empty
             icon={<Star size={40} weight="duotone" />}
@@ -1047,7 +1047,7 @@ export function ClientProfile({
               <button
                 type="button"
                 onClick={() => navigate({ to: "/clients", search: { tab: "loyalty" } as never })}
-                className={cn(pillButton, "h-10 border border-border hover:bg-secondary")}
+                className={cn(pillButton, "h-10 border border-input hover:bg-secondary")}
               >
                 Learn about loyalty
               </button>
@@ -1059,7 +1059,7 @@ export function ClientProfile({
   } else {
     content = (
       <>
-        <h2 className="text-[1.75rem] font-bold tracking-tight">Reviews</h2>
+        <h2 className="text-[1.75rem] font-semibold">Reviews</h2>
         <div className="mt-5">
           <Empty
             icon={<Star size={40} weight="duotone" />}
@@ -1085,7 +1085,7 @@ export function ClientProfile({
       {/* Profile column */}
       <aside className="hidden w-[20rem] shrink-0 flex-col border-r border-border bg-card md:flex">
         <div className="flex flex-col items-center px-6 pb-6 pt-8 text-center">
-          <span className="flex size-24 items-center justify-center rounded-full bg-[#ebe8ff] text-[2rem] font-semibold text-primary">
+          <span className="flex size-24 items-center justify-center rounded-full bg-accent text-[2rem] font-semibold text-primary">
             {client?.first_name[0]?.toUpperCase()}
           </span>
           <p className="mt-4 text-[1.0625rem] font-semibold">{name}</p>
@@ -1250,7 +1250,7 @@ export function ClientProfile({
               <button
                 type="button"
                 onClick={() => setConfirmDelete(false)}
-                className={cn(pillButton, "h-12 border border-border hover:bg-secondary")}
+                className={cn(pillButton, "h-12 border border-input hover:bg-secondary")}
               >
                 Go back
               </button>

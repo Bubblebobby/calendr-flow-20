@@ -39,7 +39,7 @@ function OptionsMenu({ items }: { items: Array<{ label: string; onSelect: () => 
           type="button"
           className={cn(
             pillButton,
-            "border border-border bg-card hover:bg-secondary data-[state=open]:bg-secondary",
+            "border border-input bg-card hover:bg-secondary data-[state=open]:bg-secondary",
           )}
         >
           Options <CaretDown size={13} weight="bold" />
@@ -177,8 +177,8 @@ export function PaymentsList() {
           body="Try adjusting your search and filters."
         />
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-border bg-card">
-          <table className="w-full min-w-[44rem] whitespace-nowrap text-left text-[0.8125rem]">
+        <div className="overflow-x-auto">
+          <table className="data-table min-w-[44rem] whitespace-nowrap">
             <thead>
               <tr className="border-b border-border">
                 {[
@@ -368,7 +368,7 @@ function SoldItemsPage({
                 <button
                   type="button"
                   onClick={() => toast(NEEDS_SETUP)}
-                  className={cn(pillButton, "h-10 border border-border hover:bg-secondary")}
+                  className={cn(pillButton, "h-10 border border-input hover:bg-secondary")}
                 >
                   {setup}
                 </button>

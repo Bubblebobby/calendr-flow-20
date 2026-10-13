@@ -207,7 +207,7 @@ export function SalesList() {
                   type="button"
                   className={cn(
                     pillButton,
-                    "border border-border bg-card hover:bg-secondary data-[state=open]:bg-secondary",
+                    "border border-input bg-card hover:bg-secondary data-[state=open]:bg-secondary",
                   )}
                 >
                   Options <CaretDown size={13} weight="bold" />
@@ -299,15 +299,15 @@ export function SalesList() {
             <button
               type="button"
               onClick={() => setCheckout({})}
-              className={cn(pillButton, "h-10 border border-border hover:bg-secondary")}
+              className={cn(pillButton, "h-10 border border-input hover:bg-secondary")}
             >
               Create new sale
             </button>
           }
         />
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-border bg-card">
-          <table className="w-full min-w-[46rem] whitespace-nowrap text-left text-[0.8125rem]">
+        <div className="overflow-x-auto">
+          <table className="data-table min-w-[46rem] whitespace-nowrap">
             <thead>
               <tr className="border-b border-border text-foreground">
                 {[
@@ -360,7 +360,7 @@ export function SalesList() {
               ))}
             </tbody>
           </table>
-          <p className="border-t border-border py-4 text-center text-[0.8125rem] text-muted-foreground">
+          <p className="border-t border-border pt-5 text-center text-[0.8125rem] text-muted-foreground">
             Viewing 1 - {rows.length} of {rows.length} results
           </p>
         </div>
@@ -425,7 +425,7 @@ export function SalesList() {
           <div className="flex h-full w-[30rem] max-w-[calc(100vw-4rem)] flex-col border-l border-border bg-card shadow-[-12px_0_32px_-12px_rgb(0_0_0/0.2)]">
             <div className="flex items-start justify-between gap-3 px-6 pb-4 pt-6">
               <div>
-                <h2 className="text-[1.75rem] font-bold tracking-tight">
+                <h2 className="text-[1.75rem] font-semibold">
                   Sale {saleRef(viewing.id)}
                 </h2>
                 <p className="text-[0.875rem] text-muted-foreground">{stamp(viewing.sale_date)}</p>
@@ -539,7 +539,7 @@ export function SalesList() {
               <button
                 type="button"
                 onClick={() => setConfirmRefund(false)}
-                className={cn(pillButton, "h-12 border border-border hover:bg-secondary")}
+                className={cn(pillButton, "h-12 border border-input hover:bg-secondary")}
               >
                 Go back
               </button>

@@ -276,7 +276,7 @@ export function CalendarToolbar({
     view === "day" ? "day" : view === "month" ? "month" : view === "week" ? "week" : "3 days";
 
   return (
-    <div className="flex min-h-[3.25rem] shrink-0 flex-wrap items-center gap-2 bg-background px-4 py-3 sm:px-5">
+    <div className="flex min-h-[4.3rem] shrink-0 flex-wrap items-center gap-2 bg-toolbar px-4 py-4 sm:px-5">
       <button
         type="button"
         disabled={locked}

@@ -47,7 +47,7 @@ function SalesPage() {
   const { tab } = Route.useSearch();
 
   return (
-    <div className="min-w-0 px-8 py-10">
+    <div className="min-w-0 px-8 pb-10 pt-8">
       {tab === "daily" ? (
         <DailySalesSummary />
       ) : tab === "appointments" ? (

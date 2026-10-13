@@ -678,7 +678,7 @@ export function HomeDashboard() {
     dashboard.upcomingTotals.confirmed + dashboard.upcomingTotals.booked + dashboard.upcomingTotals.cancelled;
 
   return (
-    <div className="min-h-full bg-background">
+    <div className="min-h-full bg-surface">
       <div className="mx-auto grid w-full max-w-6xl items-start gap-x-8 gap-y-4 p-4 sm:p-6 lg:grid-cols-2">
         <DashboardCard
           title="Recent sales"

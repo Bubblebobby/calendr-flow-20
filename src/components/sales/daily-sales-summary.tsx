@@ -156,7 +156,7 @@ export function DailySalesSummary() {
       {/* Header — actions sit top-right, like Fresha */}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <h2 className="text-[1.75rem] font-bold leading-9 tracking-tight text-foreground">Daily sales</h2>
+          <h2 className="text-[1.75rem] font-semibold leading-9 text-foreground">Daily sales</h2>
           <p className="mt-1 max-w-md text-[0.9375rem] text-muted-foreground">
             View, filter and export the transactions and cash movement for the day.
           </p>

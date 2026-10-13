@@ -206,7 +206,7 @@ const pill =
 function Avatar({ name, size = 72 }: { name: string; size?: number }) {
   return (
     <span
-      className="flex shrink-0 items-center justify-center rounded-full bg-[#ebe8ff] font-semibold text-primary"
+      className="flex shrink-0 items-center justify-center rounded-full bg-accent font-semibold text-primary"
       style={{ width: size, height: size, fontSize: Math.round(size * 0.3) }}
     >
       {name.trim()[0]?.toUpperCase() ?? "?"}
@@ -242,7 +242,7 @@ function ConfirmModal({
           <button
             type="button"
             onClick={onCancel}
-            className={cn(pill, "border border-border bg-card hover:bg-secondary")}
+            className={cn(pill, "border border-input bg-card hover:bg-secondary")}
           >
             {cancelLabel}
           </button>
@@ -269,7 +269,7 @@ function BackHeader({ title, onBack }: { title: string; onBack: () => void }) {
       >
         <ArrowLeft size={14} weight="bold" /> Back
       </button>
-      <h2 className="mt-4 text-[1.75rem] font-bold leading-9 tracking-tight">{title}</h2>
+      <h2 className="mt-4 text-[1.75rem] font-semibold leading-9">{title}</h2>
     </div>
   );
 }
@@ -827,7 +827,7 @@ export function AppointmentPanel({
           />
         ) : (
           <div className="px-6 pb-4 pt-6">
-            <h2 className="text-[1.75rem] font-bold leading-9 tracking-tight">Select a service</h2>
+            <h2 className="text-[1.75rem] font-semibold leading-9">Select a service</h2>
           </div>
         )}
         <div className="px-6 pb-4">
@@ -1146,7 +1146,7 @@ export function AppointmentPanel({
                 <PopoverTrigger asChild disabled={isLocked}>
                   <button
                     type="button"
-                    className="inline-flex items-center gap-2 text-[1.75rem] font-bold leading-9 tracking-tight"
+                    className="inline-flex items-center gap-2 text-[1.75rem] font-semibold leading-9"
                   >
                     {dateTitle}
                     <CaretDown size={16} weight="bold" />
@@ -1442,7 +1442,7 @@ export function AppointmentPanel({
                   type="button"
                   disabled={!lines.length || save.isPending}
                   onClick={() => void handleCheckout()}
-                  className={cn(pill, "flex-1 border border-border bg-card hover:bg-secondary")}
+                  className={cn(pill, "flex-1 border border-input bg-card hover:bg-secondary")}
                 >
                   Checkout
                 </button>
@@ -1508,7 +1508,7 @@ export function AppointmentPanel({
             onClick={() => setClientFormOpen(true)}
             className="flex w-full items-center gap-4 rounded-xl px-2 py-3 text-left hover:bg-secondary"
           >
-            <span className="flex size-14 items-center justify-center rounded-full bg-[#ebe8ff] text-primary">
+            <span className="flex size-14 items-center justify-center rounded-full bg-accent text-primary">
               <Plus size={22} />
             </span>
             <span className="text-[0.9375rem] font-semibold">Add new client</span>
@@ -1521,7 +1521,7 @@ export function AppointmentPanel({
             }}
             className="flex w-full items-center gap-4 rounded-xl px-2 py-3 text-left hover:bg-secondary"
           >
-            <span className="flex size-14 items-center justify-center rounded-full bg-[#ebe8ff] text-primary">
+            <span className="flex size-14 items-center justify-center rounded-full bg-accent text-primary">
               <UserPlus size={22} />
             </span>
             <span className="text-[0.9375rem] font-semibold">Walk-In</span>
@@ -1559,7 +1559,7 @@ export function AppointmentPanel({
         onClick={() => setClientPickerOpen(true)}
         className="flex flex-col items-center px-3 pt-6 text-center hover:opacity-80"
       >
-        <span className="flex size-14 items-center justify-center rounded-full bg-[#ebe8ff] text-primary">
+        <span className="flex size-14 items-center justify-center rounded-full bg-accent text-primary">
           <UserPlus size={22} />
         </span>
         <span className="mt-3 text-[0.9375rem] font-semibold">
@@ -1801,7 +1801,7 @@ function CancelScreen({
           <button
             type="button"
             onClick={onClose}
-            className={cn(pill, "h-11 border border-border bg-card hover:bg-secondary")}
+            className={cn(pill, "h-11 border border-input bg-card hover:bg-secondary")}
           >
             Close
           </button>
@@ -1811,7 +1811,7 @@ function CancelScreen({
         </h1>
         <div className="mt-8 grid gap-8 lg:grid-cols-2">
           <div className="space-y-6">
-            <p className="flex items-center gap-3 rounded-xl bg-[#ebe8ff] px-4 py-3 text-[0.9375rem]">
+            <p className="flex items-center gap-3 rounded-xl bg-accent px-4 py-3 text-[0.9375rem]">
               <span className="flex size-5 items-center justify-center rounded-full border border-primary text-[0.75rem] text-primary">
                 i
               </span>

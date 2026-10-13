@@ -273,7 +273,7 @@ export function ClientSegments() {
             </button>
           </div>
           <div className="flex h-full w-[30rem] max-w-[calc(100vw-4rem)] flex-col border-l border-border bg-card shadow-[-12px_0_32px_-12px_rgb(0_0_0/0.2)]">
-            <h2 className="px-6 pb-1 pt-6 text-[1.75rem] font-bold tracking-tight">
+            <h2 className="px-6 pb-1 pt-6 text-[1.75rem] font-semibold">
               {viewing.title}
             </h2>
             <p className="px-6 pb-4 text-[0.875rem] text-muted-foreground">
@@ -292,7 +292,7 @@ export function ClientSegments() {
                     onClick={() => setProfileId(client.id)}
                     className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left hover:bg-secondary"
                   >
-                    <span className="flex size-10 items-center justify-center rounded-full bg-[#ebe8ff] font-semibold text-primary">
+                    <span className="flex size-10 items-center justify-center rounded-full bg-accent font-semibold text-primary">
                       {client.first_name[0]}
                     </span>
                     <span>
@@ -367,7 +367,7 @@ export function OnlineReputation() {
         learnMore
       />
       {videoOpen ? (
-        <div className="relative flex items-center gap-4 rounded-2xl bg-[#ebe8ff] p-5">
+        <div className="relative flex items-center gap-4 rounded-2xl bg-accent p-5">
           <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-card text-primary">
             <Play size={20} weight="fill" />
           </span>
@@ -413,7 +413,7 @@ export function OnlineReputation() {
             ].map(([label, value]) => (
               <div key={label} className="rounded-2xl border border-border bg-card p-5">
                 <p className="text-[0.9375rem] font-semibold">{label}</p>
-                <p className="mt-2 text-[1.75rem] font-bold">{value}</p>
+                <p className="mt-2 text-[1.75rem] font-semibold">{value}</p>
               </div>
             ))}
           </div>
@@ -443,7 +443,7 @@ export function OnlineReputation() {
             <button
               type="button"
               onClick={() => toast("Google Business connection arrives with Online booking")}
-              className={cn(pillButton, "h-10 border border-border hover:bg-secondary")}
+              className={cn(pillButton, "h-10 border border-input hover:bg-secondary")}
             >
               Connect
             </button>

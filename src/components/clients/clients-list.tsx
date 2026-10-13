@@ -248,7 +248,7 @@ export function ClientsList() {
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h2 className="text-[1.75rem] font-bold leading-9 tracking-tight text-foreground">
+            <h2 className="text-[1.75rem] font-semibold leading-9 text-foreground">
               Clients list
             </h2>
             <span className="rounded-full bg-secondary px-2 text-[0.8125rem] font-semibold text-muted-foreground">
@@ -269,7 +269,7 @@ export function ClientsList() {
                 type="button"
                 className={cn(
                   pillButton,
-                  "border border-border bg-card hover:bg-secondary data-[state=open]:bg-secondary",
+                  "border border-input bg-card hover:bg-secondary data-[state=open]:bg-secondary",
                 )}
               >
                 Options <CaretDown size={13} weight="bold" />
@@ -435,7 +435,7 @@ export function ClientsList() {
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[52rem] border-collapse whitespace-nowrap text-[0.8125rem]">
+        <table className="data-table min-w-[52rem] whitespace-nowrap">
           <thead>
             <tr className="border-b border-border text-left">
               <th className="w-12 px-4 py-4">
@@ -497,7 +497,7 @@ export function ClientsList() {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-4">
-                    <span className="flex size-12 items-center justify-center rounded-full bg-[#ebe8ff] text-[0.9375rem] font-semibold text-primary">
+                    <span className="flex size-14 items-center justify-center rounded-full bg-accent text-[0.9375rem] font-semibold text-primary">
                       {client.first_name[0]?.toUpperCase()}
                     </span>
                     <span>
@@ -608,7 +608,7 @@ export function ClientsList() {
             </button>
           </div>
           <div className="flex h-full w-[30rem] max-w-[calc(100vw-4rem)] flex-col border-l border-border bg-card shadow-[-12px_0_32px_-12px_rgb(0_0_0/0.2)]">
-            <h2 className="px-6 pb-4 pt-6 text-[1.75rem] font-bold tracking-tight">All filters</h2>
+            <h2 className="px-6 pb-4 pt-6 text-[1.75rem] font-semibold">All filters</h2>
             <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6">
               {[
                 {
@@ -668,7 +668,7 @@ export function ClientsList() {
               <button
                 type="button"
                 onClick={() => setDraft({ gender: "all", source: "all", tag: "all" })}
-                className={cn(pillButton, "h-12 flex-1 border border-border hover:bg-secondary")}
+                className={cn(pillButton, "h-12 flex-1 border border-input hover:bg-secondary")}
               >
                 Clear filters
               </button>

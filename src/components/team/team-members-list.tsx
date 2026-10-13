@@ -203,13 +203,13 @@ export function TeamMembersList() {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[820px] border-collapse text-sm">
+        <table className="data-table min-w-[820px]">
           <thead>
             <tr className="border-b border-border text-left">
-              <th className="px-4 py-4 text-base font-bold text-foreground">Name</th>
-              <th className="px-4 py-4 text-base font-bold text-foreground">Email</th>
-              <th className="px-4 py-4 text-base font-bold text-foreground">Permission role</th>
-              <th className="px-4 py-4 text-base font-bold text-foreground">Status</th>
+              <th className="px-4 py-4 text-foreground">Name</th>
+              <th className="px-4 py-4 text-foreground">Email</th>
+              <th className="px-4 py-4 text-foreground">Permission role</th>
+              <th className="px-4 py-4 text-foreground">Status</th>
               <th className="w-12 px-4 py-4" />
             </tr>
           </thead>

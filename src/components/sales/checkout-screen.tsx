@@ -504,7 +504,7 @@ export function CheckoutScreen({
             <ArrowLeft size={14} /> Back
           </button>
         ) : null}
-        <h1 className="mt-3 text-[1.75rem] font-bold tracking-tight">
+        <h1 className="mt-3 text-[1.75rem] font-semibold">
           {browse === "services"
             ? "Services"
             : browse === "appointments"
@@ -656,7 +656,7 @@ export function CheckoutScreen({
     leftPane = (
       <>
         {crumbs}
-        <h1 className="mt-3 text-[1.75rem] font-bold tracking-tight">Select tip</h1>
+        <h1 className="mt-3 text-[1.75rem] font-semibold">Select tip</h1>
         <p className="mt-6 text-[0.9375rem]">Select an amount for {staffNames || "your team"}</p>
         <div className="mt-4 grid grid-cols-3 gap-3">
           {TIP_OPTIONS.map((percent) => (
@@ -714,7 +714,7 @@ export function CheckoutScreen({
     leftPane = (
       <>
         {crumbs}
-        <h1 className="mt-3 text-[1.75rem] font-bold tracking-tight">Select payment</h1>
+        <h1 className="mt-3 text-[1.75rem] font-semibold">Select payment</h1>
         <div className="mt-6 grid grid-cols-3 gap-3">
           {(
             [
@@ -812,7 +812,7 @@ export function CheckoutScreen({
           }}
           className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left hover:bg-secondary"
         >
-          <span className="flex size-10 items-center justify-center rounded-full bg-[#ebe8ff] text-primary">
+          <span className="flex size-10 items-center justify-center rounded-full bg-accent text-primary">
             <UserPlus size={18} />
           </span>
           <span className="text-[0.9375rem] font-semibold">Walk-In</span>
@@ -837,7 +837,7 @@ export function CheckoutScreen({
               }}
               className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left hover:bg-secondary"
             >
-              <span className="flex size-10 items-center justify-center rounded-full bg-[#ebe8ff] font-semibold text-primary">
+              <span className="flex size-10 items-center justify-center rounded-full bg-accent font-semibold text-primary">
                 {row.first_name[0]}
               </span>
               <span className="min-w-0">
@@ -867,7 +867,7 @@ export function CheckoutScreen({
           {client ? client.email || client.phone || "Client" : "Leave empty for walk-ins"}
         </span>
       </span>
-      <span className="flex size-14 items-center justify-center rounded-full bg-[#ebe8ff] text-primary">
+      <span className="flex size-14 items-center justify-center rounded-full bg-accent text-primary">
         {client ? (
           <span className="text-lg font-semibold">{client.first_name[0]}</span>
         ) : (
@@ -902,7 +902,7 @@ export function CheckoutScreen({
           type="button"
           disabled={persist.isPending}
           onClick={() => persist.mutate("draft")}
-          className={cn(pill, "flex-1 border border-border bg-card hover:bg-secondary")}
+          className={cn(pill, "flex-1 border border-input bg-card hover:bg-secondary")}
         >
           Save unpaid
         </button>
@@ -1251,7 +1251,7 @@ export function CheckoutScreen({
                 setConfirmDiscard(false);
                 persist.mutate("draft");
               }}
-              className={cn(pill, "border border-border bg-card hover:bg-secondary")}
+              className={cn(pill, "border border-input bg-card hover:bg-secondary")}
             >
               Save as draft
             </button>

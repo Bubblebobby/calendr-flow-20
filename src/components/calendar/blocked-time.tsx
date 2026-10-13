@@ -187,7 +187,7 @@ export function BlockedTimeDrawer({
       </div>
       <div className="flex h-full w-[30rem] flex-col border-l border-border bg-card shadow-[-12px_0_32px_-12px_rgb(0_0_0/0.2)]">
         <div className="flex items-center justify-between px-6 pb-2 pt-6">
-          <h2 className="text-[1.75rem] font-bold tracking-tight">
+          <h2 className="text-[1.75rem] font-semibold">
             {draft.existing ? "Edit blocked time" : "Add blocked time"}
           </h2>
           {draft.existing ? (

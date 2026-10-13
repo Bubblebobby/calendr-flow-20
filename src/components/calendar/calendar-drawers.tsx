@@ -53,7 +53,7 @@ function DrawerShell({
       </div>
       <div className="flex h-full w-[30rem] max-w-[calc(100vw-4rem)] flex-col border-l border-border bg-card shadow-[-12px_0_32px_-12px_rgb(0_0_0/0.2)]">
         <div className="flex items-center justify-between gap-3 px-6 pb-3 pt-6">
-          <h2 className="text-[1.75rem] font-bold tracking-tight">{title}</h2>
+          <h2 className="text-[1.75rem] font-semibold">{title}</h2>
           {headerAction}
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
@@ -594,7 +594,7 @@ export function WaitlistDrawer({
                 }}
                 className="flex w-full items-center gap-4 rounded-xl px-2 py-3 text-left hover:bg-secondary"
               >
-                <span className="flex size-12 items-center justify-center rounded-full bg-[#ebe8ff] text-primary">
+                <span className="flex size-12 items-center justify-center rounded-full bg-accent text-primary">
                   <Plus size={20} />
                 </span>
                 <span className="text-[0.9375rem] font-semibold">Walk-In</span>
@@ -617,7 +617,7 @@ export function WaitlistDrawer({
                     }}
                     className="flex w-full items-center gap-4 rounded-xl px-2 py-3 text-left hover:bg-secondary"
                   >
-                    <span className="flex size-12 items-center justify-center rounded-full bg-[#ebe8ff] font-semibold text-primary">
+                    <span className="flex size-12 items-center justify-center rounded-full bg-accent font-semibold text-primary">
                       {client.first_name[0]}
                     </span>
                     <span>
