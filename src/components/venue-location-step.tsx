@@ -17,6 +17,7 @@ import {
   addressFromComponents,
   formatAddress,
   loadGoogleMaps,
+  onMapsUnavailable,
   type BusinessAddress,
 } from "@/lib/google-maps";
 import { countryByCode } from "@/lib/countries";
@@ -46,6 +47,12 @@ export function VenueLocationStep({
   const [openList, setOpenList] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<BusinessAddress>(address);
+  const [mapsDown, setMapsDown] = useState(false);
+
+  useEffect(() => {
+    void loadGoogleMaps().catch(() => undefined);
+    return onMapsUnavailable(() => setMapsDown(true));
+  }, []);
 
   const mapEl = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
@@ -236,7 +243,33 @@ export function VenueLocationStep({
         </div>
       </div>
 
-      {coords ? (
+      {mapsDown ? (
+        <p className="mt-3 text-body text-muted-foreground">
+          Address search isn&apos;t available right now.{" "}
+          <button type="button" onClick={openEdit} className="font-semibold text-primary hover:underline">
+            Enter your address manually
+          </button>
+        </p>
+      ) : (
+        <button
+          type="button"
+          onClick={openEdit}
+          className="mt-3 text-body font-semibold text-primary hover:underline"
+        >
+          Enter address manually
+        </button>
+      )}
+
+      {!coords && address.address ? (
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border bg-card px-4 py-3 sm:px-5 sm:py-4">
+          <p className="text-[15px] text-foreground">{formatAddress(address, countryName)}</p>
+          <Button type="button" variant="outline" className="rounded-full px-6" onClick={openEdit}>
+            Edit
+          </Button>
+        </div>
+      ) : null}
+
+      {coords && !mapsDown ? (
         <div className="mt-6">
           <div className="overflow-hidden rounded-xl border border-border">
             <div ref={mapEl} className="h-44 sm:h-56 lg:h-64 w-full bg-secondary" />
@@ -269,6 +302,7 @@ export function VenueLocationStep({
           <div className="grid gap-5 sm:grid-cols-2">
             <Field
               label="Address"
+              required
               value={draft.address}
               onChange={(v) => setDraft({ ...draft, address: v })}
             />
@@ -286,6 +320,7 @@ export function VenueLocationStep({
             />
             <Field
               label="City"
+              required
               value={draft.city}
               onChange={(v) => setDraft({ ...draft, city: v })}
             />
@@ -337,6 +372,7 @@ export function VenueLocationStep({
             <Button
               type="button"
               className="rounded-full bg-ink px-7 text-ink-foreground hover:bg-ink/90"
+              disabled={!draft.address.trim() || !draft.city.trim()}
               onClick={saveEdit}
             >
               Save
@@ -354,8 +390,10 @@ function Field({
   onChange,
   counter,
   maxLength,
+  required,
 }: {
   label: string;
+  required?: boolean;
   value: string;
   onChange: (value: string) => void;
   counter?: string;
@@ -364,7 +402,10 @@ function Field({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <Label className="text-[15px] font-semibold">{label}</Label>
+        <Label className="text-[15px] font-semibold">
+          {label}
+          {required ? <span className="text-destructive"> *</span> : null}
+        </Label>
         {counter ? <span className="text-body text-muted-foreground">{counter}</span> : null}
       </div>
       <Input

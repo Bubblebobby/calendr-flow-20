@@ -182,7 +182,7 @@ function BusinessSetupPage() {
           : step === 4
             ? serviceLocations.length > 0
             : step === 5
-              ? Boolean(coords)
+              ? Boolean(coords) || Boolean(venueAddress.address.trim() && venueAddress.city.trim())
               : step === 6
                 ? migrationSourceValid
                 : step === 7
@@ -258,14 +258,15 @@ function BusinessSetupPage() {
   }
 
   async function handleVenueLocationContinue() {
-    if (!businessId || !coords) return;
+    const hasManualAddress = Boolean(venueAddress.address.trim() && venueAddress.city.trim());
+    if (!businessId || (!coords && !hasManualAddress)) return;
     setSaving(true);
     const { error } = await supabase
       .from("businesses")
       .update({
         location: venueAddress,
-        latitude: coords.lat,
-        longitude: coords.lng,
+        latitude: coords?.lat ?? null,
+        longitude: coords?.lng ?? null,
         setup_step: 6,
       })
       .eq("id", businessId);
