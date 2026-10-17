@@ -91,10 +91,17 @@ export const navItems: NavItem[] = [
       {
         title: "Catalog",
         children: [
-          { title: "Services", to: "/catalog", search: { tab: "services" } },
+          { title: "Service menu", to: "/catalog", search: { tab: "services" } },
           { title: "Packages", to: "/catalog", search: { tab: "packages" } },
           { title: "Products", to: "/catalog", search: { tab: "products" } },
-          { title: "Inventory", to: "/catalog", search: { tab: "inventory" } },
+        ],
+      },
+      {
+        title: "Inventory",
+        children: [
+          { title: "Stocktakes", to: "/catalog", search: { tab: "stocktakes" } },
+          { title: "Stock orders", to: "/catalog", search: { tab: "orders" } },
+          { title: "Suppliers", to: "/catalog", search: { tab: "suppliers" } },
         ],
       },
     ],

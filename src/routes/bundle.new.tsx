@@ -62,6 +62,7 @@ export const Route = createFileRoute("/bundle/new")({
   beforeLoad: requireOnboardedUser,
   validateSearch: (search: Record<string, unknown>) => ({
     id: typeof search["id"] === "string" ? search["id"] : undefined,
+    categoryId: typeof search["categoryId"] === "string" ? search["categoryId"] : undefined,
   }),
   head: () => ({
     meta: [
@@ -85,13 +86,13 @@ export const Route = createFileRoute("/bundle/new")({
 function BundleFormPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { id: bundleId } = Route.useSearch();
+  const { id: bundleId, categoryId: initialCategoryId } = Route.useSearch();
   const { data: business } = useBusiness();
   const businessId = business?.id;
   const editing = Boolean(bundleId);
 
   const [name, setName] = useState("");
-  const [categoryId, setCategoryId] = useState<string>("");
+  const [categoryId, setCategoryId] = useState<string>(initialCategoryId ?? "");
   const [description, setDescription] = useState("");
   const [scheduleType, setScheduleType] = useState<BundleScheduleType>("sequence");
   const [pricingMode, setPricingMode] = useState<BundlePricingMode>("service_pricing");

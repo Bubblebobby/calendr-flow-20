@@ -93,7 +93,7 @@ const soon = (label: string) => () => toast(`${label} — coming soon`);
 const FIELD =
   "h-12 rounded-xl border border-border bg-transparent text-base transition-colors";
 
-export function ServiceForm({ serviceId }: { serviceId?: string }) {
+export function ServiceForm({ serviceId, initialCategoryId }: { serviceId?: string; initialCategoryId?: string | undefined }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: business } = useBusiness();
@@ -101,7 +101,7 @@ export function ServiceForm({ serviceId }: { serviceId?: string }) {
   const isEdit = Boolean(serviceId);
 
   const [name, setName] = useState("");
-  const [categoryId, setCategoryId] = useState<string>("");
+  const [categoryId, setCategoryId] = useState<string>(initialCategoryId ?? "");
   const [treatmentType, setTreatmentType] = useState<string>("");
   const [description, setDescription] = useState("");
   const [priceType, setPriceType] = useState<"fixed" | "free" | "free-form">("fixed");

@@ -6,6 +6,8 @@ import { requireOnboardedUser } from "@/lib/auth-guard";
 export const Route = createFileRoute("/service/new")({
   ssr: false,
   beforeLoad: requireOnboardedUser,
+  validateSearch: (search: Record<string, unknown>): { categoryId?: string } =>
+    typeof search["categoryId"] === "string" ? { categoryId: search["categoryId"] } : {},
   head: () => ({
     meta: [
       { title: "New service — Bookly" },
@@ -23,5 +25,6 @@ export const Route = createFileRoute("/service/new")({
 });
 
 function NewServicePage() {
-  return <ServiceForm />;
+  const { categoryId } = Route.useSearch();
+  return <ServiceForm initialCategoryId={categoryId} />;
 }

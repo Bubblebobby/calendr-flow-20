@@ -888,6 +888,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_archived: boolean
           name: string
           sort_order: number
         }
@@ -897,6 +898,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_archived?: boolean
           name: string
           sort_order?: number
         }
@@ -906,6 +908,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_archived?: boolean
           name?: string
           sort_order?: number
         }
@@ -1009,6 +1012,7 @@ export type Database = {
           duration_minutes: number
           duration_segments: Json
           id: string
+          is_archived: boolean
           name: string
           price: number | null
           pricing_type: string
@@ -1023,6 +1027,7 @@ export type Database = {
           duration_minutes?: number
           duration_segments?: Json
           id?: string
+          is_archived?: boolean
           name: string
           price?: number | null
           pricing_type?: string
@@ -1037,6 +1042,7 @@ export type Database = {
           duration_minutes?: number
           duration_segments?: Json
           id?: string
+          is_archived?: boolean
           name?: string
           price?: number | null
           pricing_type?: string

@@ -26,6 +26,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as BundleNewRouteImport } from './routes/bundle.new'
+import { Route as CatalogReorderRouteImport } from './routes/catalog.reorder'
 import { Route as ClientClientIdRouteImport } from './routes/client.$clientId'
 import { Route as ClientNewRouteImport } from './routes/client.new'
 import { Route as ServiceServiceIdRouteImport } from './routes/service.$serviceId'
@@ -117,6 +118,11 @@ const BundleNewRoute = BundleNewRouteImport.update({
   path: '/bundle/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CatalogReorderRoute = CatalogReorderRouteImport.update({
+  id: '/catalog/reorder',
+  path: '/catalog/reorder',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ClientClientIdRoute = ClientClientIdRouteImport.update({
   id: '/client/$clientId',
   path: '/client/$clientId',
@@ -160,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/team': typeof AuthenticatedTeamRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/bundle/new': typeof BundleNewRoute
+  '/catalog/reorder': typeof CatalogReorderRoute
   '/client/$clientId': typeof ClientClientIdRoute
   '/client/new': typeof ClientNewRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
@@ -183,6 +190,7 @@ export interface FileRoutesByTo {
   '/team': typeof AuthenticatedTeamRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/bundle/new': typeof BundleNewRoute
+  '/catalog/reorder': typeof CatalogReorderRoute
   '/client/$clientId': typeof ClientClientIdRoute
   '/client/new': typeof ClientNewRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
@@ -208,6 +216,7 @@ export interface FileRoutesById {
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/bundle/new': typeof BundleNewRoute
+  '/catalog/reorder': typeof CatalogReorderRoute
   '/client/$clientId': typeof ClientClientIdRoute
   '/client/new': typeof ClientNewRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
@@ -233,6 +242,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/auth/callback'
     | '/bundle/new'
+    | '/catalog/reorder'
     | '/client/$clientId'
     | '/client/new'
     | '/service/$serviceId'
@@ -256,6 +266,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/auth/callback'
     | '/bundle/new'
+    | '/catalog/reorder'
     | '/client/$clientId'
     | '/client/new'
     | '/service/$serviceId'
@@ -280,6 +291,7 @@ export interface FileRouteTypes {
     | '/_authenticated/team'
     | '/auth/callback'
     | '/bundle/new'
+    | '/catalog/reorder'
     | '/client/$clientId'
     | '/client/new'
     | '/service/$serviceId'
@@ -295,6 +307,7 @@ export interface RootRouteChildren {
   BusinessSetupRoute: typeof BusinessSetupRoute
   OnboardingRoute: typeof OnboardingRoute
   BundleNewRoute: typeof BundleNewRoute
+  CatalogReorderRoute: typeof CatalogReorderRoute
   ClientClientIdRoute: typeof ClientClientIdRoute
   ClientNewRoute: typeof ClientNewRoute
   ServiceServiceIdRoute: typeof ServiceServiceIdRoute
@@ -423,6 +436,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BundleNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/catalog/reorder': {
+      id: '/catalog/reorder'
+      path: '/catalog/reorder'
+      fullPath: '/catalog/reorder'
+      preLoaderRoute: typeof CatalogReorderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/client/$clientId': {
       id: '/client/$clientId'
       path: '/client/$clientId'
@@ -506,6 +526,7 @@ const rootRouteChildren: RootRouteChildren = {
   BusinessSetupRoute: BusinessSetupRoute,
   OnboardingRoute: OnboardingRoute,
   BundleNewRoute: BundleNewRoute,
+  CatalogReorderRoute: CatalogReorderRoute,
   ClientClientIdRoute: ClientClientIdRoute,
   ClientNewRoute: ClientNewRoute,
   ServiceServiceIdRoute: ServiceServiceIdRoute,
