@@ -247,6 +247,7 @@ export type Database = {
       }
       appointments: {
         Row: {
+          cancellation_reason: string | null
           business_id: string
           client_id: string | null
           created_at: string
@@ -258,6 +259,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          cancellation_reason?: string | null
           business_id: string
           client_id?: string | null
           created_at?: string
@@ -269,6 +271,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          cancellation_reason?: string | null
           business_id?: string
           client_id?: string | null
           created_at?: string
@@ -952,6 +955,7 @@ export type Database = {
       }
       sales: {
         Row: {
+          tip_amount: number
           appointment_id: string | null
           business_id: string
           client_id: string | null
@@ -968,6 +972,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          tip_amount?: number
           appointment_id?: string | null
           business_id: string
           client_id?: string | null
@@ -984,6 +989,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          tip_amount?: number
           appointment_id?: string | null
           business_id?: string
           client_id?: string | null

@@ -1,4 +1,4 @@
-import { CalendarBlank, Gear, Globe, House, Megaphone, Package, Receipt, UserSquare, UsersThree, type Icon } from "@phosphor-icons/react";
+import { CalendarBlank, ChartLineUp, Gear, Globe, House, Megaphone, Package, Receipt, UserSquare, UsersThree, type Icon } from "@phosphor-icons/react";
 
 export type NavChild = {
   title: string;
@@ -155,6 +155,7 @@ export const navItems: NavItem[] = [
       },
     ],
   },
+  { key: "reports", title: "Reports", to: "/reports", icon: ChartLineUp },
   {
     key: "settings",
     title: "Settings",

@@ -22,6 +22,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedMarketingRouteImport } from './routes/_authenticated/marketing'
 import { Route as AuthenticatedOnlineBookingRouteImport } from './routes/_authenticated/online-booking'
+import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedSalesRouteImport } from './routes/_authenticated/sales'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
@@ -34,6 +35,7 @@ import { Route as ClientNewRouteImport } from './routes/client.new'
 import { Route as ServiceServiceIdRouteImport } from './routes/service.$serviceId'
 import { Route as ServiceNewRouteImport } from './routes/service.new'
 import { Route as TeamNewRouteImport } from './routes/team.new'
+import { Route as AuthenticatedReportsReportIdRouteImport } from './routes/_authenticated/reports_.$reportId'
 import { Route as TeamShiftsMemberIdRouteImport } from './routes/team.shifts.$memberId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -101,6 +103,11 @@ const AuthenticatedOnlineBookingRoute =
     path: '/online-booking',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSalesRoute = AuthenticatedSalesRouteImport.update({
   id: '/sales',
   path: '/sales',
@@ -161,6 +168,12 @@ const TeamNewRoute = TeamNewRouteImport.update({
   path: '/team/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedReportsReportIdRoute =
+  AuthenticatedReportsReportIdRouteImport.update({
+    id: '/reports_/$reportId',
+    path: '/reports/$reportId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const TeamShiftsMemberIdRoute = TeamShiftsMemberIdRouteImport.update({
   id: '/team/shifts/$memberId',
   path: '/team/shifts/$memberId',
@@ -180,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/home': typeof AuthenticatedHomeRoute
   '/marketing': typeof AuthenticatedMarketingRoute
   '/online-booking': typeof AuthenticatedOnlineBookingRoute
+  '/reports': typeof AuthenticatedReportsRoute
   '/sales': typeof AuthenticatedSalesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
@@ -192,6 +206,7 @@ export interface FileRoutesByFullPath {
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/team/new': typeof TeamNewRoute
+  '/reports/$reportId': typeof AuthenticatedReportsReportIdRoute
   '/team/shifts/$memberId': typeof TeamShiftsMemberIdRoute
 }
 export interface FileRoutesByTo {
@@ -207,6 +222,7 @@ export interface FileRoutesByTo {
   '/home': typeof AuthenticatedHomeRoute
   '/marketing': typeof AuthenticatedMarketingRoute
   '/online-booking': typeof AuthenticatedOnlineBookingRoute
+  '/reports': typeof AuthenticatedReportsRoute
   '/sales': typeof AuthenticatedSalesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
@@ -219,6 +235,7 @@ export interface FileRoutesByTo {
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/team/new': typeof TeamNewRoute
+  '/reports/$reportId': typeof AuthenticatedReportsReportIdRoute
   '/team/shifts/$memberId': typeof TeamShiftsMemberIdRoute
 }
 export interface FileRoutesById {
@@ -236,6 +253,7 @@ export interface FileRoutesById {
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/marketing': typeof AuthenticatedMarketingRoute
   '/_authenticated/online-booking': typeof AuthenticatedOnlineBookingRoute
+  '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/sales': typeof AuthenticatedSalesRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
@@ -248,6 +266,7 @@ export interface FileRoutesById {
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/team/new': typeof TeamNewRoute
+  '/_authenticated/reports_/$reportId': typeof AuthenticatedReportsReportIdRoute
   '/team/shifts/$memberId': typeof TeamShiftsMemberIdRoute
 }
 export interface FileRouteTypes {
@@ -265,6 +284,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/marketing'
     | '/online-booking'
+    | '/reports'
     | '/sales'
     | '/settings'
     | '/team'
@@ -277,6 +297,7 @@ export interface FileRouteTypes {
     | '/service/$serviceId'
     | '/service/new'
     | '/team/new'
+    | '/reports/$reportId'
     | '/team/shifts/$memberId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -292,6 +313,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/marketing'
     | '/online-booking'
+    | '/reports'
     | '/sales'
     | '/settings'
     | '/team'
@@ -304,6 +326,7 @@ export interface FileRouteTypes {
     | '/service/$serviceId'
     | '/service/new'
     | '/team/new'
+    | '/reports/$reportId'
     | '/team/shifts/$memberId'
   id:
     | '__root__'
@@ -320,6 +343,7 @@ export interface FileRouteTypes {
     | '/_authenticated/home'
     | '/_authenticated/marketing'
     | '/_authenticated/online-booking'
+    | '/_authenticated/reports'
     | '/_authenticated/sales'
     | '/_authenticated/settings'
     | '/_authenticated/team'
@@ -332,6 +356,7 @@ export interface FileRouteTypes {
     | '/service/$serviceId'
     | '/service/new'
     | '/team/new'
+    | '/_authenticated/reports_/$reportId'
     | '/team/shifts/$memberId'
   fileRoutesById: FileRoutesById
 }
@@ -446,6 +471,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOnlineBookingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/reports': {
+      id: '/_authenticated/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AuthenticatedReportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/sales': {
       id: '/_authenticated/sales'
       path: '/sales'
@@ -530,6 +562,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TeamNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/reports_/$reportId': {
+      id: '/_authenticated/reports_/$reportId'
+      path: '/reports/$reportId'
+      fullPath: '/reports/$reportId'
+      preLoaderRoute: typeof AuthenticatedReportsReportIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/team/shifts/$memberId': {
       id: '/team/shifts/$memberId'
       path: '/team/shifts/$memberId'
@@ -548,9 +587,11 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedMarketingRoute: typeof AuthenticatedMarketingRoute
   AuthenticatedOnlineBookingRoute: typeof AuthenticatedOnlineBookingRoute
+  AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSalesRoute: typeof AuthenticatedSalesRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
+  AuthenticatedReportsReportIdRoute: typeof AuthenticatedReportsReportIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -561,9 +602,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedMarketingRoute: AuthenticatedMarketingRoute,
   AuthenticatedOnlineBookingRoute: AuthenticatedOnlineBookingRoute,
+  AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSalesRoute: AuthenticatedSalesRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
+  AuthenticatedReportsReportIdRoute: AuthenticatedReportsReportIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
