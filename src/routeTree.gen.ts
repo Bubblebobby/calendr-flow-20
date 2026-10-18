@@ -15,6 +15,7 @@ import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BusinessSetupRouteImport } from './routes/business-setup'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as AuthenticatedAddOnsRouteImport } from './routes/_authenticated/add-ons'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedCatalogRouteImport } from './routes/_authenticated/catalog'
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
@@ -66,6 +67,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAddOnsRoute = AuthenticatedAddOnsRouteImport.update({
+  id: '/add-ons',
+  path: '/add-ons',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
   id: '/calendar',
@@ -186,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRouteWithChildren
   '/business-setup': typeof BusinessSetupRoute
   '/onboarding': typeof OnboardingRoute
+  '/add-ons': typeof AuthenticatedAddOnsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/catalog': typeof AuthenticatedCatalogRoute
   '/clients': typeof AuthenticatedClientsRoute
@@ -215,6 +222,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRouteWithChildren
   '/business-setup': typeof BusinessSetupRoute
   '/onboarding': typeof OnboardingRoute
+  '/add-ons': typeof AuthenticatedAddOnsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/catalog': typeof AuthenticatedCatalogRoute
   '/clients': typeof AuthenticatedClientsRoute
@@ -246,6 +254,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRouteWithChildren
   '/business-setup': typeof BusinessSetupRoute
   '/onboarding': typeof OnboardingRoute
+  '/_authenticated/add-ons': typeof AuthenticatedAddOnsRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/catalog': typeof AuthenticatedCatalogRoute
   '/_authenticated/clients': typeof AuthenticatedClientsRoute
@@ -277,6 +286,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/business-setup'
     | '/onboarding'
+    | '/add-ons'
     | '/calendar'
     | '/catalog'
     | '/clients'
@@ -306,6 +316,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/business-setup'
     | '/onboarding'
+    | '/add-ons'
     | '/calendar'
     | '/catalog'
     | '/clients'
@@ -336,6 +347,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/business-setup'
     | '/onboarding'
+    | '/_authenticated/add-ons'
     | '/_authenticated/calendar'
     | '/_authenticated/catalog'
     | '/_authenticated/clients'
@@ -421,6 +433,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/add-ons': {
+      id: '/_authenticated/add-ons'
+      path: '/add-ons'
+      fullPath: '/add-ons'
+      preLoaderRoute: typeof AuthenticatedAddOnsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/calendar': {
       id: '/_authenticated/calendar'
@@ -580,6 +599,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAddOnsRoute: typeof AuthenticatedAddOnsRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedCatalogRoute: typeof AuthenticatedCatalogRoute
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRoute
@@ -595,6 +615,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAddOnsRoute: AuthenticatedAddOnsRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedCatalogRoute: AuthenticatedCatalogRoute,
   AuthenticatedClientsRoute: AuthenticatedClientsRoute,

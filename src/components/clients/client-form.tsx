@@ -39,7 +39,7 @@ const AVATAR_COLORS = [
 
 const GENDERS = ["Female", "Male", "Non-binary", "Prefer not to say"];
 const PRONOUNS = ["She/her", "He/him", "They/them", "Prefer not to say"];
-const CLIENT_SOURCES = [
+export const CLIENT_SOURCES = [
   "Walk-in",
   "Referral",
   "Online booking",

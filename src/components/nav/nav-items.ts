@@ -1,4 +1,4 @@
-import { CalendarBlank, ChartLineUp, Gear, Globe, House, Megaphone, Package, Receipt, UserSquare, UsersThree, type Icon } from "@phosphor-icons/react";
+import { CalendarBlank, ChartLineUp, Gear, Globe, House, Megaphone, Package, Receipt, SquaresFour, UserSquare, UsersThree, type Icon } from "@phosphor-icons/react";
 
 export type NavChild = {
   title: string;
@@ -156,21 +156,6 @@ export const navItems: NavItem[] = [
     ],
   },
   { key: "reports", title: "Reports", to: "/reports", icon: ChartLineUp },
-  {
-    key: "settings",
-    title: "Settings",
-    to: "/settings",
-    icon: Gear,
-    groups: [
-      {
-        title: "Workspace",
-        children: [
-          { title: "Business details", to: "/settings" },
-          { title: "Business hours", to: "/settings" },
-          { title: "Locations", to: "/settings" },
-          { title: "Billing", to: "/settings" },
-        ],
-      },
-    ],
-  },
+  { key: "add-ons", title: "Add-ons", to: "/add-ons", icon: SquaresFour },
+  { key: "settings", title: "Settings", to: "/settings", icon: Gear },
 ];
