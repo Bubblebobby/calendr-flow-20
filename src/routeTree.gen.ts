@@ -34,6 +34,7 @@ import { Route as ClientNewRouteImport } from './routes/client.new'
 import { Route as ServiceServiceIdRouteImport } from './routes/service.$serviceId'
 import { Route as ServiceNewRouteImport } from './routes/service.new'
 import { Route as TeamNewRouteImport } from './routes/team.new'
+import { Route as TeamShiftsMemberIdRouteImport } from './routes/team.shifts.$memberId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -160,6 +161,11 @@ const TeamNewRoute = TeamNewRouteImport.update({
   path: '/team/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TeamShiftsMemberIdRoute = TeamShiftsMemberIdRouteImport.update({
+  id: '/team/shifts/$memberId',
+  path: '/team/shifts/$memberId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -186,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/team/new': typeof TeamNewRoute
+  '/team/shifts/$memberId': typeof TeamShiftsMemberIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -212,6 +219,7 @@ export interface FileRoutesByTo {
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/team/new': typeof TeamNewRoute
+  '/team/shifts/$memberId': typeof TeamShiftsMemberIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -240,6 +248,7 @@ export interface FileRoutesById {
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/team/new': typeof TeamNewRoute
+  '/team/shifts/$memberId': typeof TeamShiftsMemberIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -268,6 +277,7 @@ export interface FileRouteTypes {
     | '/service/$serviceId'
     | '/service/new'
     | '/team/new'
+    | '/team/shifts/$memberId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -294,6 +304,7 @@ export interface FileRouteTypes {
     | '/service/$serviceId'
     | '/service/new'
     | '/team/new'
+    | '/team/shifts/$memberId'
   id:
     | '__root__'
     | '/'
@@ -321,6 +332,7 @@ export interface FileRouteTypes {
     | '/service/$serviceId'
     | '/service/new'
     | '/team/new'
+    | '/team/shifts/$memberId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -338,6 +350,7 @@ export interface RootRouteChildren {
   ServiceServiceIdRoute: typeof ServiceServiceIdRoute
   ServiceNewRoute: typeof ServiceNewRoute
   TeamNewRoute: typeof TeamNewRoute
+  TeamShiftsMemberIdRoute: typeof TeamShiftsMemberIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -517,6 +530,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TeamNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/team/shifts/$memberId': {
+      id: '/team/shifts/$memberId'
+      path: '/team/shifts/$memberId'
+      fullPath: '/team/shifts/$memberId'
+      preLoaderRoute: typeof TeamShiftsMemberIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -574,6 +594,7 @@ const rootRouteChildren: RootRouteChildren = {
   ServiceServiceIdRoute: ServiceServiceIdRoute,
   ServiceNewRoute: ServiceNewRoute,
   TeamNewRoute: TeamNewRoute,
+  TeamShiftsMemberIdRoute: TeamShiftsMemberIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

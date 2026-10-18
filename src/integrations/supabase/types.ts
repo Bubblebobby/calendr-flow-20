@@ -14,6 +14,129 @@ export type Database = {
   }
   public: {
     Tables: {
+      business_closed_periods: {
+        Row: {
+          business_id: string
+          created_at: string
+          description: string | null
+          end_date: string
+          id: string
+          start_date: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          description?: string | null
+          end_date: string
+          id?: string
+          start_date: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          id?: string
+          start_date?: string
+        }
+        Relationships: []
+      }
+      team_schedules: {
+        Row: {
+          business_id: string
+          created_at: string
+          end_date: string | null
+          id: string
+          repeat_weeks: number
+          start_date: string
+          team_member_id: string
+          updated_at: string
+          weeks: Json
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          repeat_weeks?: number
+          start_date: string
+          team_member_id: string
+          updated_at?: string
+          weeks: Json
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          repeat_weeks?: number
+          start_date?: string
+          team_member_id?: string
+          updated_at?: string
+          weeks?: Json
+        }
+        Relationships: []
+      }
+      team_shift_overrides: {
+        Row: {
+          business_id: string
+          created_at: string
+          date: string
+          id: string
+          shifts: Json
+          team_member_id: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          date: string
+          id?: string
+          shifts?: Json
+          team_member_id: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          date?: string
+          id?: string
+          shifts?: Json
+          team_member_id?: string
+        }
+        Relationships: []
+      }
+      team_time_off: {
+        Row: {
+          business_id: string
+          created_at: string
+          end_date: string
+          id: string
+          notes: string | null
+          start_date: string
+          team_member_id: string
+          type: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          end_date: string
+          id?: string
+          notes?: string | null
+          start_date: string
+          team_member_id: string
+          type?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          end_date?: string
+          id?: string
+          notes?: string | null
+          start_date?: string
+          team_member_id?: string
+          type?: string
+        }
+        Relationships: []
+      }
       message_automations: {
         Row: {
           business_id: string
@@ -1153,7 +1276,6 @@ export type Database = {
           first_name: string
           gender?: string | null
           id?: string
-          initials?: string | null
           invite_status?: Database["public"]["Enums"]["team_invite_status"]
           invite_token?: string | null
           is_active?: boolean
@@ -1185,7 +1307,6 @@ export type Database = {
           first_name?: string
           gender?: string | null
           id?: string
-          initials?: string | null
           invite_status?: Database["public"]["Enums"]["team_invite_status"]
           invite_token?: string | null
           is_active?: boolean

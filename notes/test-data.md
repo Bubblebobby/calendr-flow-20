@@ -11,7 +11,10 @@ Everything below is named "Test …" and has description "TEST DATA — delete a
   f1e34018-3640-45fb-9e27-9af63419befe (Test Blow Dry), 8840cd26-ab51-4702-bf5c-73809f486481 (Test Manicure),
   fc6396d2-35ad-43bf-bb6b-84bf5a17e096 (Test Haircut (copy), made by testing Duplicate)
 
-Cleanup: delete services where description = 'TEST DATA — delete after testing', then the two categories.
+- team_members: abc38ae4-a5ec-4cb5-a622-9c4e1c5a2342 (Test Stylist), 139cea81-84b7-4603-b7bd-ed9162c527d8 (Test Barber)
+  (notes = 'TEST DATA — delete after testing'; the owner "Bobby Osagie" row is real, created automatically)
+
+Cleanup: delete services where description = 'TEST DATA — delete after testing', then the two categories, then team_members where notes = 'TEST DATA — delete after testing'.
 
 ## Old Lovable Cloud database (no longer used), added 13 Oct 2026 for calendar testing
 

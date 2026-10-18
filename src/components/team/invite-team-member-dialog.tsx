@@ -127,7 +127,6 @@ export function InviteTeamMemberDialog({
             ...payload,
             first_name: name.split(/\s+/)[0]!,
             last_name: name.split(/\s+/).slice(1).join(" ") || null,
-            initials: deriveInitials(name),
           })
           .eq("id", teamMemberId);
         if (updateError) throw updateError;
@@ -138,7 +137,6 @@ export function InviteTeamMemberDialog({
             business_id: businessId!,
             first_name: name.split(/\s+/)[0]!,
             last_name: name.split(/\s+/).slice(1).join(" ") || null,
-            initials: deriveInitials(name),
             avatar_color: AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)]!,
             ...payload,
           })

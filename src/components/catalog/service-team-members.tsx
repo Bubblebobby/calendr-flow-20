@@ -77,7 +77,6 @@ export function useTeamMembers(businessId: string | undefined) {
           business_id: businessId!,
           first_name: ownerName.split(/\s+/)[0]!,
           last_name: ownerName.split(/\s+/).slice(1).join(" ") || null,
-          initials: deriveInitials(ownerName),
           user_id: userId,
           avatar_color: AVATAR_COLORS[0]!,
         })
@@ -175,7 +174,6 @@ export function TeamMembersSection({
           business_id: businessId!,
           first_name: name.trim().split(/\s+/)[0]!,
           last_name: name.trim().split(/\s+/).slice(1).join(" ") || null,
-          initials: deriveInitials(name),
           avatar_color: AVATAR_COLORS[members.length % AVATAR_COLORS.length]!,
         })
         .select(SELECT_COLUMNS)

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { DotsThreeVertical, MagnifyingGlass, PaperPlaneTilt } from "@phosphor-icons/react";
+import { CaretDown, DotsThreeVertical } from "@phosphor-icons/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -9,9 +9,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
+import { SearchBox, pillButton } from "@/components/sales/list-ui";
 import { deriveInitials, memberName } from "@/components/catalog/service-team-members";
 import { InviteTeamMemberDialog, useTeamRoles } from "@/components/team/invite-team-member-dialog";
 import {
@@ -172,34 +174,36 @@ export function TeamMembersList() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <h2 className="text-3xl font-semibold tracking-tight text-foreground">Team members</h2>
-          <span className="rounded-full border border-border bg-white px-3 py-1 text-body font-semibold text-foreground">
+        <h1 className="flex items-center gap-3 text-display font-semibold">
+          Team members
+          <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-secondary px-2 text-body font-semibold text-muted-foreground">
             {members.length}
           </span>
+        </h1>
+        <div className="flex gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger className={cn(pillButton, "border border-input bg-card hover:bg-secondary")}>
+              Options <CaretDown size={16} weight="bold" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 rounded-xl p-2">
+              <DropdownMenuItem className="h-10 rounded-[8px] px-3 text-body font-medium" onSelect={() => navigate({ to: "/team", search: { tab: "shifts" } })}>
+                Scheduled shifts
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="my-2" />
+              <DropdownMenuLabel className="px-3 text-caption font-semibold text-muted-foreground">Export</DropdownMenuLabel>
+              <DropdownMenuItem className="h-10 rounded-[8px] px-3 text-body font-medium" onSelect={() => exportCsv(members, roleNameById)}>
+                CSV
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <button type="button" className={cn(pillButton, "bg-ink text-ink-foreground hover:bg-ink/90")} onClick={() => navigate({ to: "/team/new" })}>
+            Add
+          </button>
         </div>
-        <Button
-          className="h-12 gap-2 rounded-full px-7 text-base font-semibold"
-          onClick={() => navigate({ to: "/team/new" })}
-        >
-          <PaperPlaneTilt size={18} weight="bold" />
-          Invite team member
-        </Button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 rounded-3xl bg-muted/60 p-4">
-        <div className="relative">
-          <MagnifyingGlass
-            size={18}
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search team members"
-            className="h-12 w-[320px] rounded-full border-border bg-white pl-11 text-body"
-          />
-        </div>
+      <div className="flex flex-wrap items-center gap-2 rounded-xl bg-toolbar p-4">
+        <SearchBox value={search} onChange={setSearch} placeholder="Search team members" />
       </div>
 
       <div className="overflow-x-auto">
@@ -273,6 +277,18 @@ export function TeamMembersList() {
                       >
                         Edit
                       </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="px-3 py-2 text-body font-medium"
+                        onClick={() => navigate({ to: "/calendar", search: { team: member.id } as never })}
+                      >
+                        View calendar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="px-3 py-2 text-body font-medium"
+                        onClick={() => navigate({ to: "/team", search: { tab: "shifts" } })}
+                      >
+                        View scheduled shifts
+                      </DropdownMenuItem>
                       {member.invite_status === "not_invited" && (
                         <DropdownMenuItem
                           className="px-3 py-2 text-body font-medium"
@@ -343,4 +359,22 @@ export function TeamMembersList() {
       />
     </div>
   );
+}
+
+function exportCsv(members: TeamMemberRow[], roles: Map<string, string>) {
+  const rows = [
+    ["Name", "Email", "Permission role", "Status"],
+    ...members.map((m) => [
+      memberName(m),
+      m.email ?? "",
+      m.role_id ? (roles.get(m.role_id) ?? "") : "",
+      STATUS_STYLES[m.invite_status]?.label ?? "",
+    ]),
+  ];
+  const csv = "\uFEFF" + rows.map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(",")).join("\n");
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  link.download = `team-members-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(link.href);
 }

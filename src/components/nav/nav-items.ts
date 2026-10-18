@@ -147,9 +147,10 @@ export const navItems: NavItem[] = [
       {
         title: "Team",
         children: [
-          { title: "Team members", to: "/team" },
-          { title: "Scheduled shifts", to: "/team" },
-          { title: "Timesheets", to: "/team" },
+          { title: "Team members", to: "/team", search: { tab: "members" } },
+          { title: "Scheduled shifts", to: "/team", search: { tab: "shifts" } },
+          { title: "Timesheets", to: "/team", search: { tab: "timesheets" } },
+          { title: "Pay runs", to: "/team", search: { tab: "payruns" } },
         ],
       },
     ],
