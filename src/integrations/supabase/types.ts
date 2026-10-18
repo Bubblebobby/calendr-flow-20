@@ -1385,6 +1385,10 @@ export type Database = {
         Args: { p_slug: string; p_items: Json; p_start: string; p_client: Json; p_notes?: string | null }
         Returns: Json
       }
+      get_booking_availability: {
+        Args: { p_slug: string; p_from: string; p_to: string }
+        Returns: { team_member_id: string; day: string; shifts: Json }[]
+      }
       get_booking_busy: {
         Args: { p_slug: string; p_from: string; p_to: string }
         Returns: { team_member_id: string; start_time: string; end_time: string }[]

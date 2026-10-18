@@ -2,6 +2,8 @@
 
 export type OpeningHours = { day: number; open: boolean; from: string | null; to: string | null };
 export type Busy = { team_member_id: string; start_time: string; end_time: string };
+/** Working shifts per team member for one day ("HH:MM" strings), from get_booking_availability. */
+export type MemberShifts = Record<string, Array<{ start: string; end: string }>>;
 
 const SLOT_STEP_MINUTES = 15;
 const MIN_NOTICE_MINUTES = 15;
@@ -73,6 +75,7 @@ export function freeSlots({
   busy,
   memberIds,
   duration,
+  shifts,
   now = new Date(),
 }: {
   day: string;
@@ -81,10 +84,22 @@ export function freeSlots({
   busy: Busy[];
   memberIds: string[];
   duration: number;
+  /** When given, each member is only bookable inside their own shifts (otherwise opening hours). */
+  shifts?: MemberShifts;
   now?: Date;
 }): Array<{ minutes: number; memberIds: string[] }> {
-  const window = openWindow(hours, day);
-  if (!window || duration <= 0 || memberIds.length === 0) return [];
+  if (duration <= 0 || memberIds.length === 0) return [];
+  const opening = openWindow(hours, day);
+  const windowsFor = (id: string): Array<{ from: number; to: number }> =>
+    shifts
+      ? (shifts[id] ?? []).map((s) => ({ from: toMinutes(s.start) ?? 0, to: s.end === "24:00" ? 1440 : (toMinutes(s.end) ?? 0) }))
+      : opening
+        ? [opening]
+        : [];
+  const memberWindows = new Map(memberIds.map((id) => [id, windowsFor(id)]));
+  const all = [...memberWindows.values()].flat();
+  if (all.length === 0) return [];
+  const window = { from: Math.min(...all.map((w) => w.from)), to: Math.max(...all.map((w) => w.to)) };
   const earliest = now.getTime() + MIN_NOTICE_MINUTES * 60000;
   const intervals = busy.map((b) => ({
     member: b.team_member_id,
@@ -97,7 +112,9 @@ export function freeSlots({
     if (start < earliest) continue;
     const end = start + duration * 60000;
     const free = memberIds.filter(
-      (id) => !intervals.some((i) => i.member === id && i.start < end && i.end > start),
+      (id) =>
+        (memberWindows.get(id) ?? []).some((w) => minutes >= w.from && minutes + duration <= w.to) &&
+        !intervals.some((i) => i.member === id && i.start < end && i.end > start),
     );
     if (free.length) slots.push({ minutes, memberIds: free });
   }

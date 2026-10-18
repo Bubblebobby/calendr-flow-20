@@ -11,6 +11,7 @@ import {
   localDay,
   zonedToUtc,
   type Busy,
+  type MemberShifts,
   type OpeningHours,
 } from "@/lib/booking-slots";
 import { formatDuration, formatMoney } from "@/lib/format";
@@ -160,6 +161,20 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
     },
   });
 
+  // Each member's shifts for the day; null if the database update with shifts hasn't been run.
+  const availability = useQuery({
+    queryKey: ["booking-availability", slug, day],
+    enabled: step === "time",
+    retry: false,
+    queryFn: async (): Promise<MemberShifts | null> => {
+      const { data, error: rpcError } = await supabase.rpc("get_booking_availability", { p_slug: slug, p_from: day, p_to: day });
+      if (rpcError) return null;
+      const map: MemberShifts = {};
+      for (const row of data ?? []) map[row.team_member_id] = row.shifts as unknown as MemberShifts[string];
+      return map;
+    },
+  });
+
   const slots = useMemo(
     () =>
       freeSlots({
@@ -169,8 +184,9 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
         busy: busy.data ?? [],
         memberIds: memberId ? [memberId] : eligible.map((m) => m.id),
         duration,
+        ...(availability.data ? { shifts: availability.data } : {}),
       }),
-    [day, tz, page.hours, busy.data, memberId, eligible, duration],
+    [day, tz, page.hours, busy.data, memberId, eligible, duration, availability.data],
   );
 
   const book = useMutation({
@@ -408,7 +424,7 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                 ))}
               </div>
               <p className="mt-4 text-heading font-semibold">{dayLabel(day, { weekday: "long", day: "numeric", month: "long" })}</p>
-              {busy.isLoading ? (
+              {busy.isLoading || availability.isLoading ? (
                 <p className="mt-4 text-body text-muted-foreground">Checking availability…</p>
               ) : slots.length === 0 ? (
                 <div className="mt-4 rounded-xl p-6 text-center shadow-[inset_0_0_0_1px_var(--color-border)]">
