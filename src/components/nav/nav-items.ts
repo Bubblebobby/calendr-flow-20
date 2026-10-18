@@ -1,14 +1,4 @@
-import {
-  CalendarBlank,
-  Gear,
-  Globe,
-  House,
-  Package,
-  Receipt,
-  UserSquare,
-  UsersThree,
-  type Icon,
-} from "@phosphor-icons/react";
+import { CalendarBlank, Gear, Globe, House, Megaphone, Package, Receipt, UserSquare, UsersThree, type Icon } from "@phosphor-icons/react";
 
 export type NavChild = {
   title: string;
@@ -120,6 +110,30 @@ export const navItems: NavItem[] = [
           { title: "Facebook and Instagram bookings", to: "/online-booking", search: { tab: "social" } },
           { title: "Link builder", to: "/online-booking", search: { tab: "links" } },
           { title: "Smart website", to: "/online-booking", search: { tab: "website" } },
+        ],
+      },
+    ],
+  },
+  {
+    key: "marketing",
+    title: "Marketing",
+    to: "/marketing",
+    icon: Megaphone,
+    groups: [
+      {
+        title: "Marketing",
+        children: [
+          { title: "Blast campaigns", to: "/marketing", search: { tab: "campaigns" } },
+          { title: "Automations", to: "/marketing", search: { tab: "automations" } },
+          { title: "Messages history", to: "/marketing", search: { tab: "history" } },
+        ],
+      },
+      {
+        title: "Promote",
+        children: [
+          { title: "Deals", to: "/marketing", search: { tab: "deals" } },
+          { title: "Smart pricing", to: "/marketing", search: { tab: "pricing" } },
+          { title: "Reviews", to: "/clients", search: { tab: "reviews" } },
         ],
       },
     ],

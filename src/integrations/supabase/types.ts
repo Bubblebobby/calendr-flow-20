@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      message_automations: {
+        Row: {
+          business_id: string
+          channels: string[]
+          enabled: boolean
+          key: string
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          channels?: string[]
+          enabled: boolean
+          key: string
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          channels?: string[]
+          enabled?: boolean
+          key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       appointment_items: {
         Row: {
           appointment_id: string
