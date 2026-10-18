@@ -310,6 +310,9 @@ export type Database = {
       }
       businesses: {
         Row: {
+          booking_description: string | null
+          booking_slug: string | null
+          online_booking_enabled: boolean
           categories: Json
           country: string
           created_at: string
@@ -330,6 +333,9 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          booking_description?: string | null
+          booking_slug?: string | null
+          online_booking_enabled?: boolean
           categories?: Json
           country?: string
           created_at?: string
@@ -350,6 +356,9 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          booking_description?: string | null
+          booking_slug?: string | null
+          online_booking_enabled?: boolean
           categories?: Json
           country?: string
           created_at?: string
@@ -1005,6 +1014,7 @@ export type Database = {
       }
       services: {
         Row: {
+          online_booking_enabled: boolean
           business_id: string
           category_id: string | null
           created_at: string
@@ -1020,6 +1030,7 @@ export type Database = {
           treatment_type: string | null
         }
         Insert: {
+          online_booking_enabled?: boolean
           business_id: string
           category_id?: string | null
           created_at?: string
@@ -1035,6 +1046,7 @@ export type Database = {
           treatment_type?: string | null
         }
         Update: {
+          online_booking_enabled?: boolean
           business_id?: string
           category_id?: string | null
           created_at?: string
@@ -1224,7 +1236,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_booking: {
+        Args: { p_slug: string; p_items: Json; p_start: string; p_client: Json; p_notes?: string | null }
+        Returns: Json
+      }
+      get_booking_busy: {
+        Args: { p_slug: string; p_from: string; p_to: string }
+        Returns: { team_member_id: string; start_time: string; end_time: string }[]
+      }
+      get_booking_page: {
+        Args: { p_slug: string }
+        Returns: Json
+      }
     }
     Enums: {
       bundle_pricing_mode:

@@ -108,15 +108,18 @@ export const navItems: NavItem[] = [
   },
   {
     key: "online-booking",
-    title: "Online Booking",
+    title: "Online booking",
     to: "/online-booking",
     icon: Globe,
     groups: [
       {
-        title: "Booking",
+        title: "Online booking",
         children: [
-          { title: "Booking link", to: "/online-booking" },
-          { title: "Booking settings", to: "/online-booking" },
+          { title: "Booking profile", to: "/online-booking", search: { tab: "profile" } },
+          { title: "Reserve with Google", to: "/online-booking", search: { tab: "google" } },
+          { title: "Facebook and Instagram bookings", to: "/online-booking", search: { tab: "social" } },
+          { title: "Link builder", to: "/online-booking", search: { tab: "links" } },
+          { title: "Smart website", to: "/online-booking", search: { tab: "website" } },
         ],
       },
     ],

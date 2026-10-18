@@ -25,6 +25,7 @@ import { Route as AuthenticatedSalesRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as BookSlugRouteImport } from './routes/book.$slug'
 import { Route as BundleNewRouteImport } from './routes/bundle.new'
 import { Route as CatalogReorderRouteImport } from './routes/catalog.reorder'
 import { Route as ClientClientIdRouteImport } from './routes/client.$clientId'
@@ -113,6 +114,11 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   path: '/callback',
   getParentRoute: () => AuthRoute,
 } as any)
+const BookSlugRoute = BookSlugRouteImport.update({
+  id: '/book/$slug',
+  path: '/book/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BundleNewRoute = BundleNewRouteImport.update({
   id: '/bundle/new',
   path: '/bundle/new',
@@ -165,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/book/$slug': typeof BookSlugRoute
   '/bundle/new': typeof BundleNewRoute
   '/catalog/reorder': typeof CatalogReorderRoute
   '/client/$clientId': typeof ClientClientIdRoute
@@ -189,6 +196,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/book/$slug': typeof BookSlugRoute
   '/bundle/new': typeof BundleNewRoute
   '/catalog/reorder': typeof CatalogReorderRoute
   '/client/$clientId': typeof ClientClientIdRoute
@@ -215,6 +223,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/book/$slug': typeof BookSlugRoute
   '/bundle/new': typeof BundleNewRoute
   '/catalog/reorder': typeof CatalogReorderRoute
   '/client/$clientId': typeof ClientClientIdRoute
@@ -241,6 +250,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/team'
     | '/auth/callback'
+    | '/book/$slug'
     | '/bundle/new'
     | '/catalog/reorder'
     | '/client/$clientId'
@@ -265,6 +275,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/team'
     | '/auth/callback'
+    | '/book/$slug'
     | '/bundle/new'
     | '/catalog/reorder'
     | '/client/$clientId'
@@ -290,6 +301,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/team'
     | '/auth/callback'
+    | '/book/$slug'
     | '/bundle/new'
     | '/catalog/reorder'
     | '/client/$clientId'
@@ -306,6 +318,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRouteWithChildren
   BusinessSetupRoute: typeof BusinessSetupRoute
   OnboardingRoute: typeof OnboardingRoute
+  BookSlugRoute: typeof BookSlugRoute
   BundleNewRoute: typeof BundleNewRoute
   CatalogReorderRoute: typeof CatalogReorderRoute
   ClientClientIdRoute: typeof ClientClientIdRoute
@@ -429,6 +442,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/book/$slug': {
+      id: '/book/$slug'
+      path: '/book/$slug'
+      fullPath: '/book/$slug'
+      preLoaderRoute: typeof BookSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/bundle/new': {
       id: '/bundle/new'
       path: '/bundle/new'
@@ -525,6 +545,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
   BusinessSetupRoute: BusinessSetupRoute,
   OnboardingRoute: OnboardingRoute,
+  BookSlugRoute: BookSlugRoute,
   BundleNewRoute: BundleNewRoute,
   CatalogReorderRoute: CatalogReorderRoute,
   ClientClientIdRoute: ClientClientIdRoute,
