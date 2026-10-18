@@ -104,7 +104,7 @@ const UNCATEGORISED = "__none__";
 const soon = (label: string) => () => toast(`${label} is coming soon`);
 
 /** Menu items: 40px rows, 15px medium text, 8px radius, like Fresha's popovers. */
-const menuItem = "h-10 gap-3 rounded-lg px-3 text-body font-medium";
+const menuItem = "h-10 gap-3 rounded-[8px] px-3 text-body font-medium";
 
 export function ServiceMenu() {
   const queryClient = useQueryClient();
@@ -548,7 +548,7 @@ export function ServiceMenu() {
       />
 
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2 rounded-xl bg-card p-4 shadow-[inset_0_0_0_1px_var(--color-border)]">
+      <div className="flex flex-wrap items-center gap-2 rounded-lg bg-card p-4 shadow-[inset_0_0_0_1px_var(--color-border)]">
         <SearchBox value={search} onChange={setSearch} placeholder="Search service name" />
         <FiltersChip count={filterCount} onClick={() => setDraftFilters(filters)} />
         <div className="ml-auto">
@@ -561,7 +561,7 @@ export function ServiceMenu() {
 
       <div className="grid items-start gap-8 lg:grid-cols-[296px_1fr]">
         {/* Categories */}
-        <aside className="rounded-xl bg-card px-8 py-6">
+        <aside className="rounded-lg bg-card px-8 py-6">
           <p className="pb-2 text-title font-semibold">Categories</p>
           <ul className="-mx-4">
             <CategoryRow
@@ -592,7 +592,7 @@ export function ServiceMenu() {
               <button
                 type="button"
                 onClick={() => setCategoryForm(newCategory())}
-                className="flex h-11 w-full items-center rounded-lg px-4 text-body font-medium text-primary transition-colors hover:bg-secondary"
+                className="flex h-11 w-full items-center rounded-[8px] px-4 text-body font-medium text-primary transition-colors hover:bg-secondary"
               >
                 Add category
               </button>
@@ -612,7 +612,7 @@ export function ServiceMenu() {
           ) : (
             groups.map((group) => (
               <div key={group.key}>
-                <div className="mb-4 flex items-center justify-between gap-3">
+                <div className="mb-3.5 flex items-center justify-between gap-3">
                   <p className="flex min-w-0 items-center gap-2 truncate text-title font-semibold">
                     {group.category?.name ?? "Uncategorised"}
                     {group.category?.is_archived ? <ArchivedBadge /> : null}
@@ -641,7 +641,7 @@ export function ServiceMenu() {
                 </div>
 
                 {group.items.length === 0 ? (
-                  <p className="rounded-xl bg-card px-6 py-8 text-center text-body text-muted-foreground shadow-[inset_0_0_0_1px_var(--color-border)]">
+                  <p className="rounded-lg bg-card px-6 py-8 text-center text-body text-muted-foreground shadow-[inset_0_0_0_1px_var(--color-border)]">
                     No services in this category yet.
                   </p>
                 ) : (
@@ -825,7 +825,7 @@ function CategoryRow({
         type="button"
         onClick={onClick}
         className={cn(
-          "flex h-11 w-full items-center gap-3 rounded-lg px-4 text-left transition-colors",
+          "flex h-11 w-full items-center gap-3 rounded-[8px] px-4 text-left transition-colors",
           active ? "bg-accent" : "hover:bg-secondary",
         )}
       >
@@ -908,7 +908,7 @@ function ServiceRow({
   menu: React.ReactNode;
 }) {
   return (
-    <li className="relative flex min-h-24 overflow-hidden rounded-xl bg-card shadow-[inset_0_0_0_1px_var(--color-border)] transition-colors hover:bg-[#fcfcfc]">
+    <li className="relative flex min-h-24 overflow-hidden rounded-lg bg-card shadow-[inset_0_0_0_1px_var(--color-border)] transition-colors hover:bg-[#fcfcfc]">
       <button type="button" onClick={onOpen} className="absolute inset-0" aria-label={`Edit ${name}`} />
       <span aria-hidden className="w-2 shrink-0" style={{ backgroundColor: color, opacity: archived ? 0.4 : 1 }} />
       <div className="pointer-events-none flex min-w-0 flex-1 items-center gap-4 p-4">
@@ -946,7 +946,7 @@ function ServiceRow({
 
 function EmptyMenu({ filtered, onAdd }: { filtered: boolean; onAdd: () => void }) {
   return (
-    <div className="flex flex-col items-center rounded-xl bg-card px-6 py-16 text-center shadow-[inset_0_0_0_1px_var(--color-border)]">
+    <div className="flex flex-col items-center rounded-lg bg-card px-6 py-16 text-center shadow-[inset_0_0_0_1px_var(--color-border)]">
       <p className="text-heading font-semibold">{filtered ? "No services found" : "No services yet"}</p>
       <p className="mt-1 max-w-sm text-body text-muted-foreground">
         {filtered

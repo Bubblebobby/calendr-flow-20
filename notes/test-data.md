@@ -1,4 +1,19 @@
-# Test data added for calendar testing (13 Oct 2026)
+# Test data
+
+## New Supabase project (lfzpkqqzbdasxskhcqeh), added 18 Oct 2026 for Catalog testing
+
+Business 7b1ee6b5-b5c8-44fb-a3e9-226d5ebe39c0. Business address is a placeholder
+("TEST address - replace in Settings, Lagos"): replace it with the real one.
+Everything below is named "Test …" and has description "TEST DATA — delete after testing".
+
+- service_categories: 3ae24610-6733-41d8-a77d-1389e0b320ff (Test Hair & styling), e52f703e-8394-432c-a905-4447ccb54082 (Test Nails)
+- services: 757626c3-7e9d-45b2-a7ef-7751b283ec41 (Test Haircut), 3049fe9e-f6c8-44b3-bf0a-e86f6ce3dd41 (Test Hair Color),
+  f1e34018-3640-45fb-9e27-9af63419befe (Test Blow Dry), 8840cd26-ab51-4702-bf5c-73809f486481 (Test Manicure),
+  fc6396d2-35ad-43bf-bb6b-84bf5a17e096 (Test Haircut (copy), made by testing Duplicate)
+
+Cleanup: delete services where description = 'TEST DATA — delete after testing', then the two categories.
+
+## Old Lovable Cloud database (no longer used), added 13 Oct 2026 for calendar testing
 
 Delete all of this once calendar testing is finished. Business: Fab Saloon.
 Everything is named "Test …"; the appointments are walk-ins (no client records were created).

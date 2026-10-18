@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CaretDown, DotsSixVertical } from "@phosphor-icons/react";
@@ -46,7 +46,15 @@ function SetMenuOrderPage() {
   const businessId = business?.id;
   const [mode, setMode] = useState<"all" | "categories">("all");
   const [groups, setGroups] = useState<Group[] | null>(null);
-  const [drag, setDrag] = useState<Drag | null>(null);
+  const [drag, setDragState] = useState<Drag | null>(null);
+  // Pointer events can arrive before React re-renders, so handlers read the ref.
+  const dragRef = useRef<Drag | null>(null);
+  const groupsRef = useRef<Group[] | null>(null);
+  groupsRef.current = groups;
+  const setDrag = (next: Drag | null) => {
+    dragRef.current = next;
+    setDragState(next);
+  };
   const [dirty, setDirty] = useState(false);
 
   const menu = useQuery({
@@ -133,20 +141,57 @@ function SetMenuOrderPage() {
   };
 
   const dropOnGroup = (index: number) => {
+    const groups = groupsRef.current;
+    const drag = dragRef.current;
     if (!groups || !drag) return;
-    if (drag.type === "group" && drag.index !== index) {
-      setGroups(move(groups, drag.index, index));
+    if (drag.type === "group" && drag.index !== index && groups[index]?.id !== null) {
+      const next = move(groups, drag.index, index);
+      groupsRef.current = next;
+      setGroups(next);
       setDrag({ type: "group", index });
       setDirty(true);
     }
   };
 
   const dropOnEntry = (group: number, index: number) => {
+    const groups = groupsRef.current;
+    const drag = dragRef.current;
     if (!groups || !drag || drag.type !== "entry" || drag.group !== group || drag.index === index) return;
-    setGroups(groups.map((g, i) => (i === group ? { ...g, entries: move(g.entries, drag.index, index) } : g)));
+    const next = groups.map((g, i) => (i === group ? { ...g, entries: move(g.entries, drag.index, index) } : g));
+    groupsRef.current = next;
+    setGroups(next);
     setDrag({ type: "entry", group, index });
     setDirty(true);
   };
+
+  /** Pointer-based dragging: works with mouse and touch, unlike native HTML drag-and-drop. */
+  const dragHandlers = (start: Drag) => ({
+    onPointerDown: (event: React.PointerEvent<HTMLElement>) => {
+      if (event.button !== 0) return;
+      event.stopPropagation();
+      event.currentTarget.setPointerCapture(event.pointerId);
+      setDrag(start);
+    },
+    onPointerMove: (event: React.PointerEvent<HTMLElement>) => {
+      const drag = dragRef.current;
+      if (!drag) return;
+      const under = document.elementsFromPoint(event.clientX, event.clientY);
+      if (drag.type === "group") {
+        const target = under.find((el) => el instanceof HTMLElement && el.dataset["groupIndex"] !== undefined);
+        if (target instanceof HTMLElement) dropOnGroup(Number(target.dataset["groupIndex"]));
+      } else {
+        const target = under.find(
+          (el) =>
+            el instanceof HTMLElement &&
+            el.dataset["entryIndex"] !== undefined &&
+            el.closest<HTMLElement>("[data-group-index]")?.dataset["groupIndex"] === String(drag.group),
+        );
+        if (target instanceof HTMLElement) dropOnEntry(drag.group, Number(target.dataset["entryIndex"]));
+      }
+    },
+    onPointerUp: () => setDrag(null),
+    onPointerCancel: () => setDrag(null),
+  });
 
   return (
     <div className="min-h-screen bg-white">
@@ -194,26 +239,20 @@ function SetMenuOrderPage() {
             {groups.map((group, groupIndex) => (
               <section
                 key={group.id ?? "none"}
-                draggable={group.id !== null}
-                onDragStart={(event) => {
-                  event.stopPropagation();
-                  setDrag({ type: "group", index: groupIndex });
-                }}
-                onDragOver={(event) => {
-                  if (drag?.type !== "group") return;
-                  event.preventDefault();
-                  dropOnGroup(groupIndex);
-                }}
-                onDragEnd={() => setDrag(null)}
+                data-group-index={groupIndex}
                 className={cn(
                   "rounded-xl bg-card p-4 shadow-[inset_0_0_0_1px_var(--color-border)]",
                   drag?.type === "group" && drag.index === groupIndex && "opacity-60",
                 )}
               >
-                <p className="flex items-center gap-2 text-heading font-semibold">
-                  {group.id ? (
-                    <DotsSixVertical size={18} className="cursor-grab text-muted-foreground" />
-                  ) : null}
+                <p
+                  className={cn(
+                    "flex touch-none select-none items-center gap-2 text-heading font-semibold",
+                    group.id && "cursor-grab active:cursor-grabbing",
+                  )}
+                  {...(group.id ? dragHandlers({ type: "group", index: groupIndex }) : {})}
+                >
+                  {group.id ? <DotsSixVertical size={18} className="text-muted-foreground" /> : null}
                   {group.name}
                 </p>
                 {mode === "all" ? (
@@ -221,20 +260,10 @@ function SetMenuOrderPage() {
                     {group.entries.map((entry, entryIndex) => (
                       <li
                         key={`${entry.kind}-${entry.id}`}
-                        draggable
-                        onDragStart={(event) => {
-                          event.stopPropagation();
-                          setDrag({ type: "entry", group: groupIndex, index: entryIndex });
-                        }}
-                        onDragOver={(event) => {
-                          if (drag?.type !== "entry" || drag.group !== groupIndex) return;
-                          event.preventDefault();
-                          event.stopPropagation();
-                          dropOnEntry(groupIndex, entryIndex);
-                        }}
-                        onDragEnd={() => setDrag(null)}
+                        data-entry-index={entryIndex}
+                        {...dragHandlers({ type: "entry", group: groupIndex, index: entryIndex })}
                         className={cn(
-                          "flex h-12 cursor-grab items-center gap-3 overflow-hidden rounded-lg bg-card pr-4 text-body shadow-[inset_0_0_0_1px_var(--color-border)]",
+                          "flex h-12 cursor-grab touch-none select-none items-center active:cursor-grabbing gap-3 overflow-hidden rounded-lg bg-card pr-4 text-body shadow-[inset_0_0_0_1px_var(--color-border)]",
                           drag?.type === "entry" && drag.group === groupIndex && drag.index === entryIndex && "opacity-60",
                         )}
                       >

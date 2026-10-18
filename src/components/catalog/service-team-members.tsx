@@ -204,8 +204,8 @@ export function TeamMembersSection({
   const countBadge = useMemo(() => members.length, [members.length]);
 
   return (
-    <section className="rounded-3xl border border-border bg-card p-6 sm:p-8">
-      <h2 className="text-xl font-semibold text-foreground">Team members required</h2>
+    <section className="rounded-xl border border-border bg-card px-6 py-8 sm:px-10">
+      <h2 className="text-[1.5rem] font-semibold leading-8 text-foreground">Team members required</h2>
       <p className="mt-1 text-body text-muted-foreground">
         Choose which team members will perform this service
       </p>
