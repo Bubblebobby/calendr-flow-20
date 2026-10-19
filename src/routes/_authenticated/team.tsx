@@ -1,54 +1,53 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { toast } from "sonner";
 
+import { FeatureIntro } from "@/components/sales/list-ui";
+import { ScheduledShifts } from "@/components/team/scheduled-shifts";
 import { TeamMembersList } from "@/components/team/team-members-list";
-import { cn } from "@/lib/utils";
 
-const TABS = [
-  { key: "members", label: "Team members" },
-  { key: "shifts", label: "Scheduled shifts" },
-  { key: "timesheets", label: "Timesheets" },
-] as const;
+const TABS = ["members", "shifts", "timesheets", "payruns"] as const;
+type TeamTab = (typeof TABS)[number];
 
 export const Route = createFileRoute("/_authenticated/team")({
+  validateSearch: (search: Record<string, unknown>): { tab?: TeamTab } =>
+    typeof search["tab"] === "string" && (TABS as readonly string[]).includes(search["tab"])
+      ? { tab: search["tab"] as TeamTab }
+      : {},
   head: () => ({
     meta: [
-      { title: "Team members — Bookly" },
-      {
-        name: "description",
-        content: "Invite staff, manage permission roles and track invite status for your business.",
-      },
-      { property: "og:title", content: "Team members — Bookly" },
-      {
-        property: "og:description",
-        content: "Invite staff, manage permission roles and track invite status for your business.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Team — Bookly" },
+      { name: "description", content: "Team members, scheduled shifts, timesheets and pay runs." },
     ],
   }),
   component: TeamPage,
 });
 
+const later = (feature: string) => () => toast(`${feature} is coming in a later update`);
+
 function TeamPage() {
+  const { tab = "members" } = Route.useSearch();
   return (
     <div className="min-h-full w-full bg-white">
       <div className="w-full px-8 pb-10 pt-8">
-        <nav className="mb-8 flex items-center gap-2 border-b border-border">
-          {TABS.map((tab, index) => (
-            <span
-              key={tab.key}
-              className={cn(
-                "-mb-px border-b-2 px-4 py-3 text-body font-semibold",
-                index === 0
-                  ? "border-foreground text-foreground"
-                  : "border-transparent text-muted-foreground",
-              )}
-            >
-              {tab.label}
-            </span>
-          ))}
-        </nav>
-        <TeamMembersList />
+        {tab === "shifts" ? (
+          <ScheduledShifts />
+        ) : tab === "timesheets" ? (
+          <FeatureIntro
+            title="Simple time tracking and attendance"
+            body="Track your team's working hours and make pay calculations straightforward."
+            bullets={["Record hours and breaks as they happen", "Feeds straight into pay runs", "See attendance and punctuality at a glance"]}
+            onStart={later("Timesheets")}
+          />
+        ) : tab === "payruns" ? (
+          <FeatureIntro
+            title="Pay your team without the spreadsheets"
+            body="Bring wages, commissions and tips together so paying your team takes minutes."
+            bullets={["Wages, commissions and tips in one pay run", "Add bonuses and adjustments", "Share an earnings report with each team member"]}
+            onStart={later("Pay runs")}
+          />
+        ) : (
+          <TeamMembersList />
+        )}
       </div>
     </div>
   );

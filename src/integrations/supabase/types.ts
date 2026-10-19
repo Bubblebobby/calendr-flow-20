@@ -14,6 +14,153 @@ export type Database = {
   }
   public: {
     Tables: {
+      business_closed_periods: {
+        Row: {
+          business_id: string
+          created_at: string
+          description: string | null
+          end_date: string
+          id: string
+          start_date: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          description?: string | null
+          end_date: string
+          id?: string
+          start_date: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          id?: string
+          start_date?: string
+        }
+        Relationships: []
+      }
+      team_schedules: {
+        Row: {
+          business_id: string
+          created_at: string
+          end_date: string | null
+          id: string
+          repeat_weeks: number
+          start_date: string
+          team_member_id: string
+          updated_at: string
+          weeks: Json
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          repeat_weeks?: number
+          start_date: string
+          team_member_id: string
+          updated_at?: string
+          weeks: Json
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          repeat_weeks?: number
+          start_date?: string
+          team_member_id?: string
+          updated_at?: string
+          weeks?: Json
+        }
+        Relationships: []
+      }
+      team_shift_overrides: {
+        Row: {
+          business_id: string
+          created_at: string
+          date: string
+          id: string
+          shifts: Json
+          team_member_id: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          date: string
+          id?: string
+          shifts?: Json
+          team_member_id: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          date?: string
+          id?: string
+          shifts?: Json
+          team_member_id?: string
+        }
+        Relationships: []
+      }
+      team_time_off: {
+        Row: {
+          business_id: string
+          created_at: string
+          end_date: string
+          id: string
+          notes: string | null
+          start_date: string
+          team_member_id: string
+          type: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          end_date: string
+          id?: string
+          notes?: string | null
+          start_date: string
+          team_member_id: string
+          type?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          end_date?: string
+          id?: string
+          notes?: string | null
+          start_date?: string
+          team_member_id?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      message_automations: {
+        Row: {
+          business_id: string
+          channels: string[]
+          enabled: boolean
+          key: string
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          channels?: string[]
+          enabled: boolean
+          key: string
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          channels?: string[]
+          enabled?: boolean
+          key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       appointment_items: {
         Row: {
           appointment_id: string
@@ -100,6 +247,7 @@ export type Database = {
       }
       appointments: {
         Row: {
+          cancellation_reason: string | null
           business_id: string
           client_id: string | null
           created_at: string
@@ -111,6 +259,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          cancellation_reason?: string | null
           business_id: string
           client_id?: string | null
           created_at?: string
@@ -122,6 +271,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          cancellation_reason?: string | null
           business_id?: string
           client_id?: string | null
           created_at?: string
@@ -310,6 +460,9 @@ export type Database = {
       }
       businesses: {
         Row: {
+          booking_description: string | null
+          booking_slug: string | null
+          online_booking_enabled: boolean
           categories: Json
           country: string
           created_at: string
@@ -330,6 +483,9 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          booking_description?: string | null
+          booking_slug?: string | null
+          online_booking_enabled?: boolean
           categories?: Json
           country?: string
           created_at?: string
@@ -350,6 +506,9 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          booking_description?: string | null
+          booking_slug?: string | null
+          online_booking_enabled?: boolean
           categories?: Json
           country?: string
           created_at?: string
@@ -796,6 +955,7 @@ export type Database = {
       }
       sales: {
         Row: {
+          tip_amount: number
           appointment_id: string | null
           business_id: string
           client_id: string | null
@@ -812,6 +972,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          tip_amount?: number
           appointment_id?: string | null
           business_id: string
           client_id?: string | null
@@ -828,6 +989,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          tip_amount?: number
           appointment_id?: string | null
           business_id?: string
           client_id?: string | null
@@ -888,6 +1050,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_archived: boolean
           name: string
           sort_order: number
         }
@@ -897,6 +1060,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_archived?: boolean
           name: string
           sort_order?: number
         }
@@ -906,6 +1070,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_archived?: boolean
           name?: string
           sort_order?: number
         }
@@ -1002,6 +1167,7 @@ export type Database = {
       }
       services: {
         Row: {
+          online_booking_enabled: boolean
           business_id: string
           category_id: string | null
           created_at: string
@@ -1009,6 +1175,7 @@ export type Database = {
           duration_minutes: number
           duration_segments: Json
           id: string
+          is_archived: boolean
           name: string
           price: number | null
           pricing_type: string
@@ -1016,6 +1183,7 @@ export type Database = {
           treatment_type: string | null
         }
         Insert: {
+          online_booking_enabled?: boolean
           business_id: string
           category_id?: string | null
           created_at?: string
@@ -1023,6 +1191,7 @@ export type Database = {
           duration_minutes?: number
           duration_segments?: Json
           id?: string
+          is_archived?: boolean
           name: string
           price?: number | null
           pricing_type?: string
@@ -1030,6 +1199,7 @@ export type Database = {
           treatment_type?: string | null
         }
         Update: {
+          online_booking_enabled?: boolean
           business_id?: string
           category_id?: string | null
           created_at?: string
@@ -1037,6 +1207,7 @@ export type Database = {
           duration_minutes?: number
           duration_segments?: Json
           id?: string
+          is_archived?: boolean
           name?: string
           price?: number | null
           pricing_type?: string
@@ -1111,7 +1282,6 @@ export type Database = {
           first_name: string
           gender?: string | null
           id?: string
-          initials?: string | null
           invite_status?: Database["public"]["Enums"]["team_invite_status"]
           invite_token?: string | null
           is_active?: boolean
@@ -1143,7 +1313,6 @@ export type Database = {
           first_name?: string
           gender?: string | null
           id?: string
-          initials?: string | null
           invite_status?: Database["public"]["Enums"]["team_invite_status"]
           invite_token?: string | null
           is_active?: boolean
@@ -1218,7 +1387,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_booking: {
+        Args: { p_slug: string; p_items: Json; p_start: string; p_client: Json; p_notes?: string | null }
+        Returns: Json
+      }
+      get_booking_availability: {
+        Args: { p_slug: string; p_from: string; p_to: string }
+        Returns: { team_member_id: string; day: string; shifts: Json }[]
+      }
+      get_booking_busy: {
+        Args: { p_slug: string; p_from: string; p_to: string }
+        Returns: { team_member_id: string; start_time: string; end_time: string }[]
+      }
+      get_booking_page: {
+        Args: { p_slug: string }
+        Returns: Json
+      }
     }
     Enums: {
       bundle_pricing_mode:

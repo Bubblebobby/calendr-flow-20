@@ -56,6 +56,7 @@ export function TopBar({ notifications = 3 }: { notifications?: number }) {
       <div className="flex items-center gap-1.5">
         <button
           type="button"
+          onClick={() => navigate({ to: "/settings" })}
           className="mr-1 hidden h-10 items-center gap-2 rounded-full bg-primary px-4 text-body font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
         >
           <RocketLaunch size={18} />

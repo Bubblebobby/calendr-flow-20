@@ -91,9 +91,9 @@ type SavedSegment = { type: string; minutes: number };
 const soon = (label: string) => () => toast(`${label} — coming soon`);
 
 const FIELD =
-  "h-12 rounded-xl border border-border bg-transparent text-base transition-colors";
+  "h-12 rounded-[8px] border border-input bg-card text-body transition-colors";
 
-export function ServiceForm({ serviceId }: { serviceId?: string }) {
+export function ServiceForm({ serviceId, initialCategoryId }: { serviceId?: string; initialCategoryId?: string | undefined }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: business } = useBusiness();
@@ -101,7 +101,7 @@ export function ServiceForm({ serviceId }: { serviceId?: string }) {
   const isEdit = Boolean(serviceId);
 
   const [name, setName] = useState("");
-  const [categoryId, setCategoryId] = useState<string>("");
+  const [categoryId, setCategoryId] = useState<string>(initialCategoryId ?? "");
   const [treatmentType, setTreatmentType] = useState<string>("");
   const [description, setDescription] = useState("");
   const [priceType, setPriceType] = useState<"fixed" | "free" | "free-form">("fixed");
@@ -326,35 +326,40 @@ export function ServiceForm({ serviceId }: { serviceId?: string }) {
   }
 
   return (
-    <div className="bg-background min-h-screen lg:flex lg:h-screen lg:flex-col lg:overflow-hidden">
-      <header className="shrink-0 z-20 border-b border-border/60 bg-background/85 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-8 py-4">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+    <div className="min-h-screen bg-surface lg:flex lg:h-screen lg:flex-col lg:overflow-hidden">
+      <header className="z-20 shrink-0 bg-surface">
+        <div className="flex h-[72px] w-full items-center justify-between gap-4 px-8">
+          <span className="text-title font-semibold text-foreground">
             {isEdit ? "Edit service" : "New service"}
-          </h1>
+          </span>
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
-              className="h-11 rounded-full bg-white px-6 text-base font-semibold text-foreground hover:bg-white hover:text-foreground"
+              className="h-12 rounded-full border-input bg-white px-5 text-heading font-semibold text-foreground hover:bg-secondary hover:text-foreground"
               onClick={() => navigate({ to: "/catalog" })}
             >
               Close
             </Button>
             <Button
-              className="h-11 rounded-full px-7 text-base font-semibold"
+              className="h-12 rounded-full px-5 text-heading font-semibold"
               onClick={onSave}
               disabled={save.isPending}
             >
-              {save.isPending ? "Saving…" : isEdit ? "Save changes" : "Save"}
+              {save.isPending ? "Saving…" : "Save"}
             </Button>
           </div>
         </div>
       </header>
 
-      <div className="mx-auto grid w-full max-w-6xl items-start gap-6 overflow-y-auto px-8 pb-8 pt-12 lg:flex-1 lg:grid-cols-[300px_1fr] lg:pb-8 lg:pt-16">
+      <div className="overflow-y-auto lg:flex-1">
+      <div className="mx-auto w-full max-w-[1248px] px-8 pb-16 pt-9">
+      <h1 className="text-[2.5rem] font-bold leading-[2.75rem] text-foreground">
+        {isEdit ? "Edit service" : "New service"}
+      </h1>
+      <div className="mt-8 grid items-start gap-x-24 gap-y-6 lg:grid-cols-[296px_1fr]">
         {/* Section nav */}
-        <nav className="h-fit self-start rounded-3xl border border-border bg-card p-3">
-          <ul className="space-y-1">
+        <nav className="h-fit self-start rounded-xl bg-card px-4 py-6">
+          <ul>
             {NAV_PRIMARY.map((item) => {
               const selectable = item.key === "basic" || item.key === "team";
               return (
@@ -377,9 +382,9 @@ export function ServiceForm({ serviceId }: { serviceId?: string }) {
               );
             })}
           </ul>
-          <div className="my-3 h-px bg-border" />
-          <p className="px-3 py-2 text-base font-semibold text-foreground">Settings</p>
-          <ul className="space-y-1">
+          <div className="mx-4 my-4 h-px bg-border" />
+          <p className="px-4 pb-2 text-heading font-semibold text-foreground">Settings</p>
+          <ul>
             {NAV_SETTINGS.map((item) => (
               <li key={item.label}>
                 <NavRow
@@ -419,8 +424,8 @@ export function ServiceForm({ serviceId }: { serviceId?: string }) {
           ) : (
             <>
               {/* Basic details */}
-              <section className="rounded-3xl border border-border bg-card p-6 sm:p-8">
-                <h2 className="text-xl font-semibold text-foreground">Basic details</h2>
+              <section className="rounded-xl border border-border bg-card px-6 py-8 sm:px-10">
+                <h2 className="text-[1.5rem] font-semibold leading-8 text-foreground">Basic details</h2>
 
                 <div className="mt-6 space-y-6">
                   <Field
@@ -517,7 +522,7 @@ export function ServiceForm({ serviceId }: { serviceId?: string }) {
                     counter={`${description.length}/1000`}
                   >
                     <Textarea
-                      className="min-h-32 rounded-xl bg-transparent text-base"
+                      className="min-h-32 rounded-[8px] border-input bg-card text-body"
                       placeholder="Add a short description"
                       maxLength={1000}
                       value={description}
@@ -528,8 +533,8 @@ export function ServiceForm({ serviceId }: { serviceId?: string }) {
               </section>
 
               {/* Pricing and duration */}
-              <section className="rounded-3xl border border-border bg-card p-6 sm:p-8">
-                <h2 className="text-xl font-semibold text-foreground">Pricing and duration</h2>
+              <section className="rounded-xl border border-border bg-card px-6 py-8 sm:px-10">
+                <h2 className="text-[1.5rem] font-semibold leading-8 text-foreground">Pricing and duration</h2>
 
                 <div className="mt-6 grid gap-6 sm:grid-cols-3">
                   <Field label="Price type">
@@ -678,7 +683,7 @@ export function ServiceForm({ serviceId }: { serviceId?: string }) {
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="outline"
-                        className="h-11 gap-2 rounded-full bg-white px-6 text-base font-medium text-foreground hover:bg-white hover:text-foreground"
+                        className="h-9 gap-2 rounded-full border-input bg-white px-4 text-body font-medium text-foreground hover:bg-secondary hover:text-foreground"
                       >
                         <PlusCircle size={20} />
                         Add extra time
@@ -705,7 +710,7 @@ export function ServiceForm({ serviceId }: { serviceId?: string }) {
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="outline"
-                        className="h-11 gap-2 rounded-full bg-white px-6 text-base font-medium text-foreground hover:bg-white hover:text-foreground"
+                        className="h-9 gap-2 rounded-full border-input bg-white px-4 text-body font-medium text-foreground hover:bg-secondary hover:text-foreground"
                       >
                         Options
                         <CaretDown size={16} weight="bold" />
@@ -732,6 +737,8 @@ export function ServiceForm({ serviceId }: { serviceId?: string }) {
             </>
           )}
         </div>
+      </div>
+      </div>
       </div>
 
       <CategoryDialog
@@ -761,13 +768,13 @@ function NavRow({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left transition-colors active:scale-[0.99]",
-        active ? "bg-primary/10 text-foreground" : "text-foreground hover:bg-muted",
+        "flex h-11 w-full items-center gap-3 rounded-[8px] px-4 text-left transition-colors",
+        active ? "bg-accent text-foreground" : "text-foreground hover:bg-secondary",
       )}
     >
-      <span className="min-w-0 flex-1 truncate text-body font-semibold">{label}</span>
+      <span className="min-w-0 flex-1 truncate text-body font-medium">{label}</span>
       {badge != null ? (
-        <span className="h-6 w-6 rounded-full border border-border bg-card text-center text-caption font-medium leading-6 text-muted-foreground">
+        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[rgba(19,19,19,0.05)] px-1.5 text-caption font-semibold text-muted-foreground">
           {badge}
         </span>
       ) : null}
@@ -800,7 +807,7 @@ function Field({
           ) : null}
         </Label>
         {counter ? (
-          <span className="text-caption text-muted-foreground">{counter}</span>
+          <span className="text-body text-muted-foreground">{counter}</span>
         ) : null}
       </div>
       {children}

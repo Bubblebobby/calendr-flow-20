@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useBusiness } from "@/lib/use-business";
 import { useBusinessHours } from "@/lib/business-hours";
+import { isoDay, resolveDay, useShiftData } from "@/lib/team-shifts";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -98,10 +99,18 @@ export function CalendarPage({
   const rangeEnd = addDays(days[days.length - 1]!, 1);
   const { data: rawEvents = [] } = useCalendarEvents(business?.id, rangeStart, rangeEnd);
   const { data: rawBlocks = [] } = useBlockedTimes(business?.id, rangeStart, rangeEnd);
-  const members = useMemo(
-    () => selectMembers(allMembers ?? [], selection, currentUserId),
-    [allMembers, selection, currentUserId],
-  );
+  const { data: shiftData } = useShiftData(business?.id, isoDay(days[0]!), isoDay(days[days.length - 1]!));
+  const members = useMemo(() => {
+    const picked = selectMembers(allMembers ?? [], selection, currentUserId);
+    if (selection !== "scheduled" || !shiftData) return picked;
+    // "Scheduled team": people with a shift on a visible day, plus anyone who already has appointments.
+    const dayKeys = days.map(isoDay);
+    const booked = new Set(rawEvents.map((event) => event.teamMemberId));
+    const scheduled = picked.filter(
+      (member) => booked.has(member.id) || dayKeys.some((day) => resolveDay(shiftData, member.id, day).shifts.length > 0),
+    );
+    return scheduled.length ? scheduled : picked;
+  }, [allMembers, selection, currentUserId, shiftData, days, rawEvents]);
 
   const { data: services = [] } = useQuery({
     queryKey: ["calendar-services", business?.id],

@@ -1,24 +1,30 @@
-# Harmony Hub
+# Bookly
 
-Create a business dashboard app with Supabase auth (email/password), a sidebar navigation with placeholder pages for Dashboard, Calendar, Clients, Catalog, Sales, Team, and Settings. Use a clean, professional design system — I'll be building a booking/scheduling platform
+Salon booking and business management app (calendar, sales, clients, catalog, team).
 
-This project was built with [Lovable](https://lovable.dev).
+Stack: TanStack Start + React 19, Vite, Tailwind v4, shadcn/Radix, Supabase. Hosted on Vercel.
 
-## Build with Lovable
+## Run locally
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/19fdfe97-d9ad-4a30-97bb-1b9c4ee2c1b1).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Needs Node.js 22+.
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+npm install
+cp .env.example .env   # then fill in your Supabase values
+npm run dev            # http://127.0.0.1:8080
 ```
+
+Use `127.0.0.1` rather than `localhost`: it's the address allowed in Supabase's auth redirect URLs.
+
+## Database
+
+The schema lives in `supabase/migrations`. For a brand-new Supabase project, run
+`supabase/setup.sql` (all migrations concatenated) once in the SQL editor.
+
+When you change the schema: add a new timestamped file to `supabase/migrations`, run it in the
+Supabase SQL editor, then `npm run db:setup-sql` to refresh `setup.sql`.
+
+## Deploy
+
+Vercel builds from GitHub on every push to `main` (`npm run build`; Nitro detects Vercel
+automatically). Environment variables are set in the Vercel project, matching `.env.example`.

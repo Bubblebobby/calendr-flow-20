@@ -14,28 +14,30 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BusinessSetupRouteImport } from './routes/business-setup'
-import { Route as McpRouteImport } from './routes/mcp'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
-import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as AuthenticatedAddOnsRouteImport } from './routes/_authenticated/add-ons'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedCatalogRouteImport } from './routes/_authenticated/catalog'
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
+import { Route as AuthenticatedMarketingRouteImport } from './routes/_authenticated/marketing'
 import { Route as AuthenticatedOnlineBookingRouteImport } from './routes/_authenticated/online-booking'
+import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedSalesRouteImport } from './routes/_authenticated/sales'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as BookSlugRouteImport } from './routes/book.$slug'
 import { Route as BundleNewRouteImport } from './routes/bundle.new'
+import { Route as CatalogReorderRouteImport } from './routes/catalog.reorder'
 import { Route as ClientClientIdRouteImport } from './routes/client.$clientId'
 import { Route as ClientNewRouteImport } from './routes/client.new'
 import { Route as ServiceServiceIdRouteImport } from './routes/service.$serviceId'
 import { Route as ServiceNewRouteImport } from './routes/service.new'
 import { Route as TeamNewRouteImport } from './routes/team.new'
-import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
-import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as AuthenticatedReportsReportIdRouteImport } from './routes/_authenticated/reports_.$reportId'
+import { Route as TeamShiftsMemberIdRouteImport } from './routes/team.shifts.$memberId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -61,28 +63,16 @@ const BusinessSetupRoute = BusinessSetupRouteImport.update({
   path: '/business-setup',
   getParentRoute: () => rootRouteImport,
 } as any)
-const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
-const Char91DotmcpChar93ListToolsRoute =
-  Char91DotmcpChar93ListToolsRouteImport.update({
-    id: '/.mcp/list-tools',
-    path: '/.mcp/list-tools',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const Char91DotwellKnownChar93OauthProtectedResourceRoute =
-  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
-    id: '/.well-known/oauth-protected-resource',
-    path: '/.well-known/oauth-protected-resource',
-    getParentRoute: () => rootRouteImport,
-  } as any)
+const AuthenticatedAddOnsRoute = AuthenticatedAddOnsRouteImport.update({
+  id: '/add-ons',
+  path: '/add-ons',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
@@ -108,12 +98,22 @@ const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
   path: '/home',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMarketingRoute = AuthenticatedMarketingRouteImport.update({
+  id: '/marketing',
+  path: '/marketing',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedOnlineBookingRoute =
   AuthenticatedOnlineBookingRouteImport.update({
     id: '/online-booking',
     path: '/online-booking',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSalesRoute = AuthenticatedSalesRouteImport.update({
   id: '/sales',
   path: '/sales',
@@ -134,9 +134,19 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   path: '/callback',
   getParentRoute: () => AuthRoute,
 } as any)
+const BookSlugRoute = BookSlugRouteImport.update({
+  id: '/book/$slug',
+  path: '/book/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BundleNewRoute = BundleNewRouteImport.update({
   id: '/bundle/new',
   path: '/bundle/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CatalogReorderRoute = CatalogReorderRouteImport.update({
+  id: '/catalog/reorder',
+  path: '/catalog/reorder',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ClientClientIdRoute = ClientClientIdRouteImport.update({
@@ -164,73 +174,77 @@ const TeamNewRoute = TeamNewRouteImport.update({
   path: '/team/new',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
-  id: '/.lovable/oauth/consent',
-  path: '/.lovable/oauth/consent',
+const AuthenticatedReportsReportIdRoute =
+  AuthenticatedReportsReportIdRouteImport.update({
+    id: '/reports_/$reportId',
+    path: '/reports/$reportId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const TeamShiftsMemberIdRoute = TeamShiftsMemberIdRouteImport.update({
+  id: '/team/shifts/$memberId',
+  path: '/team/shifts/$memberId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const Char91DotmcpChar93InvokeToolToolRoute =
-  Char91DotmcpChar93InvokeToolToolRouteImport.update({
-    id: '/.mcp/invoke-tool/$tool',
-    path: '/.mcp/invoke-tool/$tool',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/auth': typeof AuthRouteWithChildren
   '/business-setup': typeof BusinessSetupRoute
-  '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/add-ons': typeof AuthenticatedAddOnsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/catalog': typeof AuthenticatedCatalogRoute
   '/clients': typeof AuthenticatedClientsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/marketing': typeof AuthenticatedMarketingRoute
   '/online-booking': typeof AuthenticatedOnlineBookingRoute
+  '/reports': typeof AuthenticatedReportsRoute
   '/sales': typeof AuthenticatedSalesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/book/$slug': typeof BookSlugRoute
   '/bundle/new': typeof BundleNewRoute
+  '/catalog/reorder': typeof CatalogReorderRoute
   '/client/$clientId': typeof ClientClientIdRoute
   '/client/new': typeof ClientNewRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/team/new': typeof TeamNewRoute
-  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/reports/$reportId': typeof AuthenticatedReportsReportIdRoute
+  '/team/shifts/$memberId': typeof TeamShiftsMemberIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/auth': typeof AuthRouteWithChildren
   '/business-setup': typeof BusinessSetupRoute
-  '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/add-ons': typeof AuthenticatedAddOnsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/catalog': typeof AuthenticatedCatalogRoute
   '/clients': typeof AuthenticatedClientsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/marketing': typeof AuthenticatedMarketingRoute
   '/online-booking': typeof AuthenticatedOnlineBookingRoute
+  '/reports': typeof AuthenticatedReportsRoute
   '/sales': typeof AuthenticatedSalesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/book/$slug': typeof BookSlugRoute
   '/bundle/new': typeof BundleNewRoute
+  '/catalog/reorder': typeof CatalogReorderRoute
   '/client/$clientId': typeof ClientClientIdRoute
   '/client/new': typeof ClientNewRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/team/new': typeof TeamNewRoute
-  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/reports/$reportId': typeof AuthenticatedReportsReportIdRoute
+  '/team/shifts/$memberId': typeof TeamShiftsMemberIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -239,28 +253,30 @@ export interface FileRoutesById {
   '/accept-invite': typeof AcceptInviteRoute
   '/auth': typeof AuthRouteWithChildren
   '/business-setup': typeof BusinessSetupRoute
-  '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/_authenticated/add-ons': typeof AuthenticatedAddOnsRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/catalog': typeof AuthenticatedCatalogRoute
   '/_authenticated/clients': typeof AuthenticatedClientsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
+  '/_authenticated/marketing': typeof AuthenticatedMarketingRoute
   '/_authenticated/online-booking': typeof AuthenticatedOnlineBookingRoute
+  '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/sales': typeof AuthenticatedSalesRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/book/$slug': typeof BookSlugRoute
   '/bundle/new': typeof BundleNewRoute
+  '/catalog/reorder': typeof CatalogReorderRoute
   '/client/$clientId': typeof ClientClientIdRoute
   '/client/new': typeof ClientNewRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/team/new': typeof TeamNewRoute
-  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/_authenticated/reports_/$reportId': typeof AuthenticatedReportsReportIdRoute
+  '/team/shifts/$memberId': typeof TeamShiftsMemberIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -269,56 +285,60 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/auth'
     | '/business-setup'
-    | '/mcp'
     | '/onboarding'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
+    | '/add-ons'
     | '/calendar'
     | '/catalog'
     | '/clients'
     | '/dashboard'
     | '/home'
+    | '/marketing'
     | '/online-booking'
+    | '/reports'
     | '/sales'
     | '/settings'
     | '/team'
     | '/auth/callback'
+    | '/book/$slug'
     | '/bundle/new'
+    | '/catalog/reorder'
     | '/client/$clientId'
     | '/client/new'
     | '/service/$serviceId'
     | '/service/new'
     | '/team/new'
-    | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
+    | '/reports/$reportId'
+    | '/team/shifts/$memberId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/accept-invite'
     | '/auth'
     | '/business-setup'
-    | '/mcp'
     | '/onboarding'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
+    | '/add-ons'
     | '/calendar'
     | '/catalog'
     | '/clients'
     | '/dashboard'
     | '/home'
+    | '/marketing'
     | '/online-booking'
+    | '/reports'
     | '/sales'
     | '/settings'
     | '/team'
     | '/auth/callback'
+    | '/book/$slug'
     | '/bundle/new'
+    | '/catalog/reorder'
     | '/client/$clientId'
     | '/client/new'
     | '/service/$serviceId'
     | '/service/new'
     | '/team/new'
-    | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
+    | '/reports/$reportId'
+    | '/team/shifts/$memberId'
   id:
     | '__root__'
     | '/'
@@ -326,28 +346,30 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/auth'
     | '/business-setup'
-    | '/mcp'
     | '/onboarding'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
+    | '/_authenticated/add-ons'
     | '/_authenticated/calendar'
     | '/_authenticated/catalog'
     | '/_authenticated/clients'
     | '/_authenticated/dashboard'
     | '/_authenticated/home'
+    | '/_authenticated/marketing'
     | '/_authenticated/online-booking'
+    | '/_authenticated/reports'
     | '/_authenticated/sales'
     | '/_authenticated/settings'
     | '/_authenticated/team'
     | '/auth/callback'
+    | '/book/$slug'
     | '/bundle/new'
+    | '/catalog/reorder'
     | '/client/$clientId'
     | '/client/new'
     | '/service/$serviceId'
     | '/service/new'
     | '/team/new'
-    | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
+    | '/_authenticated/reports_/$reportId'
+    | '/team/shifts/$memberId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -356,18 +378,16 @@ export interface RootRouteChildren {
   AcceptInviteRoute: typeof AcceptInviteRoute
   AuthRoute: typeof AuthRouteWithChildren
   BusinessSetupRoute: typeof BusinessSetupRoute
-  McpRoute: typeof McpRoute
   OnboardingRoute: typeof OnboardingRoute
-  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
-  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  BookSlugRoute: typeof BookSlugRoute
   BundleNewRoute: typeof BundleNewRoute
+  CatalogReorderRoute: typeof CatalogReorderRoute
   ClientClientIdRoute: typeof ClientClientIdRoute
   ClientNewRoute: typeof ClientNewRoute
   ServiceServiceIdRoute: typeof ServiceServiceIdRoute
   ServiceNewRoute: typeof ServiceNewRoute
   TeamNewRoute: typeof TeamNewRoute
-  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
-  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  TeamShiftsMemberIdRoute: typeof TeamShiftsMemberIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -407,13 +427,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BusinessSetupRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/onboarding': {
       id: '/onboarding'
       path: '/onboarding'
@@ -421,19 +434,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/.mcp/list-tools': {
-      id: '/.mcp/list-tools'
-      path: '/.mcp/list-tools'
-      fullPath: '/.mcp/list-tools'
-      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.well-known/oauth-protected-resource': {
-      id: '/.well-known/oauth-protected-resource'
-      path: '/.well-known/oauth-protected-resource'
-      fullPath: '/.well-known/oauth-protected-resource'
-      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/add-ons': {
+      id: '/_authenticated/add-ons'
+      path: '/add-ons'
+      fullPath: '/add-ons'
+      preLoaderRoute: typeof AuthenticatedAddOnsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/calendar': {
       id: '/_authenticated/calendar'
@@ -470,11 +476,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHomeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/marketing': {
+      id: '/_authenticated/marketing'
+      path: '/marketing'
+      fullPath: '/marketing'
+      preLoaderRoute: typeof AuthenticatedMarketingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/online-booking': {
       id: '/_authenticated/online-booking'
       path: '/online-booking'
       fullPath: '/online-booking'
       preLoaderRoute: typeof AuthenticatedOnlineBookingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/reports': {
+      id: '/_authenticated/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AuthenticatedReportsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/sales': {
@@ -505,11 +525,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/book/$slug': {
+      id: '/book/$slug'
+      path: '/book/$slug'
+      fullPath: '/book/$slug'
+      preLoaderRoute: typeof BookSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/bundle/new': {
       id: '/bundle/new'
       path: '/bundle/new'
       fullPath: '/bundle/new'
       preLoaderRoute: typeof BundleNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/catalog/reorder': {
+      id: '/catalog/reorder'
+      path: '/catalog/reorder'
+      fullPath: '/catalog/reorder'
+      preLoaderRoute: typeof CatalogReorderRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/client/$clientId': {
@@ -547,45 +581,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TeamNewRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/.lovable/oauth/consent': {
-      id: '/.lovable/oauth/consent'
-      path: '/.lovable/oauth/consent'
-      fullPath: '/.lovable/oauth/consent'
-      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/reports_/$reportId': {
+      id: '/_authenticated/reports_/$reportId'
+      path: '/reports/$reportId'
+      fullPath: '/reports/$reportId'
+      preLoaderRoute: typeof AuthenticatedReportsReportIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/.mcp/invoke-tool/$tool': {
-      id: '/.mcp/invoke-tool/$tool'
-      path: '/.mcp/invoke-tool/$tool'
-      fullPath: '/.mcp/invoke-tool/$tool'
-      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
+    '/team/shifts/$memberId': {
+      id: '/team/shifts/$memberId'
+      path: '/team/shifts/$memberId'
+      fullPath: '/team/shifts/$memberId'
+      preLoaderRoute: typeof TeamShiftsMemberIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAddOnsRoute: typeof AuthenticatedAddOnsRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedCatalogRoute: typeof AuthenticatedCatalogRoute
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
+  AuthenticatedMarketingRoute: typeof AuthenticatedMarketingRoute
   AuthenticatedOnlineBookingRoute: typeof AuthenticatedOnlineBookingRoute
+  AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSalesRoute: typeof AuthenticatedSalesRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
+  AuthenticatedReportsReportIdRoute: typeof AuthenticatedReportsReportIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAddOnsRoute: AuthenticatedAddOnsRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedCatalogRoute: AuthenticatedCatalogRoute,
   AuthenticatedClientsRoute: AuthenticatedClientsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
+  AuthenticatedMarketingRoute: AuthenticatedMarketingRoute,
   AuthenticatedOnlineBookingRoute: AuthenticatedOnlineBookingRoute,
+  AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSalesRoute: AuthenticatedSalesRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
+  AuthenticatedReportsReportIdRoute: AuthenticatedReportsReportIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -607,19 +649,16 @@ const rootRouteChildren: RootRouteChildren = {
   AcceptInviteRoute: AcceptInviteRoute,
   AuthRoute: AuthRouteWithChildren,
   BusinessSetupRoute: BusinessSetupRoute,
-  McpRoute: McpRoute,
   OnboardingRoute: OnboardingRoute,
-  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
-  Char91DotwellKnownChar93OauthProtectedResourceRoute:
-    Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  BookSlugRoute: BookSlugRoute,
   BundleNewRoute: BundleNewRoute,
+  CatalogReorderRoute: CatalogReorderRoute,
   ClientClientIdRoute: ClientClientIdRoute,
   ClientNewRoute: ClientNewRoute,
   ServiceServiceIdRoute: ServiceServiceIdRoute,
   ServiceNewRoute: ServiceNewRoute,
   TeamNewRoute: TeamNewRoute,
-  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
-  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  TeamShiftsMemberIdRoute: TeamShiftsMemberIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

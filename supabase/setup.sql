@@ -1,0 +1,1554 @@
+-- Bookly database setup: every migration in supabase/migrations, in order.
+-- Paste into a NEW Supabase project's SQL editor and run once.
+-- Regenerate with: npm run db:setup-sql
+
+-- ===== 20260819152055_0d2d1d68-31d2-422b-bfdb-5a96ea81b5fa.sql =====
+CREATE TABLE public.profiles (
+  id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  full_name text,
+  avatar_url text,
+  phone text,
+  user_type text NOT NULL DEFAULT 'business_owner' CHECK (user_type IN ('business_owner','staff','customer')),
+  business_id uuid,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE public.businesses (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id uuid REFERENCES public.profiles(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  country text NOT NULL DEFAULT 'Nigeria',
+  currency text NOT NULL DEFAULT 'NGN',
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.profiles
+  ADD CONSTRAINT profiles_business_id_fkey
+  FOREIGN KEY (business_id) REFERENCES public.businesses(id) ON DELETE SET NULL;
+
+CREATE TABLE public.team_roles (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  business_id uuid NOT NULL REFERENCES public.businesses(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  permissions jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.profiles TO authenticated;
+GRANT ALL ON public.profiles TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.businesses TO authenticated;
+GRANT ALL ON public.businesses TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.team_roles TO authenticated;
+GRANT ALL ON public.team_roles TO service_role;
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.businesses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.team_roles ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own profile" ON public.profiles FOR SELECT TO authenticated USING (auth.uid() = id);
+CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE TO authenticated USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+CREATE POLICY "Users can insert own profile" ON public.profiles FOR INSERT TO authenticated WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "Owners can view their businesses" ON public.businesses FOR SELECT TO authenticated USING (auth.uid() = owner_id);
+CREATE POLICY "Owners can insert businesses" ON public.businesses FOR INSERT TO authenticated WITH CHECK (auth.uid() = owner_id);
+CREATE POLICY "Owners can update their businesses" ON public.businesses FOR UPDATE TO authenticated USING (auth.uid() = owner_id) WITH CHECK (auth.uid() = owner_id);
+CREATE POLICY "Owners can delete their businesses" ON public.businesses FOR DELETE TO authenticated USING (auth.uid() = owner_id);
+
+CREATE POLICY "Business owners can view team roles" ON public.team_roles FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = team_roles.business_id AND b.owner_id = auth.uid()));
+CREATE POLICY "Business owners can manage team roles" ON public.team_roles FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = team_roles.business_id AND b.owner_id = auth.uid())) WITH CHECK (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = team_roles.business_id AND b.owner_id = auth.uid()));
+
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO public.profiles (id, full_name, phone, user_type)
+  VALUES (
+    NEW.id,
+    NEW.raw_user_meta_data ->> 'full_name',
+    NEW.raw_user_meta_data ->> 'phone',
+    COALESCE(NEW.raw_user_meta_data ->> 'user_type', 'business_owner')
+  )
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER on_auth_user_created
+AFTER INSERT ON auth.users
+FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- ===== 20260819152102_d309f692-e8f3-4282-9cbf-994cbde31aba.sql =====
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
+
+-- ===== 20260821191141_966de653-e4b5-43ba-ab46-b0b523350f1b.sql =====
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS country text,
+  ADD COLUMN IF NOT EXISTS timezone text,
+  ADD COLUMN IF NOT EXISTS onboarded_at timestamptz;
+
+-- ===== 20260821192730_ff0c9d7d-558a-4bf8-ad55-14703a5cc8f3.sql =====
+ALTER TABLE public.businesses
+  ADD COLUMN IF NOT EXISTS website text,
+  ADD COLUMN IF NOT EXISTS timezone text,
+  ADD COLUMN IF NOT EXISTS setup_step integer NOT NULL DEFAULT 1;
+
+-- ===== 20260821193416_b7f3fe21-4fc8-445b-8f34-69b09f8d2bbe.sql =====
+ALTER TABLE public.businesses
+  ADD COLUMN IF NOT EXISTS categories jsonb NOT NULL DEFAULT '[]'::jsonb,
+  ADD COLUMN IF NOT EXISTS other_category text;
+
+-- ===== 20260821193938_8f452ec2-e274-4ad2-80cf-135ae6b563f3.sql =====
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS team_size text;
+
+CREATE TABLE IF NOT EXISTS public.employees (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  business_id uuid NOT NULL REFERENCES public.businesses(id) ON DELETE CASCADE,
+  profile_id uuid REFERENCES public.profiles(id) ON DELETE SET NULL,
+  first_name text NOT NULL,
+  last_name text,
+  email text,
+  phone text,
+  job_title text,
+  is_example boolean NOT NULL DEFAULT false,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS employees_business_id_idx ON public.employees(business_id);
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.employees TO authenticated;
+GRANT ALL ON public.employees TO service_role;
+
+ALTER TABLE public.employees ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Business owners can view employees" ON public.employees
+  FOR SELECT TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = employees.business_id AND b.owner_id = auth.uid()));
+
+CREATE POLICY "Business owners can manage employees" ON public.employees
+  FOR ALL TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = employees.business_id AND b.owner_id = auth.uid()))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = employees.business_id AND b.owner_id = auth.uid()));
+
+-- ===== 20260821194606_f9dd3fc4-2077-4143-b721-12854742f8fe.sql =====
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS service_locations jsonb NOT NULL DEFAULT '[]'::jsonb;
+
+-- ===== 20260821195131_216d2bd4-346e-42d2-99da-c11e14b82cbb.sql =====
+ALTER TABLE public.businesses
+  ADD COLUMN IF NOT EXISTS location jsonb,
+  ADD COLUMN IF NOT EXISTS latitude double precision,
+  ADD COLUMN IF NOT EXISTS longitude double precision;
+
+-- ===== 20260821200829_8ccc9761-7106-4558-bb4b-d8fcdf553d34.sql =====
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS migration_source text;
+
+-- ===== 20260821201724_75996d3f-57a5-4160-8138-b7ec7b01b004.sql =====
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS heard_about_source text;
+
+-- ===== 20260822122444_92f203a9-c620-4665-bc4b-ce000c248239.sql =====
+CREATE TABLE public.service_categories (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  business_id uuid NOT NULL REFERENCES public.businesses(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  color text NOT NULL DEFAULT '#7BD3F7',
+  description text,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE public.services (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  business_id uuid NOT NULL REFERENCES public.businesses(id) ON DELETE CASCADE,
+  category_id uuid REFERENCES public.service_categories(id) ON DELETE SET NULL,
+  name text NOT NULL,
+  description text,
+  pricing_type text NOT NULL DEFAULT 'fixed',
+  price numeric(12,2),
+  duration_minutes integer NOT NULL DEFAULT 60,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX service_categories_business_idx ON public.service_categories(business_id);
+CREATE INDEX services_business_idx ON public.services(business_id);
+CREATE INDEX services_category_idx ON public.services(category_id);
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.service_categories TO authenticated;
+GRANT ALL ON public.service_categories TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.services TO authenticated;
+GRANT ALL ON public.services TO service_role;
+
+ALTER TABLE public.service_categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.services ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Owners can view service categories" ON public.service_categories
+  FOR SELECT TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = service_categories.business_id AND b.owner_id = auth.uid()));
+CREATE POLICY "Owners can manage service categories" ON public.service_categories
+  FOR ALL TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = service_categories.business_id AND b.owner_id = auth.uid()))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = service_categories.business_id AND b.owner_id = auth.uid()));
+
+CREATE POLICY "Owners can view services" ON public.services
+  FOR SELECT TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = services.business_id AND b.owner_id = auth.uid()));
+CREATE POLICY "Owners can manage services" ON public.services
+  FOR ALL TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = services.business_id AND b.owner_id = auth.uid()))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = services.business_id AND b.owner_id = auth.uid()));
+
+-- ===== 20260822143921_5ccd0bce-ca41-4054-8293-b4414704ef9b.sql =====
+ALTER TABLE public.services ADD COLUMN IF NOT EXISTS treatment_type text;
+
+-- ===== 20260823143421_d180a68b-b917-4978-bf1c-d106367a855c.sql =====
+CREATE TYPE public.team_invite_status AS ENUM ('not_invited', 'invited', 'active');
+
+CREATE TABLE public.team_members (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  business_id uuid NOT NULL REFERENCES public.businesses(id) ON DELETE CASCADE,
+  full_name text NOT NULL,
+  initials text GENERATED ALWAYS AS (
+    upper(
+      coalesce(substring(split_part(btrim(full_name), ' ', 1) from 1 for 1), '') ||
+      coalesce(nullif(substring(split_part(btrim(full_name), ' ', 2) from 1 for 1), ''), '')
+    )
+  ) STORED,
+  avatar_color text NOT NULL DEFAULT '#D9F0FA',
+  email text,
+  user_id uuid REFERENCES public.profiles(id) ON DELETE SET NULL,
+  invite_status public.team_invite_status NOT NULL DEFAULT 'not_invited',
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.team_members TO authenticated;
+GRANT ALL ON public.team_members TO service_role;
+ALTER TABLE public.team_members ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Owners can view team members" ON public.team_members FOR SELECT TO authenticated
+USING (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = team_members.business_id AND b.owner_id = auth.uid()));
+CREATE POLICY "Owners can manage team members" ON public.team_members FOR ALL TO authenticated
+USING (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = team_members.business_id AND b.owner_id = auth.uid()))
+WITH CHECK (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = team_members.business_id AND b.owner_id = auth.uid()));
+
+CREATE INDEX team_members_business_idx ON public.team_members (business_id);
+
+CREATE TABLE public.service_team_members (
+  service_id uuid NOT NULL REFERENCES public.services(id) ON DELETE CASCADE,
+  team_member_id uuid NOT NULL REFERENCES public.team_members(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (service_id, team_member_id)
+);
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.service_team_members TO authenticated;
+GRANT ALL ON public.service_team_members TO service_role;
+ALTER TABLE public.service_team_members ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Owners can view service team members" ON public.service_team_members FOR SELECT TO authenticated
+USING (EXISTS (SELECT 1 FROM public.services s JOIN public.businesses b ON b.id = s.business_id WHERE s.id = service_team_members.service_id AND b.owner_id = auth.uid()));
+CREATE POLICY "Owners can manage service team members" ON public.service_team_members FOR ALL TO authenticated
+USING (EXISTS (SELECT 1 FROM public.services s JOIN public.businesses b ON b.id = s.business_id WHERE s.id = service_team_members.service_id AND b.owner_id = auth.uid()))
+WITH CHECK (EXISTS (SELECT 1 FROM public.services s JOIN public.businesses b ON b.id = s.business_id WHERE s.id = service_team_members.service_id AND b.owner_id = auth.uid()));
+
+CREATE INDEX service_team_members_member_idx ON public.service_team_members (team_member_id);
+
+-- ===== 20260824071522_26bb63e6-35be-40ea-92b8-93decd47ca47.sql =====
+ALTER TABLE public.services ADD COLUMN IF NOT EXISTS duration_segments jsonb NOT NULL DEFAULT '[]'::jsonb;
+
+-- ===== 20260824083939_541ffc7d-1528-4dca-b9c8-650a9dec116a.sql =====
+CREATE TABLE public.service_portfolio_images (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  service_id uuid REFERENCES public.services(id) ON DELETE CASCADE,
+  draft_id uuid,
+  business_id uuid NOT NULL REFERENCES public.businesses(id) ON DELETE CASCADE,
+  storage_path text NOT NULL,
+  image_url text NOT NULL,
+  is_primary boolean NOT NULL DEFAULT false,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX service_portfolio_images_service_idx ON public.service_portfolio_images (service_id);
+CREATE INDEX service_portfolio_images_draft_idx ON public.service_portfolio_images (draft_id);
+CREATE UNIQUE INDEX service_portfolio_images_one_primary ON public.service_portfolio_images (service_id) WHERE is_primary AND service_id IS NOT NULL;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.service_portfolio_images TO authenticated;
+GRANT SELECT ON public.service_portfolio_images TO anon;
+GRANT ALL ON public.service_portfolio_images TO service_role;
+
+ALTER TABLE public.service_portfolio_images ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Portfolio images are readable"
+  ON public.service_portfolio_images FOR SELECT
+  TO anon, authenticated
+  USING (true);
+
+CREATE POLICY "Owners can manage portfolio images"
+  ON public.service_portfolio_images FOR ALL
+  TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = service_portfolio_images.business_id AND b.owner_id = auth.uid()))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = service_portfolio_images.business_id AND b.owner_id = auth.uid()));
+
+CREATE POLICY "Owners can read portfolio objects"
+  ON storage.objects FOR SELECT
+  TO authenticated
+  USING (
+    bucket_id = 'service-portfolio-images'
+    AND EXISTS (SELECT 1 FROM public.businesses b WHERE b.id::text = (storage.foldername(name))[1] AND b.owner_id = auth.uid())
+  );
+
+CREATE POLICY "Owners can upload portfolio objects"
+  ON storage.objects FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    bucket_id = 'service-portfolio-images'
+    AND EXISTS (SELECT 1 FROM public.businesses b WHERE b.id::text = (storage.foldername(name))[1] AND b.owner_id = auth.uid())
+  );
+
+CREATE POLICY "Owners can update portfolio objects"
+  ON storage.objects FOR UPDATE
+  TO authenticated
+  USING (
+    bucket_id = 'service-portfolio-images'
+    AND EXISTS (SELECT 1 FROM public.businesses b WHERE b.id::text = (storage.foldername(name))[1] AND b.owner_id = auth.uid())
+  );
+
+CREATE POLICY "Owners can delete portfolio objects"
+  ON storage.objects FOR DELETE
+  TO authenticated
+  USING (
+    bucket_id = 'service-portfolio-images'
+    AND EXISTS (SELECT 1 FROM public.businesses b WHERE b.id::text = (storage.foldername(name))[1] AND b.owner_id = auth.uid())
+  );
+
+-- ===== 20260824084804_0ed6a28e-4d98-4160-ac3f-f93f6400d544.sql =====
+DROP POLICY IF EXISTS "Owners can upload portfolio objects" ON storage.objects;
+DROP POLICY IF EXISTS "Owners can read portfolio objects" ON storage.objects;
+DROP POLICY IF EXISTS "Owners can update portfolio objects" ON storage.objects;
+DROP POLICY IF EXISTS "Owners can delete portfolio objects" ON storage.objects;
+
+CREATE POLICY "Owners can upload portfolio objects" ON storage.objects FOR INSERT TO authenticated
+WITH CHECK (bucket_id = 'service-portfolio-images' AND EXISTS (
+  SELECT 1 FROM public.businesses b
+  WHERE b.id::text = (storage.foldername(storage.objects.name))[1] AND b.owner_id = auth.uid()));
+
+CREATE POLICY "Owners can read portfolio objects" ON storage.objects FOR SELECT TO authenticated
+USING (bucket_id = 'service-portfolio-images' AND EXISTS (
+  SELECT 1 FROM public.businesses b
+  WHERE b.id::text = (storage.foldername(storage.objects.name))[1] AND b.owner_id = auth.uid()));
+
+CREATE POLICY "Owners can update portfolio objects" ON storage.objects FOR UPDATE TO authenticated
+USING (bucket_id = 'service-portfolio-images' AND EXISTS (
+  SELECT 1 FROM public.businesses b
+  WHERE b.id::text = (storage.foldername(storage.objects.name))[1] AND b.owner_id = auth.uid()))
+WITH CHECK (bucket_id = 'service-portfolio-images' AND EXISTS (
+  SELECT 1 FROM public.businesses b
+  WHERE b.id::text = (storage.foldername(storage.objects.name))[1] AND b.owner_id = auth.uid()));
+
+CREATE POLICY "Owners can delete portfolio objects" ON storage.objects FOR DELETE TO authenticated
+USING (bucket_id = 'service-portfolio-images' AND EXISTS (
+  SELECT 1 FROM public.businesses b
+  WHERE b.id::text = (storage.foldername(storage.objects.name))[1] AND b.owner_id = auth.uid()));
+
+-- ===== 20260824090235_c0b2bb0c-fdb8-440b-8662-29f94a26e7e8.sql =====
+CREATE TYPE public.bundle_schedule_type AS ENUM ('sequence', 'parallel');
+CREATE TYPE public.bundle_pricing_mode AS ENUM ('service_pricing', 'custom', 'percentage_discount', 'free');
+
+CREATE TABLE public.bundles (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  business_id uuid NOT NULL REFERENCES public.businesses(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  category_id uuid REFERENCES public.service_categories(id) ON DELETE SET NULL,
+  description text,
+  schedule_type public.bundle_schedule_type NOT NULL DEFAULT 'sequence',
+  pricing_mode public.bundle_pricing_mode NOT NULL DEFAULT 'service_pricing',
+  custom_price numeric,
+  discount_percentage numeric,
+  online_booking_enabled boolean NOT NULL DEFAULT false,
+  portfolio_image_url text,
+  portfolio_image_path text,
+  is_active boolean NOT NULL DEFAULT true,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.bundles TO authenticated;
+GRANT ALL ON public.bundles TO service_role;
+ALTER TABLE public.bundles ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Owners can view bundles" ON public.bundles FOR SELECT TO authenticated
+USING (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = bundles.business_id AND b.owner_id = auth.uid()));
+
+CREATE POLICY "Owners can manage bundles" ON public.bundles FOR ALL TO authenticated
+USING (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = bundles.business_id AND b.owner_id = auth.uid()))
+WITH CHECK (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = bundles.business_id AND b.owner_id = auth.uid()));
+
+CREATE TABLE public.bundle_services (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  bundle_id uuid NOT NULL REFERENCES public.bundles(id) ON DELETE CASCADE,
+  service_id uuid NOT NULL REFERENCES public.services(id) ON DELETE CASCADE,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (bundle_id, service_id)
+);
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.bundle_services TO authenticated;
+GRANT ALL ON public.bundle_services TO service_role;
+ALTER TABLE public.bundle_services ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Owners can view bundle services" ON public.bundle_services FOR SELECT TO authenticated
+USING (EXISTS (SELECT 1 FROM public.bundles bu JOIN public.businesses b ON b.id = bu.business_id WHERE bu.id = bundle_services.bundle_id AND b.owner_id = auth.uid()));
+
+CREATE POLICY "Owners can manage bundle services" ON public.bundle_services FOR ALL TO authenticated
+USING (EXISTS (SELECT 1 FROM public.bundles bu JOIN public.businesses b ON b.id = bu.business_id WHERE bu.id = bundle_services.bundle_id AND b.owner_id = auth.uid()))
+WITH CHECK (EXISTS (SELECT 1 FROM public.bundles bu JOIN public.businesses b ON b.id = bu.business_id WHERE bu.id = bundle_services.bundle_id AND b.owner_id = auth.uid()));
+
+CREATE OR REPLACE FUNCTION public.update_updated_at_column()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SET search_path = public
+AS $$ BEGIN NEW.updated_at = now(); RETURN NEW; END; $$;
+
+CREATE TRIGGER update_bundles_updated_at BEFORE UPDATE ON public.bundles
+FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+
+-- ===== 20260824090309_0b0a1b00-d06b-43fe-910c-aebf3db829a2.sql =====
+CREATE POLICY "Owners can read bundle portfolio objects" ON storage.objects FOR SELECT TO authenticated
+USING (bucket_id = 'bundle-portfolio-images' AND EXISTS (SELECT 1 FROM public.businesses b WHERE b.id::text = (storage.foldername(name))[1] AND b.owner_id = auth.uid()));
+
+CREATE POLICY "Owners can upload bundle portfolio objects" ON storage.objects FOR INSERT TO authenticated
+WITH CHECK (bucket_id = 'bundle-portfolio-images' AND EXISTS (SELECT 1 FROM public.businesses b WHERE b.id::text = (storage.foldername(name))[1] AND b.owner_id = auth.uid()));
+
+CREATE POLICY "Owners can update bundle portfolio objects" ON storage.objects FOR UPDATE TO authenticated
+USING (bucket_id = 'bundle-portfolio-images' AND EXISTS (SELECT 1 FROM public.businesses b WHERE b.id::text = (storage.foldername(name))[1] AND b.owner_id = auth.uid()))
+WITH CHECK (bucket_id = 'bundle-portfolio-images' AND EXISTS (SELECT 1 FROM public.businesses b WHERE b.id::text = (storage.foldername(name))[1] AND b.owner_id = auth.uid()));
+
+CREATE POLICY "Owners can delete bundle portfolio objects" ON storage.objects FOR DELETE TO authenticated
+USING (bucket_id = 'bundle-portfolio-images' AND EXISTS (SELECT 1 FROM public.businesses b WHERE b.id::text = (storage.foldername(name))[1] AND b.owner_id = auth.uid()));
+
+
+-- ===== 20260824104137_d8a1ee04-8e9b-401a-bd94-44727cf0eb4f.sql =====
+CREATE TABLE public.clients (
+  id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  business_id uuid NOT NULL REFERENCES public.businesses(id) ON DELETE CASCADE,
+  first_name text NOT NULL,
+  last_name text,
+  email text,
+  phone text,
+  notes text,
+  avatar_color text NOT NULL DEFAULT '#EDE9FE',
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now()
+);
+
+CREATE INDEX clients_business_id_created_at_idx ON public.clients (business_id, created_at DESC);
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.clients TO authenticated;
+GRANT ALL ON public.clients TO service_role;
+
+ALTER TABLE public.clients ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Owners can view clients" ON public.clients
+FOR SELECT TO authenticated
+USING (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = clients.business_id AND b.owner_id = auth.uid()));
+
+CREATE POLICY "Owners can manage clients" ON public.clients
+FOR ALL TO authenticated
+USING (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = clients.business_id AND b.owner_id = auth.uid()))
+WITH CHECK (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = clients.business_id AND b.owner_id = auth.uid()));
+
+CREATE TRIGGER update_clients_updated_at BEFORE UPDATE ON public.clients
+FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ===== 20260824110349_53d1c582-7791-4a7a-b403-ccd127f64522.sql =====
+ALTER TABLE public.clients
+  ADD COLUMN IF NOT EXISTS preferred_language text,
+  ADD COLUMN IF NOT EXISTS occupation text,
+  ADD COLUMN IF NOT EXISTS additional_email text,
+  ADD COLUMN IF NOT EXISTS phone_country_code text,
+  ADD COLUMN IF NOT EXISTS additional_phone text,
+  ADD COLUMN IF NOT EXISTS additional_phone_country_code text,
+  ADD COLUMN IF NOT EXISTS birth_day integer,
+  ADD COLUMN IF NOT EXISTS birth_month integer,
+  ADD COLUMN IF NOT EXISTS birth_year integer,
+  ADD COLUMN IF NOT EXISTS gender text,
+  ADD COLUMN IF NOT EXISTS pronouns text,
+  ADD COLUMN IF NOT EXISTS client_source text NOT NULL DEFAULT 'walk_in',
+  ADD COLUMN IF NOT EXISTS referred_by_client_id uuid REFERENCES public.clients(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS country text,
+  ADD COLUMN IF NOT EXISTS avatar_url text,
+  ADD COLUMN IF NOT EXISTS avatar_path text;
+
+CREATE TABLE public.client_tags (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  business_id uuid NOT NULL REFERENCES public.businesses(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (business_id, name)
+);
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.client_tags TO authenticated;
+GRANT ALL ON public.client_tags TO service_role;
+ALTER TABLE public.client_tags ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Owners can view client tags" ON public.client_tags
+FOR SELECT TO authenticated
+USING (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = client_tags.business_id AND b.owner_id = auth.uid()));
+
+CREATE POLICY "Owners can manage client tags" ON public.client_tags
+FOR ALL TO authenticated
+USING (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = client_tags.business_id AND b.owner_id = auth.uid()))
+WITH CHECK (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = client_tags.business_id AND b.owner_id = auth.uid()));
+
+CREATE TRIGGER update_client_tags_updated_at BEFORE UPDATE ON public.client_tags
+FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE TABLE public.client_tag_assignments (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  business_id uuid NOT NULL REFERENCES public.businesses(id) ON DELETE CASCADE,
+  client_id uuid NOT NULL REFERENCES public.clients(id) ON DELETE CASCADE,
+  tag_id uuid NOT NULL REFERENCES public.client_tags(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (client_id, tag_id)
+);
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.client_tag_assignments TO authenticated;
+GRANT ALL ON public.client_tag_assignments TO service_role;
+ALTER TABLE public.client_tag_assignments ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Owners can view client tag assignments" ON public.client_tag_assignments
+FOR SELECT TO authenticated
+USING (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = client_tag_assignments.business_id AND b.owner_id = auth.uid()));
+
+CREATE POLICY "Owners can manage client tag assignments" ON public.client_tag_assignments
+FOR ALL TO authenticated
+USING (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = client_tag_assignments.business_id AND b.owner_id = auth.uid()))
+WITH CHECK (
+  EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = client_tag_assignments.business_id AND b.owner_id = auth.uid())
+  AND EXISTS (SELECT 1 FROM public.clients c WHERE c.id = client_tag_assignments.client_id AND c.business_id = client_tag_assignments.business_id)
+  AND EXISTS (SELECT 1 FROM public.client_tags t WHERE t.id = client_tag_assignments.tag_id AND t.business_id = client_tag_assignments.business_id)
+);
+
+CREATE INDEX IF NOT EXISTS client_tag_assignments_client_idx ON public.client_tag_assignments(client_id);
+CREATE INDEX IF NOT EXISTS client_tags_business_idx ON public.client_tags(business_id);
+
+-- ===== 20260829125616_c7322ca1-d569-450b-9c82-35119414582e.sql =====
+ALTER TABLE public.team_members
+  ADD COLUMN IF NOT EXISTS invite_token text,
+  ADD COLUMN IF NOT EXISTS role_id uuid REFERENCES public.team_roles(id) ON DELETE SET NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS team_members_invite_token_key
+  ON public.team_members (invite_token)
+  WHERE invite_token IS NOT NULL;
+
+-- ===== 20260830090408_b4961059-08ce-499d-9f42-4d9101af0f04.sql =====
+ALTER TABLE public.team_members
+  ADD COLUMN IF NOT EXISTS first_name text,
+  ADD COLUMN IF NOT EXISTS last_name text,
+  ADD COLUMN IF NOT EXISTS phone text,
+  ADD COLUMN IF NOT EXISTS phone_country_code text,
+  ADD COLUMN IF NOT EXISTS additional_phone text,
+  ADD COLUMN IF NOT EXISTS additional_phone_country_code text,
+  ADD COLUMN IF NOT EXISTS country text,
+  ADD COLUMN IF NOT EXISTS birthday date,
+  ADD COLUMN IF NOT EXISTS gender text,
+  ADD COLUMN IF NOT EXISTS pronouns text,
+  ADD COLUMN IF NOT EXISTS calendar_color text NOT NULL DEFAULT '#A5D8F3',
+  ADD COLUMN IF NOT EXISTS job_title text,
+  ADD COLUMN IF NOT EXISTS start_date date,
+  ADD COLUMN IF NOT EXISTS end_date date,
+  ADD COLUMN IF NOT EXISTS employment_type text,
+  ADD COLUMN IF NOT EXISTS external_team_member_id text,
+  ADD COLUMN IF NOT EXISTS notes text,
+  ADD COLUMN IF NOT EXISTS avatar_url text,
+  ADD COLUMN IF NOT EXISTS avatar_path text;
+
+UPDATE public.team_members
+SET first_name = COALESCE(NULLIF(split_part(full_name, ' ', 1), ''), full_name),
+    last_name = NULLIF(trim(substring(full_name from position(' ' in full_name) + 1)), '')
+WHERE first_name IS NULL;
+
+UPDATE public.team_members SET first_name = 'Team member' WHERE first_name IS NULL OR first_name = '';
+UPDATE public.team_members SET last_name = NULL WHERE last_name = full_name;
+
+ALTER TABLE public.team_members ALTER COLUMN first_name SET NOT NULL;
+ALTER TABLE public.team_members DROP COLUMN initials;
+ALTER TABLE public.team_members DROP COLUMN full_name;
+ALTER TABLE public.team_members
+  ADD COLUMN initials text GENERATED ALWAYS AS (
+    upper(left(first_name, 1)) || upper(coalesce(left(last_name, 1), ''))
+  ) STORED;
+
+ALTER TABLE public.team_members
+  ADD CONSTRAINT team_members_notes_length CHECK (notes IS NULL OR char_length(notes) <= 1000);
+
+CREATE POLICY "Business members can read team photos"
+ON storage.objects FOR SELECT TO authenticated
+USING (
+  bucket_id = 'team-member-photos'
+  AND EXISTS (
+    SELECT 1 FROM public.businesses b
+    WHERE b.id::text = (storage.foldername(name))[1]::text
+      AND b.owner_id = auth.uid()
+  )
+);
+
+CREATE POLICY "Business members can upload team photos"
+ON storage.objects FOR INSERT TO authenticated
+WITH CHECK (
+  bucket_id = 'team-member-photos'
+  AND EXISTS (
+    SELECT 1 FROM public.businesses b
+    WHERE b.id::text = (storage.foldername(name))[1]::text
+      AND b.owner_id = auth.uid()
+  )
+);
+
+CREATE POLICY "Business members can update team photos"
+ON storage.objects FOR UPDATE TO authenticated
+USING (
+  bucket_id = 'team-member-photos'
+  AND EXISTS (
+    SELECT 1 FROM public.businesses b
+    WHERE b.id::text = (storage.foldername(name))[1]::text
+      AND b.owner_id = auth.uid()
+  )
+);
+
+CREATE POLICY "Business members can delete team photos"
+ON storage.objects FOR DELETE TO authenticated
+USING (
+  bucket_id = 'team-member-photos'
+  AND EXISTS (
+    SELECT 1 FROM public.businesses b
+    WHERE b.id::text = (storage.foldername(name))[1]::text
+      AND b.owner_id = auth.uid()
+  )
+);
+
+-- ===== 20260903112437_9214aabf-03bb-4c26-91b7-fe2a50353f06.sql =====
+DROP POLICY IF EXISTS "invited_user_can_claim_own_team_member_row" ON public.team_members;
+CREATE POLICY "invited_user_can_claim_own_team_member_row"
+  ON public.team_members
+  FOR UPDATE
+  TO authenticated
+  USING (user_id IS NULL AND invite_status = 'invited')
+  WITH CHECK (user_id = auth.uid());
+
+CREATE OR REPLACE FUNCTION public.sync_profile_on_team_member_claim()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF new.user_id IS NOT NULL AND (old.user_id IS NULL OR old.user_id IS DISTINCT FROM new.user_id) THEN
+    UPDATE public.profiles
+    SET business_id = new.business_id, user_type = 'staff'
+    WHERE id = new.user_id;
+  END IF;
+  RETURN new;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS on_team_member_claimed ON public.team_members;
+CREATE TRIGGER on_team_member_claimed
+  AFTER UPDATE ON public.team_members
+  FOR EACH ROW
+  EXECUTE FUNCTION public.sync_profile_on_team_member_claim();
+
+-- ===== 20260903112447_3d0fd47b-d140-4791-8f9b-fd41b930d780.sql =====
+REVOKE EXECUTE ON FUNCTION public.sync_profile_on_team_member_claim() FROM PUBLIC, anon, authenticated;
+
+-- ===== 20260904133037_ed86bab3-76e9-4fc3-9d2d-b29b5b649aaa.sql =====
+CREATE TABLE public.business_hours (
+  id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  business_id uuid NOT NULL REFERENCES public.businesses(id) ON DELETE CASCADE,
+  day_of_week integer NOT NULL CHECK (day_of_week BETWEEN 0 AND 6),
+  is_open boolean NOT NULL DEFAULT true,
+  open_time time,
+  close_time time,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  UNIQUE (business_id, day_of_week)
+);
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.business_hours TO authenticated;
+GRANT ALL ON public.business_hours TO service_role;
+
+ALTER TABLE public.business_hours ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Business members can view their business hours"
+ON public.business_hours FOR SELECT TO authenticated
+USING (
+  business_id IN (SELECT id FROM public.businesses WHERE owner_id = auth.uid())
+  OR business_id IN (SELECT business_id FROM public.profiles WHERE id = auth.uid())
+);
+
+CREATE POLICY "Business members can manage their business hours"
+ON public.business_hours FOR ALL TO authenticated
+USING (
+  business_id IN (SELECT id FROM public.businesses WHERE owner_id = auth.uid())
+  OR business_id IN (SELECT business_id FROM public.profiles WHERE id = auth.uid())
+)
+WITH CHECK (
+  business_id IN (SELECT id FROM public.businesses WHERE owner_id = auth.uid())
+  OR business_id IN (SELECT business_id FROM public.profiles WHERE id = auth.uid())
+);
+
+CREATE TRIGGER update_business_hours_updated_at
+BEFORE UPDATE ON public.business_hours
+FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ===== 20260905085534_d0e86eeb-e01a-4704-a65f-48483a9d775f.sql =====
+create extension if not exists btree_gist;
+
+create table public.appointments (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references public.businesses(id) on delete cascade,
+  client_id uuid references public.clients(id) on delete set null,
+  is_walk_in boolean not null default false,
+  status text not null default 'booked'
+    check (status in ('booked','confirmed','arrived','started','completed','no_show','cancelled')),
+  notes text,
+  created_by uuid references public.profiles(id),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table public.appointment_items (
+  id uuid primary key default gen_random_uuid(),
+  appointment_id uuid not null references public.appointments(id) on delete cascade,
+  business_id uuid not null references public.businesses(id) on delete cascade,
+  service_id uuid references public.services(id) on delete set null,
+  bundle_id uuid references public.bundles(id) on delete set null,
+  team_member_id uuid not null references public.team_members(id) on delete cascade,
+  start_time timestamptz not null,
+  end_time timestamptz not null,
+  price numeric,
+  sort_order integer not null default 0,
+  is_blocking boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint appointment_items_time_valid check (end_time > start_time),
+  constraint appointment_items_no_overlap exclude using gist (
+    team_member_id with =,
+    tstzrange(start_time, end_time) with &&
+  ) where (is_blocking)
+);
+
+create index appointment_items_business_start_idx on public.appointment_items (business_id, start_time);
+create index appointments_business_idx on public.appointments (business_id);
+
+grant select, insert, update, delete on public.appointments to authenticated;
+grant all on public.appointments to service_role;
+grant select, insert, update, delete on public.appointment_items to authenticated;
+grant all on public.appointment_items to service_role;
+
+alter table public.appointments enable row level security;
+alter table public.appointment_items enable row level security;
+
+create policy "Business members manage appointments"
+  on public.appointments for all to authenticated
+  using (business_id in (select business_id from public.profiles where id = auth.uid()))
+  with check (business_id in (select business_id from public.profiles where id = auth.uid()));
+
+create policy "Business members manage appointment items"
+  on public.appointment_items for all to authenticated
+  using (business_id in (select business_id from public.profiles where id = auth.uid()))
+  with check (business_id in (select business_id from public.profiles where id = auth.uid()));
+
+create or replace function public.sync_appointment_items_blocking()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.status is distinct from old.status then
+    update public.appointment_items
+      set is_blocking = (new.status not in ('cancelled','no_show')),
+          updated_at = now()
+    where appointment_id = new.id;
+  end if;
+  return new;
+end;
+$$;
+
+revoke execute on function public.sync_appointment_items_blocking() from public, anon, authenticated;
+
+create trigger on_appointment_status_change
+  after update on public.appointments
+  for each row execute function public.sync_appointment_items_blocking();
+
+create trigger update_appointments_updated_at
+  before update on public.appointments
+  for each row execute function public.update_updated_at_column();
+
+create trigger update_appointment_items_updated_at
+  before update on public.appointment_items
+  for each row execute function public.update_updated_at_column();
+
+-- ===== 20260918163947_create_client_addresses.sql =====
+CREATE TYPE public.client_address_type AS ENUM ('home', 'work', 'other');
+
+CREATE TABLE public.client_addresses (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  client_id uuid NOT NULL UNIQUE REFERENCES public.clients(id) ON DELETE CASCADE,
+  business_id uuid NOT NULL REFERENCES public.businesses(id) ON DELETE CASCADE,
+  address_type public.client_address_type NOT NULL DEFAULT 'home',
+  address_name text NOT NULL DEFAULT 'Home',
+  street_address text NOT NULL,
+  apartment_suite text,
+  district text,
+  city text,
+  region text,
+  postcode text,
+  country text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX client_addresses_business_id_idx ON public.client_addresses (business_id);
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.client_addresses TO authenticated;
+GRANT ALL ON public.client_addresses TO service_role;
+
+ALTER TABLE public.client_addresses ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Owners can view client addresses"
+ON public.client_addresses FOR SELECT TO authenticated
+USING (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = client_addresses.business_id AND b.owner_id = auth.uid()));
+
+CREATE POLICY "Owners can manage client addresses"
+ON public.client_addresses FOR ALL TO authenticated
+USING (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = client_addresses.business_id AND b.owner_id = auth.uid()))
+WITH CHECK (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = client_addresses.business_id AND b.owner_id = auth.uid()));
+
+-- ===== 20260923142545_create_sales.sql =====
+CREATE TABLE public.sales (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  business_id uuid NOT NULL REFERENCES public.businesses(id) ON DELETE CASCADE,
+  client_id uuid REFERENCES public.clients(id) ON DELETE SET NULL,
+  appointment_id uuid UNIQUE REFERENCES public.appointments(id) ON DELETE SET NULL,
+  team_member_id uuid REFERENCES public.team_members(id) ON DELETE SET NULL,
+  is_walk_in boolean NOT NULL DEFAULT false,
+  status text NOT NULL DEFAULT 'draft',
+  payment_method text NOT NULL DEFAULT 'cash',
+  total numeric NOT NULL DEFAULT 0,
+  notes text,
+  sale_date timestamptz NOT NULL DEFAULT now(),
+  created_by uuid REFERENCES public.profiles(id) ON DELETE SET NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT sales_status_check CHECK (status IN ('draft','completed','refunded')),
+  CONSTRAINT sales_payment_method_check CHECK (payment_method IN ('cash','card','other'))
+);
+
+CREATE INDEX sales_business_idx ON public.sales (business_id, sale_date DESC);
+CREATE INDEX sales_client_idx ON public.sales (client_id);
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.sales TO authenticated;
+GRANT ALL ON public.sales TO service_role;
+
+ALTER TABLE public.sales ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Business members manage sales"
+ON public.sales FOR ALL TO authenticated
+USING (business_id IN (SELECT profiles.business_id FROM public.profiles WHERE profiles.id = auth.uid()))
+WITH CHECK (business_id IN (SELECT profiles.business_id FROM public.profiles WHERE profiles.id = auth.uid()));
+
+CREATE TABLE public.sale_items (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  sale_id uuid NOT NULL REFERENCES public.sales(id) ON DELETE CASCADE,
+  business_id uuid NOT NULL REFERENCES public.businesses(id) ON DELETE CASCADE,
+  service_id uuid REFERENCES public.services(id) ON DELETE SET NULL,
+  appointment_item_id uuid REFERENCES public.appointment_items(id) ON DELETE SET NULL,
+  description text NOT NULL,
+  price numeric NOT NULL DEFAULT 0,
+  quantity integer NOT NULL DEFAULT 1,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT sale_items_quantity_check CHECK (quantity > 0)
+);
+
+CREATE INDEX sale_items_sale_idx ON public.sale_items (sale_id);
+CREATE INDEX sale_items_business_idx ON public.sale_items (business_id);
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.sale_items TO authenticated;
+GRANT ALL ON public.sale_items TO service_role;
+
+ALTER TABLE public.sale_items ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Business members manage sale items"
+ON public.sale_items FOR ALL TO authenticated
+USING (business_id IN (SELECT profiles.business_id FROM public.profiles WHERE profiles.id = auth.uid()))
+WITH CHECK (business_id IN (SELECT profiles.business_id FROM public.profiles WHERE profiles.id = auth.uid()));
+
+CREATE OR REPLACE FUNCTION public.touch_sales_updated_at()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER sales_set_updated_at
+BEFORE UPDATE ON public.sales
+FOR EACH ROW EXECUTE FUNCTION public.touch_sales_updated_at();
+
+-- ===== 20261013120000_blocked_times_waitlist_tips.sql =====
+-- Calendar: blocked time
+create table public.blocked_times (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references public.businesses(id) on delete cascade,
+  team_member_id uuid not null references public.team_members(id) on delete cascade,
+  start_time timestamptz not null,
+  end_time timestamptz not null,
+  title text,
+  block_type text not null default 'custom',
+  description text,
+  online_booking_allowed boolean not null default false,
+  created_by uuid,
+  created_at timestamptz not null default now(),
+  constraint blocked_times_end_after_start check (end_time > start_time)
+);
+
+create index blocked_times_business_start_idx on public.blocked_times (business_id, start_time);
+
+grant select, insert, update, delete on public.blocked_times to authenticated;
+grant all on public.blocked_times to service_role;
+alter table public.blocked_times enable row level security;
+
+create policy "Business members manage blocked times"
+  on public.blocked_times for all to authenticated
+  using (business_id in (select business_id from public.profiles where id = auth.uid()))
+  with check (business_id in (select business_id from public.profiles where id = auth.uid()));
+
+-- Calendar: waitlist
+create table public.waitlist_entries (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references public.businesses(id) on delete cascade,
+  client_id uuid references public.clients(id) on delete set null,
+  service_id uuid references public.services(id) on delete set null,
+  team_member_id uuid references public.team_members(id) on delete set null,
+  preferred_date date,
+  preferred_time text,
+  status text not null default 'waiting',
+  notes text,
+  created_by uuid,
+  created_at timestamptz not null default now(),
+  constraint waitlist_entries_status_check check (status in ('waiting', 'expired', 'booked'))
+);
+
+create index waitlist_entries_business_idx on public.waitlist_entries (business_id, created_at desc);
+
+grant select, insert, update, delete on public.waitlist_entries to authenticated;
+grant all on public.waitlist_entries to service_role;
+alter table public.waitlist_entries enable row level security;
+
+create policy "Business members manage waitlist entries"
+  on public.waitlist_entries for all to authenticated
+  using (business_id in (select business_id from public.profiles where id = auth.uid()))
+  with check (business_id in (select business_id from public.profiles where id = auth.uid()));
+
+-- Sales: tips at checkout
+alter table public.sales add column tip_amount numeric not null default 0;
+
+-- Appointments: cancellation reason
+alter table public.appointments add column cancellation_reason text;
+
+
+-- ===== 20261013120100_storage_buckets.sql =====
+-- Storage buckets. Lovable created these outside of migrations; a fresh Supabase project needs them.
+-- All private: the app reads files through signed URLs. Files live under "<business_id>/...".
+insert into storage.buckets (id, name, public)
+values
+  ('service-portfolio-images', 'service-portfolio-images', false),
+  ('bundle-portfolio-images', 'bundle-portfolio-images', false),
+  ('team-member-photos', 'team-member-photos', false),
+  ('client-photos', 'client-photos', false)
+on conflict (id) do nothing;
+
+-- client-photos had no policies in the repo; same rules as team-member-photos.
+create policy "Business owners can read client photos"
+  on storage.objects for select to authenticated
+  using (bucket_id = 'client-photos' and exists (
+    select 1 from public.businesses b where b.id::text = (storage.foldername(name))[1] and b.owner_id = auth.uid()));
+
+create policy "Business owners can upload client photos"
+  on storage.objects for insert to authenticated
+  with check (bucket_id = 'client-photos' and exists (
+    select 1 from public.businesses b where b.id::text = (storage.foldername(name))[1] and b.owner_id = auth.uid()));
+
+create policy "Business owners can update client photos"
+  on storage.objects for update to authenticated
+  using (bucket_id = 'client-photos' and exists (
+    select 1 from public.businesses b where b.id::text = (storage.foldername(name))[1] and b.owner_id = auth.uid()))
+  with check (bucket_id = 'client-photos' and exists (
+    select 1 from public.businesses b where b.id::text = (storage.foldername(name))[1] and b.owner_id = auth.uid()));
+
+create policy "Business owners can delete client photos"
+  on storage.objects for delete to authenticated
+  using (bucket_id = 'client-photos' and exists (
+    select 1 from public.businesses b where b.id::text = (storage.foldername(name))[1] and b.owner_id = auth.uid()));
+
+
+-- ===== 20261017090000_catalog_archive.sql =====
+-- Catalog: archive services and categories instead of deleting them (Fresha's Archive action).
+alter table public.services add column if not exists is_archived boolean not null default false;
+alter table public.service_categories add column if not exists is_archived boolean not null default false;
+
+
+-- ===== 20261018090000_online_booking.sql =====
+-- Online booking: a public booking page at /book/<slug>.
+-- Clients never touch tables directly; three security-definer functions expose exactly what the
+-- page needs (menu, busy times, create booking) and only for businesses that have published.
+
+alter table public.businesses add column if not exists booking_slug text;
+alter table public.businesses add column if not exists online_booking_enabled boolean not null default false;
+alter table public.businesses add column if not exists booking_description text;
+alter table public.services add column if not exists online_booking_enabled boolean not null default true;
+
+create unique index if not exists businesses_booking_slug_key on public.businesses (booking_slug);
+alter table public.businesses drop constraint if exists businesses_booking_slug_format;
+alter table public.businesses add constraint businesses_booking_slug_format
+  check (booking_slug is null or booking_slug ~ '^[a-z0-9][a-z0-9-]{1,48}[a-z0-9]$');
+
+-- 1. The menu: business, opening hours, categories, bookable services and team (names only).
+create or replace function public.get_booking_page(p_slug text)
+returns jsonb
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select jsonb_build_object(
+    'business', jsonb_build_object(
+      'id', b.id,
+      'name', b.name,
+      'currency', b.currency,
+      'country', b.country,
+      'timezone', coalesce(b.timezone, 'Africa/Lagos'),
+      'description', b.booking_description,
+      'location', b.location
+    ),
+    'hours', (
+      select coalesce(jsonb_agg(jsonb_build_object(
+        'day', h.day_of_week, 'open', h.is_open, 'from', h.open_time, 'to', h.close_time)), '[]'::jsonb)
+      from public.business_hours h where h.business_id = b.id
+    ),
+    'categories', (
+      select coalesce(jsonb_agg(jsonb_build_object('id', c.id, 'name', c.name, 'color', c.color)
+        order by c.sort_order, c.created_at), '[]'::jsonb)
+      from public.service_categories c where c.business_id = b.id and not c.is_archived
+    ),
+    'services', (
+      select coalesce(jsonb_agg(jsonb_build_object(
+          'id', s.id,
+          'name', s.name,
+          'description', s.description,
+          'category_id', s.category_id,
+          'pricing_type', s.pricing_type,
+          'price', s.price,
+          'duration', s.duration_minutes,
+          'team', (select coalesce(jsonb_agg(stm.team_member_id), '[]'::jsonb)
+                   from public.service_team_members stm where stm.service_id = s.id)
+        ) order by s.sort_order, s.created_at), '[]'::jsonb)
+      from public.services s
+      left join public.service_categories c on c.id = s.category_id
+      where s.business_id = b.id and not s.is_archived and s.online_booking_enabled
+        and coalesce(c.is_archived, false) = false
+    ),
+    'team', (
+      select coalesce(jsonb_agg(jsonb_build_object(
+          'id', t.id, 'first_name', t.first_name, 'last_name', t.last_name,
+          'initials', t.initials, 'color', t.avatar_color, 'job_title', t.job_title
+        ) order by t.created_at), '[]'::jsonb)
+      from public.team_members t where t.business_id = b.id and t.is_active
+    )
+  )
+  from public.businesses b
+  where b.booking_slug = lower(p_slug) and b.online_booking_enabled;
+$$;
+
+-- 2. Busy intervals per team member (no client details) so the page can offer free slots.
+create or replace function public.get_booking_busy(p_slug text, p_from timestamptz, p_to timestamptz)
+returns table (team_member_id uuid, start_time timestamptz, end_time timestamptz)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select i.team_member_id, i.start_time, i.end_time
+  from public.appointment_items i
+  join public.businesses b on b.id = i.business_id
+  where b.booking_slug = lower(p_slug) and b.online_booking_enabled
+    and i.is_blocking and i.start_time < p_to and i.end_time > p_from
+    and p_to - p_from <= interval '32 days'
+  union all
+  select bt.team_member_id, bt.start_time, bt.end_time
+  from public.blocked_times bt
+  join public.businesses b on b.id = bt.business_id
+  where b.booking_slug = lower(p_slug) and b.online_booking_enabled
+    and not bt.online_booking_allowed
+    and bt.start_time < p_to and bt.end_time > p_from
+    and p_to - p_from <= interval '32 days';
+$$;
+
+-- 3. Create the booking. Services run back to back from p_start. A null team member means
+--    "any professional": the first active member who can do the service and is free.
+create or replace function public.create_booking(
+  p_slug text,
+  p_items jsonb,          -- [{ "service_id": uuid, "team_member_id": uuid | null }]
+  p_start timestamptz,
+  p_client jsonb,         -- { first_name, last_name, email, phone }
+  p_notes text default null
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_business public.businesses%rowtype;
+  v_tz text;
+  v_client_id uuid;
+  v_appointment_id uuid;
+  v_cursor timestamptz := p_start;
+  v_item jsonb;
+  v_service public.services%rowtype;
+  v_member uuid;
+  v_end timestamptz;
+  v_first text := nullif(trim(p_client->>'first_name'), '');
+  v_last text := nullif(trim(p_client->>'last_name'), '');
+  v_email text := lower(nullif(trim(p_client->>'email'), ''));
+  v_phone text := nullif(regexp_replace(coalesce(p_client->>'phone', ''), '[^0-9+]', '', 'g'), '');
+  v_sort int := 0;
+begin
+  select * into v_business from public.businesses
+    where booking_slug = lower(p_slug) and online_booking_enabled;
+  if not found then raise exception 'booking_unavailable'; end if;
+  v_tz := coalesce(v_business.timezone, 'Africa/Lagos');
+
+  if v_first is null or length(v_first) > 100 or coalesce(length(v_last), 0) > 100 then
+    raise exception 'invalid_client';
+  end if;
+  if v_email is null and v_phone is null then raise exception 'contact_required'; end if;
+  if v_email is not null and v_email !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' then raise exception 'invalid_email'; end if;
+  if p_start < now() + interval '15 minutes' or p_start > now() + interval '180 days' then
+    raise exception 'invalid_time';
+  end if;
+  if jsonb_typeof(p_items) <> 'array' or jsonb_array_length(p_items) not between 1 and 6 then
+    raise exception 'invalid_services';
+  end if;
+
+  -- Reuse the client record when the email or phone matches, otherwise create one.
+  select id into v_client_id from public.clients
+    where business_id = v_business.id
+      and ((v_email is not null and lower(email) = v_email) or (v_phone is not null and phone = v_phone))
+    order by created_at limit 1;
+  if v_client_id is null then
+    insert into public.clients (business_id, first_name, last_name, email, phone, client_source)
+    values (v_business.id, v_first, v_last, v_email, v_phone, 'online_booking')
+    returning id into v_client_id;
+  end if;
+
+  insert into public.appointments (business_id, client_id, is_walk_in, status, notes)
+  values (v_business.id, v_client_id, false, 'booked', left(nullif(trim(p_notes), ''), 1000))
+  returning id into v_appointment_id;
+
+  for v_item in select * from jsonb_array_elements(p_items) loop
+    select * into v_service from public.services
+      where id = (v_item->>'service_id')::uuid and business_id = v_business.id
+        and not is_archived and online_booking_enabled;
+    if not found then raise exception 'invalid_services'; end if;
+    v_end := v_cursor + make_interval(mins => v_service.duration_minutes);
+
+    -- Must sit inside opening hours (defaults: Mon–Sat 09:00–18:00).
+    if not exists (
+      select 1 from (
+        select coalesce(h.is_open, d.dow between 1 and 6) as is_open,
+               coalesce(h.open_time, time '09:00') as open_time,
+               coalesce(h.close_time, time '18:00') as close_time
+        from (select extract(dow from v_cursor at time zone v_tz)::int as dow) d
+        left join public.business_hours h on h.business_id = v_business.id and h.day_of_week = d.dow
+      ) hrs
+      where hrs.is_open
+        and (v_cursor at time zone v_tz)::time >= hrs.open_time
+        and (v_end at time zone v_tz)::time <= hrs.close_time
+        and (v_cursor at time zone v_tz)::date = (v_end at time zone v_tz)::date
+    ) then
+      raise exception 'outside_hours';
+    end if;
+
+    v_member := nullif(v_item->>'team_member_id', '')::uuid;
+    if v_member is null then
+      select t.id into v_member
+      from public.team_members t
+      where t.business_id = v_business.id and t.is_active
+        and (not exists (select 1 from public.service_team_members x where x.service_id = v_service.id)
+             or exists (select 1 from public.service_team_members x
+                        where x.service_id = v_service.id and x.team_member_id = t.id))
+        and not exists (select 1 from public.appointment_items i
+                        where i.team_member_id = t.id and i.is_blocking
+                          and tstzrange(i.start_time, i.end_time) && tstzrange(v_cursor, v_end))
+        and not exists (select 1 from public.blocked_times bt
+                        where bt.team_member_id = t.id and not bt.online_booking_allowed
+                          and tstzrange(bt.start_time, bt.end_time) && tstzrange(v_cursor, v_end))
+      order by t.created_at
+      limit 1;
+      if v_member is null then raise exception 'slot_taken'; end if;
+    else
+      if not exists (select 1 from public.team_members t
+                     where t.id = v_member and t.business_id = v_business.id and t.is_active) then
+        raise exception 'invalid_team_member';
+      end if;
+      if exists (select 1 from public.blocked_times bt
+                 where bt.team_member_id = v_member and not bt.online_booking_allowed
+                   and tstzrange(bt.start_time, bt.end_time) && tstzrange(v_cursor, v_end)) then
+        raise exception 'slot_taken';
+      end if;
+    end if;
+
+    begin
+      insert into public.appointment_items
+        (appointment_id, business_id, service_id, team_member_id, start_time, end_time, price, sort_order)
+      values
+        (v_appointment_id, v_business.id, v_service.id, v_member, v_cursor, v_end,
+         case when v_service.pricing_type = 'free' then 0 else v_service.price end, v_sort);
+    exception when exclusion_violation then
+      raise exception 'slot_taken';
+    end;
+
+    v_cursor := v_end;
+    v_sort := v_sort + 1;
+  end loop;
+
+  return jsonb_build_object('appointment_id', v_appointment_id, 'start', p_start, 'end', v_cursor);
+end;
+$$;
+
+revoke all on function public.get_booking_page(text) from public;
+revoke all on function public.get_booking_busy(text, timestamptz, timestamptz) from public;
+revoke all on function public.create_booking(text, jsonb, timestamptz, jsonb, text) from public;
+grant execute on function public.get_booking_page(text) to anon, authenticated;
+grant execute on function public.get_booking_busy(text, timestamptz, timestamptz) to anon, authenticated;
+grant execute on function public.create_booking(text, jsonb, timestamptz, jsonb, text) to anon, authenticated;
+
+
+-- ===== 20261018120000_message_automations.sql =====
+-- Marketing → Automations: which automated client messages are switched on, per business.
+-- Rows are created lazily; a missing row means "use the default" defined in the app.
+create table if not exists public.message_automations (
+  business_id uuid not null references public.businesses(id) on delete cascade,
+  key text not null,
+  enabled boolean not null,
+  channels text[] not null default array['email']::text[],
+  updated_at timestamptz not null default now(),
+  primary key (business_id, key),
+  constraint message_automations_key_format check (key ~ '^[a-z0-9_]{2,64}$'),
+  constraint message_automations_channels check (channels <@ array['email', 'sms', 'whatsapp']::text[])
+);
+
+grant select, insert, update, delete on public.message_automations to authenticated;
+grant all on public.message_automations to service_role;
+alter table public.message_automations enable row level security;
+
+create policy "Business members manage message automations"
+  on public.message_automations for all to authenticated
+  using (business_id in (select business_id from public.profiles where id = auth.uid()))
+  with check (business_id in (select business_id from public.profiles where id = auth.uid()));
+
+
+-- ===== 20261018150000_team_shifts.sql =====
+-- Team → Scheduled shifts.
+-- A team member's working time on a given date is decided in this order:
+--   business closed period > time off > one-day override > repeating schedule > business opening hours.
+-- Shift lists are JSON arrays of {"start":"HH:MM","end":"HH:MM"}; an empty array means "not working".
+
+create table if not exists public.team_schedules (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references public.businesses(id) on delete cascade,
+  team_member_id uuid not null references public.team_members(id) on delete cascade,
+  repeat_weeks smallint not null default 1 check (repeat_weeks between 1 and 4),
+  start_date date not null,
+  end_date date,
+  -- weeks[n][day] = shift list; day 0 = Sunday … 6 = Saturday; jsonb_array_length(weeks) = repeat_weeks
+  weeks jsonb not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint team_schedules_dates check (end_date is null or end_date >= start_date),
+  constraint team_schedules_weeks check (jsonb_typeof(weeks) = 'array' and jsonb_array_length(weeks) = repeat_weeks)
+);
+create index if not exists team_schedules_member_idx on public.team_schedules (team_member_id, start_date);
+
+create table if not exists public.team_shift_overrides (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references public.businesses(id) on delete cascade,
+  team_member_id uuid not null references public.team_members(id) on delete cascade,
+  date date not null,
+  shifts jsonb not null default '[]'::jsonb check (jsonb_typeof(shifts) = 'array'),
+  created_at timestamptz not null default now(),
+  unique (team_member_id, date)
+);
+
+create table if not exists public.team_time_off (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references public.businesses(id) on delete cascade,
+  team_member_id uuid not null references public.team_members(id) on delete cascade,
+  start_date date not null,
+  end_date date not null,
+  type text not null default 'annual_leave',
+  notes text,
+  created_at timestamptz not null default now(),
+  constraint team_time_off_dates check (end_date >= start_date),
+  constraint team_time_off_type check (type in ('annual_leave', 'sick', 'personal', 'training', 'other'))
+);
+create index if not exists team_time_off_member_idx on public.team_time_off (team_member_id, start_date);
+
+create table if not exists public.business_closed_periods (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references public.businesses(id) on delete cascade,
+  start_date date not null,
+  end_date date not null,
+  description text,
+  created_at timestamptz not null default now(),
+  constraint business_closed_periods_dates check (end_date >= start_date)
+);
+
+do $$
+declare t text;
+begin
+  foreach t in array array['team_schedules', 'team_shift_overrides', 'team_time_off', 'business_closed_periods'] loop
+    execute format('grant select, insert, update, delete on public.%I to authenticated', t);
+    execute format('grant all on public.%I to service_role', t);
+    execute format('alter table public.%I enable row level security', t);
+    execute format(
+      'create policy "Business members manage %s" on public.%I for all to authenticated
+         using (business_id in (select business_id from public.profiles where id = auth.uid()))
+         with check (business_id in (select business_id from public.profiles where id = auth.uid()))',
+      t, t);
+  end loop;
+end $$;
+
+
+-- ===== 20261018180000_booking_uses_shifts.sql =====
+-- Online booking respects team shifts: time off, closed periods, day edits and repeating schedules.
+-- Same precedence as the app (src/lib/team-shifts.ts):
+--   closed period > time off > day override > repeating schedule > business opening hours.
+
+create or replace function public.member_day_shifts(p_business uuid, p_member uuid, p_day date)
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  v_shifts jsonb;
+  v_schedule public.team_schedules%rowtype;
+  v_hours public.business_hours%rowtype;
+  v_dow int := extract(dow from p_day)::int;
+  v_week_start date;
+begin
+  if exists (select 1 from public.business_closed_periods
+             where business_id = p_business and p_day between start_date and end_date) then
+    return '[]'::jsonb;
+  end if;
+  if exists (select 1 from public.team_time_off
+             where team_member_id = p_member and p_day between start_date and end_date) then
+    return '[]'::jsonb;
+  end if;
+  select shifts into v_shifts from public.team_shift_overrides where team_member_id = p_member and date = p_day;
+  if found then return v_shifts; end if;
+
+  select * into v_schedule from public.team_schedules
+    where team_member_id = p_member and start_date <= p_day and (end_date is null or end_date >= p_day)
+    order by start_date desc limit 1;
+  if found then
+    v_week_start := v_schedule.start_date - (extract(isodow from v_schedule.start_date)::int - 1);
+    return coalesce(v_schedule.weeks -> (((p_day - v_week_start) / 7) % v_schedule.repeat_weeks) -> v_dow, '[]'::jsonb);
+  end if;
+
+  select * into v_hours from public.business_hours where business_id = p_business and day_of_week = v_dow;
+  if not found then
+    return case when v_dow = 0 then '[]'::jsonb else '[{"start":"09:00","end":"18:00"}]'::jsonb end;
+  end if;
+  if not v_hours.is_open or v_hours.open_time is null or v_hours.close_time is null then return '[]'::jsonb; end if;
+  return jsonb_build_array(jsonb_build_object(
+    'start', to_char(v_hours.open_time, 'HH24:MI'), 'end', to_char(v_hours.close_time, 'HH24:MI')));
+end;
+$$;
+
+-- True when [p_start, p_end) sits inside one of the member's shifts on that local day.
+create or replace function public.member_is_working(p_business uuid, p_member uuid, p_start timestamptz, p_end timestamptz, p_tz text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select (p_start at time zone p_tz)::date = (p_end at time zone p_tz)::date
+     and exists (
+       select 1
+       from jsonb_array_elements(public.member_day_shifts(p_business, p_member, (p_start at time zone p_tz)::date)) s
+       where (p_start at time zone p_tz)::time >= (s->>'start')::time
+         and ((p_end at time zone p_tz)::time <= (s->>'end')::time or s->>'end' = '24:00')
+     );
+$$;
+
+-- Each active team member's shifts per day, for the booking page.
+create or replace function public.get_booking_availability(p_slug text, p_from date, p_to date)
+returns table (team_member_id uuid, day date, shifts jsonb)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select t.id, d::date, public.member_day_shifts(b.id, t.id, d::date)
+  from public.businesses b
+  join public.team_members t on t.business_id = b.id and t.is_active
+  cross join generate_series(p_from, least(p_to, p_from + 31), interval '1 day') d
+  where b.booking_slug = lower(p_slug) and b.online_booking_enabled and p_to >= p_from;
+$$;
+
+create or replace function public.create_booking(
+  p_slug text,
+  p_items jsonb,
+  p_start timestamptz,
+  p_client jsonb,
+  p_notes text default null
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_business public.businesses%rowtype;
+  v_tz text;
+  v_client_id uuid;
+  v_appointment_id uuid;
+  v_cursor timestamptz := p_start;
+  v_item jsonb;
+  v_service public.services%rowtype;
+  v_member uuid;
+  v_end timestamptz;
+  v_first text := nullif(trim(p_client->>'first_name'), '');
+  v_last text := nullif(trim(p_client->>'last_name'), '');
+  v_email text := lower(nullif(trim(p_client->>'email'), ''));
+  v_phone text := nullif(regexp_replace(coalesce(p_client->>'phone', ''), '[^0-9+]', '', 'g'), '');
+  v_sort int := 0;
+begin
+  select * into v_business from public.businesses
+    where booking_slug = lower(p_slug) and online_booking_enabled;
+  if not found then raise exception 'booking_unavailable'; end if;
+  v_tz := coalesce(v_business.timezone, 'Africa/Lagos');
+
+  if v_first is null or length(v_first) > 100 or coalesce(length(v_last), 0) > 100 then
+    raise exception 'invalid_client';
+  end if;
+  if v_email is null and v_phone is null then raise exception 'contact_required'; end if;
+  if v_email is not null and v_email !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' then raise exception 'invalid_email'; end if;
+  if p_start < now() + interval '15 minutes' or p_start > now() + interval '180 days' then
+    raise exception 'invalid_time';
+  end if;
+  if jsonb_typeof(p_items) <> 'array' or jsonb_array_length(p_items) not between 1 and 6 then
+    raise exception 'invalid_services';
+  end if;
+
+  select id into v_client_id from public.clients
+    where business_id = v_business.id
+      and ((v_email is not null and lower(email) = v_email) or (v_phone is not null and phone = v_phone))
+    order by created_at limit 1;
+  if v_client_id is null then
+    insert into public.clients (business_id, first_name, last_name, email, phone, client_source)
+    values (v_business.id, v_first, v_last, v_email, v_phone, 'online_booking')
+    returning id into v_client_id;
+  end if;
+
+  insert into public.appointments (business_id, client_id, is_walk_in, status, notes)
+  values (v_business.id, v_client_id, false, 'booked', left(nullif(trim(p_notes), ''), 1000))
+  returning id into v_appointment_id;
+
+  for v_item in select * from jsonb_array_elements(p_items) loop
+    select * into v_service from public.services
+      where id = (v_item->>'service_id')::uuid and business_id = v_business.id
+        and not is_archived and online_booking_enabled;
+    if not found then raise exception 'invalid_services'; end if;
+    v_end := v_cursor + make_interval(mins => v_service.duration_minutes);
+
+    v_member := nullif(v_item->>'team_member_id', '')::uuid;
+    if v_member is null then
+      select t.id into v_member
+      from public.team_members t
+      where t.business_id = v_business.id and t.is_active
+        and (not exists (select 1 from public.service_team_members x where x.service_id = v_service.id)
+             or exists (select 1 from public.service_team_members x
+                        where x.service_id = v_service.id and x.team_member_id = t.id))
+        and public.member_is_working(v_business.id, t.id, v_cursor, v_end, v_tz)
+        and not exists (select 1 from public.appointment_items i
+                        where i.team_member_id = t.id and i.is_blocking
+                          and tstzrange(i.start_time, i.end_time) && tstzrange(v_cursor, v_end))
+        and not exists (select 1 from public.blocked_times bt
+                        where bt.team_member_id = t.id and not bt.online_booking_allowed
+                          and tstzrange(bt.start_time, bt.end_time) && tstzrange(v_cursor, v_end))
+      order by t.created_at
+      limit 1;
+      if v_member is null then
+        -- Nobody free: say whether it's because nobody works then, or everyone is booked.
+        if exists (select 1 from public.team_members t
+                   where t.business_id = v_business.id and t.is_active
+                     and public.member_is_working(v_business.id, t.id, v_cursor, v_end, v_tz)) then
+          raise exception 'slot_taken';
+        end if;
+        raise exception 'outside_hours';
+      end if;
+    else
+      if not exists (select 1 from public.team_members t
+                     where t.id = v_member and t.business_id = v_business.id and t.is_active) then
+        raise exception 'invalid_team_member';
+      end if;
+      if not public.member_is_working(v_business.id, v_member, v_cursor, v_end, v_tz) then
+        raise exception 'outside_hours';
+      end if;
+      if exists (select 1 from public.blocked_times bt
+                 where bt.team_member_id = v_member and not bt.online_booking_allowed
+                   and tstzrange(bt.start_time, bt.end_time) && tstzrange(v_cursor, v_end)) then
+        raise exception 'slot_taken';
+      end if;
+    end if;
+
+    begin
+      insert into public.appointment_items
+        (appointment_id, business_id, service_id, team_member_id, start_time, end_time, price, sort_order)
+      values
+        (v_appointment_id, v_business.id, v_service.id, v_member, v_cursor, v_end,
+         case when v_service.pricing_type = 'free' then 0 else v_service.price end, v_sort);
+    exception when exclusion_violation then
+      raise exception 'slot_taken';
+    end;
+
+    v_cursor := v_end;
+    v_sort := v_sort + 1;
+  end loop;
+
+  return jsonb_build_object('appointment_id', v_appointment_id, 'start', p_start, 'end', v_cursor);
+end;
+$$;
+
+revoke all on function public.member_day_shifts(uuid, uuid, date) from public, anon, authenticated;
+revoke all on function public.member_is_working(uuid, uuid, timestamptz, timestamptz, text) from public, anon, authenticated;
+revoke all on function public.get_booking_availability(text, date, date) from public;
+grant execute on function public.get_booking_availability(text, date, date) to anon, authenticated;
+revoke all on function public.create_booking(text, jsonb, timestamptz, jsonb, text) from public;
+grant execute on function public.create_booking(text, jsonb, timestamptz, jsonb, text) to anon, authenticated;
+

@@ -1,14 +1,4 @@
-import {
-  CalendarBlank,
-  Gear,
-  Globe,
-  House,
-  Package,
-  Receipt,
-  UserSquare,
-  UsersThree,
-  type Icon,
-} from "@phosphor-icons/react";
+import { CalendarBlank, ChartLineUp, Gear, Globe, House, Megaphone, Package, Receipt, SquaresFour, UserSquare, UsersThree, type Icon } from "@phosphor-icons/react";
 
 export type NavChild = {
   title: string;
@@ -91,25 +81,59 @@ export const navItems: NavItem[] = [
       {
         title: "Catalog",
         children: [
-          { title: "Services", to: "/catalog", search: { tab: "services" } },
+          { title: "Service menu", to: "/catalog", search: { tab: "services" } },
           { title: "Packages", to: "/catalog", search: { tab: "packages" } },
           { title: "Products", to: "/catalog", search: { tab: "products" } },
-          { title: "Inventory", to: "/catalog", search: { tab: "inventory" } },
+        ],
+      },
+      {
+        title: "Inventory",
+        children: [
+          { title: "Stocktakes", to: "/catalog", search: { tab: "stocktakes" } },
+          { title: "Stock orders", to: "/catalog", search: { tab: "orders" } },
+          { title: "Suppliers", to: "/catalog", search: { tab: "suppliers" } },
         ],
       },
     ],
   },
   {
     key: "online-booking",
-    title: "Online Booking",
+    title: "Online booking",
     to: "/online-booking",
     icon: Globe,
     groups: [
       {
-        title: "Booking",
+        title: "Online booking",
         children: [
-          { title: "Booking link", to: "/online-booking" },
-          { title: "Booking settings", to: "/online-booking" },
+          { title: "Booking profile", to: "/online-booking", search: { tab: "profile" } },
+          { title: "Reserve with Google", to: "/online-booking", search: { tab: "google" } },
+          { title: "Facebook and Instagram bookings", to: "/online-booking", search: { tab: "social" } },
+          { title: "Link builder", to: "/online-booking", search: { tab: "links" } },
+          { title: "Smart website", to: "/online-booking", search: { tab: "website" } },
+        ],
+      },
+    ],
+  },
+  {
+    key: "marketing",
+    title: "Marketing",
+    to: "/marketing",
+    icon: Megaphone,
+    groups: [
+      {
+        title: "Marketing",
+        children: [
+          { title: "Blast campaigns", to: "/marketing", search: { tab: "campaigns" } },
+          { title: "Automations", to: "/marketing", search: { tab: "automations" } },
+          { title: "Messages history", to: "/marketing", search: { tab: "history" } },
+        ],
+      },
+      {
+        title: "Promote",
+        children: [
+          { title: "Deals", to: "/marketing", search: { tab: "deals" } },
+          { title: "Smart pricing", to: "/marketing", search: { tab: "pricing" } },
+          { title: "Reviews", to: "/clients", search: { tab: "reviews" } },
         ],
       },
     ],
@@ -123,28 +147,15 @@ export const navItems: NavItem[] = [
       {
         title: "Team",
         children: [
-          { title: "Team members", to: "/team" },
-          { title: "Scheduled shifts", to: "/team" },
-          { title: "Timesheets", to: "/team" },
+          { title: "Team members", to: "/team", search: { tab: "members" } },
+          { title: "Scheduled shifts", to: "/team", search: { tab: "shifts" } },
+          { title: "Timesheets", to: "/team", search: { tab: "timesheets" } },
+          { title: "Pay runs", to: "/team", search: { tab: "payruns" } },
         ],
       },
     ],
   },
-  {
-    key: "settings",
-    title: "Settings",
-    to: "/settings",
-    icon: Gear,
-    groups: [
-      {
-        title: "Workspace",
-        children: [
-          { title: "Business details", to: "/settings" },
-          { title: "Business hours", to: "/settings" },
-          { title: "Locations", to: "/settings" },
-          { title: "Billing", to: "/settings" },
-        ],
-      },
-    ],
-  },
+  { key: "reports", title: "Reports", to: "/reports", icon: ChartLineUp },
+  { key: "add-ons", title: "Add-ons", to: "/add-ons", icon: SquaresFour },
+  { key: "settings", title: "Settings", to: "/settings", icon: Gear },
 ];
