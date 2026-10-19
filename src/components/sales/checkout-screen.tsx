@@ -143,6 +143,9 @@ export function CheckoutScreen({
   const [giftSellOpen, setGiftSellOpen] = useState(false);
   const [redeemOpen, setRedeemOpen] = useState(false);
   const [issuedCodes, setIssuedCodes] = useState<string[]>([]);
+  const [dealCode, setDealCode] = useState<string | null>(null);
+  const [promoInput, setPromoInput] = useState("");
+  const [promoError, setPromoError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [lines, setLines] = useState<CheckoutLine[]>([]);
   const [clientId, setClientId] = useState<string | null>(null);
@@ -180,6 +183,9 @@ export function CheckoutScreen({
     setToPayOpen(false);
     setSplitMode(false);
     setIssuedCodes([]);
+    setDealCode(null);
+    setPromoInput("");
+    setPromoError(null);
   }, [open, start]);
 
   // ── Data ──
@@ -511,6 +517,10 @@ export function CheckoutScreen({
           memberships: sellables.memberships,
         });
         setIssuedCodes(codes);
+        if (dealCode && discount > 0) {
+          const { error: dealError } = await supabase.rpc("redeem_deal", { p_code: dealCode, p_sale: id!, p_amount: discount });
+          if (dealError) toast.warning(`Sale completed, but promo code ${dealCode} couldn't be recorded: ${dealError.message}`);
+        }
       }
       if (mode === "completed" && appointmentId) {
         const { error } = await supabase
@@ -1466,16 +1476,66 @@ export function CheckoutScreen({
           </DialogTitle>
           <DialogDescription className="sr-only">Applies to this sale only.</DialogDescription>
           {prompt === "discount" ? (
-            <PromptInput
-              initial={discount ? String(discount) : ""}
-              placeholder="0.00"
-              prefix={currency}
-              numeric
-              onSave={(value) => {
-                setDiscount(Math.min(subtotal, Number(value) || 0));
-                setPrompt(null);
-              }}
-            />
+            <>
+              <form
+                className="mt-2 flex gap-2"
+                onSubmit={async (event) => {
+                  event.preventDefault();
+                  setPromoError(null);
+                  const { data, error } = await supabase.rpc("check_deal", { p_code: promoInput });
+                  if (error || !data) {
+                    const reasons: Record<string, string> = {
+                      deal_not_found: "No active deal with that code.",
+                      deal_expired: "This code has expired.",
+                      deal_not_started: "This code isn't active yet.",
+                      deal_used_up: "This code has reached its usage limit.",
+                    };
+                    const key = Object.keys(reasons).find((k) => error?.message.includes(k));
+                    setPromoError(key ? reasons[key]! : "Couldn't check that code.");
+                    return;
+                  }
+                  const deal = data as { code: string; name: string; discount_type: string; value: number; applies_to: string };
+                  const base =
+                    deal.applies_to === "all" ? subtotal : lines.filter((l) => l.serviceId).reduce((sum, l) => sum + l.price * l.quantity, 0);
+                  const amount = Math.min(
+                    subtotal,
+                    deal.discount_type === "percent" ? Math.round(base * Number(deal.value)) / 100 : Math.min(base, Number(deal.value)),
+                  );
+                  if (amount <= 0) {
+                    setPromoError(deal.applies_to === "all" ? "The cart is empty." : "This code only applies to services.");
+                    return;
+                  }
+                  setDiscount(amount);
+                  setDealCode(deal.code);
+                  setPrompt(null);
+                  toast.success(`${deal.name}: ${money(amount)} off`);
+                }}
+              >
+                <input
+                  value={promoInput}
+                  onChange={(event) => setPromoInput(event.target.value.toUpperCase())}
+                  placeholder="Promo code"
+                  maxLength={20}
+                  className="h-11 min-w-0 flex-1 rounded-lg border border-border px-3 font-mono uppercase tracking-wider outline-none focus:border-primary"
+                />
+                <button type="submit" disabled={promoInput.trim().length < 3} className={cn(pill, "h-11 bg-ink px-5 text-ink-foreground")}>
+                  Apply
+                </button>
+              </form>
+              {promoError ? <p className="text-caption text-destructive">{promoError}</p> : null}
+              <p className="mt-2 text-caption text-muted-foreground">Or enter an amount:</p>
+              <PromptInput
+                initial={discount ? String(discount) : ""}
+                placeholder="0.00"
+                prefix={currency}
+                numeric
+                onSave={(value) => {
+                  setDiscount(Math.min(subtotal, Number(value) || 0));
+                  setDealCode(null);
+                  setPrompt(null);
+                }}
+              />
+            </>
           ) : (
             <PromptInput
               initial={receiptNote}

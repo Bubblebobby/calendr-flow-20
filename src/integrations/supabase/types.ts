@@ -14,6 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
+      deals: {
+        Row: {
+          applies_to: string
+          business_id: string
+          code: string
+          created_at: string
+          discount_type: string
+          ends_on: string | null
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          name: string
+          online: boolean
+          starts_on: string | null
+          value: number
+        }
+        Insert: {
+          applies_to?: string
+          business_id: string
+          code: string
+          created_at?: string
+          discount_type: string
+          ends_on?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          name: string
+          online?: boolean
+          starts_on?: string | null
+          value: number
+        }
+        Update: {
+          applies_to?: string
+          business_id?: string
+          code?: string
+          created_at?: string
+          discount_type?: string
+          ends_on?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          name?: string
+          online?: boolean
+          starts_on?: string | null
+          value?: number
+        }
+        Relationships: []
+      }
+      deal_redemptions: {
+        Row: {
+          amount: number
+          appointment_id: string | null
+          business_id: string
+          created_at: string
+          deal_id: string
+          id: string
+          sale_id: string | null
+        }
+        Insert: {
+          amount: number
+          appointment_id?: string | null
+          business_id: string
+          created_at?: string
+          deal_id: string
+          id?: string
+          sale_id?: string | null
+        }
+        Update: {
+          amount?: number
+          appointment_id?: string | null
+          business_id?: string
+          created_at?: string
+          deal_id?: string
+          id?: string
+          sale_id?: string | null
+        }
+        Relationships: []
+      }
       gift_cards: {
         Row: {
           balance: number
@@ -2002,6 +2080,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_deal: {
+        Args: { p_code: string }
+        Returns: Json
+      }
+      check_booking_deal: {
+        Args: { p_slug: string; p_code: string }
+        Returns: Json
+      }
+      redeem_deal: {
+        Args: { p_code: string; p_sale: string; p_amount: number }
+        Returns: undefined
+      }
       new_gift_card_code: {
         Args: { p_business: string }
         Returns: string
@@ -2015,7 +2105,7 @@ export type Database = {
         Returns: undefined
       }
       create_booking: {
-        Args: { p_slug: string; p_items: Json; p_start: string; p_client: Json; p_notes?: string | null }
+        Args: { p_slug: string; p_items: Json; p_start: string; p_client: Json; p_notes?: string | null; p_code?: string | null }
         Returns: Json
       }
       cancel_booking: {

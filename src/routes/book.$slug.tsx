@@ -132,6 +132,9 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
   const [form, setForm] = useState({ first_name: "", last_name: "", email: "", phone: "", notes: "" });
   const [error, setError] = useState<string | null>(null);
   const [manageToken, setManageToken] = useState<string | null>(null);
+  const [promoInput, setPromoInput] = useState("");
+  const [promo, setPromo] = useState<{ code: string; name: string; discount_type: string; value: number } | null>(null);
+  const [promoError, setPromoError] = useState<string | null>(null);
 
   const policy = useQuery({
     queryKey: ["booking-policy", slug],
@@ -146,6 +149,26 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
   const chosen = page.services.filter((s) => selected.includes(s.id));
   const duration = chosen.reduce((sum, s) => sum + s.duration, 0);
   const total = chosen.reduce((sum, s) => sum + (s.pricing_type === "free" ? 0 : Number(s.price ?? 0)), 0);
+  const promoDiscount = promo
+    ? Math.min(total, promo.discount_type === "percent" ? Math.round(total * Number(promo.value)) / 100 : Number(promo.value))
+    : 0;
+  const applyPromo = async () => {
+    setPromoError(null);
+    const { data, error: rpcError } = await supabase.rpc("check_booking_deal", { p_slug: slug, p_code: promoInput });
+    if (rpcError || !data) {
+      const reasons: Record<string, string> = {
+        deal_not_found: "That code isn't valid.",
+        deal_not_online: "That code can't be used online.",
+        deal_expired: "That code has expired.",
+        deal_not_started: "That code isn't active yet.",
+        deal_used_up: "That code has been fully used.",
+      };
+      const key = Object.keys(reasons).find((k) => rpcError?.message.includes(k));
+      setPromoError(key ? reasons[key]! : "Couldn't check that code.");
+      return;
+    }
+    setPromo(data as { code: string; name: string; discount_type: string; value: number });
+  };
   const hasFrom = chosen.some((s) => s.pricing_type === "from" || s.pricing_type === "free-form");
 
   // Team members who can do every chosen service (no assignment = everyone can).
@@ -216,6 +239,7 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
           phone: form.phone,
         },
         p_notes: form.notes || null,
+        p_code: promo?.code ?? null,
       });
       if (rpcError) throw rpcError;
       return data;
@@ -506,6 +530,33 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                 <TextField label="Phone" type="tel" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} autoComplete="tel" />
               </div>
               <p className="mt-2 text-caption text-muted-foreground">Add an email or phone number so the business can reach you.</p>
+              <div className="mt-6">
+                <p className="text-body font-semibold">Promo code</p>
+                {promo ? (
+                  <p className="mt-2 flex items-center justify-between rounded-xl bg-accent px-4 py-3 text-body">
+                    <span>
+                      <span className="font-mono font-semibold">{promo.code}</span> · {promo.name}
+                    </span>
+                    <button type="button" onClick={() => setPromo(null)} className="text-body font-medium text-primary hover:underline">
+                      Remove
+                    </button>
+                  </p>
+                ) : (
+                  <div className="mt-2 flex gap-2">
+                    <input
+                      value={promoInput}
+                      maxLength={20}
+                      onChange={(event) => setPromoInput(event.target.value.toUpperCase())}
+                      placeholder="Enter code"
+                      className="h-12 min-w-0 flex-1 rounded-[8px] border border-input px-4 font-mono uppercase tracking-wider outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+                    />
+                    <button type="button" disabled={promoInput.trim().length < 3} onClick={applyPromo} className={cn(pillButton, "border border-input bg-card hover:bg-secondary")}>
+                      Apply
+                    </button>
+                  </div>
+                )}
+                {promoError ? <p className="mt-1 text-caption text-destructive">{promoError}</p> : null}
+              </div>
               {policy.data ? (
                 <div className="mt-6 rounded-xl bg-secondary p-4">
                   <p className="text-body font-semibold">Cancellation policy</p>
@@ -570,13 +621,19 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                 </li>
               ))}
               {chosen.length === 0 ? <li className="text-body text-muted-foreground">No services selected</li> : null}
+              {promo && promoDiscount > 0 ? (
+                <li className="flex justify-between text-body text-[#1f8a3e]">
+                  <span>Promo {promo.code}</span>
+                  <span>-{money(promoDiscount)}</span>
+                </li>
+              ) : null}
             </ul>
           </div>
           <div className="flex items-center gap-4 lg:mt-4 lg:block lg:border-t lg:border-border lg:pt-4">
             <div className="min-w-0 flex-1 lg:mb-4 lg:flex lg:justify-between">
               <span className="block text-heading font-semibold">Total</span>
               <span className="block text-body lg:text-heading lg:font-semibold">
-                {chosen.length ? `${hasFrom ? "from " : ""}${money(total)}` : "Free"}
+                {chosen.length ? `${hasFrom ? "from " : ""}${money(total - promoDiscount)}` : "Free"}
               </span>
             </div>
             <button

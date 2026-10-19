@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { DealsPage } from "@/components/marketing/deals-page";
+
 import {
   AutomationsPage,
   BlastCampaigns,
-  Deals,
   MessagesHistory,
   SmartPricing,
 } from "@/components/marketing/marketing-pages";
@@ -35,7 +36,7 @@ function MarketingPage() {
         ) : tab === "history" ? (
           <MessagesHistory />
         ) : tab === "deals" ? (
-          <Deals />
+          <DealsPage />
         ) : tab === "pricing" ? (
           <SmartPricing />
         ) : (
