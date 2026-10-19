@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { computePay } from "@/lib/pay";
 import { addDays, isoDay, resolveDay, shiftMinutes, TIME_OFF_TYPES, type ShiftData } from "@/lib/team-shifts";
 
 export type ReportCategory = "Dashboards" | "Sales" | "Finance" | "Appointments" | "Team" | "Clients" | "Inventory";
@@ -569,7 +570,44 @@ export const REPORTS: ReportDef[] = [
       return { rows, total: { member: "Total", days: sum(rows, "days") } };
     },
   },
-  { id: "commission-summary", name: "Commission summary", category: "Team", description: "Commission earned by team members.", columns: [], unavailable: "Commissions aren't set up in Bookly yet." },
+  {
+    id: "commission-summary",
+    name: "Commission summary",
+    category: "Team",
+    description: "Commission and tips earned by each team member, from completed sales.",
+    columns: [
+      { key: "member", label: "Team member" },
+      { key: "commission", label: "Commission", format: "money" },
+      { key: "tips", label: "Tips", format: "money" },
+    ],
+    load: async (businessId, range) => {
+      const { data: members, error } = await supabase.from("team_members").select("*").eq("business_id", businessId).eq("is_active", true);
+      if (error) throw error;
+      let q = supabase.from("sales").select("*, sale_items(*)").eq("business_id", businessId).eq("status", "completed");
+      if (range.from) q = q.gte("sale_date", range.from);
+      if (range.to) q = q.lt("sale_date", range.to);
+      const { data: sales, error: salesError } = await q.limit(MAX_ROWS);
+      if (salesError) throw salesError;
+      const lines = computePay(
+        (members ?? []).map((m) => {
+          const row = m as unknown as { id: string; first_name: string; last_name: string | null; service_commission_percent?: number | null; product_commission_percent?: number | null };
+          return { id: row.id, name: memberLabel(row), hourly_rate: 0, service_commission_percent: row.service_commission_percent ?? null, product_commission_percent: row.product_commission_percent ?? null };
+        }),
+        [],
+        (sales ?? []).map((s) => {
+          const row = s as unknown as { team_member_id: string | null; total: number; tip_amount?: number | null; sale_items: { team_member_id?: string | null; service_id: string | null; product_id?: string | null; price: number; quantity: number; tax_amount?: number | null }[] };
+          return {
+            team_member_id: row.team_member_id,
+            total: Number(row.total),
+            tip_amount: row.tip_amount ?? 0,
+            items: row.sale_items.map((i) => ({ team_member_id: i.team_member_id ?? null, service_id: i.service_id, product_id: i.product_id ?? null, price: Number(i.price), quantity: i.quantity, tax_amount: i.tax_amount ?? 0 })),
+          };
+        }),
+      );
+      const rows = lines.map((l) => ({ member: l.member_name, commission: l.commission, tips: l.tips })).sort((a, b) => b.commission - a.commission);
+      return { rows, total: { member: "Total", commission: sum(rows, "commission"), tips: sum(rows, "tips") } };
+    },
+  },
 
   // ─── Clients ────────────────────────────────────────────────────────────
   {

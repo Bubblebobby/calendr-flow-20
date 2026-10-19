@@ -14,6 +14,117 @@ export type Database = {
   }
   public: {
     Tables: {
+      timesheets: {
+        Row: {
+          break_minutes: number
+          business_id: string
+          clock_in: string
+          clock_out: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          team_member_id: string
+        }
+        Insert: {
+          break_minutes?: number
+          business_id: string
+          clock_in: string
+          clock_out?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          team_member_id: string
+        }
+        Update: {
+          break_minutes?: number
+          business_id?: string
+          clock_in?: string
+          clock_out?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          team_member_id?: string
+        }
+        Relationships: []
+      }
+      pay_runs: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          paid_at: string | null
+          period_end: string
+          period_start: string
+          status: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          period_end: string
+          period_start: string
+          status?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          period_end?: string
+          period_start?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      pay_run_lines: {
+        Row: {
+          adjustment: number
+          adjustment_note: string | null
+          business_id: string
+          commission: number
+          hours: number
+          id: string
+          member_name: string
+          pay_run_id: string
+          team_member_id: string | null
+          tips: number
+          total: number
+          wages: number
+        }
+        Insert: {
+          adjustment?: number
+          adjustment_note?: string | null
+          business_id: string
+          commission?: number
+          hours?: number
+          id?: string
+          member_name: string
+          pay_run_id: string
+          team_member_id?: string | null
+          tips?: number
+          total?: number
+          wages?: number
+        }
+        Update: {
+          adjustment?: number
+          adjustment_note?: string | null
+          business_id?: string
+          commission?: number
+          hours?: number
+          id?: string
+          member_name?: string
+          pay_run_id?: string
+          team_member_id?: string | null
+          tips?: number
+          total?: number
+          wages?: number
+        }
+        Relationships: []
+      }
       tax_rates: {
         Row: {
           business_id: string
@@ -1643,6 +1754,7 @@ export type Database = {
       }
       sale_items: {
         Row: {
+          team_member_id: string | null
           tax_amount: number
           product_id: string | null
           appointment_item_id: string | null
@@ -1657,6 +1769,7 @@ export type Database = {
           sort_order: number
         }
         Insert: {
+          team_member_id?: string | null
           tax_amount?: number
           product_id?: string | null
           appointment_item_id?: string | null
@@ -1671,6 +1784,7 @@ export type Database = {
           sort_order?: number
         }
         Update: {
+          team_member_id?: string | null
           tax_amount?: number
           product_id?: string | null
           appointment_item_id?: string | null
@@ -2004,6 +2118,9 @@ export type Database = {
       }
       team_members: {
         Row: {
+          hourly_rate: number | null
+          product_commission_percent: number | null
+          service_commission_percent: number | null
           additional_phone: string | null
           additional_phone_country_code: string | null
           avatar_color: string
@@ -2036,6 +2153,9 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          hourly_rate?: number | null
+          product_commission_percent?: number | null
+          service_commission_percent?: number | null
           additional_phone?: string | null
           additional_phone_country_code?: string | null
           avatar_color?: string
@@ -2067,6 +2187,9 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          hourly_rate?: number | null
+          product_commission_percent?: number | null
+          service_commission_percent?: number | null
           additional_phone?: string | null
           additional_phone_country_code?: string | null
           avatar_color?: string

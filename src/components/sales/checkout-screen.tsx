@@ -510,35 +510,45 @@ export function CheckoutScreen({
         tax_amount: taxTotal,
         discount_amount: discount,
       };
+      // Columns added by the 19 Oct database update; if it hasn't been run, save without them.
+      const NEW_SALE_COLUMNS = ["tax_amount", "discount_amount"] as const;
+      const NEW_ITEM_COLUMNS = ["product_id", "team_member_id", "tax_amount"] as const;
+      const isMissingColumn = (e: { code?: string; message?: string } | null) =>
+        Boolean(e && (e.code === "PGRST204" || e.code === "42703" || /column .* (does not exist|of '.*' in the schema cache)/i.test(e.message ?? "")));
+      const strip = <T extends Record<string, unknown>>(row: T, keys: readonly string[]) =>
+        Object.fromEntries(Object.entries(row).filter(([key]) => !keys.includes(key))) as T;
       let id = saleId;
       if (id) {
-        const { error } = await supabase.from("sales").update(header).eq("id", id);
+        let { error } = await supabase.from("sales").update(header).eq("id", id);
+        if (isMissingColumn(error)) ({ error } = await supabase.from("sales").update(strip(header, NEW_SALE_COLUMNS)).eq("id", id));
         if (error) throw error;
         const { error: deleteError } = await supabase.from("sale_items").delete().eq("sale_id", id);
         if (deleteError) throw deleteError;
       } else {
-        const { data, error } = await supabase
-          .from("sales")
-          .insert({ ...header, created_by: auth.session?.user.id ?? null })
-          .select("id")
-          .single();
-        if (error) throw error;
+        const row = { ...header, created_by: auth.session?.user.id ?? null };
+        let { data, error } = await supabase.from("sales").insert(row).select("id").single();
+        if (isMissingColumn(error)) ({ data, error } = await supabase.from("sales").insert(strip(row, NEW_SALE_COLUMNS)).select("id").single());
+        if (error || !data) throw error ?? new Error("Couldn't save the sale");
         id = data.id;
       }
-      const { error: itemsError } = await supabase.from("sale_items").insert(
-        lines.map((line, index) => ({
+      const itemRows = lines.map((line, index) => ({
           sale_id: id!,
           business_id: businessId,
           service_id: line.serviceId,
           product_id: line.productId ?? null,
+          team_member_id: line.teamMemberId,
           tax_amount: taxes[index] ?? 0,
           appointment_item_id: line.appointmentItemId,
           description: line.description,
           price: line.price,
           quantity: line.quantity,
           sort_order: index,
-        })),
-      );
+        }));
+      let { error: itemsError } = await supabase.from("sale_items").insert(itemRows);
+      if (isMissingColumn(itemsError)) {
+        if (itemRows.some((row) => row.product_id)) throw new Error("Selling products needs the latest database update");
+        ({ error: itemsError } = await supabase.from("sale_items").insert(itemRows.map((row) => strip(row, NEW_ITEM_COLUMNS))));
+      }
       if (itemsError) throw itemsError;
       if (mode === "completed") {
         const codes = await finalizeExtras({

@@ -239,7 +239,8 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
           phone: form.phone,
         },
         p_notes: form.notes || null,
-        p_code: promo?.code ?? null,
+        // Only send the code when one is used, so booking works before the deals update is applied.
+        ...(promo ? { p_code: promo.code } : {}),
       });
       if (rpcError) throw rpcError;
       return data;
