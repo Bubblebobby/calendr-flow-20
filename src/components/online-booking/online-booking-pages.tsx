@@ -23,6 +23,10 @@ type BookingSettings = {
   booking_slug: string | null;
   online_booking_enabled: boolean;
   booking_description: string | null;
+  booking_notice_hours: number;
+  allow_client_cancel: boolean;
+  allow_client_reschedule: boolean;
+  booking_policy: string | null;
 };
 
 function slugify(value: string) {
@@ -52,11 +56,21 @@ function useBookingSettings() {
     queryFn: async (): Promise<BookingSettings> => {
       const { data, error } = await supabase
         .from("businesses")
-        .select("id, name, booking_slug, online_booking_enabled, booking_description")
+        .select("*")
         .eq("id", business!.id)
         .single();
       if (error) throw error;
-      return data;
+      return {
+        id: data.id,
+        name: data.name,
+        booking_slug: data.booking_slug,
+        online_booking_enabled: data.online_booking_enabled,
+        booking_description: data.booking_description,
+        booking_notice_hours: data.booking_notice_hours ?? 24,
+        allow_client_cancel: data.allow_client_cancel ?? true,
+        allow_client_reschedule: data.allow_client_reschedule ?? true,
+        booking_policy: data.booking_policy ?? null,
+      };
     },
   });
 }
@@ -133,11 +147,21 @@ function ProfileEditor({ settings, onSaved }: { settings: BookingSettings; onSav
   const [slug, setSlug] = useState(settings.booking_slug ?? slugify(settings.name));
   const [description, setDescription] = useState(settings.booking_description ?? "");
   const [enabled, setEnabled] = useState(settings.online_booking_enabled || !settings.booking_slug);
+  const [policy, setPolicy] = useState({
+    notice: settings.booking_notice_hours,
+    cancel: settings.allow_client_cancel,
+    reschedule: settings.allow_client_reschedule,
+    text: settings.booking_policy ?? "",
+  });
   const slugValid = SLUG_PATTERN.test(slug);
   const dirty =
     slug !== (settings.booking_slug ?? "") ||
     description !== (settings.booking_description ?? "") ||
-    enabled !== settings.online_booking_enabled;
+    enabled !== settings.online_booking_enabled ||
+    policy.notice !== settings.booking_notice_hours ||
+    policy.cancel !== settings.allow_client_cancel ||
+    policy.reschedule !== settings.allow_client_reschedule ||
+    policy.text !== (settings.booking_policy ?? "");
 
   const save = useMutation({
     mutationFn: async () => {
@@ -147,6 +171,10 @@ function ProfileEditor({ settings, onSaved }: { settings: BookingSettings; onSav
           booking_slug: slug,
           booking_description: description.trim() || null,
           online_booking_enabled: enabled,
+          booking_notice_hours: policy.notice,
+          allow_client_cancel: policy.cancel,
+          allow_client_reschedule: policy.reschedule,
+          booking_policy: policy.text.trim() || null,
         })
         .eq("id", settings.id);
       if (error) throw error;
@@ -248,6 +276,50 @@ function ProfileEditor({ settings, onSaved }: { settings: BookingSettings; onSav
             className="mt-2 w-full resize-none rounded-[8px] border border-input p-4 text-body font-normal outline-none placeholder:text-placeholder focus:border-primary focus:ring-2 focus:ring-primary/15"
           />
         </label>
+      </section>
+
+      <section className={card}>
+        <h2 className="text-[1.5rem] font-semibold leading-8">Booking policy</h2>
+        <p className="mt-1 text-body text-muted-foreground">
+          Clients get a private link after booking where they can see, cancel or reschedule their appointment.
+        </p>
+        <div className="mt-6 space-y-4">
+          <label className="flex items-center justify-between gap-4 text-body font-semibold">
+            Let clients cancel online
+            <Switch checked={policy.cancel} onCheckedChange={(cancel) => setPolicy({ ...policy, cancel })} />
+          </label>
+          <label className="flex items-center justify-between gap-4 text-body font-semibold">
+            Let clients reschedule online
+            <Switch checked={policy.reschedule} onCheckedChange={(reschedule) => setPolicy({ ...policy, reschedule })} />
+          </label>
+          <label className="block text-body font-semibold">
+            Changes allowed up to
+            <select
+              value={policy.notice}
+              onChange={(event) => setPolicy({ ...policy, notice: Number(event.target.value) })}
+              className="mt-2 h-12 w-full rounded-[8px] border border-input bg-card px-4 font-normal sm:w-72"
+            >
+              {[0, 1, 2, 4, 12, 24, 48, 72, 168].map((hours) => (
+                <option key={hours} value={hours}>
+                  {hours === 0 ? "Any time before the appointment" : hours < 24 ? `${hours} hour${hours === 1 ? "" : "s"} before` : hours === 168 ? "1 week before" : `${hours / 24} day${hours === 24 ? "" : "s"} before`}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block text-body font-semibold">
+            <span className="flex justify-between">
+              Policy details <span className="font-normal text-muted-foreground">{policy.text.length}/1000</span>
+            </span>
+            <textarea
+              rows={3}
+              maxLength={1000}
+              value={policy.text}
+              placeholder="e.g. Please arrive 10 minutes early. Late arrivals may be shortened."
+              onChange={(event) => setPolicy({ ...policy, text: event.target.value })}
+              className="mt-2 w-full resize-none rounded-[8px] border border-input p-4 text-body font-normal outline-none placeholder:text-placeholder focus:border-primary focus:ring-2 focus:ring-primary/15"
+            />
+          </label>
+        </div>
       </section>
 
       <section className={card}>

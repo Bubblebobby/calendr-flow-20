@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Check, CheckCircle, Plus, UserCircle, X } from "@phosphor-icons/react";
+import { ArrowLeft, Check, CheckCircle, Copy, Plus, UserCircle, X } from "@phosphor-icons/react";
+import { toast } from "sonner";
 
 import { pillButton } from "@/components/sales/list-ui";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +17,7 @@ import {
 } from "@/lib/booking-slots";
 import { formatDuration, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { policySummary, type BookingPolicy } from "@/lib/booking-policy";
 
 type Search = { services?: string; team?: string };
 
@@ -129,6 +131,17 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [form, setForm] = useState({ first_name: "", last_name: "", email: "", phone: "", notes: "" });
   const [error, setError] = useState<string | null>(null);
+  const [manageToken, setManageToken] = useState<string | null>(null);
+
+  const policy = useQuery({
+    queryKey: ["booking-policy", slug],
+    retry: false,
+    queryFn: async (): Promise<BookingPolicy | null> => {
+      const { data, error: rpcError } = await supabase.rpc("get_booking_policy", { p_slug: slug });
+      if (rpcError) return null;
+      return (data as unknown as BookingPolicy | null) ?? null;
+    },
+  });
 
   const chosen = page.services.filter((s) => selected.includes(s.id));
   const duration = chosen.reduce((sum, s) => sum + s.duration, 0);
@@ -207,8 +220,10 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
       if (rpcError) throw rpcError;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       setError(null);
+      const token = (data as { manage_token?: string } | null)?.manage_token ?? null;
+      setManageToken(token);
       setStep("done");
     },
     onError: (rpcError: Error) => {
@@ -267,11 +282,43 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
               </li>
             ))}
           </ul>
+          {manageToken ? (
+            <div className="mt-6 rounded-xl bg-secondary p-4 text-left">
+              <p className="text-body font-semibold">Save your booking link</p>
+              <p className="mt-1 text-caption text-muted-foreground">
+                {policy.data ? policySummary(policy.data) : "Use it to view or change your booking."} Keep this link private.
+              </p>
+              <div className="mt-3 flex gap-2">
+                <a
+                  href={`/book/manage/${manageToken}`}
+                  className={cn(pillButton, "h-10 flex-1 bg-ink text-body text-ink-foreground hover:bg-ink/90")}
+                >
+                  Manage booking
+                </a>
+                <button
+                  type="button"
+                  aria-label="Copy booking link"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(`${window.location.origin}/book/manage/${manageToken}`);
+                      toast.success("Link copied");
+                    } catch {
+                      toast.error("Couldn't copy the link");
+                    }
+                  }}
+                  className={cn(pillButton, "h-10 border border-input bg-card px-4 text-body hover:bg-secondary")}
+                >
+                  <Copy size={18} /> Copy
+                </button>
+              </div>
+            </div>
+          ) : null}
           <button
             type="button"
             onClick={() => {
               setSelected([]);
               setSlot(null);
+              setManageToken(null);
               setStep("services");
             }}
             className={cn(pillButton, "mt-8 w-full border border-input bg-card hover:bg-secondary")}
@@ -459,6 +506,13 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                 <TextField label="Phone" type="tel" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} autoComplete="tel" />
               </div>
               <p className="mt-2 text-caption text-muted-foreground">Add an email or phone number so the business can reach you.</p>
+              {policy.data ? (
+                <div className="mt-6 rounded-xl bg-secondary p-4">
+                  <p className="text-body font-semibold">Cancellation policy</p>
+                  <p className="mt-1 text-body text-muted-foreground">{policySummary(policy.data)}</p>
+                  {policy.data.text ? <p className="mt-2 whitespace-pre-line text-body text-muted-foreground">{policy.data.text}</p> : null}
+                </div>
+              ) : null}
               <label className="mt-4 block text-body font-semibold">
                 Booking notes <span className="font-normal text-muted-foreground">(optional)</span>
                 <textarea

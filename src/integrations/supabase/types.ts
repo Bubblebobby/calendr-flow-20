@@ -247,6 +247,7 @@ export type Database = {
       }
       appointments: {
         Row: {
+          manage_token: string
           cancellation_reason: string | null
           business_id: string
           client_id: string | null
@@ -259,6 +260,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          manage_token?: string
           cancellation_reason?: string | null
           business_id: string
           client_id?: string | null
@@ -271,6 +273,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          manage_token?: string
           cancellation_reason?: string | null
           business_id?: string
           client_id?: string | null
@@ -460,6 +463,10 @@ export type Database = {
       }
       businesses: {
         Row: {
+          allow_client_cancel: boolean
+          allow_client_reschedule: boolean
+          booking_notice_hours: number
+          booking_policy: string | null
           booking_description: string | null
           booking_slug: string | null
           online_booking_enabled: boolean
@@ -483,6 +490,10 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          allow_client_cancel?: boolean
+          allow_client_reschedule?: boolean
+          booking_notice_hours?: number
+          booking_policy?: string | null
           booking_description?: string | null
           booking_slug?: string | null
           online_booking_enabled?: boolean
@@ -506,6 +517,10 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          allow_client_cancel?: boolean
+          allow_client_reschedule?: boolean
+          booking_notice_hours?: number
+          booking_policy?: string | null
           booking_description?: string | null
           booking_slug?: string | null
           online_booking_enabled?: boolean
@@ -1389,6 +1404,30 @@ export type Database = {
     Functions: {
       create_booking: {
         Args: { p_slug: string; p_items: Json; p_start: string; p_client: Json; p_notes?: string | null }
+        Returns: Json
+      }
+      cancel_booking: {
+        Args: { p_token: string; p_reason?: string | null }
+        Returns: Json
+      }
+      get_booking_policy: {
+        Args: { p_slug: string }
+        Returns: Json
+      }
+      get_manage_availability: {
+        Args: { p_token: string; p_from: string; p_to: string }
+        Returns: { team_member_id: string; day: string; shifts: Json }[]
+      }
+      get_manage_booking: {
+        Args: { p_token: string }
+        Returns: Json
+      }
+      get_manage_busy: {
+        Args: { p_token: string; p_from: string; p_to: string }
+        Returns: { team_member_id: string; start_time: string; end_time: string }[]
+      }
+      reschedule_booking: {
+        Args: { p_token: string; p_start: string }
         Returns: Json
       }
       get_booking_availability: {
