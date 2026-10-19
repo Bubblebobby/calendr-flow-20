@@ -492,13 +492,13 @@ export function SalesList() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent side="top" align="start" className="w-52 rounded-xl p-1.5">
                   <DropdownMenuItem
-                    onSelect={() => window.print()}
+                    onSelect={() => window.open(`/receipt/${viewing.id}`, "_blank", "noopener")}
                     className="rounded-lg px-3 py-2 text-body"
                   >
                     Print receipt
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onSelect={() => toast("Emailing receipts arrives with Marketing → Automations")}
+                    onSelect={() => toast("Emailing receipts needs an email provider. Coming in a later update.")}
                     className="rounded-lg px-3 py-2 text-body"
                   >
                     Email receipt

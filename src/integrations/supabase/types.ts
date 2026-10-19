@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      tax_rates: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          name: string
+          rate: number
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          name: string
+          rate: number
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+          rate?: number
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null
@@ -508,6 +532,7 @@ export type Database = {
       }
       products: {
         Row: {
+          tax_rate_id: string | null
           barcode: string | null
           brand_id: string | null
           business_id: string
@@ -527,6 +552,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          tax_rate_id?: string | null
           barcode?: string | null
           brand_id?: string | null
           business_id: string
@@ -546,6 +572,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          tax_rate_id?: string | null
           barcode?: string | null
           brand_id?: string | null
           business_id?: string
@@ -1171,6 +1198,8 @@ export type Database = {
       }
       businesses: {
         Row: {
+          default_tax_rate_id: string | null
+          receipt_footer: string | null
           allow_client_cancel: boolean
           allow_client_reschedule: boolean
           booking_notice_hours: number
@@ -1198,6 +1227,8 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          default_tax_rate_id?: string | null
+          receipt_footer?: string | null
           allow_client_cancel?: boolean
           allow_client_reschedule?: boolean
           booking_notice_hours?: number
@@ -1225,6 +1256,8 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          default_tax_rate_id?: string | null
+          receipt_footer?: string | null
           allow_client_cancel?: boolean
           allow_client_reschedule?: boolean
           booking_notice_hours?: number
@@ -1610,6 +1643,7 @@ export type Database = {
       }
       sale_items: {
         Row: {
+          tax_amount: number
           product_id: string | null
           appointment_item_id: string | null
           business_id: string
@@ -1623,6 +1657,7 @@ export type Database = {
           sort_order: number
         }
         Insert: {
+          tax_amount?: number
           product_id?: string | null
           appointment_item_id?: string | null
           business_id: string
@@ -1636,6 +1671,7 @@ export type Database = {
           sort_order?: number
         }
         Update: {
+          tax_amount?: number
           product_id?: string | null
           appointment_item_id?: string | null
           business_id?: string
@@ -1681,6 +1717,8 @@ export type Database = {
       }
       sales: {
         Row: {
+          discount_amount: number
+          tax_amount: number
           tip_amount: number
           appointment_id: string | null
           business_id: string
@@ -1698,6 +1736,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          discount_amount?: number
+          tax_amount?: number
           tip_amount?: number
           appointment_id?: string | null
           business_id: string
@@ -1715,6 +1755,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          discount_amount?: number
+          tax_amount?: number
           tip_amount?: number
           appointment_id?: string | null
           business_id?: string
@@ -1893,6 +1935,7 @@ export type Database = {
       }
       services: {
         Row: {
+          tax_rate_id: string | null
           online_booking_enabled: boolean
           business_id: string
           category_id: string | null
@@ -1909,6 +1952,7 @@ export type Database = {
           treatment_type: string | null
         }
         Insert: {
+          tax_rate_id?: string | null
           online_booking_enabled?: boolean
           business_id: string
           category_id?: string | null
@@ -1925,6 +1969,7 @@ export type Database = {
           treatment_type?: string | null
         }
         Update: {
+          tax_rate_id?: string | null
           online_booking_enabled?: boolean
           business_id?: string
           category_id?: string | null

@@ -30,6 +30,7 @@ import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/format";
+import { lineTaxes } from "@/lib/tax";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
 import {
@@ -84,13 +85,14 @@ type Payment = { key: string; method: Method; amount: number; gift?: GiftPayment
 
 type ServiceRow = {
   id: string;
+  tax_rate_id?: string | null;
   name: string;
   price: number | null;
   duration_minutes: number;
   category_id: string | null;
 };
 type CategoryRow = { id: string; name: string; color: string | null };
-type ProductRow = { id: string; name: string; retail_price: number; track_stock: boolean; stock_quantity: number };
+type ProductRow = { id: string; name: string; retail_price: number; track_stock: boolean; stock_quantity: number; tax_rate_id?: string | null };
 type ClientRow = {
   id: string;
   first_name: string;
@@ -144,6 +146,7 @@ export function CheckoutScreen({
   const [redeemOpen, setRedeemOpen] = useState(false);
   const [issuedCodes, setIssuedCodes] = useState<string[]>([]);
   const [dealCode, setDealCode] = useState<string | null>(null);
+  const [completedSaleId, setCompletedSaleId] = useState<string | null>(null);
   const [promoInput, setPromoInput] = useState("");
   const [promoError, setPromoError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -195,7 +198,7 @@ export function CheckoutScreen({
     queryFn: async (): Promise<ServiceRow[]> => {
       const { data, error } = await supabase
         .from("services")
-        .select("id, name, price, duration_minutes, category_id")
+        .select("*")
         .eq("business_id", businessId!)
         .order("sort_order");
       if (error) throw error;
@@ -222,7 +225,7 @@ export function CheckoutScreen({
     queryFn: async (): Promise<ProductRow[]> => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, retail_price, track_stock, stock_quantity, is_archived")
+        .select("*")
         .eq("business_id", businessId!)
         .eq("is_archived", false)
         .order("name");
@@ -231,6 +234,22 @@ export function CheckoutScreen({
     },
   });
   const sellables = useSellables(businessId, open);
+  // Tax: each item's own rate, else the business default (prices include tax).
+  const { data: taxSetup } = useQuery({
+    queryKey: ["checkout-tax", businessId],
+    enabled: Boolean(open && businessId),
+    retry: false,
+    queryFn: async () => {
+      const [rates, biz] = await Promise.all([
+        supabase.from("tax_rates").select("id, name, rate").eq("business_id", businessId!),
+        supabase.from("businesses").select("*").eq("id", businessId!).single(),
+      ]);
+      return {
+        rates: new Map((rates.error ? [] : (rates.data ?? [])).map((r) => [r.id, Number(r.rate)])),
+        defaultId: biz.error ? null : ((biz.data as { default_tax_rate_id?: string | null }).default_tax_rate_id ?? null),
+      };
+    },
+  });
   const { data: benefits } = useClientBenefits(open ? clientId : null);
   const { data: members = [] } = useQuery({
     queryKey: ["checkout-members", businessId],
@@ -337,6 +356,18 @@ export function CheckoutScreen({
     tip === "custom" ? Math.max(0, Number(customTip) || 0) : Math.round(afterDiscount * tip) / 100;
   const toPay = afterDiscount + tipAmount;
   const paid = payments.reduce((sum, payment) => sum + payment.amount, 0);
+  const lineRate = (line: CheckoutLine): number | null => {
+    if (!taxSetup || line.extra) return null;
+    const own = line.productId
+      ? products.find((p) => p.id === line.productId)?.tax_rate_id
+      : line.serviceId
+        ? services.find((s) => s.id === line.serviceId)?.tax_rate_id
+        : null;
+    const id = own ?? taxSetup.defaultId;
+    return id ? (taxSetup.rates.get(id) ?? null) : null;
+  };
+  const taxes = lineTaxes(lines.map((line) => ({ amount: line.price * line.quantity, rate: lineRate(line) })), discount);
+  const taxTotal = Math.round(taxes.reduce((sum, value) => sum + value, 0) * 100) / 100;
   const leftToPay = Math.max(0, Math.round((toPay - paid) * 100) / 100);
   const staffNames = [
     ...new Set(
@@ -476,6 +507,8 @@ export function CheckoutScreen({
         team_member_id: lines.find((line) => line.teamMemberId)?.teamMemberId ?? null,
         notes: noteParts.length ? noteParts.join(" · ") : null,
         tip_amount: tipAmount,
+        tax_amount: taxTotal,
+        discount_amount: discount,
       };
       let id = saleId;
       if (id) {
@@ -498,6 +531,7 @@ export function CheckoutScreen({
           business_id: businessId,
           service_id: line.serviceId,
           product_id: line.productId ?? null,
+          tax_amount: taxes[index] ?? 0,
           appointment_item_id: line.appointmentItemId,
           description: line.description,
           price: line.price,
@@ -531,7 +565,8 @@ export function CheckoutScreen({
       }
       return { id: id!, mode };
     },
-    onSuccess: ({ mode }) => {
+    onSuccess: ({ id: savedId, mode }) => {
+      if (mode === "completed") setCompletedSaleId(savedId);
       invalidate();
       if (mode === "completed") {
         setStep("done");
@@ -609,13 +644,20 @@ export function CheckoutScreen({
             <p className="mt-1 text-caption text-muted-foreground">Give this code to the client. It's also in Sales → Gift cards sold.</p>
           </div>
         ) : null}
-        <button
-          type="button"
-          onClick={onClose}
-          className={cn(pill, "mt-8 bg-ink text-ink-foreground")}
-        >
-          Done
-        </button>
+        <div className="mt-8 flex gap-2">
+          {completedSaleId ? (
+            <button
+              type="button"
+              onClick={() => window.open(`/receipt/${completedSaleId}`, "_blank", "noopener")}
+              className={cn(pill, "border border-input bg-card hover:bg-secondary")}
+            >
+              Print receipt
+            </button>
+          ) : null}
+          <button type="button" onClick={onClose} className={cn(pill, "bg-ink text-ink-foreground")}>
+            Done
+          </button>
+        </div>
       </div>
     );
   } else if (step === "cart") {
@@ -1264,8 +1306,8 @@ export function CheckoutScreen({
                 </div>
               ) : null}
               <div className="flex justify-between">
-                <span>Tax</span>
-                <span>{money(0)}</span>
+                <span>Tax (included)</span>
+                <span>{money(taxTotal)}</span>
               </div>
               {paid ? (
                 <div className="flex justify-between">

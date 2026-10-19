@@ -33,6 +33,7 @@ import { Route as BundleNewRouteImport } from './routes/bundle.new'
 import { Route as CatalogReorderRouteImport } from './routes/catalog.reorder'
 import { Route as ClientClientIdRouteImport } from './routes/client.$clientId'
 import { Route as ClientNewRouteImport } from './routes/client.new'
+import { Route as ReceiptSaleIdRouteImport } from './routes/receipt.$saleId'
 import { Route as ServiceServiceIdRouteImport } from './routes/service.$serviceId'
 import { Route as ServiceNewRouteImport } from './routes/service.new'
 import { Route as TeamNewRouteImport } from './routes/team.new'
@@ -160,6 +161,11 @@ const ClientNewRoute = ClientNewRouteImport.update({
   path: '/client/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReceiptSaleIdRoute = ReceiptSaleIdRouteImport.update({
+  id: '/receipt/$saleId',
+  path: '/receipt/$saleId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ServiceServiceIdRoute = ServiceServiceIdRouteImport.update({
   id: '/service/$serviceId',
   path: '/service/$serviceId',
@@ -216,6 +222,7 @@ export interface FileRoutesByFullPath {
   '/catalog/reorder': typeof CatalogReorderRoute
   '/client/$clientId': typeof ClientClientIdRoute
   '/client/new': typeof ClientNewRoute
+  '/receipt/$saleId': typeof ReceiptSaleIdRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/team/new': typeof TeamNewRoute
@@ -247,6 +254,7 @@ export interface FileRoutesByTo {
   '/catalog/reorder': typeof CatalogReorderRoute
   '/client/$clientId': typeof ClientClientIdRoute
   '/client/new': typeof ClientNewRoute
+  '/receipt/$saleId': typeof ReceiptSaleIdRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/team/new': typeof TeamNewRoute
@@ -280,6 +288,7 @@ export interface FileRoutesById {
   '/catalog/reorder': typeof CatalogReorderRoute
   '/client/$clientId': typeof ClientClientIdRoute
   '/client/new': typeof ClientNewRoute
+  '/receipt/$saleId': typeof ReceiptSaleIdRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/team/new': typeof TeamNewRoute
@@ -313,6 +322,7 @@ export interface FileRouteTypes {
     | '/catalog/reorder'
     | '/client/$clientId'
     | '/client/new'
+    | '/receipt/$saleId'
     | '/service/$serviceId'
     | '/service/new'
     | '/team/new'
@@ -344,6 +354,7 @@ export interface FileRouteTypes {
     | '/catalog/reorder'
     | '/client/$clientId'
     | '/client/new'
+    | '/receipt/$saleId'
     | '/service/$serviceId'
     | '/service/new'
     | '/team/new'
@@ -376,6 +387,7 @@ export interface FileRouteTypes {
     | '/catalog/reorder'
     | '/client/$clientId'
     | '/client/new'
+    | '/receipt/$saleId'
     | '/service/$serviceId'
     | '/service/new'
     | '/team/new'
@@ -396,6 +408,7 @@ export interface RootRouteChildren {
   CatalogReorderRoute: typeof CatalogReorderRoute
   ClientClientIdRoute: typeof ClientClientIdRoute
   ClientNewRoute: typeof ClientNewRoute
+  ReceiptSaleIdRoute: typeof ReceiptSaleIdRoute
   ServiceServiceIdRoute: typeof ServiceServiceIdRoute
   ServiceNewRoute: typeof ServiceNewRoute
   TeamNewRoute: typeof TeamNewRoute
@@ -573,6 +586,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClientNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/receipt/$saleId': {
+      id: '/receipt/$saleId'
+      path: '/receipt/$saleId'
+      fullPath: '/receipt/$saleId'
+      preLoaderRoute: typeof ReceiptSaleIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/service/$serviceId': {
       id: '/service/$serviceId'
       path: '/service/$serviceId'
@@ -675,6 +695,7 @@ const rootRouteChildren: RootRouteChildren = {
   CatalogReorderRoute: CatalogReorderRoute,
   ClientClientIdRoute: ClientClientIdRoute,
   ClientNewRoute: ClientNewRoute,
+  ReceiptSaleIdRoute: ReceiptSaleIdRoute,
   ServiceServiceIdRoute: ServiceServiceIdRoute,
   ServiceNewRoute: ServiceNewRoute,
   TeamNewRoute: TeamNewRoute,

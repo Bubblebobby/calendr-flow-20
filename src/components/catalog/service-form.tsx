@@ -41,6 +41,7 @@ import {
   attachDraftPortfolioImages,
 } from "@/components/catalog/service-portfolio-images";
 import { useBusiness } from "@/lib/use-business";
+import { TaxRateSelect, useTaxRates } from "@/components/settings/tax-settings";
 import { cn } from "@/lib/utils";
 
 const SORTED_TREATMENT_GROUPS = [...TREATMENT_GROUPS].sort((a, b) =>
@@ -113,6 +114,8 @@ export function ServiceForm({ serviceId, initialCategoryId }: { serviceId?: stri
   const [section, setSection] = useState<"basic" | "team" | "portfolio">("basic");
   const [draftId] = useState(() => crypto.randomUUID());
   const [segments, setSegments] = useState<DurationSegment[]>([]);
+  const [taxRateId, setTaxRateId] = useState("");
+  const taxRates = useTaxRates();
   const [hydrated, setHydrated] = useState(false);
 
   const addSegment = (type: ExtraTimeKey) => {
@@ -137,7 +140,7 @@ export function ServiceForm({ serviceId, initialCategoryId }: { serviceId?: stri
       const { data, error } = await supabase
         .from("services")
         .select(
-          "id, name, category_id, treatment_type, description, pricing_type, price, duration_minutes, duration_segments",
+          "*",
         )
         .eq("id", serviceId!)
         .single();
@@ -173,6 +176,7 @@ export function ServiceForm({ serviceId, initialCategoryId }: { serviceId?: stri
       }),
     );
     setSegments(savedSegments);
+    setTaxRateId((service as { tax_rate_id?: string | null }).tax_rate_id ?? "");
     setHydrated(true);
   }, [isEdit, serviceQuery.data, hydrated]);
 
@@ -280,6 +284,8 @@ export function ServiceForm({ serviceId, initialCategoryId }: { serviceId?: stri
           type,
           minutes: value,
         })),
+        // Only once tax rates exist (the column arrives with the same database update).
+        ...(taxRates.data?.length ? { tax_rate_id: taxRateId || null } : {}),
       };
 
       if (isEdit) {
@@ -601,6 +607,12 @@ export function ServiceForm({ serviceId, initialCategoryId }: { serviceId?: stri
                     </Select>
                   </Field>
                 </div>
+
+                {taxRates.data?.length ? (
+                  <div className="mt-6 max-w-sm">
+                    <TaxRateSelect value={taxRateId} onChange={setTaxRateId} />
+                  </div>
+                ) : null}
 
                 {duration === "custom" ? (
                   <div className="mt-4 max-w-xs">

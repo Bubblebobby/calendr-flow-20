@@ -352,7 +352,32 @@ export const REPORTS: ReportDef[] = [
       return { rows, total: { member: "Total", count: sum(rows, "count"), tips: sum(rows, "tips") } };
     },
   },
-  { id: "taxes-summary", name: "Taxes summary", category: "Finance", description: "Tax collected on sales.", columns: [], unavailable: "Tax rates aren't set up in Bookly yet." },
+  {
+    id: "taxes-summary",
+    name: "Taxes summary",
+    category: "Finance",
+    description: "Tax included in completed sales, by day.",
+    columns: [
+      { key: "day", label: "Date", format: "date" },
+      { key: "sales", label: "Sales", format: "number" },
+      { key: "total", label: "Sales value", format: "money" },
+      { key: "tax", label: "Tax included", format: "money" },
+    ],
+    load: async (businessId, range) => {
+      const sales = (await loadSales(businessId, range)).filter((s) => s.status === "completed");
+      const map = new Map<string, Row>();
+      for (const s of sales) {
+        const day = s.sale_date.slice(0, 10);
+        const row = map.get(day) ?? { day, sales: 0, total: 0, tax: 0 };
+        row["sales"] = Number(row["sales"]) + 1;
+        row["total"] = Number(row["total"]) + Number(s.total);
+        row["tax"] = Number(row["tax"]) + Number((s as unknown as { tax_amount?: number }).tax_amount ?? 0);
+        map.set(day, row);
+      }
+      const rows = [...map.values()].sort((a, b) => String(b["day"]).localeCompare(String(a["day"])));
+      return { rows, total: { day: null, sales: sum(rows, "sales"), total: sum(rows, "total"), tax: sum(rows, "tax") } };
+    },
+  },
 
   // ─── Appointments ───────────────────────────────────────────────────────
   {

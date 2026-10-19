@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { isMissingTable } from "@/components/calendar/blocked-time";
 import { ConfirmDialog } from "@/components/catalog/catalog-ui";
 import { BusinessHoursPanel } from "@/components/settings/business-hours-panel";
+import { TaxSettings } from "@/components/settings/tax-settings";
 import { CLIENT_SOURCES } from "@/components/clients/client-form";
 import { pillButton } from "@/components/sales/list-ui";
 import { supabase } from "@/integrations/supabase/client";
@@ -290,6 +291,9 @@ function SettingsPage({ sectionKey, pageKey }: { sectionKey: string; pageKey: st
           </ul>
         </PageBlock>
       );
+    case "sales/tax":
+    case "sales/receipts":
+      return <TaxSettings />;
     case "sales/payment-methods":
       return (
         <PageBlock title="Payment methods" subtitle="How clients can pay at checkout.">

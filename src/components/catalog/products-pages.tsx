@@ -17,6 +17,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/format";
+import { TaxRateSelect } from "@/components/settings/tax-settings";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
 
@@ -38,6 +39,7 @@ export type Product = {
   stock_quantity: number;
   low_stock_threshold: number | null;
   is_archived: boolean;
+  tax_rate_id?: string | null;
 };
 type Named = { id: string; name: string };
 
@@ -574,6 +576,7 @@ function ProductDialog({
     track_stock: true,
     initial: "0",
     low: "",
+    tax: "",
   };
   const [form, setForm] = useState(empty);
   useEffect(() => {
@@ -592,6 +595,7 @@ function ProductDialog({
         track_stock: product.track_stock,
         initial: "0",
         low: product.low_stock_threshold === null ? "" : String(product.low_stock_threshold),
+        tax: product.tax_rate_id ?? "",
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product]);
@@ -619,6 +623,7 @@ function ProductDialog({
         supply_price: num(form.supply_price),
         track_stock: form.track_stock,
         low_stock_threshold: form.track_stock ? num(form.low) : null,
+        tax_rate_id: form.tax || null,
       };
       if (isNew) {
         const { data, error } = await supabase
@@ -770,6 +775,9 @@ function ProductDialog({
             className="mt-2 w-full resize-none rounded-[8px] border border-input p-4 text-body font-normal"
           />
         </label>
+        <div className="sm:col-span-2">
+          <TaxRateSelect value={form.tax} onChange={(tax) => setForm({ ...form, tax })} />
+        </div>
         <div className="flex items-center justify-between gap-4 rounded-xl bg-secondary px-4 py-3 sm:col-span-2">
           <span>
             <span className="block text-body font-semibold">Track stock</span>
