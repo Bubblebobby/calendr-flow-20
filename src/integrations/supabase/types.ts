@@ -14,6 +14,294 @@ export type Database = {
   }
   public: {
     Tables: {
+      product_brands: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      product_categories: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      suppliers: {
+        Row: {
+          address: string | null
+          business_id: string
+          contact_name: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+        }
+        Insert: {
+          address?: string | null
+          business_id: string
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+        }
+        Update: {
+          address?: string | null
+          business_id?: string
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          barcode: string | null
+          brand_id: string | null
+          business_id: string
+          category_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_archived: boolean
+          low_stock_threshold: number | null
+          name: string
+          retail_price: number
+          sku: string | null
+          stock_quantity: number
+          supplier_id: string | null
+          supply_price: number | null
+          track_stock: boolean
+          updated_at: string
+        }
+        Insert: {
+          barcode?: string | null
+          brand_id?: string | null
+          business_id: string
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_archived?: boolean
+          low_stock_threshold?: number | null
+          name: string
+          retail_price?: number
+          sku?: string | null
+          stock_quantity?: number
+          supplier_id?: string | null
+          supply_price?: number | null
+          track_stock?: boolean
+          updated_at?: string
+        }
+        Update: {
+          barcode?: string | null
+          brand_id?: string | null
+          business_id?: string
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_archived?: boolean
+          low_stock_threshold?: number | null
+          name?: string
+          retail_price?: number
+          sku?: string | null
+          stock_quantity?: number
+          supplier_id?: string | null
+          supply_price?: number | null
+          track_stock?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      stock_movements: {
+        Row: {
+          business_id: string
+          change: number
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string | null
+          product_id: string
+          reason: string
+          reference_id: string | null
+        }
+        Insert: {
+          business_id: string
+          change: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          product_id: string
+          reason: string
+          reference_id?: string | null
+        }
+        Update: {
+          business_id?: string
+          change?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          product_id?: string
+          reason?: string
+          reference_id?: string | null
+        }
+        Relationships: []
+      }
+      stock_orders: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          ordered_at: string | null
+          received_at: string | null
+          status: string
+          supplier_id: string | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          ordered_at?: string | null
+          received_at?: string | null
+          status?: string
+          supplier_id?: string | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          ordered_at?: string | null
+          received_at?: string | null
+          status?: string
+          supplier_id?: string | null
+        }
+        Relationships: []
+      }
+      stock_order_items: {
+        Row: {
+          business_id: string
+          id: string
+          order_id: string
+          product_id: string
+          quantity: number
+          supply_price: number | null
+        }
+        Insert: {
+          business_id: string
+          id?: string
+          order_id: string
+          product_id: string
+          quantity: number
+          supply_price?: number | null
+        }
+        Update: {
+          business_id?: string
+          id?: string
+          order_id?: string
+          product_id?: string
+          quantity?: number
+          supply_price?: number | null
+        }
+        Relationships: []
+      }
+      stocktakes: {
+        Row: {
+          business_id: string
+          completed_at: string | null
+          id: string
+          notes: string | null
+          started_at: string
+          status: string
+        }
+        Insert: {
+          business_id: string
+          completed_at?: string | null
+          id?: string
+          notes?: string | null
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          business_id?: string
+          completed_at?: string | null
+          id?: string
+          notes?: string | null
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      stocktake_items: {
+        Row: {
+          business_id: string
+          counted: number | null
+          expected: number
+          id: string
+          product_id: string
+          stocktake_id: string
+        }
+        Insert: {
+          business_id: string
+          counted?: number | null
+          expected: number
+          id?: string
+          product_id: string
+          stocktake_id: string
+        }
+        Update: {
+          business_id?: string
+          counted?: number | null
+          expected?: number
+          id?: string
+          product_id?: string
+          stocktake_id?: string
+        }
+        Relationships: []
+      }
       business_closed_periods: {
         Row: {
           business_id: string
@@ -902,6 +1190,7 @@ export type Database = {
       }
       sale_items: {
         Row: {
+          product_id: string | null
           appointment_item_id: string | null
           business_id: string
           created_at: string
@@ -914,6 +1203,7 @@ export type Database = {
           sort_order: number
         }
         Insert: {
+          product_id?: string | null
           appointment_item_id?: string | null
           business_id: string
           created_at?: string
@@ -926,6 +1216,7 @@ export type Database = {
           sort_order?: number
         }
         Update: {
+          product_id?: string | null
           appointment_item_id?: string | null
           business_id?: string
           created_at?: string
@@ -1402,6 +1693,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      complete_stocktake: {
+        Args: { p_stocktake: string }
+        Returns: undefined
+      }
+      receive_stock_order: {
+        Args: { p_order: string }
+        Returns: undefined
+      }
       create_booking: {
         Args: { p_slug: string; p_items: Json; p_start: string; p_client: Json; p_notes?: string | null }
         Returns: Json

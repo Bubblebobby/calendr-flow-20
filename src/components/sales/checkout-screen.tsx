@@ -46,6 +46,8 @@ import {
 export type CheckoutLine = {
   key: string;
   serviceId: string | null;
+  /** Set for retail products; stock is taken out when the sale completes. */
+  productId?: string | null;
   description: string;
   price: number;
   quantity: number;
@@ -76,6 +78,7 @@ type ServiceRow = {
   category_id: string | null;
 };
 type CategoryRow = { id: string; name: string; color: string | null };
+type ProductRow = { id: string; name: string; retail_price: number; track_stock: boolean; stock_quantity: number };
 type ClientRow = {
   id: string;
   first_name: string;
@@ -124,7 +127,7 @@ export function CheckoutScreen({
   const money = (value: number) => formatMoney(value, currency, business?.country ?? "");
 
   const [step, setStep] = useState<Step>("cart");
-  const [browse, setBrowse] = useState<null | "services" | "appointments">(null);
+  const [browse, setBrowse] = useState<null | "services" | "appointments" | "products">(null);
   const [search, setSearch] = useState("");
   const [lines, setLines] = useState<CheckoutLine[]>([]);
   const [clientId, setClientId] = useState<string | null>(null);
@@ -188,6 +191,21 @@ export function CheckoutScreen({
         .order("sort_order");
       if (error) throw error;
       return (data ?? []) as CategoryRow[];
+    },
+  });
+  const { data: products = [] } = useQuery({
+    queryKey: ["checkout-products", businessId],
+    enabled: Boolean(open && businessId),
+    retry: false,
+    queryFn: async (): Promise<ProductRow[]> => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, name, retail_price, track_stock, stock_quantity, is_archived")
+        .eq("business_id", businessId!)
+        .eq("is_archived", false)
+        .order("name");
+      if (error) return [];
+      return (data ?? []) as ProductRow[];
     },
   });
   const { data: members = [] } = useQuery({
@@ -320,6 +338,27 @@ export function CheckoutScreen({
     ]);
   }
 
+  function addProduct(product: ProductRow) {
+    setLines((current) => {
+      const existing = current.find((line) => line.productId === product.id);
+      if (existing) return current.map((line) => (line === existing ? { ...line, quantity: line.quantity + 1 } : line));
+      return [
+        ...current,
+        {
+          key: lineKey(),
+          serviceId: null,
+          productId: product.id,
+          description: product.name,
+          price: Number(product.retail_price),
+          quantity: 1,
+          durationMinutes: null,
+          teamMemberId: members[0]?.id ?? null,
+          appointmentItemId: null,
+        },
+      ];
+    });
+  }
+
   function addAppointment(appointment: SellableAppointment) {
     if (appointmentId && appointmentId !== appointment.id) {
       toast.error("A sale can include one appointment. Complete this sale first.");
@@ -377,6 +416,7 @@ export function CheckoutScreen({
         total: afterDiscount,
         team_member_id: lines.find((line) => line.teamMemberId)?.teamMemberId ?? null,
         notes: noteParts.length ? noteParts.join(" · ") : null,
+        tip_amount: tipAmount,
       };
       let id = saleId;
       if (id) {
@@ -398,6 +438,7 @@ export function CheckoutScreen({
           sale_id: id!,
           business_id: businessId,
           service_id: line.serviceId,
+          product_id: line.productId ?? null,
           appointment_item_id: line.appointmentItemId,
           description: line.description,
           price: line.price,
@@ -507,7 +548,9 @@ export function CheckoutScreen({
         <h1 className="mt-3 text-display font-semibold">
           {browse === "services"
             ? "Services"
-            : browse === "appointments"
+            : browse === "products"
+              ? "Products"
+              : browse === "appointments"
               ? "Appointments"
               : "Add to cart"}
         </h1>
@@ -552,6 +595,36 @@ export function CheckoutScreen({
                 </button>
               ))
             )}
+          </div>
+        ) : browse === "products" ? (
+          <div className="mt-6 space-y-1">
+            {products
+              .filter((product) => !term || product.name.toLowerCase().includes(term))
+              .map((product) => {
+                const inCart = lines.filter((line) => line.productId === product.id).reduce((sum, line) => sum + line.quantity, 0);
+                const left = product.stock_quantity - inCart;
+                const out = product.track_stock && left <= 0;
+                return (
+                  <button
+                    key={product.id}
+                    type="button"
+                    disabled={out}
+                    onClick={() => addProduct(product)}
+                    className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left hover:bg-secondary disabled:opacity-50"
+                  >
+                    <span>
+                      <span className="block text-body">{product.name}</span>
+                      <span className={cn("block text-caption", out ? "text-destructive" : "text-muted-foreground")}>
+                        {product.track_stock ? (out ? "Out of stock" : `${left} in stock`) : "Stock not tracked"}
+                      </span>
+                    </span>
+                    <span className="text-body">{money(Number(product.retail_price))}</span>
+                  </button>
+                );
+              })}
+            {products.length === 0 ? (
+              <p className="py-6 text-center text-muted-foreground">No products yet. Add them in Catalog → Products.</p>
+            ) : null}
           </div>
         ) : browse === "services" || term ? (
           <div className="mt-6 space-y-6">
@@ -612,7 +685,7 @@ export function CheckoutScreen({
                   key={key}
                   type="button"
                   onClick={() => {
-                    if (key === "appointments" || key === "services") setBrowse(key);
+                    if (key === "appointments" || key === "services" || key === "products") setBrowse(key);
                     else toast(`${label} arrive with the Catalog tab`);
                   }}
                   className="flex h-24 flex-col justify-between rounded-xl border border-border p-4 text-left hover:bg-secondary"

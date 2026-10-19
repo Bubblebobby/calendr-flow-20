@@ -21,10 +21,11 @@ type DaySale = {
   payment_method: "cash" | "card" | "other";
   total: number;
   notes: string | null;
+  tip_amount?: number | null;
   sale_items: { id: string; quantity: number; price: number; service_id: string | null }[];
 };
 
-/** Until `sales.tip_amount` exists the checkout records tips in the note ("Tip ₦500.00 for …"). */
+/** Older sales recorded tips only in the note ("Tip ₦500.00 for …"); newer ones use tip_amount. */
 function tipFromNote(note: string | null) {
   const match = note?.match(/Tip\D*([\d,]+(?:\.\d+)?)/);
   return match ? Number(match[1]!.replace(/,/g, "")) : 0;
@@ -56,7 +57,7 @@ export function DailySalesSummary() {
     queryFn: async (): Promise<DaySale[]> => {
       const { data, error } = await supabase
         .from("sales")
-        .select("id, status, payment_method, total, notes, sale_items(id, quantity, price, service_id)")
+        .select("*, sale_items(id, quantity, price, service_id)")
         .eq("business_id", businessId!)
         .gte("sale_date", start.toISOString())
         .lt("sale_date", end.toISOString());
@@ -112,7 +113,7 @@ export function DailySalesSummary() {
       refundsOther: byMethod("other", refunded),
       collectedTotal: totalValue(completed),
       refundsTotal: totalValue(refunded),
-      tips: completed.reduce((sum, sale) => sum + tipFromNote(sale.notes), 0),
+      tips: completed.reduce((sum, sale) => sum + (Number(sale.tip_amount ?? 0) || tipFromNote(sale.notes)), 0),
     };
   }, [salesQuery.data]);
 

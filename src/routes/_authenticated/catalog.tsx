@@ -1,12 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import {
-  CatalogPackages,
-  CatalogProducts,
-  CatalogStockOrders,
-  CatalogStocktakes,
-  CatalogSuppliers,
-} from "@/components/catalog/catalog-extra-pages";
+import { CatalogPackages } from "@/components/catalog/catalog-extra-pages";
+import { StockOrdersPage, StocktakesPage, SuppliersPage } from "@/components/catalog/inventory-pages";
+import { ProductsPage } from "@/components/catalog/products-pages";
 import { ServiceMenu } from "@/components/catalog/service-menu";
 
 const TABS = ["services", "packages", "products", "stocktakes", "orders", "suppliers"] as const;
@@ -39,13 +35,13 @@ function CatalogPage() {
         {tab === "packages" ? (
           <CatalogPackages />
         ) : tab === "products" ? (
-          <CatalogProducts />
+          <ProductsPage />
         ) : tab === "stocktakes" ? (
-          <CatalogStocktakes />
+          <StocktakesPage />
         ) : tab === "orders" ? (
-          <CatalogStockOrders />
+          <StockOrdersPage />
         ) : tab === "suppliers" ? (
-          <CatalogSuppliers />
+          <SuppliersPage />
         ) : (
           <ServiceMenu />
         )}
