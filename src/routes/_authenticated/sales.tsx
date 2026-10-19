@@ -1,3 +1,4 @@
+import { GiftCardsSold, MembershipsSold, PackagesSold } from "@/components/sales/prepaid-pages";
 import { createFileRoute } from "@tanstack/react-router";
 import { Receipt } from "@phosphor-icons/react";
 
@@ -5,9 +6,6 @@ import { DailySalesSummary } from "@/components/sales/daily-sales-summary";
 import { SalesAppointmentsList } from "@/components/sales/sales-appointments-list";
 import { SalesList } from "@/components/sales/sales-list";
 import {
-  GiftCardsSold,
-  MembershipsSold,
-  PackagesSold,
   PaymentsList,
   RegisterIntro,
 } from "@/components/sales/sales-extra-pages";

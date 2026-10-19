@@ -9,6 +9,7 @@ import {
   CheckCircle,
   ClipboardText,
   CreditCard,
+  Crown,
   CurrencyCircleDollar,
   DotsThreeVertical,
   Gift,
@@ -31,6 +32,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/format";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
+import {
+  GiftCardSellDialog,
+  RedeemGiftDialog,
+  finalizeExtras,
+  useClientBenefits,
+  useSellables,
+  type GiftPayment,
+  type LineExtra,
+} from "@/components/sales/checkout-extras";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -48,6 +58,8 @@ export type CheckoutLine = {
   serviceId: string | null;
   /** Set for retail products; stock is taken out when the sale completes. */
   productId?: string | null;
+  /** Gift cards, packages, memberships and package-session redemptions. */
+  extra?: LineExtra;
   description: string;
   price: number;
   quantity: number;
@@ -68,7 +80,7 @@ export type CheckoutStart = {
 
 type Step = "cart" | "tip" | "payment" | "done";
 type Method = "cash" | "card" | "other";
-type Payment = { key: string; method: Method; amount: number };
+type Payment = { key: string; method: Method; amount: number; gift?: GiftPayment };
 
 type ServiceRow = {
   id: string;
@@ -127,7 +139,10 @@ export function CheckoutScreen({
   const money = (value: number) => formatMoney(value, currency, business?.country ?? "");
 
   const [step, setStep] = useState<Step>("cart");
-  const [browse, setBrowse] = useState<null | "services" | "appointments" | "products">(null);
+  const [browse, setBrowse] = useState<null | "services" | "appointments" | "products" | "packages" | "memberships">(null);
+  const [giftSellOpen, setGiftSellOpen] = useState(false);
+  const [redeemOpen, setRedeemOpen] = useState(false);
+  const [issuedCodes, setIssuedCodes] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [lines, setLines] = useState<CheckoutLine[]>([]);
   const [clientId, setClientId] = useState<string | null>(null);
@@ -164,6 +179,7 @@ export function CheckoutScreen({
     setPayments([]);
     setToPayOpen(false);
     setSplitMode(false);
+    setIssuedCodes([]);
   }, [open, start]);
 
   // ── Data ──
@@ -208,6 +224,8 @@ export function CheckoutScreen({
       return (data ?? []) as ProductRow[];
     },
   });
+  const sellables = useSellables(businessId, open);
+  const { data: benefits } = useClientBenefits(open ? clientId : null);
   const { data: members = [] } = useQuery({
     queryKey: ["checkout-members", businessId],
     enabled: Boolean(open && businessId),
@@ -359,6 +377,37 @@ export function CheckoutScreen({
     });
   }
 
+  function addExtra(description: string, price: number, extra: LineExtra) {
+    setLines((current) => [
+      ...current,
+      {
+        key: lineKey(),
+        serviceId: null,
+        productId: null,
+        extra,
+        description,
+        price,
+        quantity: 1,
+        durationMinutes: null,
+        teamMemberId: members[0]?.id ?? null,
+        appointmentItemId: null,
+      },
+    ]);
+  }
+
+  /** Sessions the client has left for a service, minus ones already used in this cart. */
+  function sessionsLeftFor(serviceId: string | null) {
+    if (!serviceId || !benefits) return null;
+    const item = benefits.sessions.find(
+      (s) =>
+        s.service_id === serviceId &&
+        s.left > lines.filter((l) => l.extra?.kind === "package_session" && l.extra.clientPackageItemId === s.id).length,
+    );
+    if (!item) return null;
+    const used = lines.filter((l) => l.extra?.kind === "package_session" && l.extra.clientPackageItemId === item.id).length;
+    return { item, left: item.left - used };
+  }
+
   function addAppointment(appointment: SellableAppointment) {
     if (appointmentId && appointmentId !== appointment.id) {
       toast.error("A sale can include one appointment. Complete this sale first.");
@@ -393,6 +442,10 @@ export function CheckoutScreen({
     mutationFn: async (mode: "draft" | "completed") => {
       if (!businessId) throw new Error("No business");
       if (!lines.length) throw new Error("Your cart is empty");
+      const needsClient = lines.some((l) => l.extra?.kind === "package" || l.extra?.kind === "membership");
+      if (needsClient && !clientId) throw new Error("Add a client to sell packages and memberships");
+      const hasExtras = lines.some((l) => l.extra) || payments.some((p) => p.gift);
+      if (mode === "draft" && hasExtras) throw new Error("Complete this sale now: gift cards, packages and memberships can't be saved as unpaid");
       const { data: auth } = await supabase.auth.getSession();
       const method: Method =
         payments.length === 0
@@ -447,6 +500,18 @@ export function CheckoutScreen({
         })),
       );
       if (itemsError) throw itemsError;
+      if (mode === "completed") {
+        const codes = await finalizeExtras({
+          saleId: id!,
+          businessId,
+          clientId,
+          lines,
+          giftPayments: payments.filter((p) => p.gift).map((p) => ({ ...p.gift!, amount: p.amount })),
+          packages: sellables.packages,
+          memberships: sellables.memberships,
+        });
+        setIssuedCodes(codes);
+      }
       if (mode === "completed" && appointmentId) {
         const { error } = await supabase
           .from("appointments")
@@ -520,9 +585,20 @@ export function CheckoutScreen({
         <p className="mt-2 text-body text-muted-foreground">
           {money(toPay)} paid
           {payments.length
-            ? ` by ${payments.map((payment) => METHOD_LABEL[payment.method]).join(" + ")}`
+            ? ` by ${payments.map((payment) => (payment.gift ? `gift card ${payment.gift.code}` : METHOD_LABEL[payment.method])).join(" + ")}`
             : ""}
         </p>
+        {issuedCodes.length ? (
+          <div className="mt-6 rounded-xl bg-secondary px-6 py-4">
+            <p className="text-body font-semibold">Gift card code{issuedCodes.length > 1 ? "s" : ""}</p>
+            {issuedCodes.map((code) => (
+              <p key={code} className="mt-1 font-mono text-title font-semibold tracking-widest">
+                {code}
+              </p>
+            ))}
+            <p className="mt-1 text-caption text-muted-foreground">Give this code to the client. It's also in Sales → Gift cards sold.</p>
+          </div>
+        ) : null}
         <button
           type="button"
           onClick={onClose}
@@ -550,7 +626,11 @@ export function CheckoutScreen({
             ? "Services"
             : browse === "products"
               ? "Products"
-              : browse === "appointments"
+              : browse === "packages"
+                ? "Packages"
+                : browse === "memberships"
+                  ? "Memberships"
+                  : browse === "appointments"
               ? "Appointments"
               : "Add to cart"}
         </h1>
@@ -595,6 +675,52 @@ export function CheckoutScreen({
                 </button>
               ))
             )}
+          </div>
+        ) : browse === "packages" || browse === "memberships" ? (
+          <div className="mt-6 space-y-1">
+            {browse === "packages"
+              ? sellables.packages
+                  .filter((pkg) => !term || pkg.name.toLowerCase().includes(term))
+                  .map((pkg) => (
+                    <button
+                      key={pkg.id}
+                      type="button"
+                      onClick={() => addExtra(pkg.name, Number(pkg.price), { kind: "package", packageId: pkg.id })}
+                      className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left hover:bg-secondary"
+                    >
+                      <span>
+                        <span className="block text-body">{pkg.name}</span>
+                        <span className="block text-caption text-muted-foreground">
+                          {pkg.package_items.map((i) => `${i.sessions}× ${i.services?.name ?? "service"}`).join(", ")}
+                        </span>
+                      </span>
+                      <span className="text-body">{money(Number(pkg.price))}</span>
+                    </button>
+                  ))
+              : sellables.memberships
+                  .filter((m) => !term || m.name.toLowerCase().includes(term))
+                  .map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => addExtra(m.name, Number(m.price), { kind: "membership", membershipId: m.id })}
+                      className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left hover:bg-secondary"
+                    >
+                      <span>
+                        <span className="block text-body">{m.name}</span>
+                        <span className="block text-caption text-muted-foreground">
+                          {Number(m.discount_percent)}% off services for {m.duration_days} days
+                        </span>
+                      </span>
+                      <span className="text-body">{money(Number(m.price))}</span>
+                    </button>
+                  ))}
+            {(browse === "packages" ? sellables.packages : sellables.memberships).length === 0 ? (
+              <p className="py-6 text-center text-muted-foreground">
+                None set up yet. Add them in Catalog → {browse === "packages" ? "Packages" : "Memberships"}.
+              </p>
+            ) : null}
+            <p className="pt-3 text-caption text-muted-foreground">Add a client to the sale: {browse} are saved to their profile.</p>
           </div>
         ) : browse === "products" ? (
           <div className="mt-6 space-y-1">
@@ -678,6 +804,7 @@ export function CheckoutScreen({
                   ["services", "Services", ClipboardText],
                   ["products", "Products", Package],
                   ["packages", "Packages", Stack],
+                  ["memberships", "Memberships", Crown],
                   ["gift-cards", "Gift cards", Gift],
                 ] as const
               ).map(([key, label, Icon]) => (
@@ -685,8 +812,8 @@ export function CheckoutScreen({
                   key={key}
                   type="button"
                   onClick={() => {
-                    if (key === "appointments" || key === "services" || key === "products") setBrowse(key);
-                    else toast(`${label} arrive with the Catalog tab`);
+                    if (key === "gift-cards") setGiftSellOpen(true);
+                    else setBrowse(key);
                   }}
                   className="flex h-24 flex-col justify-between rounded-xl border border-border p-4 text-left hover:bg-secondary"
                 >
@@ -803,7 +930,7 @@ export function CheckoutScreen({
               type="button"
               disabled={leftToPay <= 0}
               onClick={() => {
-                if (key === "gift") toast("Gift cards arrive with the Catalog tab");
+                if (key === "gift") setRedeemOpen(true);
                 else if (key === "split") {
                   setSplitMode(true);
                   toast("Split payment: add each part with Cash, Card or Other");
@@ -830,7 +957,7 @@ export function CheckoutScreen({
                 key={payment.key}
                 className="flex items-center justify-between border-b border-border py-3 text-body"
               >
-                <span>{METHOD_LABEL[payment.method]}</span>
+                <span>{payment.gift ? `Gift card ${payment.gift.code}` : METHOD_LABEL[payment.method]}</span>
                 <span className="flex items-center gap-3">
                   {money(payment.amount)}
                   <button
@@ -1021,6 +1148,24 @@ export function CheckoutScreen({
                       {line.description}
                       {line.quantity > 1 ? ` × ${line.quantity}` : ""}
                     </p>
+                    {step !== "done" && line.price > 0 && !line.extra && sessionsLeftFor(line.serviceId) ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const found = sessionsLeftFor(line.serviceId)!;
+                          setLines((current) =>
+                            current.map((entry) =>
+                              entry.key === line.key
+                                ? { ...entry, price: 0, quantity: 1, description: `${entry.description} (package)`, extra: { kind: "package_session", clientPackageItemId: found.item.id } }
+                                : entry,
+                            ),
+                          );
+                        }}
+                        className="mt-1 rounded-full bg-accent px-2 py-0.5 text-caption font-semibold text-primary hover:bg-accent/70"
+                      >
+                        Use package session ({sessionsLeftFor(line.serviceId)!.left} left)
+                      </button>
+                    ) : null}
                     <p className="truncate text-body text-muted-foreground">
                       {[
                         line.durationMinutes ? `${line.durationMinutes}min` : null,
@@ -1058,6 +1203,26 @@ export function CheckoutScreen({
                 </div>
               ))
             )}
+            {benefits?.membership && lines.length && (step === "cart" || step === "tip") && discount === 0 ? (
+              <button
+                type="button"
+                onClick={() => {
+                  const services = lines.filter((l) => l.serviceId).reduce((sum, l) => sum + l.price * l.quantity, 0);
+                  const amount = Math.round(services * benefits.membership!.discount_percent) / 100;
+                  if (amount > 0) {
+                    setDiscount(amount);
+                    toast.success(`${benefits.membership!.name}: ${benefits.membership!.discount_percent}% off services applied`);
+                  } else toast("There are no services in the cart to discount");
+                }}
+                className="mt-2 flex w-full items-center gap-3 rounded-xl bg-accent px-4 py-3 text-left text-body"
+              >
+                <Crown size={20} className="text-primary" />
+                <span className="flex-1">
+                  <span className="block font-semibold">{benefits.membership.name}</span>
+                  <span className="block text-caption text-muted-foreground">Apply {benefits.membership.discount_percent}% off services</span>
+                </span>
+              </button>
+            ) : null}
             {lines.length && step !== "cart" && step !== "done" ? (
               <button
                 type="button"
@@ -1185,6 +1350,21 @@ export function CheckoutScreen({
       </aside>
 
       {/* Amount keypad (Cash / Card / Other) */}
+      <GiftCardSellDialog
+        open={giftSellOpen}
+        currency={currency}
+        onClose={() => setGiftSellOpen(false)}
+        onAdd={(value, extra) => addExtra(`Gift card${extra.recipientName ? ` for ${extra.recipientName}` : ""}`, value, extra)}
+      />
+      <RedeemGiftDialog
+        open={redeemOpen}
+        businessId={businessId}
+        maxAmount={leftToPay}
+        usedCardIds={payments.filter((p) => p.gift).map((p) => p.gift!.giftCardId)}
+        money={money}
+        onClose={() => setRedeemOpen(false)}
+        onRedeem={(amount, gift) => setPayments((current) => [...current, { key: lineKey(), method: "other", amount, gift }])}
+      />
       {amountModal ? (
         <AmountModal
           method={amountModal}

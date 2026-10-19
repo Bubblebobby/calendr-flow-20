@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { CatalogPackages } from "@/components/catalog/catalog-extra-pages";
+import { MembershipsPage, PackagesPage } from "@/components/sales/prepaid-pages";
 import { StockOrdersPage, StocktakesPage, SuppliersPage } from "@/components/catalog/inventory-pages";
 import { ProductsPage } from "@/components/catalog/products-pages";
 import { ServiceMenu } from "@/components/catalog/service-menu";
 
-const TABS = ["services", "packages", "products", "stocktakes", "orders", "suppliers"] as const;
+const TABS = ["services", "packages", "memberships", "products", "stocktakes", "orders", "suppliers"] as const;
 type CatalogTab = (typeof TABS)[number];
 
 export const Route = createFileRoute("/_authenticated/catalog")({
@@ -33,7 +33,9 @@ function CatalogPage() {
     <div className={`min-h-full w-full ${surface}`}>
       <div className="mx-auto w-full max-w-[1088px] px-8 pb-10 pt-8">
         {tab === "packages" ? (
-          <CatalogPackages />
+          <PackagesPage />
+        ) : tab === "memberships" ? (
+          <MembershipsPage />
         ) : tab === "products" ? (
           <ProductsPage />
         ) : tab === "stocktakes" ? (

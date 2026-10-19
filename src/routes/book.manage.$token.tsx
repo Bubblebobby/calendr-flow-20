@@ -31,7 +31,15 @@ type Manage = {
     start: string | null;
     end: string | null;
     client_first_name: string | null;
-    items: { service: string | null; duration: number | null; price: number | null; team_member_id: string; team_member: string | null; start: string; end: string }[];
+    items: {
+      service: string | null;
+      duration: number | null;
+      price: number | null;
+      team_member_id: string;
+      team_member: string | null;
+      start: string;
+      end: string;
+    }[];
   };
   business: {
     name: string;
@@ -74,7 +82,9 @@ function ManageBookingPage() {
   if (!valid || !data.data) {
     return (
       <Shell>
-        <p className="text-title font-semibold text-foreground">We couldn&apos;t find this booking</p>
+        <p className="text-title font-semibold text-foreground">
+          We couldn&apos;t find this booking
+        </p>
         <p className="mt-2">Check the link, or contact the business directly.</p>
       </Shell>
     );
@@ -83,7 +93,11 @@ function ManageBookingPage() {
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
-  return <div className="flex min-h-screen flex-col items-center justify-center bg-surface px-6 text-center text-body text-muted-foreground">{children}</div>;
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-surface px-6 text-center text-body text-muted-foreground">
+      {children}
+    </div>
+  );
 }
 
 function ManageView({ token, data }: { token: string; data: Manage }) {
@@ -99,7 +113,10 @@ function ManageView({ token, data }: { token: string; data: Manage }) {
     new Intl.DateTimeFormat("en-GB", { ...options, timeZone: tz }).format(new Date(iso));
   const money = (n: number) => formatMoney(n, business.currency, business.country);
   const total = appointment.items.reduce((s, i) => s + Number(i.price ?? 0), 0);
-  const duration = appointment.items.reduce((s, i) => s + Math.round((new Date(i.end).getTime() - new Date(i.start).getTime()) / 60000), 0);
+  const duration = appointment.items.reduce(
+    (s, i) => s + Math.round((new Date(i.end).getTime() - new Date(i.start).getTime()) / 60000),
+    0,
+  );
   const changeable =
     (appointment.status === "booked" || appointment.status === "confirmed") &&
     appointment.start !== null &&
@@ -113,7 +130,10 @@ function ManageView({ token, data }: { token: string; data: Manage }) {
 
   const cancel = useMutation({
     mutationFn: async () => {
-      const { error: e } = await supabase.rpc("cancel_booking", { p_token: token, p_reason: reason || null });
+      const { error: e } = await supabase.rpc("cancel_booking", {
+        p_token: token,
+        p_reason: reason || null,
+      });
       if (e) throw e;
     },
     onSuccess: () => {
@@ -140,19 +160,27 @@ function ManageView({ token, data }: { token: string; data: Manage }) {
         {done ? (
           <div className="flex items-center gap-3 rounded-xl bg-[#e6f6ea] px-5 py-4 text-body text-[#1f6b33]">
             <CheckCircle size={24} weight="fill" />
-            {done === "cancelled" ? "Your booking has been cancelled." : "Your booking has been moved."}
+            {done === "cancelled"
+              ? "Your booking has been cancelled."
+              : "Your booking has been moved."}
           </div>
         ) : null}
 
         <div className="rounded-2xl bg-card p-6 shadow-[inset_0_0_0_1px_var(--color-border)] sm:p-8">
-          <p className="text-caption font-semibold uppercase tracking-wide text-muted-foreground">{business.name}</p>
+          <p className="text-caption font-semibold uppercase tracking-wide text-muted-foreground">
+            {business.name}
+          </p>
           <h1 className="mt-2 text-display font-semibold">
-            {appointment.client_first_name ? `${appointment.client_first_name}, your booking` : "Your booking"}
+            {appointment.client_first_name
+              ? `${appointment.client_first_name}, your booking`
+              : "Your booking"}
           </h1>
           <span
             className={cn(
               "mt-3 inline-flex rounded-full px-3 py-1 text-caption font-semibold",
-              appointment.status === "cancelled" || appointment.status === "no_show" ? "bg-[#fdecef] text-destructive" : "bg-accent text-primary",
+              appointment.status === "cancelled" || appointment.status === "no_show"
+                ? "bg-[#fdecef] text-destructive"
+                : "bg-accent text-primary",
             )}
           >
             {statusLabel[appointment.status] ?? appointment.status}
@@ -162,10 +190,18 @@ function ManageView({ token, data }: { token: string; data: Manage }) {
             <p className="mt-5 flex items-start gap-3 text-body">
               <CalendarBlank size={22} className="mt-0.5 shrink-0 text-muted-foreground" />
               <span>
-                <span className="block font-semibold">{fmt(appointment.start, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</span>
+                <span className="block font-semibold">
+                  {fmt(appointment.start, {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </span>
                 <span className="block text-muted-foreground">
-                  {fmt(appointment.start, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" })}–
-                  {fmt(appointment.end!, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" })} · {formatDuration(duration)}
+                  {fmt(appointment.start, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" })}
+                  –{fmt(appointment.end!, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" })}{" "}
+                  · {formatDuration(duration)}
                 </span>
               </span>
             </p>
@@ -173,7 +209,9 @@ function ManageView({ token, data }: { token: string; data: Manage }) {
           {business.location?.address ? (
             <p className="mt-3 flex items-start gap-3 text-body">
               <MapPin size={22} className="mt-0.5 shrink-0 text-muted-foreground" />
-              <span>{[business.location.address, business.location.city].filter(Boolean).join(", ")}</span>
+              <span>
+                {[business.location.address, business.location.city].filter(Boolean).join(", ")}
+              </span>
             </p>
           ) : null}
 
@@ -203,25 +241,53 @@ function ManageView({ token, data }: { token: string; data: Manage }) {
           <div className="rounded-2xl bg-card p-6 shadow-[inset_0_0_0_1px_var(--color-border)]">
             <p className="text-body font-semibold">Cancellation policy</p>
             <p className="mt-1 text-body text-muted-foreground">{policySummary(policy)}</p>
-            {policy.text ? <p className="mt-2 whitespace-pre-line text-body text-muted-foreground">{policy.text}</p> : null}
+            {policy.text ? (
+              <p className="mt-2 whitespace-pre-line text-body text-muted-foreground">
+                {policy.text}
+              </p>
+            ) : null}
             {changeable && (policy.allow_reschedule || policy.allow_cancel) ? (
               <div className="mt-5 flex flex-wrap gap-2">
                 {policy.allow_reschedule ? (
-                  <button type="button" onClick={() => { setError(null); setMode("reschedule"); }} className={cn(pillButton, "bg-ink text-ink-foreground hover:bg-ink/90")}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setError(null);
+                      setMode("reschedule");
+                    }}
+                    className={cn(pillButton, "bg-ink text-ink-foreground hover:bg-ink/90")}
+                  >
                     Reschedule
                   </button>
                 ) : null}
                 {policy.allow_cancel ? (
-                  <button type="button" onClick={() => { setError(null); setMode("cancel"); }} className={cn(pillButton, "border border-input bg-card text-destructive hover:bg-secondary")}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setError(null);
+                      setMode("cancel");
+                    }}
+                    className={cn(
+                      pillButton,
+                      "border border-input bg-card text-destructive hover:bg-secondary",
+                    )}
+                  >
                     Cancel booking
                   </button>
                 ) : null}
               </div>
             ) : appointment.status === "booked" || appointment.status === "confirmed" ? (
-              <p className="mt-4 text-body text-muted-foreground">It&apos;s too close to your appointment to change it online. Please contact {business.name}.</p>
+              <p className="mt-4 text-body text-muted-foreground">
+                It&apos;s too close to your appointment to change it online. Please contact{" "}
+                {business.name}.
+              </p>
             ) : null}
-            {business.slug && (appointment.status === "cancelled" || appointment.status === "completed") ? (
-              <a href={`/book/${business.slug}`} className={cn(pillButton, "mt-5 bg-ink text-ink-foreground hover:bg-ink/90")}>
+            {business.slug &&
+            (appointment.status === "cancelled" || appointment.status === "completed") ? (
+              <a
+                href={`/book/${business.slug}`}
+                className={cn(pillButton, "mt-5 bg-ink text-ink-foreground hover:bg-ink/90")}
+              >
                 Book again
               </a>
             ) : null}
@@ -233,13 +299,31 @@ function ManageView({ token, data }: { token: string; data: Manage }) {
             </p>
             <label className="mt-4 block text-body font-semibold">
               Reason <span className="font-normal text-muted-foreground">(optional)</span>
-              <textarea rows={3} maxLength={300} value={reason} onChange={(e) => setReason(e.target.value)} className="mt-2 w-full resize-none rounded-[8px] border border-input p-4 text-body font-normal outline-none focus:border-primary focus:ring-2 focus:ring-primary/15" />
+              <textarea
+                rows={3}
+                maxLength={300}
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                className="mt-2 w-full resize-none rounded-[8px] border border-input p-4 text-body font-normal outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+              />
             </label>
             <div className="mt-5 grid grid-cols-2 gap-2">
-              <button type="button" onClick={() => setMode("view")} className={cn(pillButton, "border border-input bg-card hover:bg-secondary")}>
+              <button
+                type="button"
+                onClick={() => setMode("view")}
+                className={cn(pillButton, "border border-input bg-card hover:bg-secondary")}
+              >
                 Keep booking
               </button>
-              <button type="button" disabled={cancel.isPending} onClick={() => cancel.mutate()} className={cn(pillButton, "bg-destructive text-destructive-foreground hover:bg-destructive/90")}>
+              <button
+                type="button"
+                disabled={cancel.isPending}
+                onClick={() => cancel.mutate()}
+                className={cn(
+                  pillButton,
+                  "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+                )}
+              >
                 {cancel.isPending ? "Cancelling…" : "Cancel booking"}
               </button>
             </div>
@@ -304,10 +388,15 @@ function Reschedule({
   const shifts = useQuery({
     queryKey: ["manage-availability", token, day],
     queryFn: async (): Promise<MemberShifts> => {
-      const { data: rows, error } = await supabase.rpc("get_manage_availability", { p_token: token, p_from: day, p_to: day });
+      const { data: rows, error } = await supabase.rpc("get_manage_availability", {
+        p_token: token,
+        p_from: day,
+        p_to: day,
+      });
       if (error) throw error;
       const map: MemberShifts = {};
-      for (const row of rows ?? []) map[row.team_member_id] = row.shifts as unknown as MemberShifts[string];
+      for (const row of rows ?? [])
+        map[row.team_member_id] = row.shifts as unknown as MemberShifts[string];
       return map;
     },
   });
@@ -316,14 +405,26 @@ function Reschedule({
     if (!busy.data || !shifts.data) return [];
     const earliest = new Date(Date.now() + data.policy.notice_hours * 3600000);
     const perMember = members.map((id) =>
-      freeSlots({ day, tz, hours: data.business.hours, busy: busy.data, memberIds: [id], duration, shifts: shifts.data, now: earliest }).map((s) => s.minutes),
+      freeSlots({
+        day,
+        tz,
+        hours: data.business.hours,
+        busy: busy.data,
+        memberIds: [id],
+        duration,
+        shifts: shifts.data,
+        now: earliest,
+      }).map((s) => s.minutes),
     );
     return (perMember[0] ?? []).filter((m) => perMember.every((list) => list.includes(m)));
   }, [busy.data, shifts.data, members, day, tz, data, duration]);
 
   const save = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.rpc("reschedule_booking", { p_token: token, p_start: zonedToUtc(day, slot!, tz).toISOString() });
+      const { error } = await supabase.rpc("reschedule_booking", {
+        p_token: token,
+        p_start: zonedToUtc(day, slot!, tz).toISOString(),
+      });
       if (error) throw error;
     },
     onSuccess: onDone,
@@ -334,14 +435,20 @@ function Reschedule({
     },
   });
 
-  const days = Array.from({ length: 21 }, (_, i) => localDay(tz, i + Math.ceil(data.policy.notice_hours / 24)));
+  const days = Array.from({ length: 21 }, (_, i) =>
+    localDay(tz, i + Math.ceil(data.policy.notice_hours / 24)),
+  );
   const label = (value: string, options: Intl.DateTimeFormatOptions) =>
-    new Intl.DateTimeFormat("en-GB", { ...options, timeZone: "UTC" }).format(new Date(`${value}T12:00:00Z`));
+    new Intl.DateTimeFormat("en-GB", { ...options, timeZone: "UTC" }).format(
+      new Date(`${value}T12:00:00Z`),
+    );
 
   return (
     <div className="rounded-2xl bg-card p-6 shadow-[inset_0_0_0_1px_var(--color-border)]">
       <p className="text-heading font-semibold">Pick a new time</p>
-      <p className="mt-1 text-caption text-muted-foreground">With the same team member{members.length > 1 ? "s" : ""}.</p>
+      <p className="mt-1 text-caption text-muted-foreground">
+        With the same team member{members.length > 1 ? "s" : ""}.
+      </p>
       <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
         {days.map((value) => (
           <button
@@ -353,7 +460,9 @@ function Reschedule({
             }}
             className={cn(
               "flex w-14 shrink-0 flex-col items-center gap-0.5 rounded-xl py-2 transition-colors",
-              value === day ? "bg-primary text-primary-foreground" : "shadow-[inset_0_0_0_1px_var(--color-border)] hover:bg-secondary",
+              value === day
+                ? "bg-primary text-primary-foreground"
+                : "shadow-[inset_0_0_0_1px_var(--color-border)] hover:bg-secondary",
             )}
           >
             <span className="text-caption">{label(value, { weekday: "short" })}</span>
@@ -364,7 +473,10 @@ function Reschedule({
       {busy.isLoading || shifts.isLoading ? (
         <p className="mt-4 text-body text-muted-foreground">Checking availability…</p>
       ) : slots.length === 0 ? (
-        <p className="mt-4 text-body text-muted-foreground">No times available on {label(day, { weekday: "long", day: "numeric", month: "long" })}. Try another day.</p>
+        <p className="mt-4 text-body text-muted-foreground">
+          No times available on {label(day, { weekday: "long", day: "numeric", month: "long" })}.
+          Try another day.
+        </p>
       ) : (
         <div className="mt-4 grid grid-cols-4 gap-2">
           {slots.map((m) => (
@@ -372,7 +484,12 @@ function Reschedule({
               key={m}
               type="button"
               onClick={() => setSlot(m)}
-              className={cn("h-11 rounded-xl text-body font-medium", slot === m ? "bg-primary text-primary-foreground" : "shadow-[inset_0_0_0_1px_var(--color-border)] hover:bg-secondary")}
+              className={cn(
+                "h-11 rounded-xl text-body font-medium",
+                slot === m
+                  ? "bg-primary text-primary-foreground"
+                  : "shadow-[inset_0_0_0_1px_var(--color-border)] hover:bg-secondary",
+              )}
             >
               {formatClock(m)}
             </button>
@@ -380,10 +497,19 @@ function Reschedule({
         </div>
       )}
       <div className="mt-5 grid grid-cols-2 gap-2">
-        <button type="button" onClick={onCancel} className={cn(pillButton, "border border-input bg-card hover:bg-secondary")}>
+        <button
+          type="button"
+          onClick={onCancel}
+          className={cn(pillButton, "border border-input bg-card hover:bg-secondary")}
+        >
           Back
         </button>
-        <button type="button" disabled={slot === null || save.isPending} onClick={() => save.mutate()} className={cn(pillButton, "bg-ink text-ink-foreground hover:bg-ink/90")}>
+        <button
+          type="button"
+          disabled={slot === null || save.isPending}
+          onClick={() => save.mutate()}
+          className={cn(pillButton, "bg-ink text-ink-foreground hover:bg-ink/90")}
+        >
           {save.isPending ? "Saving…" : "Confirm new time"}
         </button>
       </div>

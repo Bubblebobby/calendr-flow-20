@@ -14,6 +14,309 @@ export type Database = {
   }
   public: {
     Tables: {
+      gift_cards: {
+        Row: {
+          balance: number
+          business_id: string
+          client_id: string | null
+          code: string
+          created_at: string
+          expires_on: string | null
+          id: string
+          initial_value: number
+          message: string | null
+          recipient_name: string | null
+          sale_id: string | null
+          status: string
+        }
+        Insert: {
+          balance?: number
+          business_id: string
+          client_id?: string | null
+          code: string
+          created_at?: string
+          expires_on?: string | null
+          id?: string
+          initial_value: number
+          message?: string | null
+          recipient_name?: string | null
+          sale_id?: string | null
+          status?: string
+        }
+        Update: {
+          balance?: number
+          business_id?: string
+          client_id?: string | null
+          code?: string
+          created_at?: string
+          expires_on?: string | null
+          id?: string
+          initial_value?: number
+          message?: string | null
+          recipient_name?: string | null
+          sale_id?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
+      gift_card_redemptions: {
+        Row: {
+          amount: number
+          business_id: string
+          created_at: string
+          gift_card_id: string
+          id: string
+          sale_id: string | null
+        }
+        Insert: {
+          amount: number
+          business_id: string
+          created_at?: string
+          gift_card_id: string
+          id?: string
+          sale_id?: string | null
+        }
+        Update: {
+          amount?: number
+          business_id?: string
+          created_at?: string
+          gift_card_id?: string
+          id?: string
+          sale_id?: string | null
+        }
+        Relationships: []
+      }
+      packages: {
+        Row: {
+          business_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+          valid_days: number | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          price: number
+          valid_days?: number | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+          valid_days?: number | null
+        }
+        Relationships: []
+      }
+      package_items: {
+        Row: {
+          business_id: string
+          id: string
+          package_id: string
+          service_id: string
+          sessions: number
+        }
+        Insert: {
+          business_id: string
+          id?: string
+          package_id: string
+          service_id: string
+          sessions: number
+        }
+        Update: {
+          business_id?: string
+          id?: string
+          package_id?: string
+          service_id?: string
+          sessions?: number
+        }
+        Relationships: []
+      }
+      client_packages: {
+        Row: {
+          business_id: string
+          client_id: string
+          created_at: string
+          expires_on: string | null
+          id: string
+          name: string
+          package_id: string | null
+          price: number
+          sale_id: string | null
+        }
+        Insert: {
+          business_id: string
+          client_id: string
+          created_at?: string
+          expires_on?: string | null
+          id?: string
+          name: string
+          package_id?: string | null
+          price?: number
+          sale_id?: string | null
+        }
+        Update: {
+          business_id?: string
+          client_id?: string
+          created_at?: string
+          expires_on?: string | null
+          id?: string
+          name?: string
+          package_id?: string | null
+          price?: number
+          sale_id?: string | null
+        }
+        Relationships: []
+      }
+      client_package_items: {
+        Row: {
+          business_id: string
+          client_package_id: string
+          id: string
+          service_id: string | null
+          service_name: string
+          sessions_total: number
+          sessions_used: number
+        }
+        Insert: {
+          business_id: string
+          client_package_id: string
+          id?: string
+          service_id?: string | null
+          service_name: string
+          sessions_total: number
+          sessions_used?: number
+        }
+        Update: {
+          business_id?: string
+          client_package_id?: string
+          id?: string
+          service_id?: string | null
+          service_name?: string
+          sessions_total?: number
+          sessions_used?: number
+        }
+        Relationships: []
+      }
+      package_redemptions: {
+        Row: {
+          business_id: string
+          client_package_item_id: string
+          created_at: string
+          id: string
+          sale_id: string | null
+          sessions: number
+        }
+        Insert: {
+          business_id: string
+          client_package_item_id: string
+          created_at?: string
+          id?: string
+          sale_id?: string | null
+          sessions?: number
+        }
+        Update: {
+          business_id?: string
+          client_package_item_id?: string
+          created_at?: string
+          id?: string
+          sale_id?: string | null
+          sessions?: number
+        }
+        Relationships: []
+      }
+      memberships: {
+        Row: {
+          business_id: string
+          created_at: string
+          description: string | null
+          discount_percent: number
+          duration_days: number
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          description?: string | null
+          discount_percent: number
+          duration_days: number
+          id?: string
+          is_active?: boolean
+          name: string
+          price: number
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          description?: string | null
+          discount_percent?: number
+          duration_days?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+        }
+        Relationships: []
+      }
+      client_memberships: {
+        Row: {
+          business_id: string
+          client_id: string
+          created_at: string
+          discount_percent: number
+          ends_on: string
+          id: string
+          membership_id: string | null
+          name: string
+          price: number
+          sale_id: string | null
+          starts_on: string
+          status: string
+        }
+        Insert: {
+          business_id: string
+          client_id: string
+          created_at?: string
+          discount_percent: number
+          ends_on: string
+          id?: string
+          membership_id?: string | null
+          name: string
+          price?: number
+          sale_id?: string | null
+          starts_on?: string
+          status?: string
+        }
+        Update: {
+          business_id?: string
+          client_id?: string
+          created_at?: string
+          discount_percent?: number
+          ends_on?: string
+          id?: string
+          membership_id?: string | null
+          name?: string
+          price?: number
+          sale_id?: string | null
+          starts_on?: string
+          status?: string
+        }
+        Relationships: []
+      }
       product_brands: {
         Row: {
           business_id: string
@@ -1693,6 +1996,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      new_gift_card_code: {
+        Args: { p_business: string }
+        Returns: string
+      }
       complete_stocktake: {
         Args: { p_stocktake: string }
         Returns: undefined

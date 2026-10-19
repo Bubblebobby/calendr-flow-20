@@ -83,6 +83,7 @@ export const navItems: NavItem[] = [
         children: [
           { title: "Service menu", to: "/catalog", search: { tab: "services" } },
           { title: "Packages", to: "/catalog", search: { tab: "packages" } },
+          { title: "Memberships", to: "/catalog", search: { tab: "memberships" } },
           { title: "Products", to: "/catalog", search: { tab: "products" } },
         ],
       },
