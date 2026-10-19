@@ -25,6 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { CurrentBusiness } from "@/lib/use-business";
 import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { describeRule, repeatDates, type RepeatRule } from "@/lib/repeat-rule";
 import { ClientForm } from "@/components/clients/client-form";
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -364,7 +365,7 @@ export function AppointmentPanel({
       const { data, error } = await supabase
         .from("appointments")
         .select(
-          "id, status, notes, is_walk_in, client_id, created_at, created_by, updated_at, clients(id, first_name, last_name, email, phone, created_at), appointment_items(id, service_id, team_member_id, start_time, end_time, price)",
+          "id, status, notes, is_walk_in, client_id, created_at, created_by, updated_at, series_id, repeat_rule, clients(id, first_name, last_name, email, phone, created_at), appointment_items(id, service_id, team_member_id, start_time, end_time, price)",
         )
         .eq("id", appointmentId!)
         .single();
@@ -399,6 +400,8 @@ export function AppointmentPanel({
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteDraft, setNoteDraft] = useState("");
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [repeat, setRepeat] = useState<RepeatRule | null>(null);
+  const [repeatDraft, setRepeatDraft] = useState<RepeatRule>({ unit: "week", every: 1, count: 6 });
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [conflict, setConflict] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<Line | null>(null);
@@ -414,6 +417,7 @@ export function AppointmentPanel({
   useEffect(() => {
     setClientPickerOpen(false);
     setClientQuery("");
+    setRepeat(null);
     setView({ name: "main" });
     setServiceQuery("");
     setToPayOpen(false);
@@ -623,6 +627,54 @@ export function AppointmentPanel({
     setView({ name: "main" });
   }
 
+  /** Copies a new appointment onto each repeat date; clashes are skipped and reported. */
+  async function createRepeats(
+    firstId: string,
+    items: Array<{ business_id: string; service_id: string; team_member_id: string; start_time: string; end_time: string; price: number; sort_order: number }>,
+  ) {
+    if (!repeat || !businessId) return;
+    const rule = repeat;
+    await supabase.from("appointments").update({ series_id: firstId, repeat_rule: rule }).eq("id", firstId);
+    const dates = repeatDates(date, rule);
+    let made = 0;
+    const skipped: string[] = [];
+    for (const day of dates) {
+      const { data: copy, error } = await supabase
+        .from("appointments")
+        .insert({
+          business_id: businessId,
+          client_id: client?.id ?? null,
+          is_walk_in: !client,
+          status: "booked",
+          notes: notes.trim() || null,
+          created_by: currentUserId ?? null,
+          series_id: firstId,
+          repeat_rule: rule,
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      const shift = (iso: string) => {
+        const original = new Date(iso);
+        const moved = new Date(day);
+        moved.setHours(original.getHours(), original.getMinutes(), 0, 0);
+        return moved.toISOString();
+      };
+      const { error: itemsError } = await supabase
+        .from("appointment_items")
+        .insert(items.map((item) => ({ ...item, appointment_id: copy.id, start_time: shift(item.start_time), end_time: shift(item.end_time) })));
+      if (itemsError) {
+        await supabase.from("appointments").delete().eq("id", copy.id);
+        skipped.push(new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short" }).format(day));
+      } else made += 1;
+    }
+    if (skipped.length) {
+      toast.warning(`Created ${made} repeat${made === 1 ? "" : "s"}. Skipped ${skipped.join(", ")}: the team member is already booked then.`);
+    } else if (made) {
+      toast.success(`Created ${made} repeat${made === 1 ? "" : "s"}`);
+    }
+  }
+
   // ── Mutations ──
   const save = useMutation({
     mutationFn: async (): Promise<string> => {
@@ -661,6 +713,7 @@ export function AppointmentPanel({
           await supabase.from("appointments").delete().eq("id", created.id);
           throw itemsError;
         }
+        if (repeat) await createRepeats(created.id, items);
         return created.id;
       }
 
@@ -711,6 +764,45 @@ export function AppointmentPanel({
       }
       toast.error(err.message ?? "Could not save the appointment");
     },
+  });
+
+  const seriesId = (existing as unknown as { series_id?: string | null } | undefined)?.series_id ?? null;
+  // Later appointments in the same repeating series (for "cancel the following ones too").
+  const { data: following = [] } = useQuery({
+    queryKey: ["series-following", seriesId, appointmentId],
+    enabled: Boolean(seriesId && appointmentId && cancelOpen),
+    queryFn: async (): Promise<string[]> => {
+      const { data, error } = await supabase
+        .from("appointments")
+        .select("id, status, appointment_items(start_time)")
+        .eq("series_id", seriesId!)
+        .neq("id", appointmentId!)
+        .in("status", ["booked", "confirmed"]);
+      if (error) throw error;
+      const mine = Math.min(...(existing?.appointment_items ?? []).map((i) => new Date(i.start_time).getTime()));
+      return (data ?? [])
+        .filter((a) => (a.appointment_items as { start_time: string }[]).some((i) => new Date(i.start_time).getTime() > mine))
+        .map((a) => a.id);
+    },
+  });
+
+  const cancelAppointment = useMutation({
+    mutationFn: async ({ reason, includeFollowing }: { reason: string; includeFollowing: boolean }) => {
+      const ids = [appointmentId!, ...(includeFollowing ? following : [])];
+      const { error } = await supabase
+        .from("appointments")
+        .update({ status: "cancelled", cancellation_reason: reason })
+        .in("id", ids);
+      if (error) throw error;
+      return ids.length;
+    },
+    onSuccess: (count) => {
+      refresh();
+      toast.success(count > 1 ? `${count} appointments cancelled` : "Appointment cancelled");
+      setCancelOpen(false);
+      onClose();
+    },
+    onError: (error: unknown) => toast.error((error as Error).message ?? "Could not cancel"),
   });
 
   const setStatus = useMutation({
@@ -805,7 +897,8 @@ export function AppointmentPanel({
   if (!target || minimized) return null;
 
   const showClientColumnWide = clientPickerOpen;
-  const timeLine = `${formatTime(firstStart)} · Doesn't repeat`;
+  const existingRule = (existing as unknown as { repeat_rule?: RepeatRule | null } | undefined)?.repeat_rule ?? null;
+  const timeLine = `${formatTime(firstStart)} · ${describeRule(target?.kind === "new" ? repeat : existingRule)}`;
   const dateTitle = new Intl.DateTimeFormat("en-GB", {
     weekday: "short",
     day: "numeric",
@@ -1096,32 +1189,112 @@ export function AppointmentPanel({
     right = (
       <div className="flex min-h-0 flex-1 flex-col">
         <BackHeader title="Edit repeating options" onBack={() => setView({ name: "main" })} />
-        <div className="min-h-0 flex-1 px-6">
-          <FieldLabel>Frequency</FieldLabel>
-          <select
-            className={fieldClass}
-            defaultValue="none"
-            onChange={(event) => {
-              if (event.target.value !== "none") {
-                toast(
-                  "Repeating appointments need the next database update (see supabase/migrations)",
-                );
-                event.target.value = "none";
-              }
-            }}
-          >
-            <option value="none">Doesn't repeat</option>
-            <option value="day">Every day</option>
-            <option value="week">Every week</option>
-            <option value="month">Every month</option>
-            <option value="custom">Custom</option>
-          </select>
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6">
+          {target?.kind !== "new" ? (
+            <p className="rounded-xl bg-secondary px-4 py-3 text-body text-muted-foreground">
+              {existingRule ? `This appointment is part of a series: ${describeRule(existingRule)}.` : "Repeats can be set when booking a new appointment."}
+            </p>
+          ) : (
+            <>
+              <label className="block">
+                <FieldLabel>Frequency</FieldLabel>
+                <select
+                  className={fieldClass}
+                  value={repeatDraft.every === 1 ? repeatDraft.unit : "custom"}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    if (value === "custom") setRepeatDraft({ ...repeatDraft, every: 2 });
+                    else setRepeatDraft({ ...repeatDraft, unit: value as RepeatRule["unit"], every: 1 });
+                  }}
+                >
+                  <option value="day">Every day</option>
+                  <option value="week">Every week</option>
+                  <option value="month">Every month</option>
+                  <option value="custom">Custom</option>
+                </select>
+              </label>
+              {repeatDraft.every !== 1 ? (
+                <div className="flex items-end gap-2">
+                  <label className="block w-24">
+                    <FieldLabel>Every</FieldLabel>
+                    <input
+                      inputMode="numeric"
+                      className={fieldClass}
+                      value={repeatDraft.every}
+                      onChange={(event) => setRepeatDraft({ ...repeatDraft, every: Math.min(52, Math.max(1, Number(event.target.value.replace(/[^0-9]/g, "")) || 1)) })}
+                    />
+                  </label>
+                  <select className={fieldClass} value={repeatDraft.unit} onChange={(event) => setRepeatDraft({ ...repeatDraft, unit: event.target.value as RepeatRule["unit"] })}>
+                    <option value="day">days</option>
+                    <option value="week">weeks</option>
+                    <option value="month">months</option>
+                  </select>
+                </div>
+              ) : null}
+              <label className="block">
+                <FieldLabel>Ends</FieldLabel>
+                <select
+                  className={fieldClass}
+                  value={repeatDraft.until ? "date" : "count"}
+                  onChange={(event) => {
+                    if (event.target.value === "date") {
+                      const until = new Date(date);
+                      until.setMonth(until.getMonth() + 3);
+                      const { count: _drop, ...rest } = repeatDraft;
+                      setRepeatDraft({ ...rest, until: `${until.getFullYear()}-${String(until.getMonth() + 1).padStart(2, "0")}-${String(until.getDate()).padStart(2, "0")}` });
+                    } else {
+                      const { until: _drop, ...rest } = repeatDraft;
+                      setRepeatDraft({ ...rest, count: 6 });
+                    }
+                  }}
+                >
+                  <option value="count">After a number of appointments</option>
+                  <option value="date">On a date</option>
+                </select>
+              </label>
+              {repeatDraft.until ? (
+                <label className="block">
+                  <FieldLabel>Last date</FieldLabel>
+                  <input type="date" className={fieldClass} value={repeatDraft.until} onChange={(event) => event.target.value && setRepeatDraft({ ...repeatDraft, until: event.target.value })} />
+                </label>
+              ) : (
+                <label className="block">
+                  <FieldLabel>Number of appointments</FieldLabel>
+                  <select className={fieldClass} value={repeatDraft.count ?? 6} onChange={(event) => setRepeatDraft({ ...repeatDraft, count: Number(event.target.value) })}>
+                    {[2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 26, 52].map((n) => (
+                      <option key={n} value={n}>
+                        {n} appointments
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+              <p className="text-caption text-muted-foreground">
+                {describeRule(repeatDraft)} · {repeatDates(date, repeatDraft).length + 1} appointments in total. Any that clash with existing bookings are skipped.
+              </p>
+            </>
+          )}
         </div>
-        <div className="border-t border-border px-6 py-5">
+        <div className="flex gap-2 border-t border-border px-6 py-5">
+          {target?.kind === "new" && repeat ? (
+            <button
+              type="button"
+              onClick={() => {
+                setRepeat(null);
+                setView({ name: "main" });
+              }}
+              className={cn(pill, "flex-1 border border-input bg-card hover:bg-secondary")}
+            >
+              Don&apos;t repeat
+            </button>
+          ) : null}
           <button
             type="button"
-            onClick={() => setView({ name: "main" })}
-            className={cn(pill, "w-full bg-ink text-ink-foreground")}
+            onClick={() => {
+              if (target?.kind === "new") setRepeat(repeatDraft);
+              setView({ name: "main" });
+            }}
+            className={cn(pill, "flex-1 bg-ink text-ink-foreground")}
           >
             Apply changes
           </button>
@@ -1739,16 +1912,10 @@ export function AppointmentPanel({
       {cancelOpen ? (
         <CancelScreen
           total={money(total)}
+          following={following.length}
           onClose={() => setCancelOpen(false)}
-          onConfirm={() =>
-            setStatus.mutate("cancelled", {
-              onSuccess: () => {
-                setCancelOpen(false);
-                onClose();
-              },
-            })
-          }
-          pending={setStatus.isPending}
+          onConfirm={(reason, includeFollowing) => cancelAppointment.mutate({ reason, includeFollowing })}
+          pending={cancelAppointment.isPending}
         />
       ) : null}
 
@@ -1784,16 +1951,19 @@ export function AppointmentPanel({
 
 function CancelScreen({
   total,
+  following,
   pending,
   onClose,
   onConfirm,
 }: {
   total: string;
+  following: number;
   pending: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: (reason: string, includeFollowing: boolean) => void;
 }) {
   const [reason, setReason] = useState(CANCEL_REASONS[0]!);
+  const [includeFollowing, setIncludeFollowing] = useState(false);
   return (
     <div className="fixed inset-0 z-[80] overflow-y-auto bg-card animate-in fade-in-0">
       <div className="mx-auto max-w-[72rem] px-6 py-6 sm:px-10">
@@ -1845,6 +2015,20 @@ function CancelScreen({
                 ))}
               </select>
             </label>
+            {following > 0 ? (
+              <label className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={includeFollowing}
+                  onChange={(event) => setIncludeFollowing(event.target.checked)}
+                  className="mt-1 size-5 accent-[var(--color-primary)]"
+                />
+                <span>
+                  <span className="block text-body">Also cancel the {following} following appointment{following === 1 ? "" : "s"} in this series</span>
+                  <span className="block text-caption text-muted-foreground">Otherwise only this one is cancelled</span>
+                </span>
+              </label>
+            ) : null}
           </div>
           <div className="self-start rounded-2xl border border-border bg-secondary/40 p-8">
             <h2 className="text-xl font-semibold">Cancellation details</h2>
@@ -1856,7 +2040,7 @@ function CancelScreen({
             <button
               type="button"
               disabled={pending}
-              onClick={onConfirm}
+              onClick={() => onConfirm(reason, includeFollowing)}
               className={cn(pill, "mt-6 w-full bg-[#c8273a] text-white hover:bg-[#b01f31]")}
             >
               {pending ? "Cancelling…" : "Cancel appointment"}

@@ -838,6 +838,8 @@ export type Database = {
       }
       appointments: {
         Row: {
+          repeat_rule: Json | null
+          series_id: string | null
           manage_token: string
           cancellation_reason: string | null
           business_id: string
@@ -851,6 +853,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          repeat_rule?: Json | null
+          series_id?: string | null
           manage_token?: string
           cancellation_reason?: string | null
           business_id: string
@@ -864,6 +868,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          repeat_rule?: Json | null
+          series_id?: string | null
           manage_token?: string
           cancellation_reason?: string | null
           business_id?: string

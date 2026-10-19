@@ -368,6 +368,17 @@ export function TimeGrid({
                         if (!picking) onEventClick(appointment);
                       }}
                     >
+                      {appointment.segments
+                        .filter((segment) => segment.type === "processing")
+                        .map((segment) => (
+                          <span
+                            key={segment.start}
+                            aria-hidden
+                            title="Processing time"
+                            className="pointer-events-none absolute inset-x-0 bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.55)_0_4px,transparent_4px_8px)]"
+                            style={{ top: (segment.start / Math.max(1, (end - start))) * height, height: (segment.minutes / Math.max(1, (end - start))) * height }}
+                          />
+                        ))}
                       {compactEvents && roomy ? (
                         <>
                           <span className="block truncate">
