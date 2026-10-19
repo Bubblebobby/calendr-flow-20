@@ -50,7 +50,7 @@ import {
   type TeamSelection,
 } from "./calendar-data";
 
-export type CalendarSearch = { view?: CalendarView; date?: string; team?: string; book?: string };
+export type CalendarSearch = { view?: CalendarView; date?: string; team?: string; book?: string; appointment?: string };
 
 /** What a slot click does while the purple "Select a time" banner is showing. */
 type PickMode =
@@ -76,6 +76,8 @@ export function CalendarPage({
   selection,
   bookClientId = null,
   onBookConsumed,
+  openAppointmentId = null,
+  onAppointmentConsumed,
   onNavigate,
 }: {
   view: CalendarView;
@@ -84,6 +86,9 @@ export function CalendarPage({
   /** "Book now" from a client profile: start picking a time with this client. */
   bookClientId?: string | null;
   onBookConsumed?: () => void;
+  /** Open this appointment (e.g. from a notification): jump to its day and show its panel. */
+  openAppointmentId?: string | null;
+  onAppointmentConsumed?: () => void;
   onNavigate: (next: { view?: CalendarView; date?: Date; team?: TeamSelection }) => void;
 }) {
   const queryClient = useQueryClient();
@@ -183,6 +188,33 @@ export function CalendarPage({
     onBookConsumed?.();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookClientId]);
+
+  useEffect(() => {
+    if (!openAppointmentId) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("appointment_items")
+        .select("start_time")
+        .eq("appointment_id", openAppointmentId)
+        .order("start_time")
+        .limit(1)
+        .maybeSingle();
+      if (cancelled) return;
+      if (data) {
+        onNavigate({ date: new Date(data.start_time) });
+        setPanelMinimized(false);
+        setPanel({ kind: "existing", appointmentId: openAppointmentId });
+      } else {
+        toast.error("That appointment no longer exists");
+      }
+      onAppointmentConsumed?.();
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openAppointmentId]);
 
   useEffect(() => {
     if (!pick) return;

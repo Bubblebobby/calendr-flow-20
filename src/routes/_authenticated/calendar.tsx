@@ -19,6 +19,9 @@ export const Route = createFileRoute("/_authenticated/calendar")({
     }
     if (typeof search["team"] === "string" && search["team"]) result.team = search["team"];
     if (typeof search["book"] === "string" && search["book"]) result.book = search["book"];
+    if (typeof search["appointment"] === "string" && /^[0-9a-f-]{36}$/i.test(search["appointment"])) {
+      result.appointment = search["appointment"];
+    }
     return result;
   },
   head: () => ({
@@ -54,6 +57,17 @@ function CalendarRoute() {
       anchor={anchor}
       selection={selection}
       bookClientId={bookClientId}
+      openAppointmentId={search.appointment ?? null}
+      onAppointmentConsumed={() =>
+        navigate({
+          search: (previous) => {
+            const next: CalendarSearch = { ...previous };
+            delete next.appointment;
+            return next;
+          },
+          replace: true,
+        })
+      }
       onBookConsumed={() =>
         navigate({
           search: (previous) => {

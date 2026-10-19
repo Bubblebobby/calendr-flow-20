@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      notifications: {
+        Row: {
+          body: string | null
+          business_id: string
+          created_at: string
+          id: string
+          kind: string
+          link: string | null
+          read_at: string | null
+          title: string
+        }
+        Insert: {
+          body?: string | null
+          business_id: string
+          created_at?: string
+          id?: string
+          kind: string
+          link?: string | null
+          read_at?: string | null
+          title: string
+        }
+        Update: {
+          body?: string | null
+          business_id?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          link?: string | null
+          read_at?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       deals: {
         Row: {
           applies_to: string
