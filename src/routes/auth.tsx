@@ -7,12 +7,9 @@ import { AuthShell } from "@/components/auth-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { safeNext } from "@/lib/safe-next";
 
 
-function safeNext(value: unknown): string | null {
-  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) return null;
-  return value;
-}
 
 export const Route = createFileRoute("/auth")({
   head: () => ({

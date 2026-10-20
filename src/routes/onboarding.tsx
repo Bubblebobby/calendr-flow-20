@@ -202,17 +202,17 @@ function OnboardingPage() {
       return;
     }
 
-    const { error } = await supabase.from("profiles").upsert(
-      {
-        id: userData.user.id,
+    // The sign-up trigger creates the profile row, so update it (users can't write "id").
+    const { error } = await supabase
+      .from("profiles")
+      .update({
         full_name: `${parsed.data.firstName} ${parsed.data.lastName}`,
         phone: e164,
         country: selected.code,
         timezone: selected.timezone,
         onboarded_at: new Date().toISOString(),
-      },
-      { onConflict: "id" },
-    );
+      })
+      .eq("id", userData.user.id);
     setSaving(false);
     if (error) {
       toast.error(error.message);

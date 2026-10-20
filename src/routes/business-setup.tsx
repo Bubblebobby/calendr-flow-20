@@ -383,7 +383,13 @@ function BusinessSetupPage() {
         return;
       }
       setBusinessId(created.id);
-      await supabase.from("profiles").update({ business_id: created.id }).eq("id", user.id);
+      // business_id can't be written directly; this function checks the caller owns the business.
+      const { error: linkError } = await supabase.rpc("link_my_business", { p_business: created.id });
+      if (linkError) {
+        setSaving(false);
+        toast.error("Could not link your business. Please try again.");
+        return;
+      }
     }
 
     setSaving(false);

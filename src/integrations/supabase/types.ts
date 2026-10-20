@@ -2193,6 +2193,8 @@ export type Database = {
       }
       team_members: {
         Row: {
+          invite_expires_at: string | null
+          access_level: string
           hourly_rate: number | null
           product_commission_percent: number | null
           service_commission_percent: number | null
@@ -2228,6 +2230,8 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          invite_expires_at?: string | null
+          access_level?: string
           hourly_rate?: number | null
           product_commission_percent?: number | null
           service_commission_percent?: number | null
@@ -2262,6 +2266,8 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          invite_expires_at?: string | null
+          access_level?: string
           hourly_rate?: number | null
           product_commission_percent?: number | null
           service_commission_percent?: number | null
@@ -2356,6 +2362,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      link_my_business: {
+        Args: { p_business: string }
+        Returns: undefined
+      }
+      is_business_member: {
+        Args: { p_business: string }
+        Returns: boolean
+      }
+      is_business_admin: {
+        Args: { p_business: string }
+        Returns: boolean
+      }
       link_my_clients: {
         Args: Record<PropertyKey, never>
         Returns: number

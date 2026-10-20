@@ -44,6 +44,8 @@ export type TeamMemberRow = {
   role_id: string | null;
   is_active: boolean;
   created_at: string;
+  /** "admin" can see pay, timesheets and change deals/tax; set by the owner. */
+  access_level?: string;
 };
 
 /** Status feedback: muted = neutral status, amber = pending/warning, green = completed. */
@@ -101,7 +103,7 @@ export function TeamMembersList() {
       const { data, error } = await supabase
         .from("team_members")
         .select(
-          "id, first_name, last_name, initials, avatar_color, email, invite_status, role_id, is_active, created_at",
+          "id, first_name, last_name, initials, avatar_color, email, invite_status, role_id, is_active, created_at, access_level",
         )
         .eq("business_id", businessId!)
         .order("created_at");
@@ -155,6 +157,25 @@ export function TeamMembersList() {
       toast.error("Couldn't revoke access", { description: error.message }),
   });
 
+  const setAccessLevel = useMutation({
+    mutationFn: async ({ member, level }: { member: TeamMemberRow; level: "admin" | "staff" }) => {
+      const { error } = await supabase
+        .from("team_members")
+        .update({ access_level: level })
+        .eq("id", member.id);
+      if (error) throw error;
+    },
+    onSuccess: (_data, { member, level }) => {
+      queryClient.invalidateQueries({ queryKey: ["team-members", businessId] });
+      toast.success(
+        level === "admin"
+          ? `${member.first_name} is now an admin`
+          : `${member.first_name} no longer has admin access`,
+      );
+    },
+    onError: () => toast.error("Couldn't change access"),
+  });
+
   const openInvite = (member: TeamMemberRow | null) => {
     if (member?.email) {
       inviteNow.mutate(member);
@@ -182,21 +203,35 @@ export function TeamMembersList() {
         </h1>
         <div className="flex gap-2">
           <DropdownMenu>
-            <DropdownMenuTrigger className={cn(pillButton, "border border-input bg-card hover:bg-secondary")}>
+            <DropdownMenuTrigger
+              className={cn(pillButton, "border border-input bg-card hover:bg-secondary")}
+            >
               Options <CaretDown size={16} weight="bold" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 rounded-xl p-2">
-              <DropdownMenuItem className="h-10 rounded-[8px] px-3 text-body font-medium" onSelect={() => navigate({ to: "/team", search: { tab: "shifts" } })}>
+              <DropdownMenuItem
+                className="h-10 rounded-[8px] px-3 text-body font-medium"
+                onSelect={() => navigate({ to: "/team", search: { tab: "shifts" } })}
+              >
                 Scheduled shifts
               </DropdownMenuItem>
               <DropdownMenuSeparator className="my-2" />
-              <DropdownMenuLabel className="px-3 text-caption font-semibold text-muted-foreground">Export</DropdownMenuLabel>
-              <DropdownMenuItem className="h-10 rounded-[8px] px-3 text-body font-medium" onSelect={() => exportCsv(members, roleNameById)}>
+              <DropdownMenuLabel className="px-3 text-caption font-semibold text-muted-foreground">
+                Export
+              </DropdownMenuLabel>
+              <DropdownMenuItem
+                className="h-10 rounded-[8px] px-3 text-body font-medium"
+                onSelect={() => exportCsv(members, roleNameById)}
+              >
                 CSV
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <button type="button" className={cn(pillButton, "bg-ink text-ink-foreground hover:bg-ink/90")} onClick={() => navigate({ to: "/team/new" })}>
+          <button
+            type="button"
+            className={cn(pillButton, "bg-ink text-ink-foreground hover:bg-ink/90")}
+            onClick={() => navigate({ to: "/team/new" })}
+          >
             Add
           </button>
         </div>
@@ -227,7 +262,10 @@ export function TeamMembersList() {
             )}
 
             {filtered.map((member) => (
-              <tr key={member.id} className="border-b border-border transition-colors hover:bg-muted/50">
+              <tr
+                key={member.id}
+                className="border-b border-border transition-colors hover:bg-muted/50"
+              >
                 <td className="px-4 py-4">
                   <div className="flex items-center gap-4">
                     <span
@@ -247,6 +285,11 @@ export function TeamMembersList() {
                 <td className="px-4 py-4">
                   <div className="flex items-center gap-3">
                     <StatusBadge status={member.invite_status} />
+                    {member.access_level === "admin" ? (
+                      <span className="inline-flex items-center rounded-full border border-border px-3 py-1 text-caption font-semibold">
+                        Admin
+                      </span>
+                    ) : null}
                     {member.invite_status === "not_invited" && (
                       <button
                         type="button"
@@ -279,7 +322,9 @@ export function TeamMembersList() {
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="px-3 py-2 text-body font-medium"
-                        onClick={() => navigate({ to: "/calendar", search: { team: member.id } as never })}
+                        onClick={() =>
+                          navigate({ to: "/calendar", search: { team: member.id } as never })
+                        }
                       >
                         View calendar
                       </DropdownMenuItem>
@@ -307,6 +352,21 @@ export function TeamMembersList() {
                       )}
                       {member.invite_status === "active" && (
                         <DropdownMenuItem
+                          className="px-3 py-2 text-body font-medium"
+                          onClick={() =>
+                            setAccessLevel.mutate({
+                              member,
+                              level: member.access_level === "admin" ? "staff" : "admin",
+                            })
+                          }
+                        >
+                          {member.access_level === "admin"
+                            ? "Remove admin access"
+                            : "Give admin access"}
+                        </DropdownMenuItem>
+                      )}
+                      {member.invite_status === "active" && (
+                        <DropdownMenuItem
                           className="px-3 py-2 text-body font-medium text-destructive focus:text-destructive"
                           onClick={() => setRevokeTarget(member)}
                         >
@@ -330,8 +390,8 @@ export function TeamMembersList() {
           <AlertDialogHeader>
             <AlertDialogTitle>Revoke access?</AlertDialogTitle>
             <AlertDialogDescription>
-              {revokeTarget ? memberName(revokeTarget) : "This person"} will immediately lose
-              access to the dashboard. Their past records stay intact.
+              {revokeTarget ? memberName(revokeTarget) : "This person"} will immediately lose access
+              to the dashboard. Their past records stay intact.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -371,7 +431,9 @@ function exportCsv(members: TeamMemberRow[], roles: Map<string, string>) {
       STATUS_STYLES[m.invite_status]?.label ?? "",
     ]),
   ];
-  const csv = "\uFEFF" + rows.map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(",")).join("\n");
+  const csv =
+    "\uFEFF" +
+    rows.map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(",")).join("\n");
   const link = document.createElement("a");
   link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
   link.download = `team-members-${new Date().toISOString().slice(0, 10)}.csv`;

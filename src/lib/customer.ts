@@ -5,6 +5,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BUSINESS_CATEGORIES } from "@/lib/business-categories";
 
+export { safeNext } from "@/lib/safe-next";
+
 /** The signed-in person's own details, used across the customer pages. */
 export type CustomerProfile = {
   id: string;
@@ -63,11 +65,6 @@ export type VenueCard = {
   review_count: number;
   from_price: number | null;
 };
-
-export function safeNext(value: unknown): string | null {
-  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) return null;
-  return value;
-}
 
 /** Route guard for the customer area: signed-out visitors go to sign-in and come back. */
 export async function requireCustomer({ location }: { location: { href: string } }) {
