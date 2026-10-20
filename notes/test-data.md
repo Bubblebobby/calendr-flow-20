@@ -46,5 +46,22 @@ Everything is named "Test …"; the appointments are walk-ins (no client records
 - appointment c7a1f8d2-cef1-4871-9270-396f6d14ea4e — 14:15–15:15 Test Barber, Test Haircut, for Test Client (via Book now)
 - client_tags c173d4c5-3a85-46a7-811a-e9a0ee00dd1f — "Test Tag" (+ assignment 9f9885e9-05bf-43c0-8af3-fc54b369453c)
 
+## Added 19–20 Oct 2026 (branch self-serve testing, live Supabase project)
+- tax_rates 7f2a8cc9-70c6-4e79-bbd2-0229dc7851e5 — "Test VAT" 7.5%, set as businesses.default_tax_rate_id (clear that first)
+- deals c5c00e47-79ee-48ab-8b6c-687674694e3d — "Test deal", code TEST10 (+ 2 deal_redemptions)
+- products 60c6aa71-0d64-42a6-9277-ad94ffbfc90c — "Test Shampoo" (+ its stock_movements; stock now 2)
+- packages c22ed657-8172-455f-8d32-2fb49d4d9d0b — "Test 3 Blow Dries"; client_packages 0f61af51-3622-46dd-bfc1-abcba295f38a (+ items, 1 package_redemption)
+- memberships 9f270f43-1836-4e8a-bc8c-18265e386bb3 — "Test Gold"; client_memberships bf41f4bf-fd85-4f86-8301-d3d45bd4754b
+- gift_cards code BAK3FXAM — "Test Recipient", ₦5,000 (₦1,000 left; + 1 gift_card_redemption)
+- clients 10acb831-b714-41f6-8362-cf8a1d29eca1 — Test OnlineClient (test.online@example.com)
+  - appointment a5cca56e-e003-44b7-9ad5-3a13bb7ce8f0 — booked online, rescheduled, cancelled
+  - repeating series 32cc6b3b-58bd-4848-8075-495fcd81144f — 3 weekly Test Blow Dry appointments from Tue 20 Oct 12:00
+- sales 0fed8b91-c971-4da4-9b57-4f28b626da5f, bcb35a55-9618-421e-9fcf-3d908e31bd0c, bc6f6d94-cdef-4136-ada0-123f5fc1644f and the 2250 sale after it (all 20 Oct)
+- timesheets — Test Stylist: Mon 19 Oct 09:00–17:00 (note TEST DATA) and a seconds-long entry Tue 20 Oct 10:08
+- team_members pay settings — Test Stylist hourly_rate 1000, commission 10% / 5% (set back to null)
+- pay_runs e33d101c-5718-4fec-bf2c-ac247143ae19 — paid, so locked: delete it with
+  `set session_replication_role = replica; delete from pay_runs where id = '…'; set session_replication_role = origin;`
+- notifications — rows created by the tests above
+
 ## Cleanup order
 sale_items → sales → appointment_items → appointments → client_tag_assignments → client_tags → clients → services → service_categories → team_members

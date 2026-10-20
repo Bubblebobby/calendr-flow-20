@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { computePay } from "@/lib/pay";
 import { addDays, isoDay, resolveDay, shiftMinutes, TIME_OFF_TYPES, type ShiftData } from "@/lib/team-shifts";
 
 export type ReportCategory = "Dashboards" | "Sales" | "Finance" | "Appointments" | "Team" | "Clients" | "Inventory";
@@ -49,14 +50,14 @@ type SaleRow = {
   tip_amount?: number | null;
   clients: { first_name: string; last_name: string | null } | null;
   team_members: { first_name: string; last_name: string | null } | null;
-  sale_items: { description: string; price: number; quantity: number; service_id: string | null }[];
+  sale_items: { description: string; price: number; quantity: number; service_id: string | null; product_id?: string | null }[];
 };
 
 async function loadSales(businessId: string, range: Range): Promise<SaleRow[]> {
   const { data, error } = await within(
     supabase
       .from("sales")
-      .select("*, clients(first_name, last_name), team_members(first_name, last_name), sale_items(description, price, quantity, service_id)")
+      .select("*, clients(first_name, last_name), team_members(first_name, last_name), sale_items(description, price, quantity, service_id, product_id)")
       .eq("business_id", businessId)
       .in("status", ["completed", "refunded"]),
     "sale_date",
@@ -191,7 +192,7 @@ export const REPORTS: ReportDef[] = [
       for (const sale of sales) {
         const seen = new Set<string>();
         for (const item of sale.sale_items) {
-          const type = item.service_id ? "Service" : "Other";
+          const type = item.product_id ? "Product" : item.service_id ? "Service" : "Other";
           const row = groups.get(type) ?? { type, sales: 0, items: 0, gross: 0, refunds: 0, net: 0 };
           const amount = Number(item.price) * item.quantity;
           if (!seen.has(type)) {
@@ -352,7 +353,32 @@ export const REPORTS: ReportDef[] = [
       return { rows, total: { member: "Total", count: sum(rows, "count"), tips: sum(rows, "tips") } };
     },
   },
-  { id: "taxes-summary", name: "Taxes summary", category: "Finance", description: "Tax collected on sales.", columns: [], unavailable: "Tax rates aren't set up in Bookly yet." },
+  {
+    id: "taxes-summary",
+    name: "Taxes summary",
+    category: "Finance",
+    description: "Tax included in completed sales, by day.",
+    columns: [
+      { key: "day", label: "Date", format: "date" },
+      { key: "sales", label: "Sales", format: "number" },
+      { key: "total", label: "Sales value", format: "money" },
+      { key: "tax", label: "Tax included", format: "money" },
+    ],
+    load: async (businessId, range) => {
+      const sales = (await loadSales(businessId, range)).filter((s) => s.status === "completed");
+      const map = new Map<string, Row>();
+      for (const s of sales) {
+        const day = s.sale_date.slice(0, 10);
+        const row = map.get(day) ?? { day, sales: 0, total: 0, tax: 0 };
+        row["sales"] = Number(row["sales"]) + 1;
+        row["total"] = Number(row["total"]) + Number(s.total);
+        row["tax"] = Number(row["tax"]) + Number((s as unknown as { tax_amount?: number }).tax_amount ?? 0);
+        map.set(day, row);
+      }
+      const rows = [...map.values()].sort((a, b) => String(b["day"]).localeCompare(String(a["day"])));
+      return { rows, total: { day: null, sales: sum(rows, "sales"), total: sum(rows, "total"), tax: sum(rows, "tax") } };
+    },
+  },
 
   // ─── Appointments ───────────────────────────────────────────────────────
   {
@@ -544,7 +570,44 @@ export const REPORTS: ReportDef[] = [
       return { rows, total: { member: "Total", days: sum(rows, "days") } };
     },
   },
-  { id: "commission-summary", name: "Commission summary", category: "Team", description: "Commission earned by team members.", columns: [], unavailable: "Commissions aren't set up in Bookly yet." },
+  {
+    id: "commission-summary",
+    name: "Commission summary",
+    category: "Team",
+    description: "Commission and tips earned by each team member, from completed sales.",
+    columns: [
+      { key: "member", label: "Team member" },
+      { key: "commission", label: "Commission", format: "money" },
+      { key: "tips", label: "Tips", format: "money" },
+    ],
+    load: async (businessId, range) => {
+      const { data: members, error } = await supabase.from("team_members").select("*").eq("business_id", businessId).eq("is_active", true);
+      if (error) throw error;
+      let q = supabase.from("sales").select("*, sale_items(*)").eq("business_id", businessId).eq("status", "completed");
+      if (range.from) q = q.gte("sale_date", range.from);
+      if (range.to) q = q.lt("sale_date", range.to);
+      const { data: sales, error: salesError } = await q.limit(MAX_ROWS);
+      if (salesError) throw salesError;
+      const lines = computePay(
+        (members ?? []).map((m) => {
+          const row = m as unknown as { id: string; first_name: string; last_name: string | null; service_commission_percent?: number | null; product_commission_percent?: number | null };
+          return { id: row.id, name: memberLabel(row), hourly_rate: 0, service_commission_percent: row.service_commission_percent ?? null, product_commission_percent: row.product_commission_percent ?? null };
+        }),
+        [],
+        (sales ?? []).map((s) => {
+          const row = s as unknown as { team_member_id: string | null; total: number; tip_amount?: number | null; sale_items: { team_member_id?: string | null; service_id: string | null; product_id?: string | null; price: number; quantity: number; tax_amount?: number | null }[] };
+          return {
+            team_member_id: row.team_member_id,
+            total: Number(row.total),
+            tip_amount: row.tip_amount ?? 0,
+            items: row.sale_items.map((i) => ({ team_member_id: i.team_member_id ?? null, service_id: i.service_id, product_id: i.product_id ?? null, price: Number(i.price), quantity: i.quantity, tax_amount: i.tax_amount ?? 0 })),
+          };
+        }),
+      );
+      const rows = lines.map((l) => ({ member: l.member_name, commission: l.commission, tips: l.tips })).sort((a, b) => b.commission - a.commission);
+      return { rows, total: { member: "Total", commission: sum(rows, "commission"), tips: sum(rows, "tips") } };
+    },
+  },
 
   // ─── Clients ────────────────────────────────────────────────────────────
   {
@@ -633,8 +696,94 @@ export const REPORTS: ReportDef[] = [
   },
 
   // ─── Inventory ──────────────────────────────────────────────────────────
-  { id: "stock-on-hand", name: "Stock on hand", category: "Inventory", description: "Current stock of each product.", columns: [], unavailable: "Products aren't set up in Bookly yet." },
-  { id: "product-list", name: "Product list", category: "Inventory", description: "All products.", columns: [], unavailable: "Products aren't set up in Bookly yet." },
+  {
+    id: "stock-on-hand",
+    name: "Stock on hand",
+    category: "Inventory",
+    description: "Current stock of each product and what it's worth.",
+    columns: [
+      { key: "product", label: "Product" },
+      { key: "stock", label: "In stock", format: "number" },
+      { key: "status", label: "Status" },
+      { key: "cost", label: "Stock value (cost)", format: "money" },
+      { key: "retail", label: "Stock value (retail)", format: "money" },
+    ],
+    load: async (businessId) => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("name, stock_quantity, low_stock_threshold, supply_price, retail_price, track_stock, is_archived")
+        .eq("business_id", businessId)
+        .eq("is_archived", false)
+        .eq("track_stock", true)
+        .order("name");
+      if (error) throw error;
+      const rows = (data ?? []).map((p) => ({
+        product: p.name,
+        stock: p.stock_quantity,
+        status: p.stock_quantity <= 0 ? "Out of stock" : p.low_stock_threshold !== null && p.stock_quantity <= p.low_stock_threshold ? "Low stock" : "In stock",
+        cost: Math.max(0, p.stock_quantity) * Number(p.supply_price ?? 0),
+        retail: Math.max(0, p.stock_quantity) * Number(p.retail_price),
+      }));
+      return { rows, total: { product: "Total", stock: sum(rows, "stock"), cost: sum(rows, "cost"), retail: sum(rows, "retail") } };
+    },
+  },
+  {
+    id: "stock-movements",
+    name: "Stock movement log",
+    category: "Inventory",
+    description: "Every change to stock: sales, refunds, orders, stocktakes and adjustments.",
+    columns: [
+      { key: "date", label: "Date", format: "datetime" },
+      { key: "product", label: "Product" },
+      { key: "reason", label: "Reason" },
+      { key: "change", label: "Change", format: "number" },
+      { key: "note", label: "Note" },
+    ],
+    load: async (businessId, range) => {
+      const { data, error } = await within(
+        supabase.from("stock_movements").select("created_at, change, reason, note, products(name)").eq("business_id", businessId),
+        "created_at",
+        range,
+      )
+        .order("created_at", { ascending: false })
+        .limit(MAX_ROWS);
+      if (error) throw error;
+      const labels: Record<string, string> = { initial: "Opening stock", adjustment: "Adjustment", sale: "Sold", refund: "Refunded", stock_order: "Order received", stocktake: "Stocktake", damaged: "Damaged or expired", internal_use: "Used in the salon" };
+      const rows = (data ?? []).map((m) => ({
+        date: m.created_at,
+        product: (m.products as unknown as { name: string } | null)?.name ?? "—",
+        reason: labels[m.reason] ?? m.reason,
+        change: m.change,
+        note: m.note ?? "",
+      }));
+      return { rows };
+    },
+  },
+  {
+    id: "product-sales",
+    name: "Product sales",
+    category: "Inventory",
+    description: "Products sold, units and revenue.",
+    columns: [
+      { key: "product", label: "Product" },
+      { key: "qty", label: "Units sold", format: "number" },
+      { key: "revenue", label: "Revenue", format: "money" },
+    ],
+    load: async (businessId, range) => {
+      const sales = (await loadSales(businessId, range)).filter((s) => s.status === "completed");
+      const map = new Map<string, Row>();
+      for (const s of sales)
+        for (const i of s.sale_items) {
+          if (!i.product_id) continue;
+          const row = map.get(i.description) ?? { product: i.description, qty: 0, revenue: 0 };
+          row["qty"] = Number(row["qty"]) + i.quantity;
+          row["revenue"] = Number(row["revenue"]) + Number(i.price) * i.quantity;
+          map.set(i.description, row);
+        }
+      const rows = [...map.values()].sort((a, b) => Number(b["revenue"]) - Number(a["revenue"]));
+      return { rows, total: { product: "Total", qty: sum(rows, "qty"), revenue: sum(rows, "revenue") } };
+    },
+  },
 ];
 
 export const reportById = (id: string) => REPORTS.find((r) => r.id === id);

@@ -33,10 +33,12 @@ import { Route as BundleNewRouteImport } from './routes/bundle.new'
 import { Route as CatalogReorderRouteImport } from './routes/catalog.reorder'
 import { Route as ClientClientIdRouteImport } from './routes/client.$clientId'
 import { Route as ClientNewRouteImport } from './routes/client.new'
+import { Route as ReceiptSaleIdRouteImport } from './routes/receipt.$saleId'
 import { Route as ServiceServiceIdRouteImport } from './routes/service.$serviceId'
 import { Route as ServiceNewRouteImport } from './routes/service.new'
 import { Route as TeamNewRouteImport } from './routes/team.new'
 import { Route as AuthenticatedReportsReportIdRouteImport } from './routes/_authenticated/reports_.$reportId'
+import { Route as BookManageTokenRouteImport } from './routes/book.manage.$token'
 import { Route as TeamShiftsMemberIdRouteImport } from './routes/team.shifts.$memberId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -159,6 +161,11 @@ const ClientNewRoute = ClientNewRouteImport.update({
   path: '/client/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReceiptSaleIdRoute = ReceiptSaleIdRouteImport.update({
+  id: '/receipt/$saleId',
+  path: '/receipt/$saleId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ServiceServiceIdRoute = ServiceServiceIdRouteImport.update({
   id: '/service/$serviceId',
   path: '/service/$serviceId',
@@ -180,6 +187,11 @@ const AuthenticatedReportsReportIdRoute =
     path: '/reports/$reportId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const BookManageTokenRoute = BookManageTokenRouteImport.update({
+  id: '/book/manage/$token',
+  path: '/book/manage/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TeamShiftsMemberIdRoute = TeamShiftsMemberIdRouteImport.update({
   id: '/team/shifts/$memberId',
   path: '/team/shifts/$memberId',
@@ -210,10 +222,12 @@ export interface FileRoutesByFullPath {
   '/catalog/reorder': typeof CatalogReorderRoute
   '/client/$clientId': typeof ClientClientIdRoute
   '/client/new': typeof ClientNewRoute
+  '/receipt/$saleId': typeof ReceiptSaleIdRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/team/new': typeof TeamNewRoute
   '/reports/$reportId': typeof AuthenticatedReportsReportIdRoute
+  '/book/manage/$token': typeof BookManageTokenRoute
   '/team/shifts/$memberId': typeof TeamShiftsMemberIdRoute
 }
 export interface FileRoutesByTo {
@@ -240,10 +254,12 @@ export interface FileRoutesByTo {
   '/catalog/reorder': typeof CatalogReorderRoute
   '/client/$clientId': typeof ClientClientIdRoute
   '/client/new': typeof ClientNewRoute
+  '/receipt/$saleId': typeof ReceiptSaleIdRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/team/new': typeof TeamNewRoute
   '/reports/$reportId': typeof AuthenticatedReportsReportIdRoute
+  '/book/manage/$token': typeof BookManageTokenRoute
   '/team/shifts/$memberId': typeof TeamShiftsMemberIdRoute
 }
 export interface FileRoutesById {
@@ -272,10 +288,12 @@ export interface FileRoutesById {
   '/catalog/reorder': typeof CatalogReorderRoute
   '/client/$clientId': typeof ClientClientIdRoute
   '/client/new': typeof ClientNewRoute
+  '/receipt/$saleId': typeof ReceiptSaleIdRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/team/new': typeof TeamNewRoute
   '/_authenticated/reports_/$reportId': typeof AuthenticatedReportsReportIdRoute
+  '/book/manage/$token': typeof BookManageTokenRoute
   '/team/shifts/$memberId': typeof TeamShiftsMemberIdRoute
 }
 export interface FileRouteTypes {
@@ -304,10 +322,12 @@ export interface FileRouteTypes {
     | '/catalog/reorder'
     | '/client/$clientId'
     | '/client/new'
+    | '/receipt/$saleId'
     | '/service/$serviceId'
     | '/service/new'
     | '/team/new'
     | '/reports/$reportId'
+    | '/book/manage/$token'
     | '/team/shifts/$memberId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -334,10 +354,12 @@ export interface FileRouteTypes {
     | '/catalog/reorder'
     | '/client/$clientId'
     | '/client/new'
+    | '/receipt/$saleId'
     | '/service/$serviceId'
     | '/service/new'
     | '/team/new'
     | '/reports/$reportId'
+    | '/book/manage/$token'
     | '/team/shifts/$memberId'
   id:
     | '__root__'
@@ -365,10 +387,12 @@ export interface FileRouteTypes {
     | '/catalog/reorder'
     | '/client/$clientId'
     | '/client/new'
+    | '/receipt/$saleId'
     | '/service/$serviceId'
     | '/service/new'
     | '/team/new'
     | '/_authenticated/reports_/$reportId'
+    | '/book/manage/$token'
     | '/team/shifts/$memberId'
   fileRoutesById: FileRoutesById
 }
@@ -384,9 +408,11 @@ export interface RootRouteChildren {
   CatalogReorderRoute: typeof CatalogReorderRoute
   ClientClientIdRoute: typeof ClientClientIdRoute
   ClientNewRoute: typeof ClientNewRoute
+  ReceiptSaleIdRoute: typeof ReceiptSaleIdRoute
   ServiceServiceIdRoute: typeof ServiceServiceIdRoute
   ServiceNewRoute: typeof ServiceNewRoute
   TeamNewRoute: typeof TeamNewRoute
+  BookManageTokenRoute: typeof BookManageTokenRoute
   TeamShiftsMemberIdRoute: typeof TeamShiftsMemberIdRoute
 }
 
@@ -560,6 +586,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClientNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/receipt/$saleId': {
+      id: '/receipt/$saleId'
+      path: '/receipt/$saleId'
+      fullPath: '/receipt/$saleId'
+      preLoaderRoute: typeof ReceiptSaleIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/service/$serviceId': {
       id: '/service/$serviceId'
       path: '/service/$serviceId'
@@ -587,6 +620,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/reports/$reportId'
       preLoaderRoute: typeof AuthenticatedReportsReportIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/book/manage/$token': {
+      id: '/book/manage/$token'
+      path: '/book/manage/$token'
+      fullPath: '/book/manage/$token'
+      preLoaderRoute: typeof BookManageTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/team/shifts/$memberId': {
       id: '/team/shifts/$memberId'
@@ -655,9 +695,11 @@ const rootRouteChildren: RootRouteChildren = {
   CatalogReorderRoute: CatalogReorderRoute,
   ClientClientIdRoute: ClientClientIdRoute,
   ClientNewRoute: ClientNewRoute,
+  ReceiptSaleIdRoute: ReceiptSaleIdRoute,
   ServiceServiceIdRoute: ServiceServiceIdRoute,
   ServiceNewRoute: ServiceNewRoute,
   TeamNewRoute: TeamNewRoute,
+  BookManageTokenRoute: BookManageTokenRoute,
   TeamShiftsMemberIdRoute: TeamShiftsMemberIdRoute,
 }
 export const routeTree = rootRouteImport

@@ -40,6 +40,8 @@ export type CalendarEvent = {
   title: string;
   email: string | null;
   serviceName: string;
+  /** Extra-time segments after the base duration, when the item still has the service's full length. */
+  segments: { type: string; start: number; minutes: number }[];
   status: string;
   price: number | null;
 };
@@ -175,7 +177,7 @@ export function useCalendarEvents(businessId: string | undefined, from: Date, to
       const { data, error } = await supabase
         .from("appointment_items")
         .select(
-          "id, appointment_id, team_member_id, start_time, end_time, price, services(name), appointments(status, is_walk_in, clients(first_name, last_name, email))",
+          "id, appointment_id, team_member_id, start_time, end_time, price, services(name, duration_minutes, duration_segments), appointments(status, is_walk_in, clients(first_name, last_name, email))",
         )
         .eq("business_id", businessId!)
         .gte("start_time", from.toISOString())
@@ -199,11 +201,28 @@ export function useCalendarEvents(businessId: string | undefined, from: Date, to
               : "Walk-in",
             email: client?.email ?? null,
             serviceName: row.services?.name ?? "Service",
+            segments: segmentsFor(row),
             status: row.appointments?.status ?? "booked",
             price: row.price,
           } satisfies CalendarEvent;
         });
     },
+  });
+}
+
+/** Positions (minutes from the item start) of a service's extra-time segments. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function segmentsFor(row: any): CalendarEvent["segments"] {
+  const raw = (row.services?.duration_segments ?? []) as { type: string; minutes: number }[];
+  if (!raw.length) return [];
+  const length = Math.round((new Date(row.end_time).getTime() - new Date(row.start_time).getTime()) / 60000);
+  // Only when the appointment still has the service's length (not resized by hand).
+  if (length !== row.services?.duration_minutes) return [];
+  let cursor = length - raw.reduce((sum, s) => sum + s.minutes, 0);
+  return raw.map((s) => {
+    const segment = { type: s.type, start: cursor, minutes: s.minutes };
+    cursor += s.minutes;
+    return segment;
   });
 }
 

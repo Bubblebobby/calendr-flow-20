@@ -1,6 +1,8 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell, CaretRight, ChartBar, ChatCircleDots, MagnifyingGlass, RocketLaunch, SignOut } from "@phosphor-icons/react";
+import { CaretRight, ChartBar, ChatCircleDots, RocketLaunch, SignOut } from "@phosphor-icons/react";
+
+import { NotificationsMenu, SearchMenu } from "./top-bar-menus";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -17,7 +19,7 @@ const iconButton =
   "relative flex size-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-secondary";
 
 /** Fresha-style top bar: logo left; setup, search, insights, notifications, messages, avatar right. */
-export function TopBar({ notifications = 3 }: { notifications?: number }) {
+export function TopBar() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: me } = useQuery({
@@ -63,21 +65,12 @@ export function TopBar({ notifications = 3 }: { notifications?: number }) {
           Continue setup
           <CaretRight size={14} weight="bold" />
         </button>
-        <button type="button" aria-label="Search" className={iconButton} onClick={() => toast("Search is coming soon")}>
-          <MagnifyingGlass size={24} />
-        </button>
-        <button type="button" aria-label="Performance insights" className={iconButton} onClick={() => toast("Performance insights arrive with Reports")}>
+        <SearchMenu />
+        <button type="button" aria-label="Performance insights" className={iconButton} onClick={() => navigate({ to: "/reports/$reportId", params: { reportId: "performance-dashboard" } })}>
           <ChartBar size={24} />
         </button>
-        <button type="button" aria-label={`Notifications (${notifications})`} className={iconButton}>
-          <Bell size={24} />
-          {notifications > 0 ? (
-            <span className="absolute right-0.5 top-0.5 flex min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-caption font-semibold text-destructive-foreground ring-2 ring-card">
-              {notifications}
-            </span>
-          ) : null}
-        </button>
-        <button type="button" aria-label="Messages" className={iconButton} onClick={() => toast("Messages arrive with Marketing")}>
+        <NotificationsMenu />
+        <button type="button" aria-label="Messages" className={iconButton} onClick={() => toast("Client messaging needs an SMS or WhatsApp provider. Coming in a later update.")}>
           <ChatCircleDots size={24} />
         </button>
         <DropdownMenu>

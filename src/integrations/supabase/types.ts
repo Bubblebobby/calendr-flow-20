@@ -14,6 +14,846 @@ export type Database = {
   }
   public: {
     Tables: {
+      timesheets: {
+        Row: {
+          break_minutes: number
+          business_id: string
+          clock_in: string
+          clock_out: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          team_member_id: string
+        }
+        Insert: {
+          break_minutes?: number
+          business_id: string
+          clock_in: string
+          clock_out?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          team_member_id: string
+        }
+        Update: {
+          break_minutes?: number
+          business_id?: string
+          clock_in?: string
+          clock_out?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          team_member_id?: string
+        }
+        Relationships: []
+      }
+      pay_runs: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          paid_at: string | null
+          period_end: string
+          period_start: string
+          status: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          period_end: string
+          period_start: string
+          status?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          period_end?: string
+          period_start?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      pay_run_lines: {
+        Row: {
+          adjustment: number
+          adjustment_note: string | null
+          business_id: string
+          commission: number
+          hours: number
+          id: string
+          member_name: string
+          pay_run_id: string
+          team_member_id: string | null
+          tips: number
+          total: number
+          wages: number
+        }
+        Insert: {
+          adjustment?: number
+          adjustment_note?: string | null
+          business_id: string
+          commission?: number
+          hours?: number
+          id?: string
+          member_name: string
+          pay_run_id: string
+          team_member_id?: string | null
+          tips?: number
+          total?: number
+          wages?: number
+        }
+        Update: {
+          adjustment?: number
+          adjustment_note?: string | null
+          business_id?: string
+          commission?: number
+          hours?: number
+          id?: string
+          member_name?: string
+          pay_run_id?: string
+          team_member_id?: string | null
+          tips?: number
+          total?: number
+          wages?: number
+        }
+        Relationships: []
+      }
+      tax_rates: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          name: string
+          rate: number
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          name: string
+          rate: number
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+          rate?: number
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          business_id: string
+          created_at: string
+          id: string
+          kind: string
+          link: string | null
+          read_at: string | null
+          title: string
+        }
+        Insert: {
+          body?: string | null
+          business_id: string
+          created_at?: string
+          id?: string
+          kind: string
+          link?: string | null
+          read_at?: string | null
+          title: string
+        }
+        Update: {
+          body?: string | null
+          business_id?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          link?: string | null
+          read_at?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      deals: {
+        Row: {
+          applies_to: string
+          business_id: string
+          code: string
+          created_at: string
+          discount_type: string
+          ends_on: string | null
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          name: string
+          online: boolean
+          starts_on: string | null
+          value: number
+        }
+        Insert: {
+          applies_to?: string
+          business_id: string
+          code: string
+          created_at?: string
+          discount_type: string
+          ends_on?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          name: string
+          online?: boolean
+          starts_on?: string | null
+          value: number
+        }
+        Update: {
+          applies_to?: string
+          business_id?: string
+          code?: string
+          created_at?: string
+          discount_type?: string
+          ends_on?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          name?: string
+          online?: boolean
+          starts_on?: string | null
+          value?: number
+        }
+        Relationships: []
+      }
+      deal_redemptions: {
+        Row: {
+          amount: number
+          appointment_id: string | null
+          business_id: string
+          created_at: string
+          deal_id: string
+          id: string
+          sale_id: string | null
+        }
+        Insert: {
+          amount: number
+          appointment_id?: string | null
+          business_id: string
+          created_at?: string
+          deal_id: string
+          id?: string
+          sale_id?: string | null
+        }
+        Update: {
+          amount?: number
+          appointment_id?: string | null
+          business_id?: string
+          created_at?: string
+          deal_id?: string
+          id?: string
+          sale_id?: string | null
+        }
+        Relationships: []
+      }
+      gift_cards: {
+        Row: {
+          balance: number
+          business_id: string
+          client_id: string | null
+          code: string
+          created_at: string
+          expires_on: string | null
+          id: string
+          initial_value: number
+          message: string | null
+          recipient_name: string | null
+          sale_id: string | null
+          status: string
+        }
+        Insert: {
+          balance?: number
+          business_id: string
+          client_id?: string | null
+          code: string
+          created_at?: string
+          expires_on?: string | null
+          id?: string
+          initial_value: number
+          message?: string | null
+          recipient_name?: string | null
+          sale_id?: string | null
+          status?: string
+        }
+        Update: {
+          balance?: number
+          business_id?: string
+          client_id?: string | null
+          code?: string
+          created_at?: string
+          expires_on?: string | null
+          id?: string
+          initial_value?: number
+          message?: string | null
+          recipient_name?: string | null
+          sale_id?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
+      gift_card_redemptions: {
+        Row: {
+          amount: number
+          business_id: string
+          created_at: string
+          gift_card_id: string
+          id: string
+          sale_id: string | null
+        }
+        Insert: {
+          amount: number
+          business_id: string
+          created_at?: string
+          gift_card_id: string
+          id?: string
+          sale_id?: string | null
+        }
+        Update: {
+          amount?: number
+          business_id?: string
+          created_at?: string
+          gift_card_id?: string
+          id?: string
+          sale_id?: string | null
+        }
+        Relationships: []
+      }
+      packages: {
+        Row: {
+          business_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+          valid_days: number | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          price: number
+          valid_days?: number | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+          valid_days?: number | null
+        }
+        Relationships: []
+      }
+      package_items: {
+        Row: {
+          business_id: string
+          id: string
+          package_id: string
+          service_id: string
+          sessions: number
+        }
+        Insert: {
+          business_id: string
+          id?: string
+          package_id: string
+          service_id: string
+          sessions: number
+        }
+        Update: {
+          business_id?: string
+          id?: string
+          package_id?: string
+          service_id?: string
+          sessions?: number
+        }
+        Relationships: []
+      }
+      client_packages: {
+        Row: {
+          business_id: string
+          client_id: string
+          created_at: string
+          expires_on: string | null
+          id: string
+          name: string
+          package_id: string | null
+          price: number
+          sale_id: string | null
+        }
+        Insert: {
+          business_id: string
+          client_id: string
+          created_at?: string
+          expires_on?: string | null
+          id?: string
+          name: string
+          package_id?: string | null
+          price?: number
+          sale_id?: string | null
+        }
+        Update: {
+          business_id?: string
+          client_id?: string
+          created_at?: string
+          expires_on?: string | null
+          id?: string
+          name?: string
+          package_id?: string | null
+          price?: number
+          sale_id?: string | null
+        }
+        Relationships: []
+      }
+      client_package_items: {
+        Row: {
+          business_id: string
+          client_package_id: string
+          id: string
+          service_id: string | null
+          service_name: string
+          sessions_total: number
+          sessions_used: number
+        }
+        Insert: {
+          business_id: string
+          client_package_id: string
+          id?: string
+          service_id?: string | null
+          service_name: string
+          sessions_total: number
+          sessions_used?: number
+        }
+        Update: {
+          business_id?: string
+          client_package_id?: string
+          id?: string
+          service_id?: string | null
+          service_name?: string
+          sessions_total?: number
+          sessions_used?: number
+        }
+        Relationships: []
+      }
+      package_redemptions: {
+        Row: {
+          business_id: string
+          client_package_item_id: string
+          created_at: string
+          id: string
+          sale_id: string | null
+          sessions: number
+        }
+        Insert: {
+          business_id: string
+          client_package_item_id: string
+          created_at?: string
+          id?: string
+          sale_id?: string | null
+          sessions?: number
+        }
+        Update: {
+          business_id?: string
+          client_package_item_id?: string
+          created_at?: string
+          id?: string
+          sale_id?: string | null
+          sessions?: number
+        }
+        Relationships: []
+      }
+      memberships: {
+        Row: {
+          business_id: string
+          created_at: string
+          description: string | null
+          discount_percent: number
+          duration_days: number
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          description?: string | null
+          discount_percent: number
+          duration_days: number
+          id?: string
+          is_active?: boolean
+          name: string
+          price: number
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          description?: string | null
+          discount_percent?: number
+          duration_days?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+        }
+        Relationships: []
+      }
+      client_memberships: {
+        Row: {
+          business_id: string
+          client_id: string
+          created_at: string
+          discount_percent: number
+          ends_on: string
+          id: string
+          membership_id: string | null
+          name: string
+          price: number
+          sale_id: string | null
+          starts_on: string
+          status: string
+        }
+        Insert: {
+          business_id: string
+          client_id: string
+          created_at?: string
+          discount_percent: number
+          ends_on: string
+          id?: string
+          membership_id?: string | null
+          name: string
+          price?: number
+          sale_id?: string | null
+          starts_on?: string
+          status?: string
+        }
+        Update: {
+          business_id?: string
+          client_id?: string
+          created_at?: string
+          discount_percent?: number
+          ends_on?: string
+          id?: string
+          membership_id?: string | null
+          name?: string
+          price?: number
+          sale_id?: string | null
+          starts_on?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      product_brands: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      product_categories: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      suppliers: {
+        Row: {
+          address: string | null
+          business_id: string
+          contact_name: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+        }
+        Insert: {
+          address?: string | null
+          business_id: string
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+        }
+        Update: {
+          address?: string | null
+          business_id?: string
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          tax_rate_id: string | null
+          barcode: string | null
+          brand_id: string | null
+          business_id: string
+          category_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_archived: boolean
+          low_stock_threshold: number | null
+          name: string
+          retail_price: number
+          sku: string | null
+          stock_quantity: number
+          supplier_id: string | null
+          supply_price: number | null
+          track_stock: boolean
+          updated_at: string
+        }
+        Insert: {
+          tax_rate_id?: string | null
+          barcode?: string | null
+          brand_id?: string | null
+          business_id: string
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_archived?: boolean
+          low_stock_threshold?: number | null
+          name: string
+          retail_price?: number
+          sku?: string | null
+          stock_quantity?: number
+          supplier_id?: string | null
+          supply_price?: number | null
+          track_stock?: boolean
+          updated_at?: string
+        }
+        Update: {
+          tax_rate_id?: string | null
+          barcode?: string | null
+          brand_id?: string | null
+          business_id?: string
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_archived?: boolean
+          low_stock_threshold?: number | null
+          name?: string
+          retail_price?: number
+          sku?: string | null
+          stock_quantity?: number
+          supplier_id?: string | null
+          supply_price?: number | null
+          track_stock?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      stock_movements: {
+        Row: {
+          business_id: string
+          change: number
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string | null
+          product_id: string
+          reason: string
+          reference_id: string | null
+        }
+        Insert: {
+          business_id: string
+          change: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          product_id: string
+          reason: string
+          reference_id?: string | null
+        }
+        Update: {
+          business_id?: string
+          change?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          product_id?: string
+          reason?: string
+          reference_id?: string | null
+        }
+        Relationships: []
+      }
+      stock_orders: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          ordered_at: string | null
+          received_at: string | null
+          status: string
+          supplier_id: string | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          ordered_at?: string | null
+          received_at?: string | null
+          status?: string
+          supplier_id?: string | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          ordered_at?: string | null
+          received_at?: string | null
+          status?: string
+          supplier_id?: string | null
+        }
+        Relationships: []
+      }
+      stock_order_items: {
+        Row: {
+          business_id: string
+          id: string
+          order_id: string
+          product_id: string
+          quantity: number
+          supply_price: number | null
+        }
+        Insert: {
+          business_id: string
+          id?: string
+          order_id: string
+          product_id: string
+          quantity: number
+          supply_price?: number | null
+        }
+        Update: {
+          business_id?: string
+          id?: string
+          order_id?: string
+          product_id?: string
+          quantity?: number
+          supply_price?: number | null
+        }
+        Relationships: []
+      }
+      stocktakes: {
+        Row: {
+          business_id: string
+          completed_at: string | null
+          id: string
+          notes: string | null
+          started_at: string
+          status: string
+        }
+        Insert: {
+          business_id: string
+          completed_at?: string | null
+          id?: string
+          notes?: string | null
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          business_id?: string
+          completed_at?: string | null
+          id?: string
+          notes?: string | null
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      stocktake_items: {
+        Row: {
+          business_id: string
+          counted: number | null
+          expected: number
+          id: string
+          product_id: string
+          stocktake_id: string
+        }
+        Insert: {
+          business_id: string
+          counted?: number | null
+          expected: number
+          id?: string
+          product_id: string
+          stocktake_id: string
+        }
+        Update: {
+          business_id?: string
+          counted?: number | null
+          expected?: number
+          id?: string
+          product_id?: string
+          stocktake_id?: string
+        }
+        Relationships: []
+      }
       business_closed_periods: {
         Row: {
           business_id: string
@@ -247,6 +1087,9 @@ export type Database = {
       }
       appointments: {
         Row: {
+          repeat_rule: Json | null
+          series_id: string | null
+          manage_token: string
           cancellation_reason: string | null
           business_id: string
           client_id: string | null
@@ -259,6 +1102,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          repeat_rule?: Json | null
+          series_id?: string | null
+          manage_token?: string
           cancellation_reason?: string | null
           business_id: string
           client_id?: string | null
@@ -271,6 +1117,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          repeat_rule?: Json | null
+          series_id?: string | null
+          manage_token?: string
           cancellation_reason?: string | null
           business_id?: string
           client_id?: string | null
@@ -460,6 +1309,12 @@ export type Database = {
       }
       businesses: {
         Row: {
+          default_tax_rate_id: string | null
+          receipt_footer: string | null
+          allow_client_cancel: boolean
+          allow_client_reschedule: boolean
+          booking_notice_hours: number
+          booking_policy: string | null
           booking_description: string | null
           booking_slug: string | null
           online_booking_enabled: boolean
@@ -483,6 +1338,12 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          default_tax_rate_id?: string | null
+          receipt_footer?: string | null
+          allow_client_cancel?: boolean
+          allow_client_reschedule?: boolean
+          booking_notice_hours?: number
+          booking_policy?: string | null
           booking_description?: string | null
           booking_slug?: string | null
           online_booking_enabled?: boolean
@@ -506,6 +1367,12 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          default_tax_rate_id?: string | null
+          receipt_footer?: string | null
+          allow_client_cancel?: boolean
+          allow_client_reschedule?: boolean
+          booking_notice_hours?: number
+          booking_policy?: string | null
           booking_description?: string | null
           booking_slug?: string | null
           online_booking_enabled?: boolean
@@ -887,6 +1754,10 @@ export type Database = {
       }
       sale_items: {
         Row: {
+          discount_amount: number | null
+          team_member_id: string | null
+          tax_amount: number
+          product_id: string | null
           appointment_item_id: string | null
           business_id: string
           created_at: string
@@ -899,6 +1770,10 @@ export type Database = {
           sort_order: number
         }
         Insert: {
+          discount_amount?: number | null
+          team_member_id?: string | null
+          tax_amount?: number
+          product_id?: string | null
           appointment_item_id?: string | null
           business_id: string
           created_at?: string
@@ -911,6 +1786,10 @@ export type Database = {
           sort_order?: number
         }
         Update: {
+          discount_amount?: number | null
+          team_member_id?: string | null
+          tax_amount?: number
+          product_id?: string | null
           appointment_item_id?: string | null
           business_id?: string
           created_at?: string
@@ -955,6 +1834,8 @@ export type Database = {
       }
       sales: {
         Row: {
+          discount_amount: number
+          tax_amount: number
           tip_amount: number
           appointment_id: string | null
           business_id: string
@@ -972,6 +1853,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          discount_amount?: number
+          tax_amount?: number
           tip_amount?: number
           appointment_id?: string | null
           business_id: string
@@ -989,6 +1872,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          discount_amount?: number
+          tax_amount?: number
           tip_amount?: number
           appointment_id?: string | null
           business_id?: string
@@ -1167,6 +2052,7 @@ export type Database = {
       }
       services: {
         Row: {
+          tax_rate_id: string | null
           online_booking_enabled: boolean
           business_id: string
           category_id: string | null
@@ -1183,6 +2069,7 @@ export type Database = {
           treatment_type: string | null
         }
         Insert: {
+          tax_rate_id?: string | null
           online_booking_enabled?: boolean
           business_id: string
           category_id?: string | null
@@ -1199,6 +2086,7 @@ export type Database = {
           treatment_type?: string | null
         }
         Update: {
+          tax_rate_id?: string | null
           online_booking_enabled?: boolean
           business_id?: string
           category_id?: string | null
@@ -1233,6 +2121,9 @@ export type Database = {
       }
       team_members: {
         Row: {
+          hourly_rate: number | null
+          product_commission_percent: number | null
+          service_commission_percent: number | null
           additional_phone: string | null
           additional_phone_country_code: string | null
           avatar_color: string
@@ -1265,6 +2156,9 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          hourly_rate?: number | null
+          product_commission_percent?: number | null
+          service_commission_percent?: number | null
           additional_phone?: string | null
           additional_phone_country_code?: string | null
           avatar_color?: string
@@ -1296,6 +2190,9 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          hourly_rate?: number | null
+          product_commission_percent?: number | null
+          service_commission_percent?: number | null
           additional_phone?: string | null
           additional_phone_country_code?: string | null
           avatar_color?: string
@@ -1387,8 +2284,56 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_deal: {
+        Args: { p_code: string }
+        Returns: Json
+      }
+      check_booking_deal: {
+        Args: { p_slug: string; p_code: string }
+        Returns: Json
+      }
+      redeem_deal: {
+        Args: { p_code: string; p_sale: string; p_amount: number }
+        Returns: undefined
+      }
+      new_gift_card_code: {
+        Args: { p_business: string }
+        Returns: string
+      }
+      complete_stocktake: {
+        Args: { p_stocktake: string }
+        Returns: undefined
+      }
+      receive_stock_order: {
+        Args: { p_order: string }
+        Returns: undefined
+      }
       create_booking: {
-        Args: { p_slug: string; p_items: Json; p_start: string; p_client: Json; p_notes?: string | null }
+        Args: { p_slug: string; p_items: Json; p_start: string; p_client: Json; p_notes?: string | null; p_code?: string | null }
+        Returns: Json
+      }
+      cancel_booking: {
+        Args: { p_token: string; p_reason?: string | null }
+        Returns: Json
+      }
+      get_booking_policy: {
+        Args: { p_slug: string }
+        Returns: Json
+      }
+      get_manage_availability: {
+        Args: { p_token: string; p_from: string; p_to: string }
+        Returns: { team_member_id: string; day: string; shifts: Json }[]
+      }
+      get_manage_booking: {
+        Args: { p_token: string }
+        Returns: Json
+      }
+      get_manage_busy: {
+        Args: { p_token: string; p_from: string; p_to: string }
+        Returns: { team_member_id: string; start_time: string; end_time: string }[]
+      }
+      reschedule_booking: {
+        Args: { p_token: string; p_start: string }
         Returns: Json
       }
       get_booking_availability: {

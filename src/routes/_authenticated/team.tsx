@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { toast } from "sonner";
 
-import { FeatureIntro } from "@/components/sales/list-ui";
+import { PayRunsPage, TimesheetsPage } from "@/components/team/pay-pages";
 import { ScheduledShifts } from "@/components/team/scheduled-shifts";
 import { TeamMembersList } from "@/components/team/team-members-list";
 
@@ -22,7 +21,6 @@ export const Route = createFileRoute("/_authenticated/team")({
   component: TeamPage,
 });
 
-const later = (feature: string) => () => toast(`${feature} is coming in a later update`);
 
 function TeamPage() {
   const { tab = "members" } = Route.useSearch();
@@ -32,19 +30,9 @@ function TeamPage() {
         {tab === "shifts" ? (
           <ScheduledShifts />
         ) : tab === "timesheets" ? (
-          <FeatureIntro
-            title="Simple time tracking and attendance"
-            body="Track your team's working hours and make pay calculations straightforward."
-            bullets={["Record hours and breaks as they happen", "Feeds straight into pay runs", "See attendance and punctuality at a glance"]}
-            onStart={later("Timesheets")}
-          />
+          <TimesheetsPage />
         ) : tab === "payruns" ? (
-          <FeatureIntro
-            title="Pay your team without the spreadsheets"
-            body="Bring wages, commissions and tips together so paying your team takes minutes."
-            bullets={["Wages, commissions and tips in one pay run", "Add bonuses and adjustments", "Share an earnings report with each team member"]}
-            onStart={later("Pay runs")}
-          />
+          <PayRunsPage />
         ) : (
           <TeamMembersList />
         )}

@@ -325,22 +325,6 @@ export function MessagesHistory() {
   );
 }
 
-export function Deals() {
-  return (
-    <FeatureIntro
-      title="Reward and keep clients with deals"
-      body="Discount codes, flash sales and last-minute offers bring clients in and fill quiet times."
-      bullets={[
-        "Create and share discount codes",
-        "Run a flash sale to get more bookings",
-        "Fill gaps in your calendar with last-minute offers",
-        "Track how every deal performs",
-      ]}
-      onStart={later("Deals")}
-    />
-  );
-}
-
 export function SmartPricing() {
   return (
     <FeatureIntro

@@ -9,6 +9,7 @@ import {
   CheckCircle,
   ClipboardText,
   CreditCard,
+  Crown,
   CurrencyCircleDollar,
   DotsThreeVertical,
   Gift,
@@ -29,8 +30,18 @@ import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/format";
+import { lineDiscounts, lineTaxes } from "@/lib/tax";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
+import {
+  GiftCardSellDialog,
+  RedeemGiftDialog,
+  finalizeExtras,
+  useClientBenefits,
+  useSellables,
+  type GiftPayment,
+  type LineExtra,
+} from "@/components/sales/checkout-extras";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -46,6 +57,10 @@ import {
 export type CheckoutLine = {
   key: string;
   serviceId: string | null;
+  /** Set for retail products; stock is taken out when the sale completes. */
+  productId?: string | null;
+  /** Gift cards, packages, memberships and package-session redemptions. */
+  extra?: LineExtra;
   description: string;
   price: number;
   quantity: number;
@@ -66,16 +81,18 @@ export type CheckoutStart = {
 
 type Step = "cart" | "tip" | "payment" | "done";
 type Method = "cash" | "card" | "other";
-type Payment = { key: string; method: Method; amount: number };
+type Payment = { key: string; method: Method; amount: number; gift?: GiftPayment };
 
 type ServiceRow = {
   id: string;
+  tax_rate_id?: string | null;
   name: string;
   price: number | null;
   duration_minutes: number;
   category_id: string | null;
 };
 type CategoryRow = { id: string; name: string; color: string | null };
+type ProductRow = { id: string; name: string; retail_price: number; track_stock: boolean; stock_quantity: number; tax_rate_id?: string | null };
 type ClientRow = {
   id: string;
   first_name: string;
@@ -124,7 +141,16 @@ export function CheckoutScreen({
   const money = (value: number) => formatMoney(value, currency, business?.country ?? "");
 
   const [step, setStep] = useState<Step>("cart");
-  const [browse, setBrowse] = useState<null | "services" | "appointments">(null);
+  const [browse, setBrowse] = useState<null | "services" | "appointments" | "products" | "packages" | "memberships">(null);
+  const [giftSellOpen, setGiftSellOpen] = useState(false);
+  const [redeemOpen, setRedeemOpen] = useState(false);
+  const [issuedCodes, setIssuedCodes] = useState<string[]>([]);
+  const [dealCode, setDealCode] = useState<string | null>(null);
+  // Which lines the cart discount covers: a services-only deal skips products.
+  const [discountScope, setDiscountScope] = useState<"all" | "services">("all");
+  const [completedSaleId, setCompletedSaleId] = useState<string | null>(null);
+  const [promoInput, setPromoInput] = useState("");
+  const [promoError, setPromoError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [lines, setLines] = useState<CheckoutLine[]>([]);
   const [clientId, setClientId] = useState<string | null>(null);
@@ -161,6 +187,11 @@ export function CheckoutScreen({
     setPayments([]);
     setToPayOpen(false);
     setSplitMode(false);
+    setIssuedCodes([]);
+    setDealCode(null);
+    setDiscountScope("all");
+    setPromoInput("");
+    setPromoError(null);
   }, [open, start]);
 
   // ── Data ──
@@ -170,7 +201,7 @@ export function CheckoutScreen({
     queryFn: async (): Promise<ServiceRow[]> => {
       const { data, error } = await supabase
         .from("services")
-        .select("id, name, price, duration_minutes, category_id")
+        .select("*")
         .eq("business_id", businessId!)
         .order("sort_order");
       if (error) throw error;
@@ -190,6 +221,39 @@ export function CheckoutScreen({
       return (data ?? []) as CategoryRow[];
     },
   });
+  const { data: products = [] } = useQuery({
+    queryKey: ["checkout-products", businessId],
+    enabled: Boolean(open && businessId),
+    retry: false,
+    queryFn: async (): Promise<ProductRow[]> => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("business_id", businessId!)
+        .eq("is_archived", false)
+        .order("name");
+      if (error) return [];
+      return (data ?? []) as ProductRow[];
+    },
+  });
+  const sellables = useSellables(businessId, open);
+  // Tax: each item's own rate, else the business default (prices include tax).
+  const { data: taxSetup } = useQuery({
+    queryKey: ["checkout-tax", businessId],
+    enabled: Boolean(open && businessId),
+    retry: false,
+    queryFn: async () => {
+      const [rates, biz] = await Promise.all([
+        supabase.from("tax_rates").select("id, name, rate").eq("business_id", businessId!),
+        supabase.from("businesses").select("*").eq("id", businessId!).single(),
+      ]);
+      return {
+        rates: new Map((rates.error ? [] : (rates.data ?? [])).map((r) => [r.id, Number(r.rate)])),
+        defaultId: biz.error ? null : ((biz.data as { default_tax_rate_id?: string | null }).default_tax_rate_id ?? null),
+      };
+    },
+  });
+  const { data: benefits } = useClientBenefits(open ? clientId : null);
   const { data: members = [] } = useQuery({
     queryKey: ["checkout-members", businessId],
     enabled: Boolean(open && businessId),
@@ -291,10 +355,29 @@ export function CheckoutScreen({
   // ── Totals ──
   const subtotal = lines.reduce((sum, line) => sum + line.price * line.quantity, 0);
   const afterDiscount = Math.max(0, subtotal - discount);
+  // Percentage tips are worked out on services and products, not gift cards, packages or memberships.
+  const prepaidTotal = lines.reduce((sum, line) => sum + (line.extra ? line.price * line.quantity : 0), 0);
+  const tipBase = Math.max(0, afterDiscount - prepaidTotal);
   const tipAmount =
-    tip === "custom" ? Math.max(0, Number(customTip) || 0) : Math.round(afterDiscount * tip) / 100;
+    tip === "custom" ? Math.max(0, Number(customTip) || 0) : Math.round(tipBase * tip) / 100;
   const toPay = afterDiscount + tipAmount;
   const paid = payments.reduce((sum, payment) => sum + payment.amount, 0);
+  const lineRate = (line: CheckoutLine): number | null => {
+    if (!taxSetup || line.extra) return null;
+    const own = line.productId
+      ? products.find((p) => p.id === line.productId)?.tax_rate_id
+      : line.serviceId
+        ? services.find((s) => s.id === line.serviceId)?.tax_rate_id
+        : null;
+    const id = own ?? taxSetup.defaultId;
+    return id ? (taxSetup.rates.get(id) ?? null) : null;
+  };
+  const discountable = (line: CheckoutLine) =>
+    !line.extra && (discountScope === "all" || (!!line.serviceId && !line.productId));
+  const taxLines = lines.map((line) => ({ amount: line.price * line.quantity, rate: lineRate(line), discountable: discountable(line) }));
+  const taxes = lineTaxes(taxLines, discount);
+  const discounts = lineDiscounts(taxLines, discount);
+  const taxTotal = Math.round(taxes.reduce((sum, value) => sum + value, 0) * 100) / 100;
   const leftToPay = Math.max(0, Math.round((toPay - paid) * 100) / 100);
   const staffNames = [
     ...new Set(
@@ -318,6 +401,58 @@ export function CheckoutScreen({
         appointmentItemId: null,
       },
     ]);
+  }
+
+  function addProduct(product: ProductRow) {
+    setLines((current) => {
+      const existing = current.find((line) => line.productId === product.id);
+      if (existing) return current.map((line) => (line === existing ? { ...line, quantity: line.quantity + 1 } : line));
+      return [
+        ...current,
+        {
+          key: lineKey(),
+          serviceId: null,
+          productId: product.id,
+          description: product.name,
+          price: Number(product.retail_price),
+          quantity: 1,
+          durationMinutes: null,
+          teamMemberId: members[0]?.id ?? null,
+          appointmentItemId: null,
+        },
+      ];
+    });
+  }
+
+  function addExtra(description: string, price: number, extra: LineExtra) {
+    setLines((current) => [
+      ...current,
+      {
+        key: lineKey(),
+        serviceId: null,
+        productId: null,
+        extra,
+        description,
+        price,
+        quantity: 1,
+        durationMinutes: null,
+        teamMemberId: members[0]?.id ?? null,
+        appointmentItemId: null,
+      },
+    ]);
+  }
+
+  /** Sessions the client has left for a service, minus ones already used in this cart. */
+  function sessionsLeftFor(serviceId: string | null) {
+    if (!serviceId || !benefits) return null;
+    const item = benefits.sessions.find(
+      (s) =>
+        s.service_id === serviceId &&
+        s.left > lines.filter((l) => l.extra?.kind === "package_session" && l.extra.clientPackageItemId === s.id).length,
+    );
+    if (!item) return null;
+    const used = lines.filter((l) => l.extra?.kind === "package_session" && l.extra.clientPackageItemId === item.id).length;
+    return { item, left: item.left - used };
   }
 
   function addAppointment(appointment: SellableAppointment) {
@@ -354,6 +489,10 @@ export function CheckoutScreen({
     mutationFn: async (mode: "draft" | "completed") => {
       if (!businessId) throw new Error("No business");
       if (!lines.length) throw new Error("Your cart is empty");
+      const needsClient = lines.some((l) => l.extra?.kind === "package" || l.extra?.kind === "membership");
+      if (needsClient && !clientId) throw new Error("Add a client to sell packages and memberships");
+      const hasExtras = lines.some((l) => l.extra) || payments.some((p) => p.gift);
+      if (mode === "draft" && hasExtras) throw new Error("Complete this sale now: gift cards, packages and memberships can't be saved as unpaid");
       const { data: auth } = await supabase.auth.getSession();
       const method: Method =
         payments.length === 0
@@ -364,7 +503,7 @@ export function CheckoutScreen({
         tipAmount > 0 ? `Tip ${money(tipAmount)}${staffNames ? ` for ${staffNames}` : ""}` : null,
         discount > 0 ? `Cart discount ${money(discount)}` : null,
         payments.length > 1
-          ? `Split payment: ${payments.map((payment) => `${METHOD_LABEL[payment.method]} ${money(payment.amount)}`).join(", ")}`
+          ? `Split payment: ${payments.map((payment) => `${payment.gift ? `Gift card ${payment.gift.code}` : METHOD_LABEL[payment.method]} ${money(payment.amount)}`).join(", ")}`
           : null,
       ].filter(Boolean);
       const header = {
@@ -377,35 +516,69 @@ export function CheckoutScreen({
         total: afterDiscount,
         team_member_id: lines.find((line) => line.teamMemberId)?.teamMemberId ?? null,
         notes: noteParts.length ? noteParts.join(" · ") : null,
+        tip_amount: tipAmount,
+        tax_amount: taxTotal,
+        discount_amount: discount,
       };
+      // Columns added by the 19 Oct database update; if it hasn't been run, save without them.
+      const NEW_SALE_COLUMNS = ["tax_amount", "discount_amount"] as const;
+      const NEW_ITEM_COLUMNS = ["product_id", "team_member_id", "tax_amount", "discount_amount"] as const;
+      const isMissingColumn = (e: { code?: string; message?: string } | null) =>
+        Boolean(e && (e.code === "PGRST204" || e.code === "42703" || /column .* (does not exist|of '.*' in the schema cache)/i.test(e.message ?? "")));
+      const strip = <T extends Record<string, unknown>>(row: T, keys: readonly string[]) =>
+        Object.fromEntries(Object.entries(row).filter(([key]) => !keys.includes(key))) as T;
       let id = saleId;
       if (id) {
-        const { error } = await supabase.from("sales").update(header).eq("id", id);
+        let { error } = await supabase.from("sales").update(header).eq("id", id);
+        if (isMissingColumn(error)) ({ error } = await supabase.from("sales").update(strip(header, NEW_SALE_COLUMNS)).eq("id", id));
         if (error) throw error;
         const { error: deleteError } = await supabase.from("sale_items").delete().eq("sale_id", id);
         if (deleteError) throw deleteError;
       } else {
-        const { data, error } = await supabase
-          .from("sales")
-          .insert({ ...header, created_by: auth.session?.user.id ?? null })
-          .select("id")
-          .single();
-        if (error) throw error;
+        const row = { ...header, created_by: auth.session?.user.id ?? null };
+        let { data, error } = await supabase.from("sales").insert(row).select("id").single();
+        if (isMissingColumn(error)) ({ data, error } = await supabase.from("sales").insert(strip(row, NEW_SALE_COLUMNS)).select("id").single());
+        if (error || !data) throw error ?? new Error("Couldn't save the sale");
         id = data.id;
       }
-      const { error: itemsError } = await supabase.from("sale_items").insert(
-        lines.map((line, index) => ({
+      const itemRows = lines.map((line, index) => ({
           sale_id: id!,
           business_id: businessId,
           service_id: line.serviceId,
+          product_id: line.productId ?? null,
+          team_member_id: line.teamMemberId,
+          tax_amount: taxes[index] ?? 0,
+          discount_amount: discounts[index] ?? 0,
           appointment_item_id: line.appointmentItemId,
           description: line.description,
           price: line.price,
           quantity: line.quantity,
           sort_order: index,
-        })),
-      );
+        }));
+      let { error: itemsError } = await supabase.from("sale_items").insert(itemRows);
+      // discount_amount came with the 20 Oct update; try without it before dropping the 19 Oct columns.
+      if (isMissingColumn(itemsError)) ({ error: itemsError } = await supabase.from("sale_items").insert(itemRows.map((row) => strip(row, ["discount_amount"]))));
+      if (isMissingColumn(itemsError)) {
+        if (itemRows.some((row) => row.product_id)) throw new Error("Selling products needs the latest database update");
+        ({ error: itemsError } = await supabase.from("sale_items").insert(itemRows.map((row) => strip(row, NEW_ITEM_COLUMNS))));
+      }
       if (itemsError) throw itemsError;
+      if (mode === "completed") {
+        const codes = await finalizeExtras({
+          saleId: id!,
+          businessId,
+          clientId,
+          lines,
+          giftPayments: payments.filter((p) => p.gift).map((p) => ({ ...p.gift!, amount: p.amount })),
+          packages: sellables.packages,
+          memberships: sellables.memberships,
+        });
+        setIssuedCodes(codes);
+        if (dealCode && discount > 0) {
+          const { error: dealError } = await supabase.rpc("redeem_deal", { p_code: dealCode, p_sale: id!, p_amount: discount });
+          if (dealError) toast.warning(`Sale completed, but promo code ${dealCode} couldn't be recorded: ${dealError.message}`);
+        }
+      }
       if (mode === "completed" && appointmentId) {
         const { error } = await supabase
           .from("appointments")
@@ -415,7 +588,8 @@ export function CheckoutScreen({
       }
       return { id: id!, mode };
     },
-    onSuccess: ({ mode }) => {
+    onSuccess: ({ id: savedId, mode }) => {
+      if (mode === "completed") setCompletedSaleId(savedId);
       invalidate();
       if (mode === "completed") {
         setStep("done");
@@ -479,16 +653,34 @@ export function CheckoutScreen({
         <p className="mt-2 text-body text-muted-foreground">
           {money(toPay)} paid
           {payments.length
-            ? ` by ${payments.map((payment) => METHOD_LABEL[payment.method]).join(" + ")}`
+            ? ` by ${payments.map((payment) => (payment.gift ? `gift card ${payment.gift.code}` : METHOD_LABEL[payment.method])).join(" + ")}`
             : ""}
         </p>
-        <button
-          type="button"
-          onClick={onClose}
-          className={cn(pill, "mt-8 bg-ink text-ink-foreground")}
-        >
-          Done
-        </button>
+        {issuedCodes.length ? (
+          <div className="mt-6 rounded-xl bg-secondary px-6 py-4">
+            <p className="text-body font-semibold">Gift card code{issuedCodes.length > 1 ? "s" : ""}</p>
+            {issuedCodes.map((code) => (
+              <p key={code} className="mt-1 font-mono text-title font-semibold tracking-widest">
+                {code}
+              </p>
+            ))}
+            <p className="mt-1 text-caption text-muted-foreground">Give this code to the client. It's also in Sales → Gift cards sold.</p>
+          </div>
+        ) : null}
+        <div className="mt-8 flex gap-2">
+          {completedSaleId ? (
+            <button
+              type="button"
+              onClick={() => window.open(`/receipt/${completedSaleId}`, "_blank", "noopener")}
+              className={cn(pill, "border border-input bg-card hover:bg-secondary")}
+            >
+              Print receipt
+            </button>
+          ) : null}
+          <button type="button" onClick={onClose} className={cn(pill, "bg-ink text-ink-foreground")}>
+            Done
+          </button>
+        </div>
       </div>
     );
   } else if (step === "cart") {
@@ -507,7 +699,13 @@ export function CheckoutScreen({
         <h1 className="mt-3 text-display font-semibold">
           {browse === "services"
             ? "Services"
-            : browse === "appointments"
+            : browse === "products"
+              ? "Products"
+              : browse === "packages"
+                ? "Packages"
+                : browse === "memberships"
+                  ? "Memberships"
+                  : browse === "appointments"
               ? "Appointments"
               : "Add to cart"}
         </h1>
@@ -552,6 +750,82 @@ export function CheckoutScreen({
                 </button>
               ))
             )}
+          </div>
+        ) : browse === "packages" || browse === "memberships" ? (
+          <div className="mt-6 space-y-1">
+            {browse === "packages"
+              ? sellables.packages
+                  .filter((pkg) => !term || pkg.name.toLowerCase().includes(term))
+                  .map((pkg) => (
+                    <button
+                      key={pkg.id}
+                      type="button"
+                      onClick={() => addExtra(pkg.name, Number(pkg.price), { kind: "package", packageId: pkg.id })}
+                      className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left hover:bg-secondary"
+                    >
+                      <span>
+                        <span className="block text-body">{pkg.name}</span>
+                        <span className="block text-caption text-muted-foreground">
+                          {pkg.package_items.map((i) => `${i.sessions}× ${i.services?.name ?? "service"}`).join(", ")}
+                        </span>
+                      </span>
+                      <span className="text-body">{money(Number(pkg.price))}</span>
+                    </button>
+                  ))
+              : sellables.memberships
+                  .filter((m) => !term || m.name.toLowerCase().includes(term))
+                  .map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => addExtra(m.name, Number(m.price), { kind: "membership", membershipId: m.id })}
+                      className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left hover:bg-secondary"
+                    >
+                      <span>
+                        <span className="block text-body">{m.name}</span>
+                        <span className="block text-caption text-muted-foreground">
+                          {Number(m.discount_percent)}% off services for {m.duration_days} days
+                        </span>
+                      </span>
+                      <span className="text-body">{money(Number(m.price))}</span>
+                    </button>
+                  ))}
+            {(browse === "packages" ? sellables.packages : sellables.memberships).length === 0 ? (
+              <p className="py-6 text-center text-muted-foreground">
+                None set up yet. Add them in Catalog → {browse === "packages" ? "Packages" : "Memberships"}.
+              </p>
+            ) : null}
+            <p className="pt-3 text-caption text-muted-foreground">Add a client to the sale: {browse} are saved to their profile.</p>
+          </div>
+        ) : browse === "products" ? (
+          <div className="mt-6 space-y-1">
+            {products
+              .filter((product) => !term || product.name.toLowerCase().includes(term))
+              .map((product) => {
+                const inCart = lines.filter((line) => line.productId === product.id).reduce((sum, line) => sum + line.quantity, 0);
+                const left = product.stock_quantity - inCart;
+                const out = product.track_stock && left <= 0;
+                return (
+                  <button
+                    key={product.id}
+                    type="button"
+                    disabled={out}
+                    onClick={() => addProduct(product)}
+                    className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left hover:bg-secondary disabled:opacity-50"
+                  >
+                    <span>
+                      <span className="block text-body">{product.name}</span>
+                      <span className={cn("block text-caption", out ? "text-destructive" : "text-muted-foreground")}>
+                        {product.track_stock ? (out ? "Out of stock" : `${left} in stock`) : "Stock not tracked"}
+                      </span>
+                    </span>
+                    <span className="text-body">{money(Number(product.retail_price))}</span>
+                  </button>
+                );
+              })}
+            {products.length === 0 ? (
+              <p className="py-6 text-center text-muted-foreground">No products yet. Add them in Catalog → Products.</p>
+            ) : null}
           </div>
         ) : browse === "services" || term ? (
           <div className="mt-6 space-y-6">
@@ -605,6 +879,7 @@ export function CheckoutScreen({
                   ["services", "Services", ClipboardText],
                   ["products", "Products", Package],
                   ["packages", "Packages", Stack],
+                  ["memberships", "Memberships", Crown],
                   ["gift-cards", "Gift cards", Gift],
                 ] as const
               ).map(([key, label, Icon]) => (
@@ -612,8 +887,8 @@ export function CheckoutScreen({
                   key={key}
                   type="button"
                   onClick={() => {
-                    if (key === "appointments" || key === "services") setBrowse(key);
-                    else toast(`${label} arrive with the Catalog tab`);
+                    if (key === "gift-cards") setGiftSellOpen(true);
+                    else setBrowse(key);
                   }}
                   className="flex h-24 flex-col justify-between rounded-xl border border-border p-4 text-left hover:bg-secondary"
                 >
@@ -676,7 +951,7 @@ export function CheckoutScreen({
               </span>
               {percent ? (
                 <span className="text-body text-muted-foreground">
-                  {money(Math.round(afterDiscount * percent) / 100)}
+                  {money(Math.round(tipBase * percent) / 100)}
                 </span>
               ) : null}
             </button>
@@ -730,7 +1005,7 @@ export function CheckoutScreen({
               type="button"
               disabled={leftToPay <= 0}
               onClick={() => {
-                if (key === "gift") toast("Gift cards arrive with the Catalog tab");
+                if (key === "gift") setRedeemOpen(true);
                 else if (key === "split") {
                   setSplitMode(true);
                   toast("Split payment: add each part with Cash, Card or Other");
@@ -757,7 +1032,7 @@ export function CheckoutScreen({
                 key={payment.key}
                 className="flex items-center justify-between border-b border-border py-3 text-body"
               >
-                <span>{METHOD_LABEL[payment.method]}</span>
+                <span>{payment.gift ? `Gift card ${payment.gift.code}` : METHOD_LABEL[payment.method]}</span>
                 <span className="flex items-center gap-3">
                   {money(payment.amount)}
                   <button
@@ -948,6 +1223,24 @@ export function CheckoutScreen({
                       {line.description}
                       {line.quantity > 1 ? ` × ${line.quantity}` : ""}
                     </p>
+                    {step !== "done" && line.price > 0 && !line.extra && sessionsLeftFor(line.serviceId) ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const found = sessionsLeftFor(line.serviceId)!;
+                          setLines((current) =>
+                            current.map((entry) =>
+                              entry.key === line.key
+                                ? { ...entry, price: 0, quantity: 1, description: `${entry.description} (package)`, extra: { kind: "package_session", clientPackageItemId: found.item.id } }
+                                : entry,
+                            ),
+                          );
+                        }}
+                        className="mt-1 rounded-full bg-accent px-2 py-0.5 text-caption font-semibold text-primary hover:bg-accent/70"
+                      >
+                        Use package session ({sessionsLeftFor(line.serviceId)!.left} left)
+                      </button>
+                    ) : null}
                     <p className="truncate text-body text-muted-foreground">
                       {[
                         line.durationMinutes ? `${line.durationMinutes}min` : null,
@@ -985,6 +1278,27 @@ export function CheckoutScreen({
                 </div>
               ))
             )}
+            {benefits?.membership && lines.length && (step === "cart" || step === "tip") && discount === 0 ? (
+              <button
+                type="button"
+                onClick={() => {
+                  const services = lines.filter((l) => l.serviceId).reduce((sum, l) => sum + l.price * l.quantity, 0);
+                  const amount = Math.round(services * benefits.membership!.discount_percent) / 100;
+                  if (amount > 0) {
+                    setDiscount(amount);
+                    setDiscountScope("services");
+                    toast.success(`${benefits.membership!.name}: ${benefits.membership!.discount_percent}% off services applied`);
+                  } else toast("There are no services in the cart to discount");
+                }}
+                className="mt-2 flex w-full items-center gap-3 rounded-xl bg-accent px-4 py-3 text-left text-body"
+              >
+                <Crown size={20} className="text-primary" />
+                <span className="flex-1">
+                  <span className="block font-semibold">{benefits.membership.name}</span>
+                  <span className="block text-caption text-muted-foreground">Apply {benefits.membership.discount_percent}% off services</span>
+                </span>
+              </button>
+            ) : null}
             {lines.length && step !== "cart" && step !== "done" ? (
               <button
                 type="button"
@@ -1016,8 +1330,8 @@ export function CheckoutScreen({
                 </div>
               ) : null}
               <div className="flex justify-between">
-                <span>Tax</span>
-                <span>{money(0)}</span>
+                <span>Tax (included)</span>
+                <span>{money(taxTotal)}</span>
               </div>
               {paid ? (
                 <div className="flex justify-between">
@@ -1112,6 +1426,21 @@ export function CheckoutScreen({
       </aside>
 
       {/* Amount keypad (Cash / Card / Other) */}
+      <GiftCardSellDialog
+        open={giftSellOpen}
+        currency={currency}
+        onClose={() => setGiftSellOpen(false)}
+        onAdd={(value, extra) => addExtra(`Gift card${extra.recipientName ? ` for ${extra.recipientName}` : ""}`, value, extra)}
+      />
+      <RedeemGiftDialog
+        open={redeemOpen}
+        businessId={businessId}
+        maxAmount={leftToPay}
+        usedCardIds={payments.filter((p) => p.gift).map((p) => p.gift!.giftCardId)}
+        money={money}
+        onClose={() => setRedeemOpen(false)}
+        onRedeem={(amount, gift) => setPayments((current) => [...current, { key: lineKey(), method: "other", amount, gift }])}
+      />
       {amountModal ? (
         <AmountModal
           method={amountModal}
@@ -1213,16 +1542,68 @@ export function CheckoutScreen({
           </DialogTitle>
           <DialogDescription className="sr-only">Applies to this sale only.</DialogDescription>
           {prompt === "discount" ? (
-            <PromptInput
-              initial={discount ? String(discount) : ""}
-              placeholder="0.00"
-              prefix={currency}
-              numeric
-              onSave={(value) => {
-                setDiscount(Math.min(subtotal, Number(value) || 0));
-                setPrompt(null);
-              }}
-            />
+            <>
+              <form
+                className="mt-2 flex gap-2"
+                onSubmit={async (event) => {
+                  event.preventDefault();
+                  setPromoError(null);
+                  const { data, error } = await supabase.rpc("check_deal", { p_code: promoInput });
+                  if (error || !data) {
+                    const reasons: Record<string, string> = {
+                      deal_not_found: "No active deal with that code.",
+                      deal_expired: "This code has expired.",
+                      deal_not_started: "This code isn't active yet.",
+                      deal_used_up: "This code has reached its usage limit.",
+                    };
+                    const key = Object.keys(reasons).find((k) => error?.message.includes(k));
+                    setPromoError(key ? reasons[key]! : "Couldn't check that code.");
+                    return;
+                  }
+                  const deal = data as { code: string; name: string; discount_type: string; value: number; applies_to: string };
+                  const base =
+                    deal.applies_to === "all" ? subtotal : lines.filter((l) => l.serviceId).reduce((sum, l) => sum + l.price * l.quantity, 0);
+                  const amount = Math.min(
+                    subtotal,
+                    deal.discount_type === "percent" ? Math.round(base * Number(deal.value)) / 100 : Math.min(base, Number(deal.value)),
+                  );
+                  if (amount <= 0) {
+                    setPromoError(deal.applies_to === "all" ? "The cart is empty." : "This code only applies to services.");
+                    return;
+                  }
+                  setDiscount(amount);
+                  setDiscountScope(deal.applies_to === "all" ? "all" : "services");
+                  setDealCode(deal.code);
+                  setPrompt(null);
+                  toast.success(`${deal.name}: ${money(amount)} off`);
+                }}
+              >
+                <input
+                  value={promoInput}
+                  onChange={(event) => setPromoInput(event.target.value.toUpperCase())}
+                  placeholder="Promo code"
+                  maxLength={20}
+                  className="h-11 min-w-0 flex-1 rounded-lg border border-border px-3 font-mono uppercase tracking-wider outline-none focus:border-primary"
+                />
+                <button type="submit" disabled={promoInput.trim().length < 3} className={cn(pill, "h-11 bg-ink px-5 text-ink-foreground")}>
+                  Apply
+                </button>
+              </form>
+              {promoError ? <p className="text-caption text-destructive">{promoError}</p> : null}
+              <p className="mt-2 text-caption text-muted-foreground">Or enter an amount:</p>
+              <PromptInput
+                initial={discount ? String(discount) : ""}
+                placeholder="0.00"
+                prefix={currency}
+                numeric
+                onSave={(value) => {
+                  setDiscount(Math.min(subtotal, Number(value) || 0));
+                  setDiscountScope("all");
+                  setDealCode(null);
+                  setPrompt(null);
+                }}
+              />
+            </>
           ) : (
             <PromptInput
               initial={receiptNote}

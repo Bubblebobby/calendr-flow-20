@@ -41,6 +41,7 @@ import {
   attachDraftPortfolioImages,
 } from "@/components/catalog/service-portfolio-images";
 import { useBusiness } from "@/lib/use-business";
+import { TaxRateSelect, useTaxRates } from "@/components/settings/tax-settings";
 import { cn } from "@/lib/utils";
 
 const SORTED_TREATMENT_GROUPS = [...TREATMENT_GROUPS].sort((a, b) =>
@@ -113,6 +114,8 @@ export function ServiceForm({ serviceId, initialCategoryId }: { serviceId?: stri
   const [section, setSection] = useState<"basic" | "team" | "portfolio">("basic");
   const [draftId] = useState(() => crypto.randomUUID());
   const [segments, setSegments] = useState<DurationSegment[]>([]);
+  const [taxRateId, setTaxRateId] = useState("");
+  const taxRates = useTaxRates();
   const [hydrated, setHydrated] = useState(false);
 
   const addSegment = (type: ExtraTimeKey) => {
@@ -137,7 +140,7 @@ export function ServiceForm({ serviceId, initialCategoryId }: { serviceId?: stri
       const { data, error } = await supabase
         .from("services")
         .select(
-          "id, name, category_id, treatment_type, description, pricing_type, price, duration_minutes, duration_segments",
+          "*",
         )
         .eq("id", serviceId!)
         .single();
@@ -155,7 +158,9 @@ export function ServiceForm({ serviceId, initialCategoryId }: { serviceId?: stri
     setDescription(service.description ?? "");
     setPriceType((service.pricing_type as typeof priceType) ?? "fixed");
     setPrice(service.price != null ? String(service.price) : "");
-    const minutes = service.duration_minutes ?? 0;
+    // duration_minutes is the full occupied time; the base duration excludes the extra-time segments.
+    const segmentTotal = ((service.duration_segments ?? []) as SavedSegment[]).reduce((sum, s) => sum + (s.minutes ?? 0), 0);
+    const minutes = Math.max(5, (service.duration_minutes ?? 0) - segmentTotal);
     if (DURATIONS.includes(minutes)) {
       setDuration(String(minutes));
       setCustomDuration("");
@@ -171,6 +176,7 @@ export function ServiceForm({ serviceId, initialCategoryId }: { serviceId?: stri
       }),
     );
     setSegments(savedSegments);
+    setTaxRateId((service as { tax_rate_id?: string | null }).tax_rate_id ?? "");
     setHydrated(true);
   }, [isEdit, serviceQuery.data, hydrated]);
 
@@ -272,11 +278,14 @@ export function ServiceForm({ serviceId, initialCategoryId }: { serviceId?: stri
         treatment_type: treatmentType || null,
         pricing_type: priceType,
         price: priceType === "fixed" ? Number(price) || 0 : null,
-        duration_minutes: minutes,
+        // Store the full time the team member is occupied, so bookings everywhere use it.
+        duration_minutes: minutes + segments.reduce((sum, row) => sum + row.minutes, 0),
         duration_segments: segments.map(({ type, minutes: value }) => ({
           type,
           minutes: value,
         })),
+        // Only once tax rates exist (the column arrives with the same database update).
+        ...(taxRates.data?.length ? { tax_rate_id: taxRateId || null } : {}),
       };
 
       if (isEdit) {
@@ -598,6 +607,12 @@ export function ServiceForm({ serviceId, initialCategoryId }: { serviceId?: stri
                     </Select>
                   </Field>
                 </div>
+
+                {taxRates.data?.length ? (
+                  <div className="mt-6 max-w-sm">
+                    <TaxRateSelect value={taxRateId} onChange={setTaxRateId} />
+                  </div>
+                ) : null}
 
                 {duration === "custom" ? (
                   <div className="mt-4 max-w-xs">

@@ -56,6 +56,7 @@ type SaleRow = {
     price: number;
     quantity: number;
     service_id: string | null;
+    product_id: string | null;
     appointment_item_id: string | null;
   }>;
 };
@@ -123,7 +124,7 @@ export function SalesList() {
       let query = supabase
         .from("sales")
         .select(
-          "id, sale_date, status, payment_method, total, notes, is_walk_in, client_id, appointment_id, clients(first_name, last_name, email), team_members(first_name, last_name), sale_items(id, description, price, quantity, service_id, appointment_item_id)",
+          "id, sale_date, status, payment_method, total, notes, is_walk_in, client_id, appointment_id, clients(first_name, last_name, email), team_members(first_name, last_name), sale_items(id, description, price, quantity, service_id, product_id, appointment_item_id)",
         )
         .eq("business_id", businessId!)
         .order("sale_date", { ascending: false });
@@ -182,6 +183,7 @@ export function SalesList() {
       lines: row.sale_items.map((item) => ({
         key: item.id,
         serviceId: item.service_id,
+        productId: item.product_id,
         description: item.description,
         price: Number(item.price),
         quantity: item.quantity,
@@ -490,13 +492,13 @@ export function SalesList() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent side="top" align="start" className="w-52 rounded-xl p-1.5">
                   <DropdownMenuItem
-                    onSelect={() => window.print()}
+                    onSelect={() => window.open(`/receipt/${viewing.id}`, "_blank", "noopener")}
                     className="rounded-lg px-3 py-2 text-body"
                   >
                     Print receipt
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onSelect={() => toast("Emailing receipts arrives with Marketing → Automations")}
+                    onSelect={() => toast("Emailing receipts needs an email provider. Coming in a later update.")}
                     className="rounded-lg px-3 py-2 text-body"
                   >
                     Email receipt
