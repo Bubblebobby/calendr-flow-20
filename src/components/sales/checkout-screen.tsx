@@ -146,6 +146,8 @@ export function CheckoutScreen({
   const [redeemOpen, setRedeemOpen] = useState(false);
   const [issuedCodes, setIssuedCodes] = useState<string[]>([]);
   const [dealCode, setDealCode] = useState<string | null>(null);
+  // Which lines the cart discount covers: a services-only deal skips products.
+  const [discountScope, setDiscountScope] = useState<"all" | "services">("all");
   const [completedSaleId, setCompletedSaleId] = useState<string | null>(null);
   const [promoInput, setPromoInput] = useState("");
   const [promoError, setPromoError] = useState<string | null>(null);
@@ -187,6 +189,7 @@ export function CheckoutScreen({
     setSplitMode(false);
     setIssuedCodes([]);
     setDealCode(null);
+    setDiscountScope("all");
     setPromoInput("");
     setPromoError(null);
   }, [open, start]);
@@ -352,8 +355,11 @@ export function CheckoutScreen({
   // ── Totals ──
   const subtotal = lines.reduce((sum, line) => sum + line.price * line.quantity, 0);
   const afterDiscount = Math.max(0, subtotal - discount);
+  // Percentage tips are worked out on services and products, not gift cards, packages or memberships.
+  const prepaidTotal = lines.reduce((sum, line) => sum + (line.extra ? line.price * line.quantity : 0), 0);
+  const tipBase = Math.max(0, afterDiscount - prepaidTotal);
   const tipAmount =
-    tip === "custom" ? Math.max(0, Number(customTip) || 0) : Math.round(afterDiscount * tip) / 100;
+    tip === "custom" ? Math.max(0, Number(customTip) || 0) : Math.round(tipBase * tip) / 100;
   const toPay = afterDiscount + tipAmount;
   const paid = payments.reduce((sum, payment) => sum + payment.amount, 0);
   const lineRate = (line: CheckoutLine): number | null => {
@@ -366,7 +372,12 @@ export function CheckoutScreen({
     const id = own ?? taxSetup.defaultId;
     return id ? (taxSetup.rates.get(id) ?? null) : null;
   };
-  const taxes = lineTaxes(lines.map((line) => ({ amount: line.price * line.quantity, rate: lineRate(line) })), discount);
+  const discountable = (line: CheckoutLine) =>
+    !line.extra && (discountScope === "all" || (!!line.serviceId && !line.productId));
+  const taxes = lineTaxes(
+    lines.map((line) => ({ amount: line.price * line.quantity, rate: lineRate(line), discountable: discountable(line) })),
+    discount,
+  );
   const taxTotal = Math.round(taxes.reduce((sum, value) => sum + value, 0) * 100) / 100;
   const leftToPay = Math.max(0, Math.round((toPay - paid) * 100) / 100);
   const staffNames = [
@@ -493,7 +504,7 @@ export function CheckoutScreen({
         tipAmount > 0 ? `Tip ${money(tipAmount)}${staffNames ? ` for ${staffNames}` : ""}` : null,
         discount > 0 ? `Cart discount ${money(discount)}` : null,
         payments.length > 1
-          ? `Split payment: ${payments.map((payment) => `${METHOD_LABEL[payment.method]} ${money(payment.amount)}`).join(", ")}`
+          ? `Split payment: ${payments.map((payment) => `${payment.gift ? `Gift card ${payment.gift.code}` : METHOD_LABEL[payment.method]} ${money(payment.amount)}`).join(", ")}`
           : null,
       ].filter(Boolean);
       const header = {
@@ -938,7 +949,7 @@ export function CheckoutScreen({
               </span>
               {percent ? (
                 <span className="text-body text-muted-foreground">
-                  {money(Math.round(afterDiscount * percent) / 100)}
+                  {money(Math.round(tipBase * percent) / 100)}
                 </span>
               ) : null}
             </button>
@@ -1273,6 +1284,7 @@ export function CheckoutScreen({
                   const amount = Math.round(services * benefits.membership!.discount_percent) / 100;
                   if (amount > 0) {
                     setDiscount(amount);
+                    setDiscountScope("services");
                     toast.success(`${benefits.membership!.name}: ${benefits.membership!.discount_percent}% off services applied`);
                   } else toast("There are no services in the cart to discount");
                 }}
@@ -1558,6 +1570,7 @@ export function CheckoutScreen({
                     return;
                   }
                   setDiscount(amount);
+                  setDiscountScope(deal.applies_to === "all" ? "all" : "services");
                   setDealCode(deal.code);
                   setPrompt(null);
                   toast.success(`${deal.name}: ${money(amount)} off`);
@@ -1583,6 +1596,7 @@ export function CheckoutScreen({
                 numeric
                 onSave={(value) => {
                   setDiscount(Math.min(subtotal, Number(value) || 0));
+                  setDiscountScope("all");
                   setDealCode(null);
                   setPrompt(null);
                 }}
