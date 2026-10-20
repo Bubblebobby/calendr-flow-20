@@ -20,6 +20,7 @@ import { formatMoney } from "@/lib/format";
 import { TaxRateSelect } from "@/components/settings/tax-settings";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
+import { csvCell } from "@/lib/csv";
 
 export const INVENTORY_DB_NOTICE =
   "Products and inventory need a database update first: run notes/supabase-update-2026-10-19.sql in Supabase.";
@@ -221,7 +222,7 @@ export function ProductsPage() {
       ]),
     ];
     const csv =
-      "﻿" + rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(",")).join("\n");
+      "﻿" + rows.map((r) => r.map(csvCell).join(",")).join("\n");
     const link = document.createElement("a");
     link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     link.download = `products-${new Date().toISOString().slice(0, 10)}.csv`;

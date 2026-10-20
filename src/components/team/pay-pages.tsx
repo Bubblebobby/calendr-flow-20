@@ -15,6 +15,7 @@ import { computePay, workedHours, type PayLine } from "@/lib/pay";
 import { addDays, isoDay, weekStart } from "@/lib/team-shifts";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
+import { csvCell } from "@/lib/csv";
 
 const NOTICE = "Timesheets and pay runs need a database update first: run notes/supabase-update-2026-10-19.sql in Supabase.";
 const field = "mt-2 h-12 w-full rounded-[8px] border border-input bg-card px-4 text-body font-normal outline-none focus:border-primary focus:ring-2 focus:ring-primary/15";
@@ -710,7 +711,7 @@ function PayRunDetail({ runId, onBack }: { runId: string; onBack: () => void }) 
   const exportCsv = () => {
     if (!run.data) return;
     const rows = [["Team member", "Hours", "Wages", "Commission", "Tips", "Adjustment", "Reason", "Total"], ...run.data.pay_run_lines.map((l) => [l.member_name, String(l.hours), String(l.wages), String(l.commission), String(l.tips), String(l.adjustment), l.adjustment_note ?? "", String(l.total)])];
-    const csv = "﻿" + rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(",")).join("\n");
+    const csv = "﻿" + rows.map((r) => r.map(csvCell).join(",")).join("\n");
     const link = document.createElement("a");
     link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     link.download = `pay-run-${run.data.period_start}-to-${run.data.period_end}.csv`;

@@ -27,9 +27,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { revokeTeamAccess, sendTeamInvite } from "@/lib/team-invites";
+import { revokeTeamAccess, sendTeamInvite, setTeamAccessLevel } from "@/lib/team-invites";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
+import { csvCell } from "@/lib/csv";
 
 export type InviteStatus = "not_invited" | "invited" | "active";
 
@@ -158,13 +159,8 @@ export function TeamMembersList() {
   });
 
   const setAccessLevel = useMutation({
-    mutationFn: async ({ member, level }: { member: TeamMemberRow; level: "admin" | "staff" }) => {
-      const { error } = await supabase
-        .from("team_members")
-        .update({ access_level: level })
-        .eq("id", member.id);
-      if (error) throw error;
-    },
+    mutationFn: async ({ member, level }: { member: TeamMemberRow; level: "admin" | "staff" }) =>
+      setTeamAccessLevel(member.id, level),
     onSuccess: (_data, { member, level }) => {
       queryClient.invalidateQueries({ queryKey: ["team-members", businessId] });
       toast.success(
@@ -173,7 +169,8 @@ export function TeamMembersList() {
           : `${member.first_name} no longer has admin access`,
       );
     },
-    onError: () => toast.error("Couldn't change access"),
+    onError: (error: Error) =>
+      toast.error("Couldn't change access", { description: error.message }),
   });
 
   const openInvite = (member: TeamMemberRow | null) => {
@@ -391,7 +388,8 @@ export function TeamMembersList() {
             <AlertDialogTitle>Revoke access?</AlertDialogTitle>
             <AlertDialogDescription>
               {revokeTarget ? memberName(revokeTarget) : "This person"} will immediately lose access
-              to the dashboard. Their past records stay intact.
+              to this business. Their past records stay intact, and their Bookly login still works
+              anywhere else they belong.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -431,9 +429,7 @@ function exportCsv(members: TeamMemberRow[], roles: Map<string, string>) {
       STATUS_STYLES[m.invite_status]?.label ?? "",
     ]),
   ];
-  const csv =
-    "\uFEFF" +
-    rows.map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(",")).join("\n");
+  const csv = "\uFEFF" + rows.map((row) => row.map(csvCell).join(",")).join("\n");
   const link = document.createElement("a");
   link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
   link.download = `team-members-${new Date().toISOString().slice(0, 10)}.csv`;

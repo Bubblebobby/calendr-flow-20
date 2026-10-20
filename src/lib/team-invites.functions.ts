@@ -96,6 +96,11 @@ export const inviteTeamMember = createServerFn({ method: "POST" })
     return { sent: true, email: member.email as string };
   });
 
+/**
+ * Removes a person's access to this business only. Access checks look up the team row on every
+ * request, so unlinking it ends their access straight away; their Bookly login keeps working for
+ * any other business they belong to.
+ */
 export const revokeTeamMemberAccess = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(idInput)
@@ -104,7 +109,7 @@ export const revokeTeamMemberAccess = createServerFn({ method: "POST" })
 
     const { data: member, error } = await supabaseAdmin
       .from("team_members")
-      .select("id, business_id, user_id")
+      .select("id, business_id, user_id, access_level")
       .eq("id", data.team_member_id)
       .maybeSingle();
     if (error) fail("Could not load the team member.", error);
@@ -122,13 +127,9 @@ export const revokeTeamMemberAccess = createServerFn({ method: "POST" })
     if (member.user_id && business?.owner_id === member.user_id) {
       fail("The business owner's access can't be revoked.");
     }
-
-    if (member.user_id) {
-      // Ban rather than delete: historical records must keep referencing this person.
-      const { error: banError } = await supabaseAdmin.auth.admin.updateUserById(member.user_id, {
-        ban_duration: "876000h",
-      });
-      if (banError) fail("Could not revoke access.", banError);
+    // Admins can remove staff; only the owner can remove another admin.
+    if (member.access_level === "admin" && business?.owner_id !== context.userId) {
+      fail("Only the business owner can remove an admin.");
     }
 
     const { error: resetError } = await supabaseAdmin
@@ -138,11 +139,59 @@ export const revokeTeamMemberAccess = createServerFn({ method: "POST" })
         invite_status: "not_invited",
         invite_token: null,
         invite_expires_at: null,
+        access_level: "staff",
       })
       .eq("id", member.id);
     if (resetError) fail("Could not revoke access.", resetError);
 
+    if (member.user_id) {
+      // Their profile pointed the app at this business; clear it so they aren't sent here.
+      const { error: profileError } = await supabaseAdmin
+        .from("profiles")
+        .update({ business_id: null })
+        .eq("id", member.user_id)
+        .eq("business_id", member.business_id);
+      if (profileError)
+        console.error("[team-invites] could not clear profile business", profileError);
+    }
+
     return { revoked: true };
+  });
+
+/** Owner only: give an active team member admin access (pay, timesheets, deals, tax), or remove it. */
+export const setTeamMemberAccessLevel = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ team_member_id: z.string().uuid(), level: z.enum(["staff", "admin"]) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: member, error } = await supabaseAdmin
+      .from("team_members")
+      .select("id, business_id, user_id, invite_status")
+      .eq("id", data.team_member_id)
+      .maybeSingle();
+    if (error) fail("Could not load the team member.", error);
+    if (!member) fail("Team member not found.");
+
+    const { data: business, error: businessError } = await supabaseAdmin
+      .from("businesses")
+      .select("owner_id")
+      .eq("id", member.business_id)
+      .maybeSingle();
+    if (businessError) fail("Could not load the business.", businessError);
+    if (!business || business.owner_id !== context.userId)
+      fail("Only the business owner can change admin access.");
+    if (member.invite_status !== "active" || !member.user_id)
+      fail("Only team members with access can be admins.");
+
+    const { error: updateError } = await supabaseAdmin
+      .from("team_members")
+      .update({ access_level: data.level })
+      .eq("id", member.id);
+    if (updateError) fail("Could not change access.", updateError);
+    return { level: data.level };
   });
 
 /** Public: the acceptance page renders before the invitee signs in. */
