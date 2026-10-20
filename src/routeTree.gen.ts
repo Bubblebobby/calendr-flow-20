@@ -12,9 +12,14 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
+import { Route as AccountRouteImport } from './routes/account'
+import { Route as AccountTypeRouteImport } from './routes/account-type'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BusinessSetupRouteImport } from './routes/business-setup'
+import { Route as CreateAccountRouteImport } from './routes/create-account'
+import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as AuthenticatedAddOnsRouteImport } from './routes/_authenticated/add-ons'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedCatalogRouteImport } from './routes/_authenticated/catalog'
@@ -27,6 +32,12 @@ import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedSalesRouteImport } from './routes/_authenticated/sales'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
+import { Route as AccountIndexRouteImport } from './routes/account.index'
+import { Route as AccountAppointmentsRouteImport } from './routes/account.appointments'
+import { Route as AccountFavouritesRouteImport } from './routes/account.favourites'
+import { Route as AccountProfileRouteImport } from './routes/account.profile'
+import { Route as AccountSettingsRouteImport } from './routes/account.settings'
+import { Route as AccountWalletRouteImport } from './routes/account.wallet'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as BookSlugRouteImport } from './routes/book.$slug'
 import { Route as BundleNewRouteImport } from './routes/bundle.new'
@@ -34,6 +45,7 @@ import { Route as CatalogReorderRouteImport } from './routes/catalog.reorder'
 import { Route as ClientClientIdRouteImport } from './routes/client.$clientId'
 import { Route as ClientNewRouteImport } from './routes/client.new'
 import { Route as ReceiptSaleIdRouteImport } from './routes/receipt.$saleId'
+import { Route as SalonSlugRouteImport } from './routes/salon.$slug'
 import { Route as ServiceServiceIdRouteImport } from './routes/service.$serviceId'
 import { Route as ServiceNewRouteImport } from './routes/service.new'
 import { Route as TeamNewRouteImport } from './routes/team.new'
@@ -55,6 +67,16 @@ const AcceptInviteRoute = AcceptInviteRouteImport.update({
   path: '/accept-invite',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountTypeRoute = AccountTypeRouteImport.update({
+  id: '/account-type',
+  path: '/account-type',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -65,9 +87,24 @@ const BusinessSetupRoute = BusinessSetupRouteImport.update({
   path: '/business-setup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CreateAccountRoute = CreateAccountRouteImport.update({
+  id: '/create-account',
+  path: '/create-account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiscoverRoute = DiscoverRouteImport.update({
+  id: '/discover',
+  path: '/discover',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignInRoute = SignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAddOnsRoute = AuthenticatedAddOnsRouteImport.update({
@@ -131,6 +168,36 @@ const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
   path: '/team',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AccountIndexRoute = AccountIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AccountRoute,
+} as any)
+const AccountAppointmentsRoute = AccountAppointmentsRouteImport.update({
+  id: '/appointments',
+  path: '/appointments',
+  getParentRoute: () => AccountRoute,
+} as any)
+const AccountFavouritesRoute = AccountFavouritesRouteImport.update({
+  id: '/favourites',
+  path: '/favourites',
+  getParentRoute: () => AccountRoute,
+} as any)
+const AccountProfileRoute = AccountProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AccountRoute,
+} as any)
+const AccountSettingsRoute = AccountSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AccountRoute,
+} as any)
+const AccountWalletRoute = AccountWalletRouteImport.update({
+  id: '/wallet',
+  path: '/wallet',
+  getParentRoute: () => AccountRoute,
+} as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/callback',
   path: '/callback',
@@ -164,6 +231,11 @@ const ClientNewRoute = ClientNewRouteImport.update({
 const ReceiptSaleIdRoute = ReceiptSaleIdRouteImport.update({
   id: '/receipt/$saleId',
   path: '/receipt/$saleId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SalonSlugRoute = SalonSlugRouteImport.update({
+  id: '/salon/$slug',
+  path: '/salon/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ServiceServiceIdRoute = ServiceServiceIdRouteImport.update({
@@ -201,9 +273,14 @@ const TeamShiftsMemberIdRoute = TeamShiftsMemberIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/accept-invite': typeof AcceptInviteRoute
+  '/account': typeof AccountRouteWithChildren
+  '/account-type': typeof AccountTypeRoute
   '/auth': typeof AuthRouteWithChildren
   '/business-setup': typeof BusinessSetupRoute
+  '/create-account': typeof CreateAccountRoute
+  '/discover': typeof DiscoverRoute
   '/onboarding': typeof OnboardingRoute
+  '/sign-in': typeof SignInRoute
   '/add-ons': typeof AuthenticatedAddOnsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/catalog': typeof AuthenticatedCatalogRoute
@@ -216,6 +293,11 @@ export interface FileRoutesByFullPath {
   '/sales': typeof AuthenticatedSalesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
+  '/account/appointments': typeof AccountAppointmentsRoute
+  '/account/favourites': typeof AccountFavouritesRoute
+  '/account/profile': typeof AccountProfileRoute
+  '/account/settings': typeof AccountSettingsRoute
+  '/account/wallet': typeof AccountWalletRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/book/$slug': typeof BookSlugRoute
   '/bundle/new': typeof BundleNewRoute
@@ -223,9 +305,11 @@ export interface FileRoutesByFullPath {
   '/client/$clientId': typeof ClientClientIdRoute
   '/client/new': typeof ClientNewRoute
   '/receipt/$saleId': typeof ReceiptSaleIdRoute
+  '/salon/$slug': typeof SalonSlugRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/team/new': typeof TeamNewRoute
+  '/account/': typeof AccountIndexRoute
   '/reports/$reportId': typeof AuthenticatedReportsReportIdRoute
   '/book/manage/$token': typeof BookManageTokenRoute
   '/team/shifts/$memberId': typeof TeamShiftsMemberIdRoute
@@ -233,9 +317,13 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accept-invite': typeof AcceptInviteRoute
+  '/account-type': typeof AccountTypeRoute
   '/auth': typeof AuthRouteWithChildren
   '/business-setup': typeof BusinessSetupRoute
+  '/create-account': typeof CreateAccountRoute
+  '/discover': typeof DiscoverRoute
   '/onboarding': typeof OnboardingRoute
+  '/sign-in': typeof SignInRoute
   '/add-ons': typeof AuthenticatedAddOnsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/catalog': typeof AuthenticatedCatalogRoute
@@ -248,6 +336,11 @@ export interface FileRoutesByTo {
   '/sales': typeof AuthenticatedSalesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
+  '/account/appointments': typeof AccountAppointmentsRoute
+  '/account/favourites': typeof AccountFavouritesRoute
+  '/account/profile': typeof AccountProfileRoute
+  '/account/settings': typeof AccountSettingsRoute
+  '/account/wallet': typeof AccountWalletRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/book/$slug': typeof BookSlugRoute
   '/bundle/new': typeof BundleNewRoute
@@ -255,9 +348,11 @@ export interface FileRoutesByTo {
   '/client/$clientId': typeof ClientClientIdRoute
   '/client/new': typeof ClientNewRoute
   '/receipt/$saleId': typeof ReceiptSaleIdRoute
+  '/salon/$slug': typeof SalonSlugRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/team/new': typeof TeamNewRoute
+  '/account': typeof AccountIndexRoute
   '/reports/$reportId': typeof AuthenticatedReportsReportIdRoute
   '/book/manage/$token': typeof BookManageTokenRoute
   '/team/shifts/$memberId': typeof TeamShiftsMemberIdRoute
@@ -267,9 +362,14 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/accept-invite': typeof AcceptInviteRoute
+  '/account': typeof AccountRouteWithChildren
+  '/account-type': typeof AccountTypeRoute
   '/auth': typeof AuthRouteWithChildren
   '/business-setup': typeof BusinessSetupRoute
+  '/create-account': typeof CreateAccountRoute
+  '/discover': typeof DiscoverRoute
   '/onboarding': typeof OnboardingRoute
+  '/sign-in': typeof SignInRoute
   '/_authenticated/add-ons': typeof AuthenticatedAddOnsRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/catalog': typeof AuthenticatedCatalogRoute
@@ -282,6 +382,11 @@ export interface FileRoutesById {
   '/_authenticated/sales': typeof AuthenticatedSalesRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
+  '/account/appointments': typeof AccountAppointmentsRoute
+  '/account/favourites': typeof AccountFavouritesRoute
+  '/account/profile': typeof AccountProfileRoute
+  '/account/settings': typeof AccountSettingsRoute
+  '/account/wallet': typeof AccountWalletRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/book/$slug': typeof BookSlugRoute
   '/bundle/new': typeof BundleNewRoute
@@ -289,9 +394,11 @@ export interface FileRoutesById {
   '/client/$clientId': typeof ClientClientIdRoute
   '/client/new': typeof ClientNewRoute
   '/receipt/$saleId': typeof ReceiptSaleIdRoute
+  '/salon/$slug': typeof SalonSlugRoute
   '/service/$serviceId': typeof ServiceServiceIdRoute
   '/service/new': typeof ServiceNewRoute
   '/team/new': typeof TeamNewRoute
+  '/account/': typeof AccountIndexRoute
   '/_authenticated/reports_/$reportId': typeof AuthenticatedReportsReportIdRoute
   '/book/manage/$token': typeof BookManageTokenRoute
   '/team/shifts/$memberId': typeof TeamShiftsMemberIdRoute
@@ -301,9 +408,14 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/accept-invite'
+    | '/account'
+    | '/account-type'
     | '/auth'
     | '/business-setup'
+    | '/create-account'
+    | '/discover'
     | '/onboarding'
+    | '/sign-in'
     | '/add-ons'
     | '/calendar'
     | '/catalog'
@@ -316,6 +428,11 @@ export interface FileRouteTypes {
     | '/sales'
     | '/settings'
     | '/team'
+    | '/account/appointments'
+    | '/account/favourites'
+    | '/account/profile'
+    | '/account/settings'
+    | '/account/wallet'
     | '/auth/callback'
     | '/book/$slug'
     | '/bundle/new'
@@ -323,9 +440,11 @@ export interface FileRouteTypes {
     | '/client/$clientId'
     | '/client/new'
     | '/receipt/$saleId'
+    | '/salon/$slug'
     | '/service/$serviceId'
     | '/service/new'
     | '/team/new'
+    | '/account/'
     | '/reports/$reportId'
     | '/book/manage/$token'
     | '/team/shifts/$memberId'
@@ -333,9 +452,13 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/accept-invite'
+    | '/account-type'
     | '/auth'
     | '/business-setup'
+    | '/create-account'
+    | '/discover'
     | '/onboarding'
+    | '/sign-in'
     | '/add-ons'
     | '/calendar'
     | '/catalog'
@@ -348,6 +471,11 @@ export interface FileRouteTypes {
     | '/sales'
     | '/settings'
     | '/team'
+    | '/account/appointments'
+    | '/account/favourites'
+    | '/account/profile'
+    | '/account/settings'
+    | '/account/wallet'
     | '/auth/callback'
     | '/book/$slug'
     | '/bundle/new'
@@ -355,9 +483,11 @@ export interface FileRouteTypes {
     | '/client/$clientId'
     | '/client/new'
     | '/receipt/$saleId'
+    | '/salon/$slug'
     | '/service/$serviceId'
     | '/service/new'
     | '/team/new'
+    | '/account'
     | '/reports/$reportId'
     | '/book/manage/$token'
     | '/team/shifts/$memberId'
@@ -366,9 +496,14 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/accept-invite'
+    | '/account'
+    | '/account-type'
     | '/auth'
     | '/business-setup'
+    | '/create-account'
+    | '/discover'
     | '/onboarding'
+    | '/sign-in'
     | '/_authenticated/add-ons'
     | '/_authenticated/calendar'
     | '/_authenticated/catalog'
@@ -381,6 +516,11 @@ export interface FileRouteTypes {
     | '/_authenticated/sales'
     | '/_authenticated/settings'
     | '/_authenticated/team'
+    | '/account/appointments'
+    | '/account/favourites'
+    | '/account/profile'
+    | '/account/settings'
+    | '/account/wallet'
     | '/auth/callback'
     | '/book/$slug'
     | '/bundle/new'
@@ -388,9 +528,11 @@ export interface FileRouteTypes {
     | '/client/$clientId'
     | '/client/new'
     | '/receipt/$saleId'
+    | '/salon/$slug'
     | '/service/$serviceId'
     | '/service/new'
     | '/team/new'
+    | '/account/'
     | '/_authenticated/reports_/$reportId'
     | '/book/manage/$token'
     | '/team/shifts/$memberId'
@@ -400,15 +542,21 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AcceptInviteRoute: typeof AcceptInviteRoute
+  AccountRoute: typeof AccountRouteWithChildren
+  AccountTypeRoute: typeof AccountTypeRoute
   AuthRoute: typeof AuthRouteWithChildren
   BusinessSetupRoute: typeof BusinessSetupRoute
+  CreateAccountRoute: typeof CreateAccountRoute
+  DiscoverRoute: typeof DiscoverRoute
   OnboardingRoute: typeof OnboardingRoute
+  SignInRoute: typeof SignInRoute
   BookSlugRoute: typeof BookSlugRoute
   BundleNewRoute: typeof BundleNewRoute
   CatalogReorderRoute: typeof CatalogReorderRoute
   ClientClientIdRoute: typeof ClientClientIdRoute
   ClientNewRoute: typeof ClientNewRoute
   ReceiptSaleIdRoute: typeof ReceiptSaleIdRoute
+  SalonSlugRoute: typeof SalonSlugRoute
   ServiceServiceIdRoute: typeof ServiceServiceIdRoute
   ServiceNewRoute: typeof ServiceNewRoute
   TeamNewRoute: typeof TeamNewRoute
@@ -439,6 +587,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AcceptInviteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account-type': {
+      id: '/account-type'
+      path: '/account-type'
+      fullPath: '/account-type'
+      preLoaderRoute: typeof AccountTypeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -453,11 +615,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BusinessSetupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/create-account': {
+      id: '/create-account'
+      path: '/create-account'
+      fullPath: '/create-account'
+      preLoaderRoute: typeof CreateAccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/discover': {
+      id: '/discover'
+      path: '/discover'
+      fullPath: '/discover'
+      preLoaderRoute: typeof DiscoverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/onboarding': {
       id: '/onboarding'
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-in': {
+      id: '/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof SignInRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/add-ons': {
@@ -544,6 +727,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTeamRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/account/': {
+      id: '/account/'
+      path: '/'
+      fullPath: '/account/'
+      preLoaderRoute: typeof AccountIndexRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/account/appointments': {
+      id: '/account/appointments'
+      path: '/appointments'
+      fullPath: '/account/appointments'
+      preLoaderRoute: typeof AccountAppointmentsRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/account/favourites': {
+      id: '/account/favourites'
+      path: '/favourites'
+      fullPath: '/account/favourites'
+      preLoaderRoute: typeof AccountFavouritesRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/account/profile': {
+      id: '/account/profile'
+      path: '/profile'
+      fullPath: '/account/profile'
+      preLoaderRoute: typeof AccountProfileRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/account/settings': {
+      id: '/account/settings'
+      path: '/settings'
+      fullPath: '/account/settings'
+      preLoaderRoute: typeof AccountSettingsRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/account/wallet': {
+      id: '/account/wallet'
+      path: '/wallet'
+      fullPath: '/account/wallet'
+      preLoaderRoute: typeof AccountWalletRouteImport
+      parentRoute: typeof AccountRoute
+    }
     '/auth/callback': {
       id: '/auth/callback'
       path: '/callback'
@@ -591,6 +816,13 @@ declare module '@tanstack/react-router' {
       path: '/receipt/$saleId'
       fullPath: '/receipt/$saleId'
       preLoaderRoute: typeof ReceiptSaleIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/salon/$slug': {
+      id: '/salon/$slug'
+      path: '/salon/$slug'
+      fullPath: '/salon/$slug'
+      preLoaderRoute: typeof SalonSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/service/$serviceId': {
@@ -673,6 +905,27 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface AccountRouteChildren {
+  AccountAppointmentsRoute: typeof AccountAppointmentsRoute
+  AccountFavouritesRoute: typeof AccountFavouritesRoute
+  AccountProfileRoute: typeof AccountProfileRoute
+  AccountSettingsRoute: typeof AccountSettingsRoute
+  AccountWalletRoute: typeof AccountWalletRoute
+  AccountIndexRoute: typeof AccountIndexRoute
+}
+
+const AccountRouteChildren: AccountRouteChildren = {
+  AccountAppointmentsRoute: AccountAppointmentsRoute,
+  AccountFavouritesRoute: AccountFavouritesRoute,
+  AccountProfileRoute: AccountProfileRoute,
+  AccountSettingsRoute: AccountSettingsRoute,
+  AccountWalletRoute: AccountWalletRoute,
+  AccountIndexRoute: AccountIndexRoute,
+}
+
+const AccountRouteWithChildren =
+  AccountRoute._addFileChildren(AccountRouteChildren)
+
 interface AuthRouteChildren {
   AuthCallbackRoute: typeof AuthCallbackRoute
 }
@@ -687,15 +940,21 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AcceptInviteRoute: AcceptInviteRoute,
+  AccountRoute: AccountRouteWithChildren,
+  AccountTypeRoute: AccountTypeRoute,
   AuthRoute: AuthRouteWithChildren,
   BusinessSetupRoute: BusinessSetupRoute,
+  CreateAccountRoute: CreateAccountRoute,
+  DiscoverRoute: DiscoverRoute,
   OnboardingRoute: OnboardingRoute,
+  SignInRoute: SignInRoute,
   BookSlugRoute: BookSlugRoute,
   BundleNewRoute: BundleNewRoute,
   CatalogReorderRoute: CatalogReorderRoute,
   ClientClientIdRoute: ClientClientIdRoute,
   ClientNewRoute: ClientNewRoute,
   ReceiptSaleIdRoute: ReceiptSaleIdRoute,
+  SalonSlugRoute: SalonSlugRoute,
   ServiceServiceIdRoute: ServiceServiceIdRoute,
   ServiceNewRoute: ServiceNewRoute,
   TeamNewRoute: TeamNewRoute,

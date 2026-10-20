@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      favorite_businesses: {
+        Row: {
+          user_id: string
+          business_id: string
+          created_at: string
+        }
+        Insert: {
+          user_id?: string
+          business_id: string
+          created_at?: string
+        }
+        Update: {
+          user_id?: string
+          business_id?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          id: string
+          business_id: string
+          appointment_id: string
+          user_id: string | null
+          author_name: string
+          rating: number
+          comment: string | null
+          services: string | null
+          team_member_name: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          business_id: string
+          appointment_id: string
+          user_id?: string | null
+          author_name: string
+          rating: number
+          comment?: string | null
+          services?: string | null
+          team_member_name?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          business_id?: string
+          appointment_id?: string
+          user_id?: string | null
+          author_name?: string
+          rating?: number
+          comment?: string | null
+          services?: string | null
+          team_member_name?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       timesheets: {
         Row: {
           break_minutes: number
@@ -1551,6 +1608,7 @@ export type Database = {
       }
       clients: {
         Row: {
+          user_id: string | null
           additional_email: string | null
           additional_phone: string | null
           additional_phone_country_code: string | null
@@ -1579,6 +1637,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          user_id?: string | null
           additional_email?: string | null
           additional_phone?: string | null
           additional_phone_country_code?: string | null
@@ -1607,6 +1666,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          user_id?: string | null
           additional_email?: string | null
           additional_phone?: string | null
           additional_phone_country_code?: string | null
@@ -1707,6 +1767,10 @@ export type Database = {
       }
       profiles: {
         Row: {
+          birthday: string | null
+          gender: string | null
+          email_reminders: boolean
+          marketing_emails: boolean
           avatar_url: string | null
           business_id: string | null
           country: string | null
@@ -1719,6 +1783,10 @@ export type Database = {
           user_type: string
         }
         Insert: {
+          birthday?: string | null
+          gender?: string | null
+          email_reminders?: boolean
+          marketing_emails?: boolean
           avatar_url?: string | null
           business_id?: string | null
           country?: string | null
@@ -1731,6 +1799,10 @@ export type Database = {
           user_type?: string
         }
         Update: {
+          birthday?: string | null
+          gender?: string | null
+          email_reminders?: boolean
+          marketing_emails?: boolean
           avatar_url?: string | null
           business_id?: string | null
           country?: string | null
@@ -2121,6 +2193,8 @@ export type Database = {
       }
       team_members: {
         Row: {
+          invite_expires_at: string | null
+          access_level: string
           hourly_rate: number | null
           product_commission_percent: number | null
           service_commission_percent: number | null
@@ -2156,6 +2230,8 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          invite_expires_at?: string | null
+          access_level?: string
           hourly_rate?: number | null
           product_commission_percent?: number | null
           service_commission_percent?: number | null
@@ -2190,6 +2266,8 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          invite_expires_at?: string | null
+          access_level?: string
           hourly_rate?: number | null
           product_commission_percent?: number | null
           service_commission_percent?: number | null
@@ -2284,6 +2362,42 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      link_my_business: {
+        Args: { p_business: string }
+        Returns: undefined
+      }
+      is_business_member: {
+        Args: { p_business: string }
+        Returns: boolean
+      }
+      is_business_admin: {
+        Args: { p_business: string }
+        Returns: boolean
+      }
+      link_my_clients: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      my_appointments: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      my_wallet: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      submit_review: {
+        Args: { p_appointment: string; p_rating: number; p_comment?: string | null }
+        Returns: string
+      }
+      discover_businesses: {
+        Args: { p_query?: string | null; p_category?: string | null; p_city?: string | null; p_ids?: string[] | null }
+        Returns: Json
+      }
+      get_venue_reviews: {
+        Args: { p_slug: string }
+        Returns: Json
+      }
       check_deal: {
         Args: { p_code: string }
         Returns: Json

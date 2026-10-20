@@ -115,13 +115,13 @@ function Landing() {
           </div>
 
           <div className="flex items-center gap-3">
-            <a
-              href="#preview"
+            <Link
+              to="/discover"
               className="hidden items-center gap-2 rounded-full border border-border bg-card/50 px-5 py-3 text-body font-semibold text-foreground transition-colors hover:bg-muted active:bg-secondary sm:inline-flex"
             >
               <Store className="size-4" />
               Marketplace
-            </a>
+            </Link>
             <Button
               asChild
               className="h-12 rounded-full bg-ink px-7 text-base font-semibold text-ink-foreground hover:bg-ink/90 active:bg-ink/80"

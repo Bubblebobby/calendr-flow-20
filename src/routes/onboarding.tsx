@@ -1,24 +1,16 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronsUpDown, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
 import { AuthShell } from "@/components/auth-shell";
+import { CountryPicker } from "@/components/country-picker";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { COUNTRIES, countryByCode, flagEmoji, guessCountryCode } from "@/lib/countries";
+import { countryByCode, flagEmoji, guessCountryCode } from "@/lib/countries";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -29,12 +21,14 @@ export const Route = createFileRoute("/onboarding")({
       { title: "Complete your profile — Bookly" },
       {
         name: "description",
-        content: "Add your name, mobile number and country to finish setting up your Bookly account.",
+        content:
+          "Add your name, mobile number and country to finish setting up your Bookly account.",
       },
       { property: "og:title", content: "Complete your profile — Bookly" },
       {
         property: "og:description",
-        content: "Add your name, mobile number and country to finish setting up your Bookly account.",
+        content:
+          "Add your name, mobile number and country to finish setting up your Bookly account.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -58,69 +52,6 @@ const schema = z.object({
   country: z.string().length(2, "Select your country"),
   terms: z.literal(true),
 });
-
-function CountryPicker({
-  value,
-  onChange,
-  placeholder,
-  render,
-  id,
-  className,
-}: {
-  value: string;
-  onChange: (code: string) => void;
-  placeholder: string;
-  render: (code: string) => React.ReactNode;
-  id?: string;
-  className?: string;
-}) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          id={id}
-          type="button"
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className={cn("h-12 justify-between rounded-full px-5 font-normal hover:bg-secondary hover:text-foreground", className)}
-        >
-          <span className={cn("truncate", !value && "text-muted-foreground")}>
-            {value ? render(value) : placeholder}
-          </span>
-          <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[260px] p-0" align="start">
-        <Command>
-          <CommandInput placeholder="Search country…" />
-          <CommandList>
-            <CommandEmpty>No country found.</CommandEmpty>
-            <CommandGroup>
-              {COUNTRIES.map((country) => (
-                <CommandItem
-                  key={country.code}
-                  value={`${country.name} ${country.dial}`}
-                  onSelect={() => {
-                    onChange(country.code);
-                    setOpen(false);
-                  }}
-                >
-                  <span className="mr-2">{flagEmoji(country.code)}</span>
-                  <span className="flex-1 truncate">{country.name}</span>
-                  <span className="ml-2 text-caption text-muted-foreground">+{country.dial}</span>
-                  <Check className={cn("ml-2 size-4", value === country.code ? "opacity-100" : "opacity-0")} />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  );
-}
 
 function OnboardingPage() {
   const navigate = useNavigate();
@@ -148,10 +79,14 @@ function OnboardingPage() {
       }
       const { data: profile } = await supabase
         .from("profiles")
-        .select("onboarded_at")
+        .select("onboarded_at, user_type")
         .eq("id", data.user.id)
         .maybeSingle();
       if (cancelled) return;
+      if (profile?.user_type === "customer") {
+        navigate({ to: "/account-type", search: { expected: "business" }, replace: true });
+        return;
+      }
       if (profile?.onboarded_at) {
         navigate({ to: "/dashboard", replace: true });
         return;
@@ -169,15 +104,10 @@ function OnboardingPage() {
   }, [navigate]);
 
   const values = { firstName, lastName, dialCountry, phone, password, country, terms };
-  const valid = useMemo(() => schema.safeParse(values).success, [
-    firstName,
-    lastName,
-    dialCountry,
-    phone,
-    password,
-    country,
-    terms,
-  ]);
+  const valid = useMemo(
+    () => schema.safeParse(values).success,
+    [firstName, lastName, dialCountry, phone, password, country, terms],
+  );
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -202,17 +132,17 @@ function OnboardingPage() {
       return;
     }
 
-    const { error } = await supabase.from("profiles").upsert(
-      {
-        id: userData.user.id,
+    // The sign-up trigger creates the profile row, so update it (users can't write "id").
+    const { error } = await supabase
+      .from("profiles")
+      .update({
         full_name: `${parsed.data.firstName} ${parsed.data.lastName}`,
         phone: e164,
         country: selected.code,
         timezone: selected.timezone,
         onboarded_at: new Date().toISOString(),
-      },
-      { onConflict: "id" },
-    );
+      })
+      .eq("id", userData.user.id);
     setSaving(false);
     if (error) {
       toast.error(error.message);
@@ -344,7 +274,11 @@ function OnboardingPage() {
           </span>
         </label>
 
-        <Button type="submit" className="h-12 w-full rounded-full text-base font-semibold" disabled={!valid || saving}>
+        <Button
+          type="submit"
+          className="h-12 w-full rounded-full text-base font-semibold"
+          disabled={!valid || saving}
+        >
           {saving ? <Loader2 className="size-4 animate-spin" /> : "Continue"}
         </Button>
       </form>

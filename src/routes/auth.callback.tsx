@@ -3,11 +3,7 @@ import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
-
-function safeNext(value: unknown): string | null {
-  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) return null;
-  return value;
-}
+import { safeNext } from "@/lib/safe-next";
 
 export const Route = createFileRoute("/auth/callback")({
   ssr: false,
@@ -53,13 +49,18 @@ function AuthCallback() {
       // onboarding timestamp, not the row's existence.
       const { data: profile } = await supabase
         .from("profiles")
-        .select("onboarded_at")
+        .select("onboarded_at, user_type")
         .eq("id", data.session.user.id)
         .maybeSingle();
 
       if (cancelled) return;
+      // No destination means this came from the business sign-in page (customer sign-in always
+      // passes one), so a customer login gets the "this is a customer account" screen.
+      if (profile?.user_type === "customer") {
+        navigate({ to: "/account-type", search: { expected: "business" }, replace: true });
+        return;
+      }
       navigate({ to: profile?.onboarded_at ? "/dashboard" : "/onboarding", replace: true });
-
     }
 
     resolve();

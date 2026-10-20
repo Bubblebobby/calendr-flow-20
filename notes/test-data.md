@@ -63,5 +63,13 @@ Everything is named "Test …"; the appointments are walk-ins (no client records
   `set session_replication_role = replica; delete from pay_runs where id = '…'; set session_replication_role = origin;`
 - notifications — rows created by the tests above
 
+## Added 20 Oct 2026 (customer accounts testing)
+- clients 10acb831-b714-41f6-8362-cf8a1d29eca1 (Test OnlineClient): email changed to Bobby's login email and
+  linked to Bobby's account (clients.user_id). The 21 Oct account-classes update unlinks it automatically
+  (business logins can't be customers); the email still needs resetting. Undo: `update clients set user_id = null, email = 'test.online@example.com' where id = '10acb831-b714-41f6-8362-cf8a1d29eca1';`
+- appointment 32cc6b3b-58bd-4848-8075-495fcd81144f (first of the repeating series) set to completed
+- reviews — one 5-star "TEST review" for that appointment (+ a 'review' notification)
+- favorite_businesses — Bobby's account saved Sentence
+
 ## Cleanup order
 sale_items → sales → appointment_items → appointments → client_tag_assignments → client_tags → clients → services → service_categories → team_members

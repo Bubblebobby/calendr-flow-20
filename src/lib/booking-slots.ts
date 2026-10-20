@@ -21,7 +21,14 @@ function tzOffsetMinutes(instant: Date, tz: string) {
     second: "2-digit",
   }).formatToParts(instant);
   const get = (type: string) => Number(parts.find((p) => p.type === type)?.value);
-  const asUtc = Date.UTC(get("year"), get("month") - 1, get("day"), get("hour"), get("minute"), get("second"));
+  const asUtc = Date.UTC(
+    get("year"),
+    get("month") - 1,
+    get("day"),
+    get("hour"),
+    get("minute"),
+    get("second"),
+  );
   return Math.round((asUtc - instant.getTime()) / 60000);
 }
 
@@ -39,7 +46,12 @@ export function zonedToUtc(day: string, minutes: number, tz: string): Date {
 /** Today's date ("YYYY-MM-DD") in `tz`, plus `addDays`. */
 export function localDay(tz: string, addDays = 0, from = new Date()): string {
   const shifted = new Date(from.getTime() + addDays * 86400000);
-  return new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(shifted);
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: tz,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(shifted);
 }
 
 export function weekday(day: string) {
@@ -54,8 +66,18 @@ function toMinutes(value: string | null) {
 }
 
 /** Opening window for a day; falls back to Mon–Sat 09:00–18:00 like the rest of Bookly. */
-export function openWindow(hours: OpeningHours[], day: string): { from: number; to: number } | null {
-  const dow = weekday(day);
+export function openWindow(
+  hours: OpeningHours[],
+  day: string,
+): { from: number; to: number } | null {
+  return openWindowForWeekday(hours, weekday(day));
+}
+
+/** Same as openWindow, for a weekday number (0 = Sunday). */
+export function openWindowForWeekday(
+  hours: OpeningHours[],
+  dow: number,
+): { from: number; to: number } | null {
   const row = hours.find((h) => h.day === dow);
   if (!row) return dow === 0 ? null : { from: 9 * 60, to: 18 * 60 };
   if (!row.open) return null;
@@ -92,14 +114,20 @@ export function freeSlots({
   const opening = openWindow(hours, day);
   const windowsFor = (id: string): Array<{ from: number; to: number }> =>
     shifts
-      ? (shifts[id] ?? []).map((s) => ({ from: toMinutes(s.start) ?? 0, to: s.end === "24:00" ? 1440 : (toMinutes(s.end) ?? 0) }))
+      ? (shifts[id] ?? []).map((s) => ({
+          from: toMinutes(s.start) ?? 0,
+          to: s.end === "24:00" ? 1440 : (toMinutes(s.end) ?? 0),
+        }))
       : opening
         ? [opening]
         : [];
   const memberWindows = new Map(memberIds.map((id) => [id, windowsFor(id)]));
   const all = [...memberWindows.values()].flat();
   if (all.length === 0) return [];
-  const window = { from: Math.min(...all.map((w) => w.from)), to: Math.max(...all.map((w) => w.to)) };
+  const window = {
+    from: Math.min(...all.map((w) => w.from)),
+    to: Math.max(...all.map((w) => w.to)),
+  };
   const earliest = now.getTime() + MIN_NOTICE_MINUTES * 60000;
   const intervals = busy.map((b) => ({
     member: b.team_member_id,
@@ -113,8 +141,9 @@ export function freeSlots({
     const end = start + duration * 60000;
     const free = memberIds.filter(
       (id) =>
-        (memberWindows.get(id) ?? []).some((w) => minutes >= w.from && minutes + duration <= w.to) &&
-        !intervals.some((i) => i.member === id && i.start < end && i.end > start),
+        (memberWindows.get(id) ?? []).some(
+          (w) => minutes >= w.from && minutes + duration <= w.to,
+        ) && !intervals.some((i) => i.member === id && i.start < end && i.end > start),
     );
     if (free.length) slots.push({ minutes, memberIds: free });
   }

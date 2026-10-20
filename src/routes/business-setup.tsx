@@ -49,9 +49,12 @@ const nameSchema = z.object({
     .string()
     .trim()
     .max(200)
-    .refine((v) => v === "" || /^[\w.-]+\.[a-z]{2,}(\/.*)?$/i.test(v.replace(/^https?:\/\//i, "")), {
-      message: "Enter a valid website address",
-    }),
+    .refine(
+      (v) => v === "" || /^[\w.-]+\.[a-z]{2,}(\/.*)?$/i.test(v.replace(/^https?:\/\//i, "")),
+      {
+        message: "Enter a valid website address",
+      },
+    ),
 });
 
 function ProgressBar({ step }: { step: number }) {
@@ -105,10 +108,14 @@ function BusinessSetupPage() {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("onboarded_at, country, business_id")
+        .select("onboarded_at, country, business_id, user_type")
         .eq("id", data.user.id)
         .maybeSingle();
       if (cancelled) return;
+      if (profile?.user_type === "customer") {
+        navigate({ to: "/account-type", search: { expected: "business" }, replace: true });
+        return;
+      }
 
       if (!profile?.onboarded_at) {
         navigate({ to: "/onboarding", replace: true });
@@ -129,7 +136,9 @@ function BusinessSetupPage() {
           setBusinessId(business.id);
           setName(business.name ?? "");
           setWebsite(business.website ?? "");
-          setCategories(Array.isArray(business.categories) ? (business.categories as string[]) : []);
+          setCategories(
+            Array.isArray(business.categories) ? (business.categories as string[]) : [],
+          );
           setOtherLabel(business.other_category ?? "");
           setTeamSize(business.team_size ?? null);
           setBusinessCountry(business.country ?? null);
@@ -361,7 +370,9 @@ function BusinessSetupPage() {
       name: result.data.name,
       website: result.data.website || null,
       setup_step: 2,
-      ...(country ? { country: country.code, currency: country.currency, timezone: country.timezone } : {}),
+      ...(country
+        ? { country: country.code, currency: country.currency, timezone: country.timezone }
+        : {}),
     };
 
     if (businessId) {
@@ -383,7 +394,15 @@ function BusinessSetupPage() {
         return;
       }
       setBusinessId(created.id);
-      await supabase.from("profiles").update({ business_id: created.id }).eq("id", user.id);
+      // business_id can't be written directly; this function checks the caller owns the business.
+      const { error: linkError } = await supabase.rpc("link_my_business", {
+        p_business: created.id,
+      });
+      if (linkError) {
+        setSaving(false);
+        toast.error("Could not link your business. Please try again.");
+        return;
+      }
     }
 
     setSaving(false);
@@ -408,7 +427,9 @@ function BusinessSetupPage() {
           Your business is set up!
         </h1>
         <p className="mt-2 text-base text-muted-foreground">
-          {name ? `${name} is ready to start taking bookings` : "You're ready to start taking bookings"}
+          {name
+            ? `${name} is ready to start taking bookings`
+            : "You're ready to start taking bookings"}
         </p>
         <Button
           className="mt-6 h-12 rounded-full bg-ink px-8 text-base font-semibold text-ink-foreground hover:bg-ink/90"
@@ -460,7 +481,7 @@ function BusinessSetupPage() {
 
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-4 pb-6 sm:px-6 sm:pt-5">
         <div className="mx-auto w-full max-w-[820px]">
-        <form
+          <form
             id="business-setup-form"
             onSubmit={(e) => {
               e.preventDefault();
@@ -470,11 +491,10 @@ function BusinessSetupPage() {
             {step === 1 ? (
               <>
                 <p className="text-base text-muted-foreground">Account setup</p>
-                <h1 className="mt-2 step-title text-foreground">
-                  What&apos;s your business name?
-                </h1>
+                <h1 className="mt-2 step-title text-foreground">What&apos;s your business name?</h1>
                 <p className="mt-2 text-base text-muted-foreground sm:mt-3 sm:text-lg">
-                  This is the brand name your clients will see. Your billing and legal name can be added later.
+                  This is the brand name your clients will see. Your billing and legal name can be
+                  added later.
                 </p>
 
                 <div className="mt-6 space-y-4 sm:mt-8 sm:space-y-6">
@@ -540,7 +560,7 @@ function BusinessSetupPage() {
                 onOtherValueChange={setOtherHeardAbout}
               />
             )}
-        </form>
+          </form>
         </div>
       </main>
     </div>

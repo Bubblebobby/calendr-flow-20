@@ -2729,3 +2729,708 @@ create trigger pay_run_lines_lock before insert or update or delete on public.pa
 alter table public.sale_items add column if not exists discount_amount numeric
   check (discount_amount is null or discount_amount >= 0);
 
+
+-- ===== 20261020120000_profile_business_guard.sql =====
+-- Security: profiles.business_id decides which salon's data a login can read, and users may
+-- edit their own profile row. Only let a signed-in user point it at a business they own.
+-- Team invites are accepted server-side with the service key, which this doesn't restrict.
+
+-- Not security definer on purpose: current_user must be the caller's role.
+create or replace function public.guard_profile_business()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  if current_user in ('authenticated', 'anon')
+     and new.business_id is not null
+     and (tg_op = 'INSERT' or new.business_id is distinct from old.business_id)
+     and not exists (select 1 from public.businesses b where b.id = new.business_id and b.owner_id = auth.uid())
+  then
+    raise exception 'not_allowed' using errcode = '42501';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists profiles_business_guard on public.profiles;
+create trigger profiles_business_guard
+  before insert or update of business_id on public.profiles
+  for each row execute function public.guard_profile_business();
+
+
+-- ===== 20261020140000_customer_accounts.sql =====
+-- Customer accounts: one Bookly login across every salon a person books with.
+-- Appointments, gift cards, packages and memberships reach the account through the salon's
+-- client record, which is linked once its email matches the account's confirmed email.
+
+-- ── Profile details customers manage themselves ──
+alter table public.profiles add column if not exists birthday date;
+alter table public.profiles add column if not exists gender text;
+alter table public.profiles add column if not exists email_reminders boolean not null default true;
+alter table public.profiles add column if not exists marketing_emails boolean not null default false;
+
+-- ── Client records ↔ customer accounts ──
+alter table public.clients add column if not exists user_id uuid references auth.users(id) on delete set null;
+create index if not exists clients_user_id_idx on public.clients (user_id) where user_id is not null;
+
+-- Links every unclaimed client record with this account's confirmed email. Safe to repeat.
+create or replace function public.link_my_clients()
+returns integer
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_email text;
+  v_count integer;
+begin
+  select lower(email) into v_email from auth.users where id = auth.uid() and email_confirmed_at is not null;
+  if v_email is null or v_email = '' then return 0; end if;
+  update public.clients set user_id = auth.uid() where user_id is null and lower(email) = v_email;
+  get diagnostics v_count = row_count;
+  return v_count;
+end;
+$$;
+
+-- ── Favourite salons ──
+create table if not exists public.favorite_businesses (
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  business_id uuid not null references public.businesses(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (user_id, business_id)
+);
+grant select, insert, delete on public.favorite_businesses to authenticated;
+grant all on public.favorite_businesses to service_role;
+alter table public.favorite_businesses enable row level security;
+drop policy if exists "Customers manage their favourites" on public.favorite_businesses;
+create policy "Customers manage their favourites" on public.favorite_businesses for all to authenticated
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- ── Reviews (written by customers for completed appointments, shown on the salon page) ──
+create table if not exists public.reviews (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references public.businesses(id) on delete cascade,
+  appointment_id uuid not null unique references public.appointments(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete set null,
+  author_name text not null,
+  rating integer not null check (rating between 1 and 5),
+  comment text check (comment is null or char_length(comment) <= 2000),
+  services text,
+  team_member_name text,
+  created_at timestamptz not null default now()
+);
+create index if not exists reviews_business_idx on public.reviews (business_id, created_at desc);
+grant select on public.reviews to authenticated;
+grant all on public.reviews to service_role;
+alter table public.reviews enable row level security;
+drop policy if exists "Business members read reviews" on public.reviews;
+create policy "Business members read reviews" on public.reviews for select to authenticated
+  using (business_id in (select business_id from public.profiles where id = auth.uid()));
+
+-- Staff hear about new reviews in the top-bar notifications.
+alter table public.notifications drop constraint if exists notifications_kind_check;
+alter table public.notifications add constraint notifications_kind_check
+  check (kind in ('online_booking', 'client_cancelled', 'client_rescheduled', 'low_stock', 'review'));
+
+create or replace function public.submit_review(p_appointment uuid, p_rating integer, p_comment text default null)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_appt record;
+  v_author text;
+  v_id uuid;
+begin
+  if auth.uid() is null then raise exception 'not_signed_in'; end if;
+  if p_rating is null or p_rating < 1 or p_rating > 5 then raise exception 'invalid_rating'; end if;
+
+  select a.id, a.business_id, a.status, c.first_name, c.last_name
+    into v_appt
+    from public.appointments a
+    join public.clients c on c.id = a.client_id
+   where a.id = p_appointment and c.user_id = auth.uid();
+  if not found then raise exception 'not_found'; end if;
+  if v_appt.status <> 'completed' then raise exception 'not_completed'; end if;
+  if exists (select 1 from public.reviews where appointment_id = p_appointment) then raise exception 'already_reviewed'; end if;
+
+  -- First name and last initial, from the account or else the salon's client record.
+  select nullif(trim(full_name), '') into v_author from public.profiles where id = auth.uid();
+  v_author := coalesce(v_author, concat_ws(' ', v_appt.first_name, v_appt.last_name));
+  v_author := split_part(v_author, ' ', 1)
+    || case when split_part(v_author, ' ', 2) <> '' then ' ' || left(split_part(v_author, ' ', 2), 1) || '.' else '' end;
+
+  insert into public.reviews (business_id, appointment_id, user_id, author_name, rating, comment, services, team_member_name)
+  select v_appt.business_id, p_appointment, auth.uid(), v_author, p_rating,
+         nullif(trim(coalesce(p_comment, '')), ''),
+         string_agg(coalesce(s.name, 'Service'), ', ' order by i.sort_order),
+         (array_agg(t.first_name order by i.sort_order))[1]
+    from public.appointment_items i
+    left join public.services s on s.id = i.service_id
+    left join public.team_members t on t.id = i.team_member_id
+   where i.appointment_id = p_appointment
+  returning id into v_id;
+
+  perform public.notify(v_appt.business_id, 'review', 'New ' || p_rating || '-star review',
+    v_author || coalesce(': ' || left(nullif(trim(coalesce(p_comment, '')), ''), 120), ''), '/calendar?appointment=' || p_appointment);
+  return v_id;
+end;
+$$;
+
+-- ── The signed-in customer's appointments at every salon ──
+create or replace function public.my_appointments()
+returns jsonb
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select coalesce(jsonb_agg(x.item order by x.starts desc), '[]'::jsonb)
+  from (
+    select min(i.start_time) as starts,
+      jsonb_build_object(
+        'id', a.id,
+        'status', a.status,
+        'cancellation_reason', a.cancellation_reason,
+        'manage_token', a.manage_token,
+        'start', min(i.start_time),
+        'end', max(i.end_time),
+        'total', coalesce(sum(i.price), 0),
+        'items', jsonb_agg(jsonb_build_object(
+            'service_id', i.service_id,
+            'name', coalesce(s.name, 'Service'),
+            'price', i.price,
+            'minutes', round(extract(epoch from i.end_time - i.start_time) / 60),
+            'with', t.first_name
+          ) order by i.sort_order, i.start_time),
+        'business', jsonb_build_object(
+            'id', b.id,
+            'name', b.name,
+            'slug', case when b.online_booking_enabled then b.booking_slug end,
+            'location', b.location,
+            'categories', b.categories,
+            'currency', b.currency,
+            'country', b.country,
+            'timezone', coalesce(b.timezone, 'Africa/Lagos'),
+            'policy', b.booking_policy,
+            'notice_hours', b.booking_notice_hours,
+            'allow_cancel', b.allow_client_cancel,
+            'allow_reschedule', b.allow_client_reschedule
+          ),
+        'review', (select jsonb_build_object('rating', r.rating, 'comment', r.comment)
+                     from public.reviews r where r.appointment_id = a.id)
+      ) as item
+    from public.appointments a
+    join public.clients c on c.id = a.client_id and c.user_id = auth.uid()
+    join public.businesses b on b.id = a.business_id
+    join public.appointment_items i on i.appointment_id = a.id
+    left join public.services s on s.id = i.service_id
+    left join public.team_members t on t.id = i.team_member_id
+    where auth.uid() is not null
+    group by a.id, b.id
+  ) x;
+$$;
+
+-- ── Gift cards, packages and memberships the customer owns ──
+create or replace function public.my_wallet()
+returns jsonb
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select jsonb_build_object(
+    'gift_cards', (
+      select coalesce(jsonb_agg(jsonb_build_object(
+          'id', g.id, 'code', g.code, 'balance', g.balance, 'initial', g.initial_value,
+          'expires_on', g.expires_on, 'status', g.status, 'recipient', g.recipient_name,
+          'business', jsonb_build_object('name', b.name, 'slug', case when b.online_booking_enabled then b.booking_slug end,
+                                         'currency', b.currency, 'country', b.country)
+        ) order by g.created_at desc), '[]'::jsonb)
+      from public.gift_cards g
+      join public.clients c on c.id = g.client_id and c.user_id = auth.uid()
+      join public.businesses b on b.id = g.business_id
+    ),
+    'packages', (
+      select coalesce(jsonb_agg(jsonb_build_object(
+          'id', cp.id, 'name', cp.name, 'expires_on', cp.expires_on, 'bought', cp.created_at,
+          'items', (select coalesce(jsonb_agg(jsonb_build_object(
+                        'service', ci.service_name, 'total', ci.sessions_total, 'used', ci.sessions_used)), '[]'::jsonb)
+                      from public.client_package_items ci where ci.client_package_id = cp.id),
+          'business', jsonb_build_object('name', b.name, 'slug', case when b.online_booking_enabled then b.booking_slug end)
+        ) order by cp.created_at desc), '[]'::jsonb)
+      from public.client_packages cp
+      join public.clients c on c.id = cp.client_id and c.user_id = auth.uid()
+      join public.businesses b on b.id = cp.business_id
+    ),
+    'memberships', (
+      select coalesce(jsonb_agg(jsonb_build_object(
+          'id', cm.id, 'name', cm.name, 'discount_percent', cm.discount_percent,
+          'starts_on', cm.starts_on, 'ends_on', cm.ends_on, 'status', cm.status,
+          'business', jsonb_build_object('name', b.name, 'slug', case when b.online_booking_enabled then b.booking_slug end)
+        ) order by cm.ends_on desc), '[]'::jsonb)
+      from public.client_memberships cm
+      join public.clients c on c.id = cm.client_id and c.user_id = auth.uid()
+      join public.businesses b on b.id = cm.business_id
+    )
+  )
+  where auth.uid() is not null;
+$$;
+
+-- ── Discover: public listing of salons that take online bookings ──
+create or replace function public.discover_businesses(
+  p_query text default null, p_category text default null, p_city text default null, p_ids uuid[] default null
+)
+returns jsonb
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select coalesce(jsonb_agg(x.card order by x.reviews desc, x.created_at desc), '[]'::jsonb)
+  from (
+    select b.created_at, coalesce(r.cnt, 0) as reviews,
+      jsonb_build_object(
+        'id', b.id,
+        'name', b.name,
+        'slug', b.booking_slug,
+        'categories', b.categories,
+        'city', nullif(b.location->>'city', ''),
+        'area', coalesce(nullif(b.location->>'district', ''), nullif(b.location->>'city', '')),
+        'description', b.booking_description,
+        'currency', b.currency,
+        'country', b.country,
+        'rating', r.avg,
+        'review_count', coalesce(r.cnt, 0),
+        'from_price', (select min(s.price) from public.services s
+                        where s.business_id = b.id and not s.is_archived and s.online_booking_enabled and s.price > 0)
+      ) as card
+    from public.businesses b
+    left join lateral (
+      select round(avg(rating)::numeric, 1) as avg, count(*) as cnt from public.reviews where business_id = b.id
+    ) r on true
+    where b.online_booking_enabled and b.booking_slug is not null
+      and (p_ids is null or b.id = any(p_ids))
+      and (nullif(trim(coalesce(p_category, '')), '') is null or b.categories ? p_category)
+      and (nullif(trim(coalesce(p_city, '')), '') is null
+           or b.location->>'city' ilike '%' || trim(p_city) || '%'
+           or b.location->>'district' ilike '%' || trim(p_city) || '%'
+           or b.location->>'state' ilike '%' || trim(p_city) || '%')
+      and (nullif(trim(coalesce(p_query, '')), '') is null
+           or b.name ilike '%' || trim(p_query) || '%'
+           or exists (select 1 from public.services s
+                       where s.business_id = b.id and not s.is_archived and s.online_booking_enabled
+                         and s.name ilike '%' || trim(p_query) || '%'))
+    limit 60
+  ) x;
+$$;
+
+-- ── Ratings and recent reviews for a salon's public page ──
+create or replace function public.get_venue_reviews(p_slug text)
+returns jsonb
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select jsonb_build_object(
+    'rating', (select round(avg(rating)::numeric, 1) from public.reviews where business_id = b.id),
+    'count', (select count(*) from public.reviews where business_id = b.id),
+    'reviews', (select coalesce(jsonb_agg(jsonb_build_object(
+                    'author', r.author_name, 'rating', r.rating, 'comment', r.comment,
+                    'services', r.services, 'with', r.team_member_name, 'created_at', r.created_at
+                  ) order by r.created_at desc), '[]'::jsonb)
+                from (select * from public.reviews where business_id = b.id order by created_at desc limit 20) r)
+  )
+  from public.businesses b
+  where b.booking_slug = lower(p_slug) and b.online_booking_enabled;
+$$;
+
+revoke all on function public.link_my_clients() from public;
+revoke all on function public.submit_review(uuid, integer, text) from public;
+revoke all on function public.my_appointments() from public;
+revoke all on function public.my_wallet() from public;
+revoke all on function public.discover_businesses(text, text, text, uuid[]) from public;
+revoke all on function public.get_venue_reviews(text) from public;
+grant execute on function public.link_my_clients() to authenticated;
+grant execute on function public.submit_review(uuid, integer, text) to authenticated;
+grant execute on function public.my_appointments() to authenticated;
+grant execute on function public.my_wallet() to authenticated;
+grant execute on function public.discover_businesses(text, text, text, uuid[]) to anon, authenticated;
+grant execute on function public.get_venue_reviews(text) to anon, authenticated;
+
+
+-- ===== 20261021090000_security_tenancy_fix.sql =====
+-- Security fixes from the audit (C1, H1, H2, L2, L5, L6).
+--
+-- C1: most RLS policies trusted profiles.business_id, which users could write themselves.
+--     Membership now comes from rows users can't forge: businesses.owner_id, or an active
+--     team_members row (created by the owner, claimed through the invite server function).
+-- H1: pay, timesheets, deals and tax settings are limited to the owner and admins.
+-- H2: the token-less "claim any pending invite" policy is removed; invites get an expiry.
+
+-- ── 1. Trusted membership checks ──
+alter table public.team_members add column if not exists access_level text not null default 'staff';
+alter table public.team_members drop constraint if exists team_members_access_level_check;
+alter table public.team_members add constraint team_members_access_level_check
+  check (access_level in ('staff', 'admin'));
+alter table public.team_members add column if not exists invite_expires_at timestamptz;
+
+create or replace function public.is_business_member(p_business uuid)
+returns boolean language sql stable security definer set search_path = public as $$
+  select p_business is not null and auth.uid() is not null and (
+    exists (select 1 from public.businesses b where b.id = p_business and b.owner_id = auth.uid())
+    or exists (select 1 from public.team_members t
+               where t.business_id = p_business and t.user_id = auth.uid() and t.invite_status = 'active')
+  );
+$$;
+
+create or replace function public.is_business_admin(p_business uuid)
+returns boolean language sql stable security definer set search_path = public as $$
+  select p_business is not null and auth.uid() is not null and (
+    exists (select 1 from public.businesses b where b.id = p_business and b.owner_id = auth.uid())
+    or exists (select 1 from public.team_members t
+               where t.business_id = p_business and t.user_id = auth.uid()
+                 and t.invite_status = 'active' and t.access_level = 'admin')
+  );
+$$;
+
+revoke all on function public.is_business_member(uuid) from public, anon;
+revoke all on function public.is_business_admin(uuid) from public, anon;
+grant execute on function public.is_business_member(uuid) to authenticated;
+grant execute on function public.is_business_admin(uuid) to authenticated;
+
+-- ── 2. Profiles: people edit their personal fields only, never business_id or user_type ──
+revoke insert, update on public.profiles from authenticated;
+grant insert (id, full_name, phone, avatar_url, country, timezone, onboarded_at) on public.profiles to authenticated;
+grant update (full_name, phone, avatar_url, country, timezone, onboarded_at,
+              birthday, gender, email_reminders, marketing_emails) on public.profiles to authenticated;
+
+-- Even privileged paths may only point a profile at a business its user owns or is an active
+-- member of. Replaces the narrower 20 Oct guard (same function, one trigger).
+create or replace function public.guard_profile_business()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if new.business_id is not null
+     and (tg_op = 'INSERT' or new.business_id is distinct from old.business_id)
+     and not exists (select 1 from public.businesses b where b.id = new.business_id and b.owner_id = new.id)
+     and not exists (select 1 from public.team_members t
+                     where t.business_id = new.business_id and t.user_id = new.id and t.invite_status = 'active')
+  then
+    raise exception 'not_a_member_of_business' using errcode = '42501';
+  end if;
+  return new;
+end;
+$$;
+revoke all on function public.guard_profile_business() from public, anon, authenticated;
+drop trigger if exists profiles_business_guard on public.profiles;
+drop trigger if exists profiles_guard_business on public.profiles;
+create trigger profiles_guard_business before insert or update of business_id on public.profiles
+  for each row execute function public.guard_profile_business();
+
+-- The only way the app sets business_id: link the caller to a business they own.
+create or replace function public.link_my_business(p_business uuid)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not exists (select 1 from public.businesses where id = p_business and owner_id = auth.uid()) then
+    raise exception 'not_allowed' using errcode = '42501';
+  end if;
+  update public.profiles set business_id = p_business where id = auth.uid();
+end;
+$$;
+revoke all on function public.link_my_business(uuid) from public, anon;
+grant execute on function public.link_my_business(uuid) to authenticated;
+
+-- L5: don't take user_type from sign-up data, except "customer" (which grants nothing; customer
+-- sign-up uses it so the account isn't mistaken for a business).
+create or replace function public.handle_new_user()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  insert into public.profiles (id, full_name, phone, user_type)
+  values (
+    new.id,
+    new.raw_user_meta_data ->> 'full_name',
+    new.raw_user_meta_data ->> 'phone',
+    case when new.raw_user_meta_data ->> 'user_type' = 'customer' then 'customer' else 'business_owner' end
+  )
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+revoke execute on function public.handle_new_user() from public, anon, authenticated;
+
+-- ── 3. Rewrite every policy that trusted profiles.business_id ──
+-- Found dynamically so tables from any earlier migration are covered.
+do $$
+declare
+  p record;
+  v_has_col boolean;
+begin
+  for p in
+    select tablename, policyname, cmd
+    from pg_policies
+    where schemaname = 'public'
+      and tablename <> 'profiles'
+      and (coalesce(qual, '') ~* 'from\s+(public\.)?profiles' or coalesce(with_check, '') ~* 'from\s+(public\.)?profiles')
+  loop
+    select exists (select 1 from information_schema.columns
+                   where table_schema = 'public' and table_name = p.tablename and column_name = 'business_id')
+      into v_has_col;
+    if not v_has_col then
+      raise exception 'policy %.% trusts profiles but the table has no business_id; fix by hand', p.tablename, p.policyname;
+    end if;
+
+    execute format('drop policy %I on public.%I', p.policyname, p.tablename);
+    if p.cmd in ('SELECT', 'DELETE') then
+      execute format('create policy %I on public.%I for %s to authenticated using (public.is_business_member(business_id))',
+                     p.policyname, p.tablename, p.cmd);
+    elsif p.cmd = 'INSERT' then
+      execute format('create policy %I on public.%I for insert to authenticated with check (public.is_business_member(business_id))',
+                     p.policyname, p.tablename);
+    else -- ALL / UPDATE
+      execute format('create policy %I on public.%I for %s to authenticated
+                        using (public.is_business_member(business_id))
+                        with check (public.is_business_member(business_id))',
+                     p.policyname, p.tablename, p.cmd);
+    end if;
+  end loop;
+end $$;
+
+-- ── 4. H1: owner/admin-only data ──
+-- Pay runs, pay lines and timesheets: owner and admins only.
+-- Deals and tax rates: every member can read them (checkout needs them); only admins change them.
+do $$
+declare t text;
+begin
+  foreach t in array array['pay_runs', 'pay_run_lines', 'timesheets'] loop
+    execute format('drop policy if exists "Business members manage %s" on public.%I', t, t);
+    execute format('drop policy if exists "Business admins manage %s" on public.%I', t, t);
+    execute format('create policy "Business admins manage %s" on public.%I for all to authenticated
+                      using (public.is_business_admin(business_id))
+                      with check (public.is_business_admin(business_id))', t, t);
+  end loop;
+
+  foreach t in array array['deals', 'tax_rates'] loop
+    execute format('drop policy if exists "Business members manage %s" on public.%I', t, t);
+    execute format('drop policy if exists "Business members read %s" on public.%I', t, t);
+    execute format('drop policy if exists "Business admins manage %s" on public.%I', t, t);
+    execute format('create policy "Business members read %s" on public.%I for select to authenticated
+                      using (public.is_business_member(business_id))', t, t);
+    execute format('create policy "Business admins manage %s" on public.%I for all to authenticated
+                      using (public.is_business_admin(business_id))
+                      with check (public.is_business_admin(business_id))', t, t);
+  end loop;
+end $$;
+
+-- ── 5. H2: invites are claimed only through the server function ──
+drop policy if exists "invited_user_can_claim_own_team_member_row" on public.team_members;
+
+-- ── 6. Functions that trusted profiles.business_id ──
+create or replace function public.check_deal(p_code text)
+returns jsonb language plpgsql volatile security definer set search_path = public as $$
+declare v_business uuid; v_deal public.deals%rowtype;
+begin
+  select business_id into v_business from public.profiles where id = auth.uid();
+  if v_business is null or not public.is_business_member(v_business) then raise exception 'not_allowed'; end if;
+  v_deal := public.usable_deal(v_business, p_code, false);
+  return jsonb_build_object('id', v_deal.id, 'name', v_deal.name, 'code', v_deal.code, 'discount_type', v_deal.discount_type,
+                            'value', v_deal.value, 'applies_to', v_deal.applies_to);
+end;
+$$;
+revoke all on function public.check_deal(text) from public, anon;
+grant execute on function public.check_deal(text) to authenticated;
+
+-- L6: the recorded amount can't be more than the sale's items are worth.
+create or replace function public.redeem_deal(p_code text, p_sale uuid, p_amount numeric)
+returns void language plpgsql volatile security definer set search_path = public as $$
+declare v_business uuid; v_deal public.deals%rowtype; v_items numeric;
+begin
+  select business_id into v_business from public.profiles where id = auth.uid();
+  if v_business is null or not public.is_business_member(v_business) then raise exception 'not_allowed'; end if;
+  if not exists (select 1 from public.sales where id = p_sale and business_id = v_business) then
+    raise exception 'not_allowed';
+  end if;
+  select coalesce(sum(price * quantity), 0) into v_items from public.sale_items where sale_id = p_sale;
+  v_deal := public.usable_deal(v_business, p_code, false);
+  insert into public.deal_redemptions (business_id, deal_id, sale_id, amount)
+  values (v_business, v_deal.id, p_sale, least(greatest(0, coalesce(p_amount, 0)), greatest(v_items, 0)));
+end;
+$$;
+revoke all on function public.redeem_deal(text, uuid, numeric) from public, anon;
+grant execute on function public.redeem_deal(text, uuid, numeric) to authenticated;
+
+-- L2: gift-card codes from a secure random source (gen_random_uuid uses the OS CSPRNG).
+-- 256 is a multiple of 32, so "byte % 32" picks characters without bias.
+create or replace function public.new_gift_card_code(p_business uuid)
+returns text language plpgsql volatile security invoker set search_path = public as $$
+declare
+  v_code text;
+  v_chars text := 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  v_bytes bytea;
+begin
+  if not public.is_business_member(p_business) then raise exception 'not_allowed'; end if;
+  loop
+    v_bytes := uuid_send(gen_random_uuid());
+    select string_agg(substr(v_chars, 1 + (get_byte(v_bytes, i) % 32), 1), '' order by i)
+      into v_code from generate_series(0, 7) i;
+    exit when not exists (select 1 from public.gift_cards where business_id = p_business and code = v_code);
+  end loop;
+  return v_code;
+end;
+$$;
+revoke all on function public.new_gift_card_code(uuid) from public, anon;
+grant execute on function public.new_gift_card_code(uuid) to authenticated;
+
+-- ── 7. Repair: detach profiles pointing at a business they don't belong to ──
+-- (Your check on 20 Oct found none; kept so the file is safe on any database.)
+create table if not exists public.security_audit_detached_profiles (
+  profile_id uuid not null,
+  business_id uuid not null,
+  detached_at timestamptz not null default now()
+);
+alter table public.security_audit_detached_profiles enable row level security; -- no policies: service role only
+revoke all on public.security_audit_detached_profiles from anon, authenticated;
+
+with bad as (
+  select p.id, p.business_id from public.profiles p
+  where p.business_id is not null
+    and not exists (select 1 from public.businesses b where b.id = p.business_id and b.owner_id = p.id)
+    and not exists (select 1 from public.team_members t
+                    where t.business_id = p.business_id and t.user_id = p.id and t.invite_status = 'active')
+), logged as (
+  insert into public.security_audit_detached_profiles (profile_id, business_id)
+  select id, business_id from bad returning profile_id
+)
+update public.profiles set business_id = null where id in (select profile_id from logged);
+
+
+-- ===== 20261021120000_account_classes.sql =====
+-- Two classes of user, like Fresha/Booksy: customer accounts (sign up at /sign-in) and business
+-- accounts (owners and staff, sign up at /auth). One login belongs to one class:
+-- customers can't create, join or link a business; business logins can't act as customers.
+-- profiles.user_type is set once at sign-up (handle_new_user) and users can't change it.
+
+create or replace function public.is_customer()
+returns boolean language sql stable security definer set search_path = public as $$
+  select coalesce((select user_type = 'customer' from public.profiles where id = auth.uid()), false);
+$$;
+revoke all on function public.is_customer() from public, anon;
+grant execute on function public.is_customer() to authenticated;
+
+-- ── Customers never get a business ──
+create or replace function public.guard_profile_business()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if new.business_id is not null
+     and (tg_op = 'INSERT' or new.business_id is distinct from old.business_id)
+  then
+    -- Check the old type too: claiming a staff invite switches user_type to 'staff' in the same update.
+    if new.user_type = 'customer' or (tg_op = 'UPDATE' and old.user_type = 'customer') then
+      raise exception 'customer_account' using errcode = '42501';
+    end if;
+    if not exists (select 1 from public.businesses b where b.id = new.business_id and b.owner_id = new.id)
+       and not exists (select 1 from public.team_members t
+                       where t.business_id = new.business_id and t.user_id = new.id and t.invite_status = 'active')
+    then
+      raise exception 'not_a_member_of_business' using errcode = '42501';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+revoke all on function public.guard_profile_business() from public, anon, authenticated;
+
+drop policy if exists "Owners can insert businesses" on public.businesses;
+create policy "Owners can insert businesses" on public.businesses for insert to authenticated
+  with check (auth.uid() = owner_id and not public.is_customer());
+
+create or replace function public.link_my_business(p_business uuid)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if public.is_customer() then raise exception 'customer_account' using errcode = '42501'; end if;
+  if not exists (select 1 from public.businesses where id = p_business and owner_id = auth.uid()) then
+    raise exception 'not_allowed' using errcode = '42501';
+  end if;
+  update public.profiles set business_id = p_business where id = auth.uid();
+end;
+$$;
+revoke all on function public.link_my_business(uuid) from public, anon;
+grant execute on function public.link_my_business(uuid) to authenticated;
+
+-- ── Customer features are for customer accounts only ──
+create or replace function public.link_my_clients()
+returns integer language plpgsql security definer set search_path = public as $$
+declare
+  v_email text;
+  v_count integer;
+begin
+  if not public.is_customer() then return 0; end if;
+  select lower(email) into v_email from auth.users where id = auth.uid() and email_confirmed_at is not null;
+  if v_email is null or v_email = '' then return 0; end if;
+  update public.clients set user_id = auth.uid() where user_id is null and lower(email) = v_email;
+  get diagnostics v_count = row_count;
+  return v_count;
+end;
+$$;
+
+drop policy if exists "Customers manage their favourites" on public.favorite_businesses;
+create policy "Customers manage their favourites" on public.favorite_businesses for all to authenticated
+  using (user_id = auth.uid() and public.is_customer())
+  with check (user_id = auth.uid() and public.is_customer());
+
+-- my_appointments / my_wallet / submit_review only see client records linked to the caller,
+-- and only customers can link, so unlinking non-customers below closes them too. The review
+-- function also checks directly.
+create or replace function public.submit_review(p_appointment uuid, p_rating integer, p_comment text default null)
+returns uuid language plpgsql security definer set search_path = public as $$
+declare
+  v_appt record;
+  v_author text;
+  v_id uuid;
+begin
+  if auth.uid() is null then raise exception 'not_signed_in'; end if;
+  if not public.is_customer() then raise exception 'customer_account_required'; end if;
+  if p_rating is null or p_rating < 1 or p_rating > 5 then raise exception 'invalid_rating'; end if;
+
+  select a.id, a.business_id, a.status, c.first_name, c.last_name
+    into v_appt
+    from public.appointments a
+    join public.clients c on c.id = a.client_id
+   where a.id = p_appointment and c.user_id = auth.uid();
+  if not found then raise exception 'not_found'; end if;
+  if v_appt.status <> 'completed' then raise exception 'not_completed'; end if;
+  if exists (select 1 from public.reviews where appointment_id = p_appointment) then raise exception 'already_reviewed'; end if;
+
+  select nullif(trim(full_name), '') into v_author from public.profiles where id = auth.uid();
+  v_author := coalesce(v_author, concat_ws(' ', v_appt.first_name, v_appt.last_name));
+  v_author := split_part(v_author, ' ', 1)
+    || case when split_part(v_author, ' ', 2) <> '' then ' ' || left(split_part(v_author, ' ', 2), 1) || '.' else '' end;
+
+  insert into public.reviews (business_id, appointment_id, user_id, author_name, rating, comment, services, team_member_name)
+  select v_appt.business_id, p_appointment, auth.uid(), v_author, p_rating,
+         nullif(trim(coalesce(p_comment, '')), ''),
+         string_agg(coalesce(s.name, 'Service'), ', ' order by i.sort_order),
+         (array_agg(t.first_name order by i.sort_order))[1]
+    from public.appointment_items i
+    left join public.services s on s.id = i.service_id
+    left join public.team_members t on t.id = i.team_member_id
+   where i.appointment_id = p_appointment
+  returning id into v_id;
+
+  perform public.notify(v_appt.business_id, 'review', 'New ' || p_rating || '-star review',
+    v_author || coalesce(': ' || left(nullif(trim(coalesce(p_comment, '')), ''), 120), ''), '/calendar?appointment=' || p_appointment);
+  return v_id;
+end;
+$$;
+revoke all on function public.submit_review(uuid, integer, text) from public;
+grant execute on function public.submit_review(uuid, integer, text) to authenticated;
+
+-- ── Clean up links made before the classes were separate (e.g. testing with a business login) ──
+update public.clients c set user_id = null
+  where c.user_id is not null
+    and not exists (select 1 from public.profiles p where p.id = c.user_id and p.user_type = 'customer');
+delete from public.favorite_businesses f
+  where not exists (select 1 from public.profiles p where p.id = f.user_id and p.user_type = 'customer');
+
