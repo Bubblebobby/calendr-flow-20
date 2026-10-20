@@ -165,7 +165,7 @@ function AppointmentCard({
         onClick={onOpen}
         className="flex min-w-0 flex-1 items-stretch text-left"
       >
-        <SalonVisual name={a.business.name} className="w-24 shrink-0 [&>span]:text-title" />
+        <SalonVisual name={a.business.name} className="w-20 shrink-0 sm:w-24 [&>span]:text-title" />
         <span className="min-w-0 flex-1 px-4 py-3">
           <span className="block truncate text-heading font-semibold">{a.business.name}</span>
           <span className="block text-caption text-muted-foreground">
@@ -194,7 +194,7 @@ function AppointmentCard({
         </span>
       </button>
       {again ? (
-        <div className="flex items-center pr-3">
+        <div className="hidden items-center pr-3 sm:flex">
           <a href={again} className={cn(outlinePill, "h-9 px-3 text-caption")}>
             Book again
           </a>

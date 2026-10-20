@@ -13,7 +13,13 @@ import {
 } from "@/components/customer/customer-ui";
 import { FavouriteButton } from "@/components/customer/favourites";
 import { supabase } from "@/integrations/supabase/client";
-import { localDay, weekday, type OpeningHours } from "@/lib/booking-slots";
+import {
+  formatClock,
+  localDay,
+  openWindowForWeekday,
+  weekday,
+  type OpeningHours,
+} from "@/lib/booking-slots";
 import { rememberRecent } from "@/lib/customer";
 import { formatDuration, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -83,7 +89,6 @@ type Reviews = {
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const ORDER = [1, 2, 3, 4, 5, 6, 0]; // Monday first
-const hhmm = (value: string | null) => (value ?? "").slice(0, 5);
 
 function SalonPage() {
   const { slug } = Route.useParams();
@@ -389,7 +394,7 @@ function Salon({ slug, venue, reviews }: { slug: string; venue: Venue; reviews: 
               <h2 className="text-title font-semibold">Opening times</h2>
               <ul className="mt-3 space-y-2">
                 {ORDER.map((d) => {
-                  const h = venue.hours.find((x) => x.day === d);
+                  const w = openWindowForWeekday(venue.hours, d);
                   const today = d === open.weekday;
                   return (
                     <li
@@ -398,15 +403,12 @@ function Salon({ slug, venue, reviews }: { slug: string; venue: Venue; reviews: 
                     >
                       <span className="flex items-center gap-2">
                         <span
-                          className={cn(
-                            "size-2 rounded-full",
-                            h?.open ? "bg-[#1f8a3e]" : "bg-border",
-                          )}
+                          className={cn("size-2 rounded-full", w ? "bg-[#1f8a3e]" : "bg-border")}
                         />
                         {DAYS[d]}
                       </span>
-                      <span className={h?.open ? "" : "text-muted-foreground"}>
-                        {h?.open ? `${hhmm(h.from)} – ${hhmm(h.to)}` : "Closed"}
+                      <span className={w ? "" : "text-muted-foreground"}>
+                        {w ? `${formatClock(w.from)} – ${formatClock(w.to)}` : "Closed"}
                       </span>
                     </li>
                   );
@@ -445,17 +447,20 @@ function Salon({ slug, venue, reviews }: { slug: string; venue: Venue; reviews: 
 
 /** "Open until 17:00", "Opens at 10:00" or "Closed today", in the salon's own time zone. */
 function openNow(hours: OpeningHours[], timeZone: string) {
-  const today = localDay(timeZone);
-  const day = weekday(today);
-  const h = hours.find((x) => x.day === day);
-  const now = new Intl.DateTimeFormat("en-GB", {
+  const day = weekday(localDay(timeZone));
+  const w = openWindowForWeekday(hours, day);
+  const [h, m] = new Intl.DateTimeFormat("en-GB", {
     hour: "2-digit",
     minute: "2-digit",
     hourCycle: "h23",
     timeZone,
-  }).format(new Date());
-  if (!h?.open || !h.from || !h.to) return { open: false, label: "Closed today", weekday: day };
-  if (now < hhmm(h.from)) return { open: false, label: `Opens at ${hhmm(h.from)}`, weekday: day };
-  if (now >= hhmm(h.to)) return { open: false, label: "Closed now", weekday: day };
-  return { open: true, label: `Open until ${hhmm(h.to)}`, weekday: day };
+  })
+    .format(new Date())
+    .split(":")
+    .map(Number);
+  const now = (h ?? 0) * 60 + (m ?? 0);
+  if (!w) return { open: false, label: "Closed today", weekday: day };
+  if (now < w.from) return { open: false, label: `Opens at ${formatClock(w.from)}`, weekday: day };
+  if (now >= w.to) return { open: false, label: "Closed now", weekday: day };
+  return { open: true, label: `Open until ${formatClock(w.to)}`, weekday: day };
 }

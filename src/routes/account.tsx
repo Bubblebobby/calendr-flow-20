@@ -44,11 +44,10 @@ function AccountLayout() {
               to={to}
               className={cn(
                 "flex h-10 shrink-0 items-center gap-3 rounded-full border border-border bg-card px-4 text-body font-medium",
+                "data-[status=active]:border-ink data-[status=active]:bg-ink data-[status=active]:text-ink-foreground",
                 "lg:h-11 lg:rounded-lg lg:border-0 lg:bg-transparent lg:px-3 lg:hover:bg-secondary",
+                "lg:data-[status=active]:bg-accent lg:data-[status=active]:font-semibold lg:data-[status=active]:text-foreground",
               )}
-              activeProps={{
-                className: "border-ink bg-ink text-ink-foreground lg:bg-accent lg:text-foreground",
-              }}
             >
               <Icon size={20} /> {label}
             </Link>

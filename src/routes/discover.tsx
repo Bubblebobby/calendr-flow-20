@@ -237,9 +237,11 @@ function DiscoverPage() {
         <section>
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="text-title font-semibold">
-              {filtering
-                ? `${venues.data?.length ?? 0} ${venues.data?.length === 1 ? "salon" : "salons"} found`
-                : "Salons on Bookly"}
+              {!filtering
+                ? "Salons on Bookly"
+                : venues.isLoading
+                  ? "Searching…"
+                  : `${venues.data?.length ?? 0} ${venues.data?.length === 1 ? "salon" : "salons"} found`}
             </h2>
             {filtering ? (
               <button
