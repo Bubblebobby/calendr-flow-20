@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Check, CheckCircle, Copy, Plus, UserCircle, X } from "@phosphor-icons/react";
 import { toast } from "sonner";
 
@@ -18,6 +18,7 @@ import {
 import { formatDuration, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { policySummary, type BookingPolicy } from "@/lib/booking-policy";
+import { initialsOf, splitName, useCustomer } from "@/lib/customer";
 
 type Search = { services?: string; team?: string };
 
@@ -135,6 +136,22 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
   const [promoInput, setPromoInput] = useState("");
   const [promo, setPromo] = useState<{ code: string; name: string; discount_type: string; value: number } | null>(null);
   const [promoError, setPromoError] = useState<string | null>(null);
+  const customer = useCustomer();
+  const me = customer.data;
+  const queryClient = useQueryClient();
+
+  // Signed-in customers book with their account details, so the booking lands in their account.
+  useEffect(() => {
+    if (!me) return;
+    const { first, last } = splitName(me.full_name);
+    setForm((f) => ({
+      ...f,
+      first_name: f.first_name || first,
+      last_name: f.last_name || last,
+      email: me.email,
+      phone: f.phone || me.phone || "",
+    }));
+  }, [me]);
 
   const policy = useQuery({
     queryKey: ["booking-policy", slug],
@@ -249,6 +266,9 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
       setError(null);
       const token = (data as { manage_token?: string } | null)?.manage_token ?? null;
       setManageToken(token);
+      if (me) {
+        void supabase.rpc("link_my_clients").then(() => queryClient.invalidateQueries({ queryKey: ["my-appointments"] }));
+      }
       setStep("done");
     },
     onError: (rpcError: Error) => {
@@ -338,6 +358,21 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
               </div>
             </div>
           ) : null}
+          {me ? (
+            <Link
+              to="/account/appointments"
+              className={cn(pillButton, "mt-8 w-full bg-ink text-ink-foreground hover:bg-ink/90")}
+            >
+              View my appointments
+            </Link>
+          ) : (
+            <p className="mt-6 text-caption text-muted-foreground">
+              <Link to="/sign-in" search={{ next: "/account/appointments" }} className="font-semibold text-primary">
+                Sign in with {form.email || "your email"}
+              </Link>{" "}
+              to keep all your bookings in one place.
+            </p>
+          )}
           <button
             type="button"
             onClick={() => {
@@ -346,7 +381,7 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
               setManageToken(null);
               setStep("services");
             }}
-            className={cn(pillButton, "mt-8 w-full border border-input bg-card hover:bg-secondary")}
+            className={cn(pillButton, me ? "mt-3" : "mt-6", "w-full border border-input bg-card hover:bg-secondary")}
           >
             Book another appointment
           </button>
@@ -375,6 +410,31 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
             </span>
           ))}
         </nav>
+        {me ? (
+          <Link
+            to="/account/appointments"
+            aria-label="My appointments"
+            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent text-caption font-semibold text-primary"
+          >
+            {initialsOf(me.full_name || me.email)}
+          </Link>
+        ) : customer.isLoading ? null : (
+          <Link
+            to="/sign-in"
+            search={{ next: `/book/${slug}` }}
+            className="shrink-0 rounded-full px-3 py-2 text-body font-semibold hover:bg-secondary"
+          >
+            Sign in
+          </Link>
+        )}
+        <Link
+          to="/salon/$slug"
+          params={{ slug }}
+          aria-label="Close"
+          className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-secondary"
+        >
+          <X size={20} />
+        </Link>
       </header>
 
       <div className="mx-auto grid w-full max-w-[1120px] gap-8 px-4 pb-32 pt-8 sm:px-8 lg:grid-cols-[1fr_380px] lg:pb-16">
@@ -527,7 +587,15 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
                 <TextField label="First name" required value={form.first_name} onChange={(v) => setForm({ ...form, first_name: v })} autoComplete="given-name" />
                 <TextField label="Last name" value={form.last_name} onChange={(v) => setForm({ ...form, last_name: v })} autoComplete="family-name" />
-                <TextField label="Email" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} autoComplete="email" />
+                <TextField
+                  label="Email"
+                  type="email"
+                  value={form.email}
+                  onChange={(v) => setForm({ ...form, email: v })}
+                  autoComplete="email"
+                  readOnly={!!me}
+                  hint={me ? "From your Bookly account" : undefined}
+                />
                 <TextField label="Phone" type="tel" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} autoComplete="tel" />
               </div>
               <p className="mt-2 text-caption text-muted-foreground">Add an email or phone number so the business can reach you.</p>
@@ -710,6 +778,8 @@ function TextField({
   required,
   type = "text",
   autoComplete,
+  readOnly,
+  hint,
 }: {
   label: string;
   value: string;
@@ -717,6 +787,8 @@ function TextField({
   required?: boolean;
   type?: string;
   autoComplete?: string;
+  readOnly?: boolean | undefined;
+  hint?: string | undefined;
 }) {
   return (
     <label className="block text-body font-semibold">
@@ -727,10 +799,15 @@ function TextField({
         value={value}
         required={required}
         autoComplete={autoComplete}
+        readOnly={readOnly}
         maxLength={type === "email" ? 254 : 100}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-2 h-12 w-full rounded-[8px] border border-input px-4 text-body font-normal outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+        className={cn(
+          "mt-2 h-12 w-full rounded-[8px] border border-input px-4 text-body font-normal outline-none focus:border-primary focus:ring-2 focus:ring-primary/15",
+          readOnly && "bg-secondary text-muted-foreground",
+        )}
       />
+      {hint ? <span className="mt-1 block text-caption font-normal text-muted-foreground">{hint}</span> : null}
     </label>
   );
 }
