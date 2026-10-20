@@ -50,6 +50,7 @@ import {
 import { formatDuration, formatMoney } from "@/lib/format";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
+import { csvCell } from "@/lib/csv";
 
 type Category = {
   id: string;
@@ -458,7 +459,7 @@ export function ServiceMenu() {
             [
               "﻿" +
                 [exportHeader, ...rows]
-                  .map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(","))
+                  .map((row) => row.map(csvCell).join(","))
                   .join("\n"),
             ],
             { type: "text/csv;charset=utf-8" },

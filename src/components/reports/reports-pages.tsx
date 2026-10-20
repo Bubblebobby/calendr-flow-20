@@ -17,6 +17,7 @@ import { formatMoney } from "@/lib/format";
 import { formatHours } from "@/lib/team-shifts";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
+import { csvCell } from "@/lib/csv";
 
 import {
   REPORT_CATEGORIES,
@@ -226,7 +227,7 @@ export function ReportPage({ reportId }: { reportId: string }) {
     if (!result.data) return;
     const lines = [report.columns.map((c) => c.label), ...result.data.rows.map((row) => report.columns.map((c) => format(row[c.key] ?? null, c)))];
     if (result.data.total) lines.push(report.columns.map((c) => format(result.data!.total![c.key] ?? null, c)));
-    const csv = "﻿" + lines.map((l) => l.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const csv = "﻿" + lines.map((l) => l.map(csvCell).join(",")).join("\n");
     const link = document.createElement("a");
     link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     link.download = `${report.id}-${rangeLabel(range).toLowerCase().replace(/\s+/g, "-")}.csv`;

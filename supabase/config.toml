@@ -1,1 +1,9 @@
 project_id = "lfzpkqqzbdasxskhcqeh"
+
+# Customer accounts link salon client records by confirmed email, so these must stay on:
+# a new account has to confirm its email, and changing email needs confirming on both
+# the old and new address. (Production checked 22 Oct 2026: confirmations are on.)
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+double_confirm_changes = true

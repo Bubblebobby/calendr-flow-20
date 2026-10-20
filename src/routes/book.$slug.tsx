@@ -84,6 +84,7 @@ const ERRORS: Record<string, string> = {
   contact_required: "Please add an email address or phone number.",
   invalid_email: "Please check your email address.",
   booking_unavailable: "Online booking isn't available for this business right now.",
+  too_many_requests: "Too many bookings from this device just now. Please try again later.",
 };
 
 function BookingPage() {
@@ -204,15 +205,19 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
       p_slug: slug,
       p_code: promoInput,
     });
-    if (rpcError || !data) {
+    // A bad code comes back as { error } (so it counts towards the attempt limit), not as an error.
+    const problem =
+      rpcError?.message ?? (data as { error?: string } | null)?.error ?? (data ? null : "unknown");
+    if (problem) {
       const reasons: Record<string, string> = {
+        too_many_requests: "Too many tries. Please wait a few minutes and try again.",
         deal_not_found: "That code isn't valid.",
         deal_not_online: "That code can't be used online.",
         deal_expired: "That code has expired.",
         deal_not_started: "That code isn't active yet.",
         deal_used_up: "That code has been fully used.",
       };
-      const key = Object.keys(reasons).find((k) => rpcError?.message.includes(k));
+      const key = Object.keys(reasons).find((k) => problem.includes(k));
       setPromoError(key ? reasons[key]! : "Couldn't check that code.");
       return;
     }

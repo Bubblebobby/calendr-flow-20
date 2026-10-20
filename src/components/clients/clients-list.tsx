@@ -36,6 +36,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { businessLocale, formatMoney } from "@/lib/format";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
+import { csvCell } from "@/lib/csv";
 
 type Client = {
   id: string;
@@ -65,8 +66,6 @@ const fullName = (client: Pick<Client, "first_name" | "last_name">) =>
   [client.first_name, client.last_name].filter(Boolean).join(" ").trim();
 
 function downloadCsv(rows: Client[], filename: string) {
-  const escape = (value: string | null | undefined) =>
-    `"${String(value ?? "").replace(/"/g, '""')}"`;
   const lines = [
     ["First name", "Last name", "Email", "Phone", "Gender", "Client source", "Created at"].join(
       ",",
@@ -81,7 +80,7 @@ function downloadCsv(rows: Client[], filename: string) {
         row.client_source,
         row.created_at.slice(0, 10),
       ]
-        .map(escape)
+        .map(csvCell)
         .join(","),
     ),
   ];
