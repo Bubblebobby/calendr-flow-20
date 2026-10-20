@@ -108,7 +108,7 @@ export function TimesheetsPage() {
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3">
         {members.map((m) => {
           const open = list.find((e) => e.team_member_id === m.id && !e.clock_out);
           const week = weekEntries.filter((e) => e.team_member_id === m.id).reduce((s, e) => s + workedHours(e), 0);
@@ -453,9 +453,11 @@ function PaySettings() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
-  const input = (id: string, key: "rate" | "service" | "product", suffix: string) => (
+  const LABEL = { rate: "hourly rate", service: "service commission", product: "product commission" } as const;
+  const input = (id: string, key: "rate" | "service" | "product", suffix: string, who: string) => (
     <span className="flex items-center gap-1">
       <input
+        aria-label={`${who} ${LABEL[key]}`}
         inputMode="decimal"
         value={draft[id]?.[key] ?? ""}
         onChange={(e) => setDraft({ ...draft, [id]: { ...draft[id]!, [key]: e.target.value.replace(/[^0-9.]/g, "") } })}
@@ -480,9 +482,9 @@ function PaySettings() {
             {(members.data ?? []).map((m) => (
               <tr key={m.id}>
                 <td className="px-4 font-semibold">{memberName(m)}</td>
-                <td className="px-4">{input(m.id, "rate", "/hr")}</td>
-                <td className="px-4">{input(m.id, "service", "%")}</td>
-                <td className="px-4">{input(m.id, "product", "%")}</td>
+                <td className="px-4">{input(m.id, "rate", "/hr", memberName(m))}</td>
+                <td className="px-4">{input(m.id, "service", "%", memberName(m))}</td>
+                <td className="px-4">{input(m.id, "product", "%", memberName(m))}</td>
               </tr>
             ))}
           </tbody>
@@ -525,12 +527,12 @@ function PayRunBuilder({ onDone }: { onDone: (id?: string) => void }) {
       return {
         sheets: sheets.data ?? [],
         sales: (sales.data ?? []).map((s) => {
-          const row = s as unknown as { team_member_id: string | null; total: number; tip_amount: number | null; sale_items: { team_member_id?: string | null; service_id: string | null; product_id?: string | null; price: number; quantity: number; tax_amount?: number | null }[] };
+          const row = s as unknown as { team_member_id: string | null; total: number; tip_amount: number | null; sale_items: { team_member_id?: string | null; service_id: string | null; product_id?: string | null; price: number; quantity: number; tax_amount?: number | null; discount_amount?: number | null }[] };
           return {
             team_member_id: row.team_member_id,
             total: Number(row.total),
             tip_amount: row.tip_amount,
-            items: row.sale_items.map((i) => ({ team_member_id: i.team_member_id ?? null, service_id: i.service_id, product_id: i.product_id ?? null, price: Number(i.price), quantity: i.quantity, tax_amount: i.tax_amount ?? 0 })),
+            items: row.sale_items.map((i) => ({ team_member_id: i.team_member_id ?? null, service_id: i.service_id, product_id: i.product_id ?? null, price: Number(i.price), quantity: i.quantity, tax_amount: i.tax_amount ?? 0, discount_amount: i.discount_amount ?? null })),
           };
         }),
       };

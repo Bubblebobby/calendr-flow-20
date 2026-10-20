@@ -2722,3 +2722,10 @@ drop trigger if exists pay_run_lines_lock on public.pay_run_lines;
 create trigger pay_run_lines_lock before insert or update or delete on public.pay_run_lines
   for each row execute function public.lock_paid_pay_runs();
 
+
+-- ===== 20261020100000_sale_item_discounts.sql =====
+-- Each sold line's share of the cart discount, so commission and tax use what was actually charged.
+-- Null on sales saved before this was recorded (pay runs estimate those).
+alter table public.sale_items add column if not exists discount_amount numeric
+  check (discount_amount is null or discount_amount >= 0);
+

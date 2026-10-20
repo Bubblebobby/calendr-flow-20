@@ -1754,6 +1754,7 @@ export type Database = {
       }
       sale_items: {
         Row: {
+          discount_amount: number | null
           team_member_id: string | null
           tax_amount: number
           product_id: string | null
@@ -1769,6 +1770,7 @@ export type Database = {
           sort_order: number
         }
         Insert: {
+          discount_amount?: number | null
           team_member_id?: string | null
           tax_amount?: number
           product_id?: string | null
@@ -1784,6 +1786,7 @@ export type Database = {
           sort_order?: number
         }
         Update: {
+          discount_amount?: number | null
           team_member_id?: string | null
           tax_amount?: number
           product_id?: string | null

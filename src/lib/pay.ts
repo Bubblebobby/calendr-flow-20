@@ -12,7 +12,16 @@ export type PaySale = {
   team_member_id: string | null;
   total: number; // after cart discount, excluding tip
   tip_amount: number | null;
-  items: Array<{ team_member_id: string | null; service_id: string | null; product_id: string | null; price: number; quantity: number; tax_amount: number | null }>;
+  items: Array<{
+    team_member_id: string | null;
+    service_id: string | null;
+    product_id: string | null;
+    price: number;
+    quantity: number;
+    tax_amount: number | null;
+    /** This line's share of the cart discount; null on sales saved before it was recorded. */
+    discount_amount?: number | null;
+  }>;
 };
 export type PayLine = { team_member_id: string; member_name: string; hours: number; wages: number; commission: number; tips: number };
 
@@ -32,15 +41,21 @@ export function computePay(members: PayMember[], timesheets: PayTimesheet[], sal
     let tips = 0;
     for (const sale of sales) {
       if (sale.team_member_id === m.id) tips += Number(sale.tip_amount ?? 0);
-      const subtotal = sale.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-      const afterDiscount = subtotal > 0 ? Number(sale.total) / subtotal : 0;
+      // Older sales don't record each line's discount: estimate it across services and products
+      // (gift cards, packages and memberships aren't discounted).
+      const commissionable = sale.items.filter((i) => i.service_id || i.product_id);
+      const base = commissionable.reduce((sum, i) => sum + i.price * i.quantity, 0);
+      const prepaid = sale.items.reduce((sum, i) => sum + (i.service_id || i.product_id ? 0 : i.price * i.quantity), 0);
+      const factor = base > 0 ? Math.max(0, Math.min(1, (Number(sale.total) - prepaid) / base)) : 0;
       for (const item of sale.items) {
         const who = item.team_member_id ?? sale.team_member_id;
         if (who !== m.id) continue;
         const rate = item.service_id ? m.service_commission_percent : item.product_id ? m.product_commission_percent : null;
         if (!rate) continue;
         // Commission on what was actually charged, without tax.
-        const net = Math.max(0, item.price * item.quantity * afterDiscount - Number(item.tax_amount ?? 0));
+        const gross = item.price * item.quantity;
+        const charged = item.discount_amount != null ? gross - Number(item.discount_amount) : gross * factor;
+        const net = Math.max(0, charged - Number(item.tax_amount ?? 0));
         commission += (net * rate) / 100;
       }
     }

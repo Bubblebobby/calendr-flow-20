@@ -30,7 +30,7 @@ import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/format";
-import { lineTaxes } from "@/lib/tax";
+import { lineDiscounts, lineTaxes } from "@/lib/tax";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
 import {
@@ -374,10 +374,9 @@ export function CheckoutScreen({
   };
   const discountable = (line: CheckoutLine) =>
     !line.extra && (discountScope === "all" || (!!line.serviceId && !line.productId));
-  const taxes = lineTaxes(
-    lines.map((line) => ({ amount: line.price * line.quantity, rate: lineRate(line), discountable: discountable(line) })),
-    discount,
-  );
+  const taxLines = lines.map((line) => ({ amount: line.price * line.quantity, rate: lineRate(line), discountable: discountable(line) }));
+  const taxes = lineTaxes(taxLines, discount);
+  const discounts = lineDiscounts(taxLines, discount);
   const taxTotal = Math.round(taxes.reduce((sum, value) => sum + value, 0) * 100) / 100;
   const leftToPay = Math.max(0, Math.round((toPay - paid) * 100) / 100);
   const staffNames = [
@@ -523,7 +522,7 @@ export function CheckoutScreen({
       };
       // Columns added by the 19 Oct database update; if it hasn't been run, save without them.
       const NEW_SALE_COLUMNS = ["tax_amount", "discount_amount"] as const;
-      const NEW_ITEM_COLUMNS = ["product_id", "team_member_id", "tax_amount"] as const;
+      const NEW_ITEM_COLUMNS = ["product_id", "team_member_id", "tax_amount", "discount_amount"] as const;
       const isMissingColumn = (e: { code?: string; message?: string } | null) =>
         Boolean(e && (e.code === "PGRST204" || e.code === "42703" || /column .* (does not exist|of '.*' in the schema cache)/i.test(e.message ?? "")));
       const strip = <T extends Record<string, unknown>>(row: T, keys: readonly string[]) =>
@@ -549,6 +548,7 @@ export function CheckoutScreen({
           product_id: line.productId ?? null,
           team_member_id: line.teamMemberId,
           tax_amount: taxes[index] ?? 0,
+          discount_amount: discounts[index] ?? 0,
           appointment_item_id: line.appointmentItemId,
           description: line.description,
           price: line.price,
@@ -556,6 +556,8 @@ export function CheckoutScreen({
           sort_order: index,
         }));
       let { error: itemsError } = await supabase.from("sale_items").insert(itemRows);
+      // discount_amount came with the 20 Oct update; try without it before dropping the 19 Oct columns.
+      if (isMissingColumn(itemsError)) ({ error: itemsError } = await supabase.from("sale_items").insert(itemRows.map((row) => strip(row, ["discount_amount"]))));
       if (isMissingColumn(itemsError)) {
         if (itemRows.some((row) => row.product_id)) throw new Error("Selling products needs the latest database update");
         ({ error: itemsError } = await supabase.from("sale_items").insert(itemRows.map((row) => strip(row, NEW_ITEM_COLUMNS))));
