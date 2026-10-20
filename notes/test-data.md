@@ -65,7 +65,8 @@ Everything is named "Test …"; the appointments are walk-ins (no client records
 
 ## Added 20 Oct 2026 (customer accounts testing)
 - clients 10acb831-b714-41f6-8362-cf8a1d29eca1 (Test OnlineClient): email changed to Bobby's login email and
-  linked to Bobby's account (clients.user_id). Undo: `update clients set user_id = null, email = 'test.online@example.com' where id = '10acb831-b714-41f6-8362-cf8a1d29eca1';`
+  linked to Bobby's account (clients.user_id). The 21 Oct account-classes update unlinks it automatically
+  (business logins can't be customers); the email still needs resetting. Undo: `update clients set user_id = null, email = 'test.online@example.com' where id = '10acb831-b714-41f6-8362-cf8a1d29eca1';`
 - appointment 32cc6b3b-58bd-4848-8075-495fcd81144f (first of the repeating series) set to completed
 - reviews — one 5-star "TEST review" for that appointment (+ a 'review' notification)
 - favorite_businesses — Bobby's account saved Sentence

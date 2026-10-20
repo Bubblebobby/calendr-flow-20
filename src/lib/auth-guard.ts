@@ -36,9 +36,13 @@ export async function requireOnboardedUser() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("onboarded_at, business_id")
+    .select("onboarded_at, business_id, user_type")
     .eq("id", user.id)
     .maybeSingle();
+
+  // Customer logins belong on the customer side; one email is one class of account.
+  if (profile?.user_type === "customer")
+    throw redirect({ to: "/account-type", search: { expected: "business" } });
 
   if (!profile?.onboarded_at) throw redirect({ to: "/onboarding" });
 

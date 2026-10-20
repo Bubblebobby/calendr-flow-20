@@ -19,6 +19,7 @@ import {
   formatInZone,
   isUpcoming,
   readRecent,
+  isCustomerAccount,
   useCustomer,
   useMyAppointments,
 } from "@/lib/customer";
@@ -52,7 +53,7 @@ function DiscoverPage() {
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
   const customer = useCustomer();
-  const signedIn = !!customer.data;
+  const signedIn = isCustomerAccount(customer.data);
   const [q, setQ] = useState(search.q ?? "");
   const [city, setCity] = useState(search.city ?? "");
   useEffect(() => {

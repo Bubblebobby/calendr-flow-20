@@ -4,7 +4,7 @@ import { Heart } from "@phosphor-icons/react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { useCustomer } from "@/lib/customer";
+import { isCustomerAccount, useCustomer } from "@/lib/customer";
 import { cn } from "@/lib/utils";
 
 /** Ids of the salons the signed-in customer has saved. */
@@ -12,7 +12,7 @@ export function useFavourites() {
   const customer = useCustomer();
   return useQuery({
     queryKey: ["favourites", customer.data?.id ?? null],
-    enabled: !!customer.data,
+    enabled: isCustomerAccount(customer.data),
     queryFn: async (): Promise<string[]> => {
       const { data, error } = await supabase
         .from("favorite_businesses")
@@ -58,6 +58,12 @@ export function FavouriteButton({
       aria-pressed={saved}
       disabled={toggle.isPending}
       onClick={() => {
+        if (customer.data && !isCustomerAccount(customer.data)) {
+          toast("Favourites are for customer accounts", {
+            description: "You're signed in with a business account.",
+          });
+          return;
+        }
         if (!customer.data) {
           void navigate({ to: "/sign-in", search: { next: window.location.pathname } });
           return;

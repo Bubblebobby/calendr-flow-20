@@ -7,10 +7,17 @@ import { BUSINESS_CATEGORIES } from "@/lib/business-categories";
 
 export { safeNext } from "@/lib/safe-next";
 
-/** The signed-in person's own details, used across the customer pages. */
+/**
+ * Whoever is signed in. Bookly has two classes of login, like Fresha: customer accounts
+ * (user_type "customer", from /sign-in) and business accounts (owners and staff, from /auth).
+ * Customer pages treat a business login as signed out, apart from offering its dashboard.
+ */
 export type CustomerProfile = {
   id: string;
   email: string;
+  user_type: string;
+  /** Customers: set when they finish "Create your account". */
+  onboarded_at: string | null;
   full_name: string | null;
   phone: string | null;
   birthday: string | null;
@@ -66,10 +73,25 @@ export type VenueCard = {
   from_price: number | null;
 };
 
-/** Route guard for the customer area: signed-out visitors go to sign-in and come back. */
+export const isCustomerAccount = (me: CustomerProfile | null | undefined): me is CustomerProfile =>
+  me?.user_type === "customer";
+
+/**
+ * Route guard for the customer area: signed-out visitors go to sign-in, business logins get the
+ * "this is a business account" screen, and new customers finish their details first.
+ */
 export async function requireCustomer({ location }: { location: { href: string } }) {
   const { data } = await supabase.auth.getSession();
   if (!data.session) throw redirect({ to: "/sign-in", search: { next: location.href } });
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("user_type, onboarded_at")
+    .eq("id", data.session.user.id)
+    .maybeSingle();
+  if (profile?.user_type !== "customer")
+    throw redirect({ to: "/account-type", search: { expected: "customer" } });
+  if (!profile.onboarded_at)
+    throw redirect({ to: "/create-account", search: { next: location.href } });
   return { user: data.session.user };
 }
 
@@ -99,6 +121,8 @@ export function useCustomer() {
       return {
         id: user.id,
         email: user.email ?? "",
+        user_type: row.user_type ?? "business_owner",
+        onboarded_at: row.onboarded_at ?? null,
         full_name: row.full_name ?? null,
         phone: row.phone ?? null,
         birthday: row.birthday ?? null,

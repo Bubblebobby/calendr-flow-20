@@ -21,7 +21,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
-import { categoryLabel, initialsOf, useCustomer, type VenueCard } from "@/lib/customer";
+import {
+  categoryLabel,
+  initialsOf,
+  isCustomerAccount,
+  useCustomer,
+  type VenueCard,
+} from "@/lib/customer";
 import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -38,7 +44,8 @@ export function CustomerHeader({ search = true }: { search?: boolean }) {
   const customer = useCustomer();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const me = customer.data;
+  const me = isCustomerAccount(customer.data) ? customer.data : null;
+  const businessLogin = customer.data && !me;
 
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-white/95 backdrop-blur">
@@ -57,7 +64,14 @@ export function CustomerHeader({ search = true }: { search?: boolean }) {
           <span className="flex-1" />
         )}
         <div className="ml-auto flex items-center gap-2">
-          {customer.isLoading ? null : me ? (
+          {customer.isLoading ? null : businessLogin ? (
+            <a
+              href="/dashboard"
+              className="flex h-10 items-center gap-2 rounded-full border border-border px-4 text-body font-semibold hover:bg-secondary"
+            >
+              <Storefront size={18} /> Your business dashboard
+            </a>
+          ) : me ? (
             <DropdownMenu>
               <DropdownMenuTrigger
                 aria-label="Account menu"

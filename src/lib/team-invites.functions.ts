@@ -192,6 +192,18 @@ export const acceptTeamInvite = createServerFn({ method: "POST" })
     if (!callerEmail || !member.email || callerEmail !== member.email.trim().toLowerCase())
       fail(invalid);
 
+    // Customer accounts can't join a team (the database refuses too); say why.
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("user_type")
+      .eq("id", context.userId)
+      .maybeSingle();
+    if (profile?.user_type === "customer") {
+      fail(
+        "This email is a customer account, so it can't join a team. Ask for the invite to be sent to a different email.",
+      );
+    }
+
     // Atomic claim: only succeeds while the row is unclaimed and still has this exact token.
     const { data: claimed, error: claimError } = await supabaseAdmin
       .from("team_members")

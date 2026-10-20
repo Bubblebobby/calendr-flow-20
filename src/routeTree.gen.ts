@@ -13,8 +13,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as AccountRouteImport } from './routes/account'
+import { Route as AccountTypeRouteImport } from './routes/account-type'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BusinessSetupRouteImport } from './routes/business-setup'
+import { Route as CreateAccountRouteImport } from './routes/create-account'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as SignInRouteImport } from './routes/sign-in'
@@ -70,6 +72,11 @@ const AccountRoute = AccountRouteImport.update({
   path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountTypeRoute = AccountTypeRouteImport.update({
+  id: '/account-type',
+  path: '/account-type',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -78,6 +85,11 @@ const AuthRoute = AuthRouteImport.update({
 const BusinessSetupRoute = BusinessSetupRouteImport.update({
   id: '/business-setup',
   path: '/business-setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreateAccountRoute = CreateAccountRouteImport.update({
+  id: '/create-account',
+  path: '/create-account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiscoverRoute = DiscoverRouteImport.update({
@@ -262,8 +274,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/account': typeof AccountRouteWithChildren
+  '/account-type': typeof AccountTypeRoute
   '/auth': typeof AuthRouteWithChildren
   '/business-setup': typeof BusinessSetupRoute
+  '/create-account': typeof CreateAccountRoute
   '/discover': typeof DiscoverRoute
   '/onboarding': typeof OnboardingRoute
   '/sign-in': typeof SignInRoute
@@ -303,8 +317,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accept-invite': typeof AcceptInviteRoute
+  '/account-type': typeof AccountTypeRoute
   '/auth': typeof AuthRouteWithChildren
   '/business-setup': typeof BusinessSetupRoute
+  '/create-account': typeof CreateAccountRoute
   '/discover': typeof DiscoverRoute
   '/onboarding': typeof OnboardingRoute
   '/sign-in': typeof SignInRoute
@@ -347,8 +363,10 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/accept-invite': typeof AcceptInviteRoute
   '/account': typeof AccountRouteWithChildren
+  '/account-type': typeof AccountTypeRoute
   '/auth': typeof AuthRouteWithChildren
   '/business-setup': typeof BusinessSetupRoute
+  '/create-account': typeof CreateAccountRoute
   '/discover': typeof DiscoverRoute
   '/onboarding': typeof OnboardingRoute
   '/sign-in': typeof SignInRoute
@@ -391,8 +409,10 @@ export interface FileRouteTypes {
     | '/'
     | '/accept-invite'
     | '/account'
+    | '/account-type'
     | '/auth'
     | '/business-setup'
+    | '/create-account'
     | '/discover'
     | '/onboarding'
     | '/sign-in'
@@ -432,8 +452,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/accept-invite'
+    | '/account-type'
     | '/auth'
     | '/business-setup'
+    | '/create-account'
     | '/discover'
     | '/onboarding'
     | '/sign-in'
@@ -475,8 +497,10 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/accept-invite'
     | '/account'
+    | '/account-type'
     | '/auth'
     | '/business-setup'
+    | '/create-account'
     | '/discover'
     | '/onboarding'
     | '/sign-in'
@@ -519,8 +543,10 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AcceptInviteRoute: typeof AcceptInviteRoute
   AccountRoute: typeof AccountRouteWithChildren
+  AccountTypeRoute: typeof AccountTypeRoute
   AuthRoute: typeof AuthRouteWithChildren
   BusinessSetupRoute: typeof BusinessSetupRoute
+  CreateAccountRoute: typeof CreateAccountRoute
   DiscoverRoute: typeof DiscoverRoute
   OnboardingRoute: typeof OnboardingRoute
   SignInRoute: typeof SignInRoute
@@ -568,6 +594,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account-type': {
+      id: '/account-type'
+      path: '/account-type'
+      fullPath: '/account-type'
+      preLoaderRoute: typeof AccountTypeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -580,6 +613,13 @@ declare module '@tanstack/react-router' {
       path: '/business-setup'
       fullPath: '/business-setup'
       preLoaderRoute: typeof BusinessSetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/create-account': {
+      id: '/create-account'
+      path: '/create-account'
+      fullPath: '/create-account'
+      preLoaderRoute: typeof CreateAccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/discover': {
@@ -901,8 +941,10 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AcceptInviteRoute: AcceptInviteRoute,
   AccountRoute: AccountRouteWithChildren,
+  AccountTypeRoute: AccountTypeRoute,
   AuthRoute: AuthRouteWithChildren,
   BusinessSetupRoute: BusinessSetupRoute,
+  CreateAccountRoute: CreateAccountRoute,
   DiscoverRoute: DiscoverRoute,
   OnboardingRoute: OnboardingRoute,
   SignInRoute: SignInRoute,

@@ -39,7 +39,7 @@ function SignInPage() {
   // Already signed in: go straight on.
   useEffect(() => {
     void supabase.auth.getSession().then(({ data }) => {
-      if (data.session) window.location.replace(next);
+      if (data.session) window.location.replace(`/create-account?next=${encodeURIComponent(next)}`);
     });
   }, [next]);
 
@@ -56,7 +56,9 @@ function SignInPage() {
       email: address,
       options: {
         shouldCreateUser: true,
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
+          `/create-account?next=${encodeURIComponent(next)}`,
+        )}`,
         // Only used when the account is new: marks it as a customer, not a business.
         data: { user_type: "customer" },
       },

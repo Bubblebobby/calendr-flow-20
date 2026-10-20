@@ -18,7 +18,7 @@ import {
 import { formatDuration, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { policySummary, type BookingPolicy } from "@/lib/booking-policy";
-import { initialsOf, splitName, useCustomer } from "@/lib/customer";
+import { initialsOf, isCustomerAccount, splitName, useCustomer } from "@/lib/customer";
 
 type Search = { services?: string; team?: string };
 
@@ -59,7 +59,14 @@ type Page = {
     duration: number;
     team: string[];
   }[];
-  team: { id: string; first_name: string; last_name: string | null; initials: string | null; color: string; job_title: string | null }[];
+  team: {
+    id: string;
+    first_name: string;
+    last_name: string | null;
+    initials: string | null;
+    color: string;
+    job_title: string | null;
+  }[];
 };
 
 type Step = "services" | "professional" | "time" | "details" | "done";
@@ -100,7 +107,9 @@ function BookingPage() {
     return (
       <Centered>
         <p className="text-title font-semibold">This booking page isn&apos;t available</p>
-        <p className="mt-2 text-body text-muted-foreground">Check the link, or contact the business directly.</p>
+        <p className="mt-2 text-body text-muted-foreground">
+          Check the link, or contact the business directly.
+        </p>
       </Centered>
     );
   }
@@ -130,14 +139,26 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
   const [day, setDay] = useState(() => localDay(tz));
   const [slot, setSlot] = useState<number | null>(null);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [form, setForm] = useState({ first_name: "", last_name: "", email: "", phone: "", notes: "" });
+  const [form, setForm] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+    notes: "",
+  });
   const [error, setError] = useState<string | null>(null);
   const [manageToken, setManageToken] = useState<string | null>(null);
   const [promoInput, setPromoInput] = useState("");
-  const [promo, setPromo] = useState<{ code: string; name: string; discount_type: string; value: number } | null>(null);
+  const [promo, setPromo] = useState<{
+    code: string;
+    name: string;
+    discount_type: string;
+    value: number;
+  } | null>(null);
   const [promoError, setPromoError] = useState<string | null>(null);
   const customer = useCustomer();
-  const me = customer.data;
+  // Only customer accounts book as themselves; a business login books like a guest.
+  const me = isCustomerAccount(customer.data) ? customer.data : null;
   const queryClient = useQueryClient();
 
   // Signed-in customers book with their account details, so the booking lands in their account.
@@ -165,13 +186,24 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
 
   const chosen = page.services.filter((s) => selected.includes(s.id));
   const duration = chosen.reduce((sum, s) => sum + s.duration, 0);
-  const total = chosen.reduce((sum, s) => sum + (s.pricing_type === "free" ? 0 : Number(s.price ?? 0)), 0);
+  const total = chosen.reduce(
+    (sum, s) => sum + (s.pricing_type === "free" ? 0 : Number(s.price ?? 0)),
+    0,
+  );
   const promoDiscount = promo
-    ? Math.min(total, promo.discount_type === "percent" ? Math.round(total * Number(promo.value)) / 100 : Number(promo.value))
+    ? Math.min(
+        total,
+        promo.discount_type === "percent"
+          ? Math.round(total * Number(promo.value)) / 100
+          : Number(promo.value),
+      )
     : 0;
   const applyPromo = async () => {
     setPromoError(null);
-    const { data, error: rpcError } = await supabase.rpc("check_booking_deal", { p_slug: slug, p_code: promoInput });
+    const { data, error: rpcError } = await supabase.rpc("check_booking_deal", {
+      p_slug: slug,
+      p_code: promoInput,
+    });
     if (rpcError || !data) {
       const reasons: Record<string, string> = {
         deal_not_found: "That code isn't valid.",
@@ -208,7 +240,11 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
     queryFn: async (): Promise<Busy[]> => {
       const from = zonedToUtc(day, 0, tz).toISOString();
       const to = zonedToUtc(day, 24 * 60, tz).toISOString();
-      const { data, error: rpcError } = await supabase.rpc("get_booking_busy", { p_slug: slug, p_from: from, p_to: to });
+      const { data, error: rpcError } = await supabase.rpc("get_booking_busy", {
+        p_slug: slug,
+        p_from: from,
+        p_to: to,
+      });
       if (rpcError) throw rpcError;
       return data ?? [];
     },
@@ -220,10 +256,15 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
     enabled: step === "time",
     retry: false,
     queryFn: async (): Promise<MemberShifts | null> => {
-      const { data, error: rpcError } = await supabase.rpc("get_booking_availability", { p_slug: slug, p_from: day, p_to: day });
+      const { data, error: rpcError } = await supabase.rpc("get_booking_availability", {
+        p_slug: slug,
+        p_from: day,
+        p_to: day,
+      });
       if (rpcError) return null;
       const map: MemberShifts = {};
-      for (const row of data ?? []) map[row.team_member_id] = row.shifts as unknown as MemberShifts[string];
+      for (const row of data ?? [])
+        map[row.team_member_id] = row.shifts as unknown as MemberShifts[string];
       return map;
     },
   });
@@ -267,7 +308,9 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
       const token = (data as { manage_token?: string } | null)?.manage_token ?? null;
       setManageToken(token);
       if (me) {
-        void supabase.rpc("link_my_clients").then(() => queryClient.invalidateQueries({ queryKey: ["my-appointments"] }));
+        void supabase
+          .rpc("link_my_clients")
+          .then(() => queryClient.invalidateQueries({ queryKey: ["my-appointments"] }));
       }
       setStep("done");
     },
@@ -284,7 +327,9 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
 
   const days = Array.from({ length: 21 }, (_, i) => localDay(tz, i));
   const dayLabel = (value: string, options: Intl.DateTimeFormatOptions) =>
-    new Intl.DateTimeFormat("en-GB", { ...options, timeZone: "UTC" }).format(new Date(`${value}T12:00:00Z`));
+    new Intl.DateTimeFormat("en-GB", { ...options, timeZone: "UTC" }).format(
+      new Date(`${value}T12:00:00Z`),
+    );
 
   const canContinue =
     step === "services"
@@ -293,7 +338,8 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
         ? eligible.length > 0
         : step === "time"
           ? slot !== null
-          : form.first_name.trim().length > 0 && (form.email.trim() || form.phone.trim()).length > 0;
+          : form.first_name.trim().length > 0 &&
+            (form.email.trim() || form.phone.trim()).length > 0;
 
   const next = () => {
     setError(null);
@@ -316,7 +362,8 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
           <CheckCircle size={56} weight="fill" className="mx-auto text-[#1f8a3e]" />
           <h1 className="mt-4 text-display font-semibold">Booking confirmed</h1>
           <p className="mt-2 text-body text-muted-foreground">
-            {dayLabel(day, { weekday: "long", day: "numeric", month: "long" })} at {formatClock(slot ?? 0)} with{" "}
+            {dayLabel(day, { weekday: "long", day: "numeric", month: "long" })} at{" "}
+            {formatClock(slot ?? 0)} with{" "}
             {member ? member.first_name : "the first available professional"} at {business.name}.
           </p>
           <ul className="mt-6 space-y-2 text-left">
@@ -331,12 +378,18 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
             <div className="mt-6 rounded-xl bg-secondary p-4 text-left">
               <p className="text-body font-semibold">Save your booking link</p>
               <p className="mt-1 text-caption text-muted-foreground">
-                {policy.data ? policySummary(policy.data) : "Use it to view or change your booking."} Keep this link private.
+                {policy.data
+                  ? policySummary(policy.data)
+                  : "Use it to view or change your booking."}{" "}
+                Keep this link private.
               </p>
               <div className="mt-3 flex gap-2">
                 <a
                   href={`/book/manage/${manageToken}`}
-                  className={cn(pillButton, "h-10 flex-1 bg-ink text-body text-ink-foreground hover:bg-ink/90")}
+                  className={cn(
+                    pillButton,
+                    "h-10 flex-1 bg-ink text-body text-ink-foreground hover:bg-ink/90",
+                  )}
                 >
                   Manage booking
                 </a>
@@ -345,13 +398,18 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                   aria-label="Copy booking link"
                   onClick={async () => {
                     try {
-                      await navigator.clipboard.writeText(`${window.location.origin}/book/manage/${manageToken}`);
+                      await navigator.clipboard.writeText(
+                        `${window.location.origin}/book/manage/${manageToken}`,
+                      );
                       toast.success("Link copied");
                     } catch {
                       toast.error("Couldn't copy the link");
                     }
                   }}
-                  className={cn(pillButton, "h-10 border border-input bg-card px-4 text-body hover:bg-secondary")}
+                  className={cn(
+                    pillButton,
+                    "h-10 border border-input bg-card px-4 text-body hover:bg-secondary",
+                  )}
                 >
                   <Copy size={18} /> Copy
                 </button>
@@ -367,7 +425,11 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
             </Link>
           ) : (
             <p className="mt-6 text-caption text-muted-foreground">
-              <Link to="/sign-in" search={{ next: "/account/appointments" }} className="font-semibold text-primary">
+              <Link
+                to="/sign-in"
+                search={{ next: "/account/appointments" }}
+                className="font-semibold text-primary"
+              >
                 Sign in with {form.email || "your email"}
               </Link>{" "}
               to keep all your bookings in one place.
@@ -381,7 +443,11 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
               setManageToken(null);
               setStep("services");
             }}
-            className={cn(pillButton, me ? "mt-3" : "mt-6", "w-full border border-input bg-card hover:bg-secondary")}
+            className={cn(
+              pillButton,
+              me ? "mt-3" : "mt-6",
+              "w-full border border-input bg-card hover:bg-secondary",
+            )}
           >
             Book another appointment
           </button>
@@ -391,22 +457,40 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
   }
 
   const stepIndex = STEPS.findIndex((s) => s.key === step);
-  const categories = page.categories.filter((c) => page.services.some((s) => s.category_id === c.id));
-  const uncategorised = page.services.filter((s) => !s.category_id || !categories.some((c) => c.id === s.category_id));
+  const categories = page.categories.filter((c) =>
+    page.services.some((s) => s.category_id === c.id),
+  );
+  const uncategorised = page.services.filter(
+    (s) => !s.category_id || !categories.some((c) => c.id === s.category_id),
+  );
 
   return (
     <div className="min-h-screen bg-white">
       <header className="sticky top-0 z-20 flex h-[72px] items-center gap-3 border-b border-border bg-white/95 px-4 backdrop-blur sm:px-8">
         {stepIndex > 0 ? (
-          <button type="button" aria-label="Back" onClick={back} className="flex size-10 items-center justify-center rounded-full hover:bg-secondary">
+          <button
+            type="button"
+            aria-label="Back"
+            onClick={back}
+            className="flex size-10 items-center justify-center rounded-full hover:bg-secondary"
+          >
             <ArrowLeft size={20} />
           </button>
         ) : null}
-        <nav aria-label="Booking steps" className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto text-body">
+        <nav
+          aria-label="Booking steps"
+          className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto text-body"
+        >
           {STEPS.map((s, index) => (
             <span key={s.key} className="flex shrink-0 items-center gap-2">
               {index > 0 ? <span className="text-placeholder">›</span> : null}
-              <span className={cn(index === stepIndex ? "font-semibold text-foreground" : "text-muted-foreground")}>{s.label}</span>
+              <span
+                className={cn(
+                  index === stepIndex ? "font-semibold text-foreground" : "text-muted-foreground",
+                )}
+              >
+                {s.label}
+              </span>
             </span>
           ))}
         </nav>
@@ -444,17 +528,31 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
               <h1 className="text-[2rem] font-bold leading-10">Select services</h1>
               {categories.length > 1 ? (
                 <div className="mt-6 flex gap-2 overflow-x-auto pb-1">
-                  <CategoryPill label="All" active={activeCategory === null} onClick={() => setActiveCategory(null)} />
+                  <CategoryPill
+                    label="All"
+                    active={activeCategory === null}
+                    onClick={() => setActiveCategory(null)}
+                  />
                   {categories.map((c) => (
-                    <CategoryPill key={c.id} label={c.name} active={activeCategory === c.id} onClick={() => setActiveCategory(c.id)} />
+                    <CategoryPill
+                      key={c.id}
+                      label={c.name}
+                      active={activeCategory === c.id}
+                      onClick={() => setActiveCategory(c.id)}
+                    />
                   ))}
                 </div>
               ) : null}
               <div className="mt-6 space-y-8">
-                {[...categories.map((c) => ({ id: c.id, name: c.name })), ...(uncategorised.length ? [{ id: "", name: "Other services" }] : [])]
+                {[
+                  ...categories.map((c) => ({ id: c.id, name: c.name })),
+                  ...(uncategorised.length ? [{ id: "", name: "Other services" }] : []),
+                ]
                   .filter((group) => activeCategory === null || group.id === activeCategory)
                   .map((group) => {
-                    const services = group.id ? page.services.filter((s) => s.category_id === group.id) : uncategorised;
+                    const services = group.id
+                      ? page.services.filter((s) => s.category_id === group.id)
+                      : uncategorised;
                     return (
                       <section key={group.id || "other"}>
                         <h2 className="text-title font-semibold">{group.name}</h2>
@@ -465,19 +563,35 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                               <li key={service.id}>
                                 <button
                                   type="button"
-                                  onClick={() => setSelected((ids) => (on ? ids.filter((id) => id !== service.id) : [...ids, service.id]))}
+                                  onClick={() =>
+                                    setSelected((ids) =>
+                                      on
+                                        ? ids.filter((id) => id !== service.id)
+                                        : [...ids, service.id],
+                                    )
+                                  }
                                   className={cn(
                                     "flex w-full items-center gap-4 rounded-xl p-5 text-left transition-colors",
-                                    on ? "bg-accent shadow-[inset_0_0_0_2px_var(--color-primary)]" : "shadow-[inset_0_0_0_1px_var(--color-border)] hover:bg-secondary",
+                                    on
+                                      ? "bg-accent shadow-[inset_0_0_0_2px_var(--color-primary)]"
+                                      : "shadow-[inset_0_0_0_1px_var(--color-border)] hover:bg-secondary",
                                   )}
                                 >
                                   <span className="min-w-0 flex-1">
-                                    <span className="block text-heading font-medium">{service.name}</span>
-                                    <span className="block text-body text-muted-foreground">{formatDuration(service.duration)}</span>
+                                    <span className="block text-heading font-medium">
+                                      {service.name}
+                                    </span>
+                                    <span className="block text-body text-muted-foreground">
+                                      {formatDuration(service.duration)}
+                                    </span>
                                     {service.description ? (
-                                      <span className="mt-1 block line-clamp-2 text-body text-muted-foreground">{service.description}</span>
+                                      <span className="mt-1 block line-clamp-2 text-body text-muted-foreground">
+                                        {service.description}
+                                      </span>
                                     ) : null}
-                                    <span className="mt-2 block text-body font-medium">{priceText(service, money)}</span>
+                                    <span className="mt-2 block text-body font-medium">
+                                      {priceText(service, money)}
+                                    </span>
                                   </span>
                                   <span
                                     className={cn(
@@ -485,7 +599,11 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                                       on ? "bg-primary text-primary-foreground" : "bg-secondary",
                                     )}
                                   >
-                                    {on ? <Check size={18} weight="bold" /> : <Plus size={18} weight="bold" />}
+                                    {on ? (
+                                      <Check size={18} weight="bold" />
+                                    ) : (
+                                      <Plus size={18} weight="bold" />
+                                    )}
                                   </span>
                                 </button>
                               </li>
@@ -496,7 +614,9 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                     );
                   })}
                 {page.services.length === 0 ? (
-                  <p className="text-body text-muted-foreground">No services are available to book online yet.</p>
+                  <p className="text-body text-muted-foreground">
+                    No services are available to book online yet.
+                  </p>
                 ) : null}
               </div>
             </>
@@ -522,7 +642,10 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                       active={memberId === m.id}
                       onClick={() => setMemberId(m.id)}
                       avatar={
-                        <span className="flex size-14 items-center justify-center rounded-full text-title font-semibold" style={{ backgroundColor: m.color }}>
+                        <span
+                          className="flex size-14 items-center justify-center rounded-full text-title font-semibold"
+                          style={{ backgroundColor: m.color }}
+                        >
                           {m.initials || m.first_name[0]}
                         </span>
                       }
@@ -547,21 +670,29 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                     }}
                     className={cn(
                       "flex w-16 shrink-0 flex-col items-center gap-1 rounded-xl py-3 transition-colors",
-                      value === day ? "bg-primary text-primary-foreground" : "shadow-[inset_0_0_0_1px_var(--color-border)] hover:bg-secondary",
+                      value === day
+                        ? "bg-primary text-primary-foreground"
+                        : "shadow-[inset_0_0_0_1px_var(--color-border)] hover:bg-secondary",
                     )}
                   >
                     <span className="text-caption">{dayLabel(value, { weekday: "short" })}</span>
-                    <span className="text-title font-semibold">{dayLabel(value, { day: "numeric" })}</span>
+                    <span className="text-title font-semibold">
+                      {dayLabel(value, { day: "numeric" })}
+                    </span>
                   </button>
                 ))}
               </div>
-              <p className="mt-4 text-heading font-semibold">{dayLabel(day, { weekday: "long", day: "numeric", month: "long" })}</p>
+              <p className="mt-4 text-heading font-semibold">
+                {dayLabel(day, { weekday: "long", day: "numeric", month: "long" })}
+              </p>
               {busy.isLoading || availability.isLoading ? (
                 <p className="mt-4 text-body text-muted-foreground">Checking availability…</p>
               ) : slots.length === 0 ? (
                 <div className="mt-4 rounded-xl p-6 text-center shadow-[inset_0_0_0_1px_var(--color-border)]">
                   <p className="text-heading font-semibold">No times available</p>
-                  <p className="mt-1 text-body text-muted-foreground">Try another day{memberId ? " or choose Any professional" : ""}.</p>
+                  <p className="mt-1 text-body text-muted-foreground">
+                    Try another day{memberId ? " or choose Any professional" : ""}.
+                  </p>
                 </div>
               ) : (
                 <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4">
@@ -572,7 +703,9 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                       onClick={() => setSlot(s.minutes)}
                       className={cn(
                         "h-12 rounded-xl text-body font-medium transition-colors",
-                        slot === s.minutes ? "bg-primary text-primary-foreground" : "shadow-[inset_0_0_0_1px_var(--color-border)] hover:bg-secondary",
+                        slot === s.minutes
+                          ? "bg-primary text-primary-foreground"
+                          : "shadow-[inset_0_0_0_1px_var(--color-border)] hover:bg-secondary",
                       )}
                     >
                       {formatClock(s.minutes)}
@@ -585,8 +718,19 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
             <>
               <h1 className="text-[2rem] font-bold leading-10">Your details</h1>
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                <TextField label="First name" required value={form.first_name} onChange={(v) => setForm({ ...form, first_name: v })} autoComplete="given-name" />
-                <TextField label="Last name" value={form.last_name} onChange={(v) => setForm({ ...form, last_name: v })} autoComplete="family-name" />
+                <TextField
+                  label="First name"
+                  required
+                  value={form.first_name}
+                  onChange={(v) => setForm({ ...form, first_name: v })}
+                  autoComplete="given-name"
+                />
+                <TextField
+                  label="Last name"
+                  value={form.last_name}
+                  onChange={(v) => setForm({ ...form, last_name: v })}
+                  autoComplete="family-name"
+                />
                 <TextField
                   label="Email"
                   type="email"
@@ -596,9 +740,17 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                   readOnly={!!me}
                   hint={me ? "From your Bookly account" : undefined}
                 />
-                <TextField label="Phone" type="tel" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} autoComplete="tel" />
+                <TextField
+                  label="Phone"
+                  type="tel"
+                  value={form.phone}
+                  onChange={(v) => setForm({ ...form, phone: v })}
+                  autoComplete="tel"
+                />
               </div>
-              <p className="mt-2 text-caption text-muted-foreground">Add an email or phone number so the business can reach you.</p>
+              <p className="mt-2 text-caption text-muted-foreground">
+                Add an email or phone number so the business can reach you.
+              </p>
               <div className="mt-6">
                 <p className="text-body font-semibold">Promo code</p>
                 {promo ? (
@@ -606,7 +758,11 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                     <span>
                       <span className="font-mono font-semibold">{promo.code}</span> · {promo.name}
                     </span>
-                    <button type="button" onClick={() => setPromo(null)} className="text-body font-medium text-primary hover:underline">
+                    <button
+                      type="button"
+                      onClick={() => setPromo(null)}
+                      className="text-body font-medium text-primary hover:underline"
+                    >
                       Remove
                     </button>
                   </p>
@@ -619,18 +775,31 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                       placeholder="Enter code"
                       className="h-12 min-w-0 flex-1 rounded-[8px] border border-input px-4 font-mono uppercase tracking-wider outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
                     />
-                    <button type="button" disabled={promoInput.trim().length < 3} onClick={applyPromo} className={cn(pillButton, "border border-input bg-card hover:bg-secondary")}>
+                    <button
+                      type="button"
+                      disabled={promoInput.trim().length < 3}
+                      onClick={applyPromo}
+                      className={cn(pillButton, "border border-input bg-card hover:bg-secondary")}
+                    >
                       Apply
                     </button>
                   </div>
                 )}
-                {promoError ? <p className="mt-1 text-caption text-destructive">{promoError}</p> : null}
+                {promoError ? (
+                  <p className="mt-1 text-caption text-destructive">{promoError}</p>
+                ) : null}
               </div>
               {policy.data ? (
                 <div className="mt-6 rounded-xl bg-secondary p-4">
                   <p className="text-body font-semibold">Cancellation policy</p>
-                  <p className="mt-1 text-body text-muted-foreground">{policySummary(policy.data)}</p>
-                  {policy.data.text ? <p className="mt-2 whitespace-pre-line text-body text-muted-foreground">{policy.data.text}</p> : null}
+                  <p className="mt-1 text-body text-muted-foreground">
+                    {policySummary(policy.data)}
+                  </p>
+                  {policy.data.text ? (
+                    <p className="mt-2 whitespace-pre-line text-body text-muted-foreground">
+                      {policy.data.text}
+                    </p>
+                  ) : null}
                 </div>
               ) : null}
               <label className="mt-4 block text-body font-semibold">
@@ -646,7 +815,10 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
             </>
           )}
           {error ? (
-            <p role="alert" className="mt-6 rounded-xl bg-[#fdecef] px-4 py-3 text-body text-destructive">
+            <p
+              role="alert"
+              className="mt-6 rounded-xl bg-[#fdecef] px-4 py-3 text-body text-destructive"
+            >
               {error}
             </p>
           ) : null}
@@ -663,18 +835,23 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
             ) : null}
             {slot !== null && step !== "services" ? (
               <p className="mt-4 text-body">
-                {dayLabel(day, { weekday: "long", day: "numeric", month: "long" })}, {formatClock(slot)}–{formatClock(slot + duration)}
+                {dayLabel(day, { weekday: "long", day: "numeric", month: "long" })},{" "}
+                {formatClock(slot)}–{formatClock(slot + duration)}
               </p>
             ) : null}
             {step !== "services" ? (
-              <p className="mt-1 text-body text-muted-foreground">{member ? `With ${member.first_name}` : "Any professional"}</p>
+              <p className="mt-1 text-body text-muted-foreground">
+                {member ? `With ${member.first_name}` : "Any professional"}
+              </p>
             ) : null}
             <ul className="mt-4 space-y-3 border-t border-border pt-4">
               {chosen.map((service) => (
                 <li key={service.id} className="flex items-start gap-3 text-body">
                   <span className="min-w-0 flex-1">
                     <span className="block font-medium">{service.name}</span>
-                    <span className="block text-muted-foreground">{formatDuration(service.duration)}</span>
+                    <span className="block text-muted-foreground">
+                      {formatDuration(service.duration)}
+                    </span>
                   </span>
                   <span>{priceText(service, money)}</span>
                   {step === "services" ? (
@@ -689,7 +866,9 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                   ) : null}
                 </li>
               ))}
-              {chosen.length === 0 ? <li className="text-body text-muted-foreground">No services selected</li> : null}
+              {chosen.length === 0 ? (
+                <li className="text-body text-muted-foreground">No services selected</li>
+              ) : null}
               {promo && promoDiscount > 0 ? (
                 <li className="flex justify-between text-body text-[#1f8a3e]">
                   <span>Promo {promo.code}</span>
@@ -702,7 +881,9 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
             <div className="min-w-0 flex-1 lg:mb-4 lg:flex lg:justify-between">
               <span className="block text-heading font-semibold">Total</span>
               <span className="block text-body lg:text-heading lg:font-semibold">
-                {chosen.length ? `${hasFrom ? "from " : ""}${money(total - promoDiscount)}` : "Free"}
+                {chosen.length
+                  ? `${hasFrom ? "from " : ""}${money(total - promoDiscount)}`
+                  : "Free"}
               </span>
             </div>
             <button
@@ -727,7 +908,15 @@ function priceText(service: Page["services"][number], money: (n: number) => stri
   return money(Number(service.price ?? 0));
 }
 
-function CategoryPill({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function CategoryPill({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"
@@ -761,7 +950,9 @@ function ProfessionalCard({
       onClick={onClick}
       className={cn(
         "flex flex-col items-center gap-2 rounded-xl p-5 text-center transition-colors",
-        active ? "bg-accent shadow-[inset_0_0_0_2px_var(--color-primary)]" : "shadow-[inset_0_0_0_1px_var(--color-border)] hover:bg-secondary",
+        active
+          ? "bg-accent shadow-[inset_0_0_0_2px_var(--color-primary)]"
+          : "shadow-[inset_0_0_0_1px_var(--color-border)] hover:bg-secondary",
       )}
     >
       <span className="flex size-14 items-center justify-center">{avatar}</span>
@@ -807,7 +998,9 @@ function TextField({
           readOnly && "bg-secondary text-muted-foreground",
         )}
       />
-      {hint ? <span className="mt-1 block text-caption font-normal text-muted-foreground">{hint}</span> : null}
+      {hint ? (
+        <span className="mt-1 block text-caption font-normal text-muted-foreground">{hint}</span>
+      ) : null}
     </label>
   );
 }
