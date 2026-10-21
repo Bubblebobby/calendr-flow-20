@@ -2,10 +2,9 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { EnvelopeSimple } from "@phosphor-icons/react";
 
-import { CustomerHeader, solidPill } from "@/components/customer/customer-ui";
+import { AuthShell } from "@/components/auth-shell";
 import { supabase } from "@/integrations/supabase/client";
 import { safeNext } from "@/lib/customer";
-import { cn } from "@/lib/utils";
 
 type Search = { next?: string | undefined };
 
@@ -77,91 +76,98 @@ function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface">
-      <CustomerHeader search={false} />
-      <main className="mx-auto flex max-w-md flex-col px-4 py-12 sm:py-20">
-        <div className="rounded-2xl bg-card p-6 shadow-[inset_0_0_0_1px_var(--color-border)] sm:p-8">
-          {sentTo ? (
-            <div className="text-center">
-              <span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-accent">
-                <EnvelopeSimple size={28} className="text-primary" />
-              </span>
-              <h1 className="mt-4 text-title font-semibold">Check your email</h1>
-              <p className="mt-2 text-body text-muted-foreground">
-                We sent a sign-in link to{" "}
-                <span className="font-semibold text-foreground">{sentTo}</span>. Open it on this
-                device to continue.
-              </p>
-              {error ? <p className="mt-4 text-body text-destructive">{error}</p> : null}
-              <button
-                type="button"
-                disabled={wait > 0 || sending}
-                onClick={() => void send(sentTo)}
-                className="mt-6 text-body font-semibold text-primary disabled:text-muted-foreground"
-              >
-                {wait > 0 ? `Resend in ${wait}s` : sending ? "Sending…" : "Resend link"}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setSentTo(null);
-                  setError(null);
-                }}
-                className="mt-2 block w-full text-body text-muted-foreground hover:text-foreground"
-              >
-                Use a different email
-              </button>
-            </div>
-          ) : (
-            <form
-              onSubmit={(event) => {
-                event.preventDefault();
-                void send(email.trim());
-              }}
+    <AuthShell
+      title={sentTo ? "Check your email" : "Sign in"}
+      subtitle={sentTo ? null : "One account for every salon you book with. No password needed."}
+      features={CUSTOMER_FEATURES}
+      panelTitle="Your bookings, all in one place"
+      panelText="Find salons near you, book in seconds, and keep your appointments, gift cards and favourites together."
+    >
+      {sentTo ? (
+        <div>
+          <span className="flex size-11 items-center justify-center rounded-full bg-secondary text-foreground">
+            <EnvelopeSimple size={22} />
+          </span>
+          <p className="mt-4 text-body text-foreground">
+            We sent a sign-in link to <span className="font-medium">{sentTo}</span>. Open it on this
+            device to continue.
+          </p>
+          {error ? <p className="mt-4 text-body text-destructive">{error}</p> : null}
+          <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
+            <button
+              type="button"
+              disabled={wait > 0 || sending}
+              onClick={() => void send(sentTo)}
+              className="text-body font-medium underline underline-offset-2 disabled:text-muted-foreground disabled:no-underline"
             >
-              <h1 className="text-title font-semibold">Sign in or create an account</h1>
-              <p className="mt-2 text-body text-muted-foreground">
-                One account for every salon you book with on Bookly. No password needed.
-              </p>
-              <label className="mt-6 block text-body font-semibold">
-                Email
-                <input
-                  type="email"
-                  required
-                  autoFocus
-                  autoComplete="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder="you@example.com"
-                  className="mt-2 h-12 w-full rounded-[8px] border border-input px-4 text-body font-normal outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
-                />
-              </label>
-              {error ? (
-                <p role="alert" className="mt-3 text-body text-destructive">
-                  {error}
-                </p>
-              ) : null}
-              <button
-                type="submit"
-                disabled={sending || !email.trim()}
-                className={cn(solidPill, "mt-6 h-12 w-full text-heading")}
-              >
-                {sending ? "Sending…" : "Continue"}
-              </button>
-              <p className="mt-4 text-caption text-muted-foreground">
-                Use the email you give salons when you book, and your past bookings will appear in
-                your account.
-              </p>
-            </form>
-          )}
+              {wait > 0 ? `Resend in ${wait}s` : sending ? "Sending…" : "Resend link"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setSentTo(null);
+                setError(null);
+              }}
+              className="text-body font-medium underline underline-offset-2"
+            >
+              Use a different email
+            </button>
+          </div>
         </div>
-        <p className="mt-6 text-center text-body text-muted-foreground">
-          Own a salon?{" "}
-          <Link to="/auth" className="font-semibold text-primary">
-            Sign in to Bookly for business
-          </Link>
-        </p>
-      </main>
-    </div>
+      ) : (
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            void send(email.trim());
+          }}
+        >
+          <label className="block rounded-lg border border-input px-4 pb-2 pt-2.5 transition-colors focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground">
+            <span className="block text-caption text-muted-foreground">Email</span>
+            <input
+              type="email"
+              required
+              autoFocus
+              autoComplete="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              className="mt-0.5 block h-6 w-full bg-transparent text-body text-foreground outline-none"
+            />
+          </label>
+          {error ? (
+            <p role="alert" className="mt-3 text-body text-destructive">
+              {error}
+            </p>
+          ) : null}
+          <button
+            type="submit"
+            disabled={sending || !email.trim()}
+            className="mt-4 flex h-12 w-full items-center justify-center rounded-full bg-ink text-body font-medium text-ink-foreground transition-colors hover:bg-ink/90 disabled:opacity-60"
+          >
+            {sending ? "Sending…" : "Continue"}
+          </button>
+          <p className="mt-4 text-caption text-muted-foreground">
+            Use the email you give salons when you book, and your past bookings will appear in your
+            account.
+          </p>
+          <p className="mt-8 text-caption text-muted-foreground">
+            Own a salon?{" "}
+            <Link to="/auth" className="font-medium text-foreground underline underline-offset-2">
+              Sign in to Bookly for business
+            </Link>
+          </p>
+        </form>
+      )}
+    </AuthShell>
   );
 }
+
+const CUSTOMER_FEATURES = [
+  "Find salons near you",
+  "Book in seconds",
+  "Reschedule anytime",
+  "Book again in one tap",
+  "Keep your gift cards",
+  "Track package sessions",
+  "Save your favourites",
+  "Leave a review",
+];

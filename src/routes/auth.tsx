@@ -4,12 +4,8 @@ import { Loader2, MailCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { AuthShell } from "@/components/auth-shell";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { safeNext } from "@/lib/safe-next";
-
-
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -17,12 +13,14 @@ export const Route = createFileRoute("/auth")({
       { title: "Sign in — Bookly" },
       {
         name: "description",
-        content: "Sign in to Bookly to manage your bookings, clients, catalog and sales in one place.",
+        content:
+          "Sign in to Bookly to manage your bookings, clients, catalog and sales in one place.",
       },
       { property: "og:title", content: "Sign in — Bookly" },
       {
         property: "og:description",
-        content: "Sign in to Bookly to manage your bookings, clients, catalog and sales in one place.",
+        content:
+          "Sign in to Bookly to manage your bookings, clients, catalog and sales in one place.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -67,6 +65,8 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [sentTo, setSentTo] = useState<string | null>(null);
+  // Same passwordless flow either way; only the wording changes.
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -110,74 +110,95 @@ function AuthPage() {
 
   return (
     <AuthShell
-      title={
-        <>
-          Your bookings,
-          <br />
-          handled
-        </>
+      title={sentTo ? "Check your email" : mode === "signup" ? "Create your account" : "Sign in"}
+      subtitle={
+        sentTo ? null : mode === "signup" ? (
+          <>
+            Already have an account?{" "}
+            <button
+              type="button"
+              onClick={() => setMode("signin")}
+              className="font-medium underline underline-offset-2"
+            >
+              Sign in
+            </button>
+          </>
+        ) : (
+          <>
+            New to Bookly?{" "}
+            <button
+              type="button"
+              onClick={() => setMode("signup")}
+              className="font-medium underline underline-offset-2"
+            >
+              Sign up
+            </button>
+          </>
+        )
       }
-      subtitle="Scheduling, clients and sales for your business — in one calm workspace."
     >
       {sentTo ? (
-        <div className="flex flex-col items-center gap-3">
-          <span className="flex size-11 items-center justify-center rounded-full bg-accent text-accent-foreground">
+        <div>
+          <span className="flex size-11 items-center justify-center rounded-full bg-secondary text-foreground">
             <MailCheck className="size-5" />
           </span>
-          <h2 className="text-base font-semibold text-foreground">Check your email</h2>
-          <p className="text-body text-muted-foreground">
-            We sent a secure link to <span className="font-medium text-foreground">{sentTo}</span>. Open it to
-            continue.
+          <p className="mt-4 text-body text-foreground">
+            We sent a secure link to <span className="font-medium">{sentTo}</span>. Open it on this
+            device to continue.
           </p>
-          <Button variant="ghost" size="sm" onClick={() => setSentTo(null)}>
+          <button
+            type="button"
+            onClick={() => setSentTo(null)}
+            className="mt-6 text-body font-medium underline underline-offset-2"
+          >
             Use a different email
-          </Button>
+          </button>
         </div>
       ) : (
         <>
-          <Button
-            type="button"
-            variant="outline"
-            className="h-12 w-full rounded-full text-base font-semibold"
-            onClick={handleGoogle}
-            disabled={googleLoading}
-          >
-            {googleLoading ? <Loader2 className="size-4 animate-spin" /> : <GoogleMark />}
-            Continue with Google
-          </Button>
+          <form onSubmit={handleEmail}>
+            <label
+              htmlFor="auth-email"
+              className="block rounded-lg border border-input px-4 pb-2 pt-2.5 transition-colors focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground"
+            >
+              <span className="block text-caption text-muted-foreground">Email</span>
+              <input
+                id="auth-email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-0.5 block h-6 w-full bg-transparent text-body text-foreground outline-none"
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-4 flex h-12 w-full items-center justify-center rounded-full bg-ink text-body font-medium text-ink-foreground transition-colors hover:bg-ink/90 disabled:opacity-60"
+            >
+              {loading ? <Loader2 className="size-4 animate-spin" /> : "Continue"}
+            </button>
+          </form>
 
-          <div className="my-4 flex items-center gap-2.5">
+          <div className="my-5 flex items-center gap-3">
             <span className="h-px flex-1 bg-border" />
             <span className="text-caption text-muted-foreground">or</span>
             <span className="h-px flex-1 bg-border" />
           </div>
 
-          <form onSubmit={handleEmail} className="space-y-3">
-            <label htmlFor="auth-email" className="sr-only">
-              Email address
-            </label>
-            <Input
-              id="auth-email"
-              type="email"
-              inputMode="email"
-              autoComplete="email"
-              required
-              placeholder="Enter your personal or work email"
-              className="h-12 rounded-full text-center"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <Button
-              type="submit"
-              className="h-12 w-full rounded-full text-base font-semibold"
-              disabled={loading}
-            >
-              {loading ? <Loader2 className="size-4 animate-spin" /> : "Continue with email"}
-            </Button>
-          </form>
+          <button
+            type="button"
+            onClick={handleGoogle}
+            disabled={googleLoading}
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-secondary text-body font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-60"
+          >
+            {googleLoading ? <Loader2 className="size-4 animate-spin" /> : <GoogleMark />}
+            Continue with Google
+          </button>
 
-
-          <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
+          <p className="mt-6 text-caption leading-relaxed text-muted-foreground">
             By continuing, you agree to our{" "}
             <Link to="/" className="underline underline-offset-2">
               Terms
@@ -188,9 +209,17 @@ function AuthPage() {
             </Link>
             .
           </p>
+          <p className="mt-8 text-caption text-muted-foreground">
+            Booking an appointment?{" "}
+            <Link
+              to="/sign-in"
+              className="font-medium text-foreground underline underline-offset-2"
+            >
+              Sign in as a customer
+            </Link>
+          </p>
         </>
       )}
     </AuthShell>
   );
 }
-
