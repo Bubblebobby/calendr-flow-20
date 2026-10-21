@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react";
+import { Fragment, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -187,6 +187,25 @@ export function HomePage() {
   );
 }
 
+/**
+ * A heading that rises in word by word: as it scrolls into view (driven by its own scroll
+ * position, see .site-words in styles.css), or straight away on load for the hero.
+ */
+function Words({ text, onLoad }: { text: string; onLoad?: boolean }) {
+  return (
+    <span className={cn("block", onLoad ? "site-words-load" : "site-words")}>
+      {text.split(" ").map((word, index) => (
+        <Fragment key={index}>
+          {index > 0 ? " " : null}
+          <span className="site-word" style={{ "--i": index } as CSSProperties}>
+            {word}
+          </span>
+        </Fragment>
+      ))}
+    </span>
+  );
+}
+
 // ── Header ──
 
 function Logo({ inverted }: { inverted?: boolean }) {
@@ -288,20 +307,23 @@ function SiteHeader() {
 function Hero() {
   return (
     <section id="top" className={cn(wrap, "pt-12 lg:pt-16")}>
-      <p className={cn(eyebrow, "text-[#101010]")}>Appointments</p>
+      <p className={cn(eyebrow, "site-fade-load text-[#101010]")}>Appointments</p>
       <h1
         className={cn(
           serif,
           "mt-4 max-w-[900px] text-[44px] leading-[1.05] tracking-[-0.5px] sm:text-[56px] lg:text-[64px]",
         )}
       >
-        Booking software that keeps your chairs full
+        <Words text="Booking software that keeps your chairs full" onLoad />
       </h1>
-      <p className="mt-5 max-w-[620px] text-[18px] leading-[27px] text-[#666]">
+      <p
+        className="site-fade-load mt-5 max-w-[620px] text-[18px] leading-[27px] text-[#666]"
+        style={{ animationDelay: "450ms" }}
+      >
         Bookly brings online booking, your calendar, checkout, reminders and your team together —
         built for salons, barbers, spas and studios.
       </p>
-      <div className="mt-8 flex flex-wrap gap-3">
+      <div className="site-fade-load mt-8 flex flex-wrap gap-3" style={{ animationDelay: "600ms" }}>
         <a href="#pricing" className={pillOutline}>
           See pricing
         </a>
@@ -351,15 +373,15 @@ function FeatureRow({
 }) {
   return (
     <section id={id} className={cn(wrap, "scroll-mt-24 pt-24 lg:pt-36")}>
-      <div className="site-reveal grid items-center gap-10 lg:grid-cols-[433px_1fr] lg:gap-5">
+      <div className="grid items-center gap-10 lg:grid-cols-[433px_1fr] lg:gap-5">
         <div className={cn(reverse && "lg:order-2 lg:pl-10")}>
           <h2 className={cn(serif, "text-[36px] leading-[1.1] tracking-[-0.5px] lg:text-[48px]")}>
-            {title}
+            <Words text={title} />
           </h2>
-          <p className="mt-5 text-base leading-6 text-[#666]">{text}</p>
-          <ArrowLink className="mt-6">Get started</ArrowLink>
+          <p className="site-fade mt-5 text-base leading-6 text-[#666]">{text}</p>
+          <ArrowLink className="site-fade mt-6">Get started</ArrowLink>
         </div>
-        <div className="group relative overflow-hidden rounded-[10px] bg-[#f7f6f5]">
+        <div className="site-reveal group relative overflow-hidden rounded-[10px] bg-[#f7f6f5]">
           <img
             src={photo(image, 1400)}
             alt=""
@@ -435,7 +457,7 @@ function ManageSlider() {
             "max-w-[900px] text-[44px] leading-[1.02] tracking-[-1.5px] lg:text-[72px] lg:tracking-[-2.88px]",
           )}
         >
-          Run every part of your salon
+          <Words text="Run every part of your salon" />
         </h2>
         <div className="hidden gap-2 sm:flex">
           <SliderButton label="Previous" onClick={() => scroll(-1)}>
@@ -534,7 +556,7 @@ function BusinessTypes() {
           "text-[44px] leading-[1.02] tracking-[-1.5px] lg:text-[72px] lg:tracking-[-2.88px]",
         )}
       >
-        Built for your craft
+        <Words text="Built for your craft" />
       </h2>
       <div className="site-reveal mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-4 px-4 pb-2 [scrollbar-width:none] sm:scroll-px-8 sm:px-8 lg:scroll-px-[60px] lg:px-[max(60px,calc((100vw-1320px)/2))]">
         {TYPES.map(({ label, image }) => (
@@ -625,9 +647,9 @@ function Pricing() {
             "text-[44px] leading-[1.02] tracking-[-1.5px] lg:text-[72px] lg:tracking-[-2.88px]",
           )}
         >
-          Pricing that grows with you
+          <Words text="Pricing that grows with you" />
         </h2>
-        <p className="mt-5 max-w-[620px] text-base leading-6 text-[#666]">
+        <p className="site-fade mt-5 max-w-[620px] text-base leading-6 text-[#666]">
           Start free for 14 days. No card needed, and you can change plans at any time.
         </p>
         <div className="site-reveal mt-12 grid gap-5 lg:grid-cols-3">
@@ -723,9 +745,11 @@ function Faq() {
   const [open, setOpen] = useState<number | null>(0);
   return (
     <section id="faq" className={cn(wrap, "scroll-mt-24 pt-20 lg:pt-28")}>
-      <div className="site-reveal grid gap-8 lg:grid-cols-[433px_1fr] lg:gap-5">
-        <h2 className={cn(serif, "text-[40px] leading-[45px]")}>FAQ</h2>
-        <ul className="border-t border-[#dadada]">
+      <div className="grid gap-8 lg:grid-cols-[433px_1fr] lg:gap-5">
+        <h2 className={cn(serif, "text-[40px] leading-[45px]")}>
+          <Words text="FAQ" />
+        </h2>
+        <ul className="site-reveal border-t border-[#dadada]">
           {FAQS.map((item, index) => {
             const isOpen = open === index;
             return (
@@ -773,16 +797,16 @@ function Faq() {
 function ClosingCta() {
   return (
     <section className={cn(wrap, "py-24 lg:py-36")}>
-      <div className="site-reveal flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
+      <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
         <h2
           className={cn(
             serif,
             "max-w-[760px] text-[40px] leading-none tracking-[-1px] lg:text-[56px] lg:tracking-[-1.68px]",
           )}
         >
-          Ready to get started? Your next client is waiting.
+          <Words text="Ready to get started? Your next client is waiting." />
         </h2>
-        <div className="flex flex-wrap gap-3">
+        <div className="site-fade flex flex-wrap gap-3">
           <a href="#pricing" className={pillOutline}>
             See pricing
           </a>
