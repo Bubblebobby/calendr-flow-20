@@ -246,7 +246,7 @@
      Square's Exact (compared side by side at 64px). */
   --font-display: "Newsreader", ui-serif, Georgia, serif;
   --font-display--font-variation-settings: "opsz" 36;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
   --shadow-card: var(--shadow-card);
 }
 
@@ -448,4 +448,22 @@ h1.text-display {
     opacity: 1;
     transform: none;
   }
+}
+
+/* Square's ArrowLink: on hover the arrow nudges forward and back twice (375ms each way). */
+@media (prefers-reduced-motion: no-preference) {
+  .site-arrow-link:hover .site-nudge {
+    animation: site-nudge 375ms cubic-bezier(0, 0, 0.2, 1) 2 alternate;
+  }
+}
+@keyframes site-nudge {
+  to {
+    transform: translateX(4px);
+  }
+}
+
+/* Keyboard focus on the marketing site: Square Blue ring, 2px out. */
+.site-home :focus-visible {
+  outline: 2px solid #006aff;
+  outline-offset: 2px;
 }

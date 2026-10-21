@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import {
   ArrowsClockwise,
-  BellRinging,
   CalendarCheck,
   CheckCircle,
   CreditCard,
@@ -183,20 +182,6 @@ export function ListingMock() {
           </li>
         ))}
       </ul>
-    </MockCard>
-  );
-}
-
-export function BookingAlertMock() {
-  return (
-    <MockCard className="flex items-center gap-3 p-3">
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-[8px] bg-[#101010] text-white">
-        <BellRinging size={16} weight="bold" />
-      </span>
-      <div className="min-w-0">
-        <p className="text-[12px] font-semibold">New online booking</p>
-        <p className="truncate text-[11px] text-[#666]">Tolu A. · Silk press · Sat 10:00</p>
-      </div>
     </MockCard>
   );
 }
