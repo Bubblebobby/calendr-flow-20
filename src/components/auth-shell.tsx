@@ -2,13 +2,22 @@ import { Link } from "@tanstack/react-router";
 import { CalendarCheck } from "lucide-react";
 import type { ReactNode } from "react";
 
-import salonInterior from "@/assets/salon-interior.jpg.asset.json";
-
 type AuthShellProps = {
   title: ReactNode;
   subtitle: ReactNode;
   children: ReactNode;
 };
+
+const FEATURES = [
+  "Take online bookings",
+  "Fill your calendar",
+  "Check clients out fast",
+  "Sell gift cards and packages",
+  "Track stock",
+  "Pay your team",
+  "See how you're doing",
+];
+const HIGHLIGHT = 1;
 
 /** Shared split layout for the sign-in and onboarding screens. */
 export function AuthShell({ title, subtitle, children }: AuthShellProps) {
@@ -24,29 +33,35 @@ export function AuthShell({ title, subtitle, children }: AuthShellProps) {
         </Link>
 
         <div className="flex w-full max-w-[440px] flex-1 flex-col justify-center py-8 text-center">
-          <h1 className="text-[2rem] font-semibold leading-[1.08] tracking-[-0.03em] text-foreground sm:text-[2.5rem] lg:text-[3rem]">
+          <h1 className="text-[2rem] font-normal leading-[1.08] tracking-[-0.02em] text-foreground sm:text-[2.5rem] lg:text-[3rem]">
             {title}
           </h1>
-          <p className="mt-3 text-base font-medium leading-snug text-muted-foreground sm:text-lg">
-            {subtitle}
-          </p>
+          <p className="mt-3 text-base leading-snug text-muted-foreground sm:text-lg">{subtitle}</p>
 
           <div className="surface-flat mt-7 p-5 text-center sm:p-7">{children}</div>
         </div>
       </div>
 
-      {/* Right: full-bleed salon image */}
-      <div className="relative hidden h-full overflow-hidden lg:flex">
-        <img
-          src={salonInterior.url}
-          alt="Modern salon interior with arched mirrors and styling chairs"
-          width={736}
-          height={981}
-          loading="lazy"
-          className="h-full w-full object-cover"
-        />
+      {/* Right: what Bookly does, on a dark panel (Square-style). */}
+      <div className="relative hidden h-full flex-col justify-center overflow-hidden bg-[#101010] px-16 lg:flex">
+        <ul aria-label="What you can do with Bookly" className="space-y-1">
+          {FEATURES.map((feature, index) => (
+            <li
+              key={feature}
+              className={
+                index === HIGHLIGHT
+                  ? "text-[1.75rem] font-medium leading-10 text-white"
+                  : "text-[1.75rem] font-medium leading-10 text-white/35"
+              }
+            >
+              {feature}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-10 max-w-sm text-body text-white/60">
+          Calendar, online booking, checkout, clients, stock, team and reports — in one place.
+        </p>
       </div>
     </div>
   );
 }
-

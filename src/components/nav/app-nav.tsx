@@ -18,7 +18,9 @@ export function AppNav() {
 
   const activeItem = navItems.find((item) => pathname.startsWith(item.to));
   const [openKey, setOpenKey] = useState<string | null>(activeItem?.groups ? activeItem.key : null);
-  const [renderedItem, setRenderedItem] = useState<NavItem | null>(activeItem?.groups ? activeItem : null);
+  const [renderedItem, setRenderedItem] = useState<NavItem | null>(
+    activeItem?.groups ? activeItem : null,
+  );
   const openItem = navItems.find((item) => item.key === openKey && item.groups);
 
   useEffect(() => {
@@ -41,34 +43,47 @@ export function AppNav() {
     if (!pathname.startsWith(child.to)) return false;
     const children = item.groups?.flatMap((group) => group.children) ?? [];
     const samePage = children.filter((entry) => pathname.startsWith(entry.to));
-    const byTab = samePage.find((entry) => entry.search?.["tab"] && entry.search["tab"] === currentTab);
+    const byTab = samePage.find(
+      (entry) => entry.search?.["tab"] && entry.search["tab"] === currentTab,
+    );
     return (byTab ?? samePage[0]) === child;
   }
 
   function handleClick(item: NavItem) {
-    if (item.groups) setOpenKey((current) => (current === item.key && pathname.startsWith(item.to) ? null : item.key));
+    if (item.groups)
+      setOpenKey((current) =>
+        current === item.key && pathname.startsWith(item.to) ? null : item.key,
+      );
     else setOpenKey(null);
   }
 
   return (
     <div className="relative flex h-full shrink-0">
       {/* Icon rail */}
-      <nav aria-label="Main" className="flex w-[72px] flex-col items-center bg-ink py-2 text-ink-foreground">
+      <nav
+        aria-label="Main"
+        className="flex w-[72px] flex-col items-center border-r border-border bg-card py-2 text-foreground"
+      >
         <ul className="flex w-full flex-1 flex-col items-center">
           {navItems.map((item) => {
             const isActive = pathname.startsWith(item.to);
             return (
-              <li key={item.key} className="group/nav relative flex h-[52px] w-full items-center justify-center">
+              <li
+                key={item.key}
+                className="group/nav relative flex h-[52px] w-full items-center justify-center"
+              >
                 <Link
                   to={item.to}
                   onClick={() => handleClick(item)}
                   aria-label={item.title}
                   className={cn(
-                    "flex size-11 items-center justify-center rounded-lg transition-colors",
-                    isActive ? "bg-primary text-white" : "text-white hover:bg-white/15",
+                    "flex size-11 items-center justify-center rounded-md transition-colors",
+                    isActive
+                      ? "bg-accent text-foreground"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground",
                   )}
                 >
-                  <item.icon size={26} weight="regular" />
+                  <item.icon size={24} weight={isActive ? "fill" : "regular"} />
                 </Link>
                 <span className="pointer-events-none absolute left-[calc(100%-4px)] top-1/2 z-50 hidden -translate-y-1/2 whitespace-nowrap rounded-md bg-ink px-2.5 py-1.5 text-caption font-medium text-ink-foreground shadow-lg group-hover/nav:block">
                   {item.title}
@@ -81,9 +96,9 @@ export function AppNav() {
           type="button"
           aria-label="Help"
           onClick={() => toast("Help centre is coming soon")}
-          className="mb-2 flex size-11 items-center justify-center rounded-lg text-white transition-colors hover:bg-white/15"
+          className="mb-2 flex size-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
         >
-          <Question size={26} />
+          <Question size={24} />
         </button>
       </nav>
 
@@ -97,11 +112,16 @@ export function AppNav() {
         >
           <div className="h-full w-full overflow-hidden">
             {renderedItem ? (
-              <div key={renderedItem.key} className="flex h-full w-52 flex-col overflow-y-auto px-2 pb-6 pt-6 animate-fade-in">
+              <div
+                key={renderedItem.key}
+                className="flex h-full w-52 flex-col overflow-y-auto px-2 pb-6 pt-6 animate-fade-in"
+              >
                 {renderedItem.groups?.map((group, index) => (
                   <div key={group.title}>
                     {index > 0 ? <div className="mx-4 my-4 border-t border-border" /> : null}
-                    <p className="px-4 pb-2 text-heading font-semibold leading-6 text-foreground">{group.title}</p>
+                    <p className="px-3 pb-2 text-caption font-medium uppercase tracking-wide text-muted-foreground">
+                      {group.title}
+                    </p>
                     <ul>
                       {group.children.map((child) => (
                         <li key={child.title}>
@@ -110,8 +130,10 @@ export function AppNav() {
                             search={child.search as never}
                             activeProps={{}}
                             className={cn(
-                              "flex h-11 items-center rounded-lg px-4 text-body font-medium text-foreground transition-colors",
-                              isChildActive(renderedItem, child) ? "bg-accent" : "hover:bg-secondary",
+                              "flex h-9 items-center rounded-md px-3 text-body font-medium text-foreground transition-colors",
+                              isChildActive(renderedItem, child)
+                                ? "bg-accent"
+                                : "hover:bg-secondary",
                             )}
                           >
                             {child.title}

@@ -108,7 +108,7 @@ function WalletPage() {
                   key={g.id}
                   className={cn(
                     "rounded-2xl p-5 text-white",
-                    usable ? "bg-gradient-to-br from-[#6950f3] to-[#d16ee8]" : "bg-[#8d8d99]",
+                    usable ? "bg-gradient-to-br from-[#101010] to-[#1f3b73]" : "bg-[#8d8d99]",
                   )}
                 >
                   <p className="text-caption opacity-80">{g.business.name}</p>

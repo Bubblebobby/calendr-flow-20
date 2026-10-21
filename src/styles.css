@@ -80,46 +80,50 @@
   --color-chart-appointments: var(--chart-appointments);
   --color-surface: var(--surface);
   --color-placeholder: var(--placeholder);
-  /* Fresha type scale: size + fixed line height */
-  --text-display: 1.75rem;
-  --text-display--line-height: 2.25rem;
+  /* Type scale modelled on Square's dashboard (Oct 2026): 14px body, 16px card titles,
+     20px section titles, large light page titles. */
+  --text-display: 2rem;
+  --text-display--line-height: 2.5rem;
   --text-title: 1.25rem;
   --text-title--line-height: 1.75rem;
-  --text-heading: 1.0625rem;
+  --text-heading: 1rem;
   --text-heading--line-height: 1.5rem;
-  --text-body: 0.9375rem;
+  --text-body: 0.875rem;
   --text-body--line-height: 1.25rem;
-  --text-caption: 0.8125rem;
+  --text-caption: 0.75rem;
   --text-caption--line-height: 1rem;
+  /* Square emphasises with medium (500) rather than semibold. */
+  --font-weight-semibold: 500;
   --color-toolbar: var(--toolbar);
 }
 
 :root {
-  /* Fresha-measured palette (Oct 2026): see notes/design-tokens.md */
+  /* Palette modelled on Square's dashboard (measured Oct 2026): near-black text, neutral
+     greys, black pill buttons, blue for links and highlights. */
   --radius: 0.75rem;
   --background: #ffffff;
-  --foreground: #0d0d0d;
+  --foreground: #101010;
   --card: #ffffff;
-  --card-foreground: #0d0d0d;
+  --card-foreground: #101010;
   --popover: #ffffff;
-  --popover-foreground: #0d0d0d;
-  --primary: #6950f3;
+  --popover-foreground: #101010;
+  --primary: #006aff;
   --primary-foreground: #ffffff;
   --secondary: #f5f5f5;
-  --secondary-foreground: #0d0d0d;
+  --secondary-foreground: #101010;
   --muted: #f9f9f9;
-  --muted-foreground: #767676;
-  --accent: #f0f0ff;
-  --accent-foreground: #0d0d0d;
+  --muted-foreground: #757575;
+  --accent: #f0f0f0;
+  --accent-foreground: #101010;
   --destructive: #d4163a;
   --destructive-foreground: #ffffff;
-  --border: #e5e5e5;
+  --border: #ebebeb;
   --input: #d3d3d3;
-  --ring: #6950f3;
+  --ring: #006aff;
   --surface: #f5f5f5;
   --placeholder: #bfbfbf;
   --toolbar: #f9f9f9;
-  --chart-1: #6950f3;
+  --chart-1: #006aff;
   --chart-2: oklch(0.66 0.12 175);
   --chart-3: oklch(0.72 0.13 85);
   --chart-4: oklch(0.6 0.13 30);
@@ -132,11 +136,10 @@
   --sidebar-accent-foreground: oklch(0.97 0.005 235);
   --sidebar-border: oklch(0.32 0.03 240);
   --sidebar-ring: oklch(0.62 0.12 205);
-  --font-sans:
-    "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --shadow-card: 0 0 0 1px #e5e5e5;
-  --gradient-brand: linear-gradient(135deg, oklch(0.53 0.235 285), oklch(0.62 0.18 300));
-  --ink: #0d0d0d;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: 0 0 0 1px #ebebeb;
+  --gradient-brand: linear-gradient(135deg, #101010, #006aff);
+  --ink: #171717;
   --ink-foreground: #ffffff;
   --slot-blue: oklch(0.9 0.05 230);
   --slot-blue-foreground: oklch(0.35 0.07 240);
@@ -161,10 +164,8 @@
   --grid-line-strong: #e2e2e2;
   --hatch-bg: #f4f4f4;
   --hatch-line: #e1e1e1;
-  --gradient-halo: radial-gradient(60% 55% at 50% 0%, oklch(0.93 0.05 300 / 0.55), transparent 70%);
+  --gradient-halo: radial-gradient(60% 55% at 50% 0%, rgb(0 106 255 / 0.08), transparent 70%);
 }
-
-
 
 .dark {
   --placeholder: oklch(0.55 0 0);
@@ -243,16 +244,16 @@
   --shadow-card: var(--shadow-card);
 }
 
-/* Fresha-inspired theme, scoped to the auth/onboarding screens. */
+/* Auth/onboarding screens: same Square-style palette, slightly rounder. */
 .theme-fresha {
   --radius: 1rem;
   --background: oklch(1 0 0);
-  --foreground: oklch(0.15 0 0);
+  --foreground: #101010;
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0 0);
+  --card-foreground: #101010;
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0 0);
-  --primary: oklch(0.53 0.235 285);
+  --popover-foreground: #101010;
+  --primary: #006aff;
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.952 0 0);
   --secondary-foreground: oklch(0.15 0 0);
@@ -262,7 +263,7 @@
   --accent-foreground: oklch(0.17 0 0);
   --border: oklch(0.827 0 0);
   --input: oklch(0.827 0 0);
-  --ring: oklch(0.53 0.235 285);
+  --ring: #006aff;
   --shadow-card: inset 0 0 0 1px oklch(0.827 0 0);
 }
 
@@ -278,7 +279,6 @@
   border-radius: var(--radius-xl);
   box-shadow: inset 0 0 0 1px var(--color-border);
 }
-
 
 @utility halo-bg {
   background-image: var(--gradient-halo);
@@ -321,12 +321,18 @@
   }
 }
 
+/* Page titles are large and light, like Square's (beats the font-semibold utility on the h1). */
+h1.text-display {
+  font-weight: 400;
+  letter-spacing: -0.015em;
+}
+
 /* Fluid step heading: shrinks on short/narrow viewports, full size on desktop. */
 @utility step-title {
   font-size: clamp(1.6rem, 1.05rem + 2.1vw, 2.9rem);
   line-height: 1.08;
   letter-spacing: -0.02em;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 /* Fresha-style data tables: bold 13px headers, #e5e5e5 row lines, #f9f9f9 hover. */
@@ -342,7 +348,8 @@
     height: 3.5rem;
     padding: 0 1rem;
     text-align: left;
-    font-weight: 600;
+    font-weight: 500;
+    color: var(--color-muted-foreground);
     white-space: nowrap;
     border-bottom: 1px solid var(--color-border);
     background: var(--color-card);
@@ -360,4 +367,3 @@
     border-bottom: 0;
   }
 }
-
