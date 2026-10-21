@@ -44,7 +44,13 @@ export default defineConfig(({ command }) => ({
     }),
     // Nitro picks the deploy target automatically: Vercel when building on Vercel, Node locally.
     ...(command === "build"
-      ? [nitro({ routeRules: { "/**": { headers: SECURITY_HEADERS } } })]
+      ? [
+          nitro({
+            routeRules: { "/**": { headers: SECURITY_HEADERS } },
+            // Run server code in Dublin, next to the database (Supabase eu-west-1, Ireland).
+            vercel: { functions: { regions: ["dub1"] } },
+          }),
+        ]
       : []),
     viteReact(),
   ],
