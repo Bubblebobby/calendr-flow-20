@@ -165,8 +165,8 @@ function PreviewCard() {
 }
 
 // ── Form pieces, sized from Square's sign-in page ──
-// Field: 64px tall, 6px corners, 1px #dadada border (2px #101010 when focused), a 16px label
-// that floats from the middle to the top on focus, with 16px text below. Buttons: 48px pills with 16px medium text; primary
+// Field: 64px tall, 6px corners, 1px #dadada border (2px #101010 when focused), and a label
+// that floats from the middle (16px) to the top (14px semibold) on focus, with 16px text below. Buttons: 48px pills with 16px medium text; primary
 // #101010, secondary #f0f0f0. The field sits 32px above Continue.
 
 export const authPrimaryButton =
@@ -175,22 +175,23 @@ export const authSecondaryButton =
   "flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#f0f0f0] text-base font-medium text-[#101010] transition-colors hover:bg-[#e4e4e4] disabled:opacity-60";
 
 /**
- * Square-style floating label: while the field is empty the label sits in the middle like a
- * placeholder; on focus (or once there's a value, including autofill) it slides up to the top
- * and the border turns black. Pure CSS via the input's placeholder-shown / focus states.
+ * Square's floating label (read from their field component): empty, the label sits in the
+ * middle at 16px/24 regular #666; on focus or with a value it moves to 9px from the top and
+ * becomes 14px/22 semibold #101010, over 0.1s with cubic-bezier(0.76, 0, 0.24, 1). The typed
+ * text sits 32px from the top at 16px. Offsets below are inside the 1px border.
  */
 export function AuthField({
   label,
   ...input
 }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <label className="relative block h-16 rounded-[6px] border border-[#dadada] transition-[border-color,box-shadow] duration-150 hover:border-[#959595] focus-within:border-[#101010] focus-within:shadow-[inset_0_0_0_1px_#101010]">
+    <label className="relative block h-16 rounded-[6px] border border-[#dadada] transition-[border-color,box-shadow] duration-100 ease-[cubic-bezier(0.76,0,0.24,1)] hover:not-focus-within:border-[#959595] focus-within:border-[#101010] focus-within:shadow-[inset_0_0_0_1px_#101010]">
       <input
         {...input}
         placeholder=" "
-        className="peer absolute inset-x-4 bottom-[7px] h-6 bg-transparent text-base leading-6 text-[#101010] outline-none"
+        className="peer absolute inset-x-4 top-[31px] h-6 bg-transparent text-base leading-6 text-[#101010] outline-none"
       />
-      <span className="pointer-events-none absolute left-4 top-[7px] text-base font-medium leading-6 text-[#101010] transition-all duration-150 ease-out peer-[:placeholder-shown:not(:focus)]:translate-y-[13px] peer-[:placeholder-shown:not(:focus)]:font-normal peer-[:placeholder-shown:not(:focus)]:text-[#666]">
+      <span className="pointer-events-none absolute left-4 top-2 text-[14px] font-[600] leading-[22px] text-[#101010] transition-[top,font-size,line-height,font-weight,color] duration-100 ease-[cubic-bezier(0.76,0,0.24,1)] peer-[:placeholder-shown:not(:focus)]:top-[19px] peer-[:placeholder-shown:not(:focus)]:text-base peer-[:placeholder-shown:not(:focus)]:font-[400] peer-[:placeholder-shown:not(:focus)]:leading-6 peer-[:placeholder-shown:not(:focus)]:text-[#666]">
         {label}
       </span>
     </label>
