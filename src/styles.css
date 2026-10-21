@@ -241,6 +241,9 @@
 
 @theme inline {
   --font-sans: var(--font-sans);
+  /* Marketing page only (fonts are loaded by src/routes/index.tsx). */
+  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
   --shadow-card: var(--shadow-card);
 }
 
