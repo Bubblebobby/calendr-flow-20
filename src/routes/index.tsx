@@ -23,7 +23,7 @@ export const Route = createFileRoute("/")({
     links: [
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=Newsreader:opsz,wght@6..72,380&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=Newsreader:opsz,wght@6..72,300..600&display=swap",
       },
     ],
   }),
