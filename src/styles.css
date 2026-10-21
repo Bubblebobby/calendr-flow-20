@@ -80,46 +80,50 @@
   --color-chart-appointments: var(--chart-appointments);
   --color-surface: var(--surface);
   --color-placeholder: var(--placeholder);
-  /* Fresha type scale: size + fixed line height */
-  --text-display: 1.75rem;
-  --text-display--line-height: 2.25rem;
+  /* Type scale modelled on Square's dashboard (Oct 2026): 14px body, 16px card titles,
+     20px section titles, large light page titles. */
+  --text-display: 2rem;
+  --text-display--line-height: 2.5rem;
   --text-title: 1.25rem;
   --text-title--line-height: 1.75rem;
-  --text-heading: 1.0625rem;
+  --text-heading: 1rem;
   --text-heading--line-height: 1.5rem;
-  --text-body: 0.9375rem;
-  --text-body--line-height: 1.25rem;
-  --text-caption: 0.8125rem;
-  --text-caption--line-height: 1rem;
+  --text-body: 0.875rem;
+  --text-body--line-height: 1.375rem;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.125rem;
+  /* Square emphasises with medium (500) rather than semibold. */
+  --font-weight-semibold: 500;
   --color-toolbar: var(--toolbar);
 }
 
 :root {
-  /* Fresha-measured palette (Oct 2026): see notes/design-tokens.md */
+  /* Palette from Square's Market design system (read from its tokens, Oct 2026): text #101010 /
+     #666 / #959595, fills #f0f0f0 / #f7f7f7, dividers #f0f0f0, emphasis is black. */
   --radius: 0.75rem;
   --background: #ffffff;
-  --foreground: #0d0d0d;
+  --foreground: #101010;
   --card: #ffffff;
-  --card-foreground: #0d0d0d;
+  --card-foreground: #101010;
   --popover: #ffffff;
-  --popover-foreground: #0d0d0d;
-  --primary: #6950f3;
+  --popover-foreground: #101010;
+  --primary: #101010;
   --primary-foreground: #ffffff;
-  --secondary: #f5f5f5;
-  --secondary-foreground: #0d0d0d;
-  --muted: #f9f9f9;
-  --muted-foreground: #767676;
-  --accent: #f0f0ff;
-  --accent-foreground: #0d0d0d;
-  --destructive: #d4163a;
+  --secondary: #f0f0f0;
+  --secondary-foreground: #101010;
+  --muted: #f7f7f7;
+  --muted-foreground: #666666;
+  --accent: #f0f0f0;
+  --accent-foreground: #101010;
+  --destructive: #bf0020;
   --destructive-foreground: #ffffff;
-  --border: #e5e5e5;
-  --input: #d3d3d3;
-  --ring: #6950f3;
+  --border: #f0f0f0;
+  --input: #dadada;
+  --ring: #101010;
   --surface: #f5f5f5;
-  --placeholder: #bfbfbf;
-  --toolbar: #f9f9f9;
-  --chart-1: #6950f3;
+  --placeholder: #959595;
+  --toolbar: #f7f7f7;
+  --chart-1: #006aff;
   --chart-2: oklch(0.66 0.12 175);
   --chart-3: oklch(0.72 0.13 85);
   --chart-4: oklch(0.6 0.13 30);
@@ -132,11 +136,10 @@
   --sidebar-accent-foreground: oklch(0.97 0.005 235);
   --sidebar-border: oklch(0.32 0.03 240);
   --sidebar-ring: oklch(0.62 0.12 205);
-  --font-sans:
-    "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --shadow-card: 0 0 0 1px #e5e5e5;
-  --gradient-brand: linear-gradient(135deg, oklch(0.53 0.235 285), oklch(0.62 0.18 300));
-  --ink: #0d0d0d;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: 0 0 0 1px #f0f0f0;
+  --gradient-brand: linear-gradient(135deg, #101010, #006aff);
+  --ink: #101010;
   --ink-foreground: #ffffff;
   --slot-blue: oklch(0.9 0.05 230);
   --slot-blue-foreground: oklch(0.35 0.07 240);
@@ -161,10 +164,8 @@
   --grid-line-strong: #e2e2e2;
   --hatch-bg: #f4f4f4;
   --hatch-line: #e1e1e1;
-  --gradient-halo: radial-gradient(60% 55% at 50% 0%, oklch(0.93 0.05 300 / 0.55), transparent 70%);
+  --gradient-halo: radial-gradient(60% 55% at 50% 0%, rgb(0 106 255 / 0.08), transparent 70%);
 }
-
-
 
 .dark {
   --placeholder: oklch(0.55 0 0);
@@ -240,30 +241,36 @@
 
 @theme inline {
   --font-sans: var(--font-sans);
+  /* Marketing page only (fonts are loaded by src/routes/index.tsx). */
+  /* Newsreader at a fixed 36pt optical size is the closest free match to
+     Square's Exact (compared side by side at 64px). */
+  --font-display: "Newsreader", ui-serif, Georgia, serif;
+  --font-display--font-variation-settings: "opsz" 36;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
   --shadow-card: var(--shadow-card);
 }
 
-/* Fresha-inspired theme, scoped to the auth/onboarding screens. */
+/* Auth/onboarding screens: same Square-style palette, slightly rounder. */
 .theme-fresha {
   --radius: 1rem;
   --background: oklch(1 0 0);
-  --foreground: oklch(0.15 0 0);
+  --foreground: #101010;
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0 0);
+  --card-foreground: #101010;
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0 0);
-  --primary: oklch(0.53 0.235 285);
+  --popover-foreground: #101010;
+  --primary: #101010;
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.952 0 0);
   --secondary-foreground: oklch(0.15 0 0);
   --muted: oklch(0.952 0 0);
-  --muted-foreground: oklch(0.48 0 0);
+  --muted-foreground: #666666;
   --accent: oklch(0.845 0.166 84.5);
   --accent-foreground: oklch(0.17 0 0);
-  --border: oklch(0.827 0 0);
-  --input: oklch(0.827 0 0);
-  --ring: oklch(0.53 0.235 285);
-  --shadow-card: inset 0 0 0 1px oklch(0.827 0 0);
+  --border: #f0f0f0;
+  --input: #dadada;
+  --ring: #101010;
+  --shadow-card: inset 0 0 0 1px #f0f0f0;
 }
 
 @utility surface-card {
@@ -278,7 +285,6 @@
   border-radius: var(--radius-xl);
   box-shadow: inset 0 0 0 1px var(--color-border);
 }
-
 
 @utility halo-bg {
   background-image: var(--gradient-halo);
@@ -321,12 +327,18 @@
   }
 }
 
+/* Page titles are large and light, like Square's (beats the font-semibold utility on the h1). */
+h1.text-display {
+  font-weight: 400;
+  letter-spacing: -0.015em;
+}
+
 /* Fluid step heading: shrinks on short/narrow viewports, full size on desktop. */
 @utility step-title {
   font-size: clamp(1.6rem, 1.05rem + 2.1vw, 2.9rem);
   line-height: 1.08;
   letter-spacing: -0.02em;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 /* Fresha-style data tables: bold 13px headers, #e5e5e5 row lines, #f9f9f9 hover. */
@@ -342,7 +354,8 @@
     height: 3.5rem;
     padding: 0 1rem;
     text-align: left;
-    font-weight: 600;
+    font-weight: 500;
+    color: var(--color-muted-foreground);
     white-space: nowrap;
     border-bottom: 1px solid var(--color-border);
     background: var(--color-card);
@@ -361,3 +374,78 @@
   }
 }
 
+/* Marketing homepage: smooth in-page scrolling, and sections that ease in as they scroll into
+   view (CSS scroll-driven animation, so browsers without it simply show everything). Both are
+   off for people who prefer reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.site-home) {
+    scroll-behavior: smooth;
+  }
+  @supports (animation-timeline: view()) {
+    .site-reveal {
+      animation: site-reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
+  }
+}
+/* Text: headings rise in word by word (each word starts a little later in the heading's scroll
+   range, or after a short delay on load), and body copy fades up just behind them. The words are
+   inline-block spans, so transforms apply without breaking line wrapping. */
+.site-word {
+  display: inline-block;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .site-words-load .site-word {
+    animation: site-word 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--i) * 55ms);
+  }
+  .site-fade-load {
+    animation: site-fade 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  @supports (animation-timeline: view()) {
+    .site-words {
+      view-timeline: --site-words block;
+    }
+    .site-words .site-word {
+      animation: site-word linear both;
+      animation-timeline: --site-words;
+      animation-range: cover calc(3% + var(--i) * 1.6%) cover calc(18% + var(--i) * 1.6%);
+    }
+    .site-fade {
+      animation: site-fade linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 30%;
+    }
+  }
+}
+@keyframes site-word {
+  from {
+    opacity: 0;
+    transform: translateY(0.45em);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes site-fade {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes site-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

@@ -97,7 +97,7 @@ function DiscoverPage() {
     <div className="min-h-screen bg-white">
       <CustomerHeader search={false} />
 
-      <section className="bg-gradient-to-b from-[#efeaff] to-white px-4 pb-10 pt-12 sm:px-8 sm:pt-16">
+      <section className="bg-gradient-to-b from-[#f2f6ff] to-white px-4 pb-10 pt-12 sm:px-8 sm:pt-16">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="text-[2.25rem] font-bold leading-tight tracking-tight sm:text-[3rem]">
             Book local selfcare services

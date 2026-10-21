@@ -175,7 +175,7 @@ export function Stars({ value, size = 14 }: { value: number; size?: number }) {
 }
 
 const SWATCHES = [
-  ["#e9e3ff", "#c7b8ff"],
+  ["#e8f0ff", "#bcd3ff"],
   ["#ffe4ec", "#ffb3c8"],
   ["#dff5ec", "#9fdcc2"],
   ["#fff1d6", "#ffd38a"],
