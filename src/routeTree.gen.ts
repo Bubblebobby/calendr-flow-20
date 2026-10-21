@@ -20,6 +20,7 @@ import { Route as CreateAccountRouteImport } from './routes/create-account'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as SignInRouteImport } from './routes/sign-in'
+import { Route as V2RouteImport } from './routes/v2'
 import { Route as AuthenticatedAddOnsRouteImport } from './routes/_authenticated/add-ons'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedCatalogRouteImport } from './routes/_authenticated/catalog'
@@ -105,6 +106,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
 const SignInRoute = SignInRouteImport.update({
   id: '/sign-in',
   path: '/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const V2Route = V2RouteImport.update({
+  id: '/v2',
+  path: '/v2',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAddOnsRoute = AuthenticatedAddOnsRouteImport.update({
@@ -281,6 +287,7 @@ export interface FileRoutesByFullPath {
   '/discover': typeof DiscoverRoute
   '/onboarding': typeof OnboardingRoute
   '/sign-in': typeof SignInRoute
+  '/v2': typeof V2Route
   '/add-ons': typeof AuthenticatedAddOnsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/catalog': typeof AuthenticatedCatalogRoute
@@ -324,6 +331,7 @@ export interface FileRoutesByTo {
   '/discover': typeof DiscoverRoute
   '/onboarding': typeof OnboardingRoute
   '/sign-in': typeof SignInRoute
+  '/v2': typeof V2Route
   '/add-ons': typeof AuthenticatedAddOnsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/catalog': typeof AuthenticatedCatalogRoute
@@ -370,6 +378,7 @@ export interface FileRoutesById {
   '/discover': typeof DiscoverRoute
   '/onboarding': typeof OnboardingRoute
   '/sign-in': typeof SignInRoute
+  '/v2': typeof V2Route
   '/_authenticated/add-ons': typeof AuthenticatedAddOnsRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/catalog': typeof AuthenticatedCatalogRoute
@@ -416,6 +425,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/onboarding'
     | '/sign-in'
+    | '/v2'
     | '/add-ons'
     | '/calendar'
     | '/catalog'
@@ -459,6 +469,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/onboarding'
     | '/sign-in'
+    | '/v2'
     | '/add-ons'
     | '/calendar'
     | '/catalog'
@@ -504,6 +515,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/onboarding'
     | '/sign-in'
+    | '/v2'
     | '/_authenticated/add-ons'
     | '/_authenticated/calendar'
     | '/_authenticated/catalog'
@@ -550,6 +562,7 @@ export interface RootRouteChildren {
   DiscoverRoute: typeof DiscoverRoute
   OnboardingRoute: typeof OnboardingRoute
   SignInRoute: typeof SignInRoute
+  V2Route: typeof V2Route
   BookSlugRoute: typeof BookSlugRoute
   BundleNewRoute: typeof BundleNewRoute
   CatalogReorderRoute: typeof CatalogReorderRoute
@@ -641,6 +654,13 @@ declare module '@tanstack/react-router' {
       path: '/sign-in'
       fullPath: '/sign-in'
       preLoaderRoute: typeof SignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/v2': {
+      id: '/v2'
+      path: '/v2'
+      fullPath: '/v2'
+      preLoaderRoute: typeof V2RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/add-ons': {
@@ -948,6 +968,7 @@ const rootRouteChildren: RootRouteChildren = {
   DiscoverRoute: DiscoverRoute,
   OnboardingRoute: OnboardingRoute,
   SignInRoute: SignInRoute,
+  V2Route: V2Route,
   BookSlugRoute: BookSlugRoute,
   BundleNewRoute: BundleNewRoute,
   CatalogReorderRoute: CatalogReorderRoute,

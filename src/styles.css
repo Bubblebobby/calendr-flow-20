@@ -467,3 +467,36 @@ h1.text-display {
   outline: 2px solid #006aff;
   outline-offset: 2px;
 }
+
+/* /v2 (Stripe-style homepage): smooth in-page scrolling, the hero ribbon's slow drift, copy that
+   rises on load, and blocks that fade up as they scroll in. All still for reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.v2-home) {
+    scroll-behavior: smooth;
+  }
+  .v2-ribbon {
+    animation: v2-drift 18s ease-in-out infinite alternate;
+  }
+  .v2-rise {
+    animation: site-fade 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  @supports (animation-timeline: view()) {
+    .v2-fade {
+      animation: site-fade linear both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 25%;
+    }
+  }
+}
+@keyframes v2-drift {
+  from {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  to {
+    transform: translate3d(-3%, 2%, 0) rotate(-3deg);
+  }
+}
+.v2-home :focus-visible {
+  outline: 2px solid #533afd;
+  outline-offset: 2px;
+}
