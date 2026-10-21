@@ -148,7 +148,12 @@ export function SalesList() {
       setConfirmRefund(false);
       setViewing(null);
     },
-    onError: (error: Error) => toast.error(error.message),
+    onError: (error: Error) =>
+      toast.error(
+        /sale_locked/.test(error.message)
+          ? "Only the owner or an admin can refund a sale"
+          : "Couldn't refund the sale",
+      ),
   });
 
   const filterCount =
@@ -427,9 +432,7 @@ export function SalesList() {
           <div className="flex h-full w-[30rem] max-w-[calc(100vw-4rem)] flex-col border-l border-border bg-card shadow-[-12px_0_32px_-12px_rgb(0_0_0/0.2)]">
             <div className="flex items-start justify-between gap-3 px-6 pb-4 pt-6">
               <div>
-                <h2 className="text-display font-semibold">
-                  Sale {saleRef(viewing.id)}
-                </h2>
+                <h2 className="text-display font-semibold">Sale {saleRef(viewing.id)}</h2>
                 <p className="text-body text-muted-foreground">{stamp(viewing.sale_date)}</p>
               </div>
               <span
@@ -498,7 +501,9 @@ export function SalesList() {
                     Print receipt
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onSelect={() => toast("Emailing receipts needs an email provider. Coming in a later update.")}
+                    onSelect={() =>
+                      toast("Emailing receipts needs an email provider. Coming in a later update.")
+                    }
                     className="rounded-lg px-3 py-2 text-body"
                   >
                     Email receipt

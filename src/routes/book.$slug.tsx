@@ -306,6 +306,9 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
         ...(promo ? { p_code: promo.code } : {}),
       });
       if (rpcError) throw rpcError;
+      // Booking problems come back as { error } so failed attempts count towards the limit.
+      const problem = (data as { error?: string } | null)?.error;
+      if (problem) throw new Error(problem);
       return data;
     },
     onSuccess: (data) => {
