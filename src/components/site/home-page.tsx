@@ -7,6 +7,7 @@ import {
   Bell,
   CalendarBlank,
   CalendarCheck,
+  CaretDown,
   ChartLineUp,
   ChatCircleText,
   CheckCircle,
@@ -231,11 +232,20 @@ function Logo({ inverted }: { inverted?: boolean }) {
   );
 }
 
+const SECTIONS = [
+  ["Overview", "#top"],
+  ["Features", "#features"],
+  ["Business types", "#business-types"],
+  ["Pricing", "#pricing"],
+  ["FAQ", "#faq"],
+] as const;
+
 function SiteHeader() {
+  const [menuOpen, setMenuOpen] = useState(false);
   return (
     <>
       <div className="border-b border-[#f0f0f0]">
-        <div className={cn(wrap, "flex h-[72px] items-center justify-between gap-6")}>
+        <div className={cn(wrap, "flex h-[72px] items-center justify-between gap-3 sm:gap-6")}>
           <div className="flex items-center gap-10">
             <Logo />
             <nav className="hidden items-center gap-7 text-[15px] font-medium lg:flex">
@@ -257,16 +267,31 @@ function SiteHeader() {
             <Link to="/sign-in" className={cn(sweep, "hidden md:inline")}>
               Book an appointment
             </Link>
-            <Link to="/auth" className={sweep}>
+            <Link to="/auth" className={cn(sweep, "py-3")}>
               Sign in
             </Link>
           </div>
         </div>
       </div>
       <div className="sticky top-0 z-40 border-b border-[#f0f0f0] bg-white/95 backdrop-blur">
-        <div className={cn(wrap, "flex h-[72px] items-center justify-between gap-6")}>
+        <div className={cn(wrap, "flex h-[72px] items-center justify-between gap-3 sm:gap-6")}>
           <div className="flex items-center gap-8">
-            <span className="text-[18px] font-semibold">Bookly for salons</span>
+            <span className="hidden text-[18px] font-semibold lg:inline">Bookly for salons</span>
+            {/* Below desktop the section links fold into this menu, like Square's. */}
+            <button
+              type="button"
+              aria-expanded={menuOpen}
+              aria-controls="site-menu"
+              onClick={() => setMenuOpen((open) => !open)}
+              className="-ml-2 flex h-11 items-center gap-1.5 whitespace-nowrap rounded-full px-2 text-base font-semibold sm:text-[17px] lg:hidden"
+            >
+              Bookly for salons
+              <CaretDown
+                size={14}
+                weight="bold"
+                className={cn("transition-transform duration-200", menuOpen && "rotate-180")}
+              />
+            </button>
             <nav className="hidden items-center gap-7 text-[15px] lg:flex">
               <a href="#top" className={cn(sweep, "font-medium")}>
                 Overview
@@ -297,6 +322,38 @@ function SiteHeader() {
             </Link>
           </div>
         </div>
+        <nav
+          id="site-menu"
+          hidden={!menuOpen}
+          className="absolute inset-x-0 top-full border-b border-[#f0f0f0] bg-white shadow-[0_16px_30px_-20px_rgba(0,0,0,0.25)] lg:hidden"
+        >
+          <ul className={cn(wrap, "py-2")}>
+            {SECTIONS.map(([label, href]) => (
+              <li key={href}>
+                <a
+                  href={href}
+                  onClick={() => setMenuOpen(false)}
+                  className="flex h-12 items-center border-b border-[#f0f0f0] text-base font-medium"
+                >
+                  {label}
+                </a>
+              </li>
+            ))}
+            <li>
+              <Link
+                to="/discover"
+                className="flex h-12 items-center border-b border-[#f0f0f0] text-base font-medium"
+              >
+                Find a salon
+              </Link>
+            </li>
+            <li>
+              <Link to="/sign-in" className="flex h-12 items-center text-base font-medium">
+                Book an appointment
+              </Link>
+            </li>
+          </ul>
+        </nav>
       </div>
     </>
   );
@@ -379,7 +436,7 @@ function FeatureRow({
             <Words text={title} />
           </h2>
           <p className="site-fade mt-5 text-base leading-6 text-[#666]">{text}</p>
-          <ArrowLink className="site-fade mt-6">Get started</ArrowLink>
+          <ArrowLink className="site-fade mt-3">Get started</ArrowLink>
         </div>
         <div className="site-reveal group relative overflow-hidden rounded-[10px] bg-[#f7f6f5]">
           <img
@@ -482,7 +539,7 @@ function ManageSlider() {
                 {title}
               </h3>
               <p className="mt-4 max-w-[400px] text-base leading-6 text-[#666]">{text}</p>
-              <ArrowLink className="mt-6">{link}</ArrowLink>
+              <ArrowLink className="mt-3">{link}</ArrowLink>
             </div>
             <div className="mt-10 flex size-16 items-center justify-center rounded-full bg-white transition-[background-color,color,transform] duration-300 ease-out group-hover:bg-[#006aff] group-hover:text-white motion-safe:group-hover:scale-110">
               <Icon size={30} />
@@ -521,7 +578,7 @@ function ArrowLink({ children, className }: { children: ReactNode; className?: s
     <Link
       to="/auth"
       className={cn(
-        "group inline-flex items-center gap-1.5 text-base font-medium transition-colors hover:text-[#006aff]",
+        "group inline-flex min-h-11 items-center gap-1.5 text-base font-medium transition-colors hover:text-[#006aff]",
         className,
       )}
     >
@@ -652,7 +709,7 @@ function Pricing() {
         <p className="site-fade mt-5 max-w-[620px] text-base leading-6 text-[#666]">
           Start free for 14 days. No card needed, and you can change plans at any time.
         </p>
-        <div className="site-reveal mt-12 grid gap-5 lg:grid-cols-3">
+        <div className="site-reveal mt-12 grid max-w-[560px] gap-5 lg:max-w-none lg:grid-cols-3">
           {PLANS.map((plan) => (
             <article
               key={plan.name}
@@ -867,10 +924,10 @@ function SiteFooter() {
           {FOOTER.map((col) => (
             <div key={col.title}>
               <p className="font-medium text-white">{col.title}</p>
-              <ul className="mt-4 space-y-3">
+              <ul className="mt-3 space-y-1">
                 {col.links.map(([label, href]) => (
                   <li key={label}>
-                    <a href={href} className={cn(sweep, "hover:text-white")}>
+                    <a href={href} className={cn(sweep, "inline-block py-1.5 hover:text-white")}>
                       {label}
                     </a>
                   </li>
