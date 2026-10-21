@@ -165,8 +165,8 @@ function PreviewCard() {
 }
 
 // ── Form pieces, sized from Square's sign-in page ──
-// Field: 64px tall, 6px corners, 1px #dadada border (2px #101010 when focused), a 16px medium
-// label at the top with 16px text below. Buttons: 48px pills with 16px medium text; primary
+// Field: 64px tall, 6px corners, 1px #dadada border (2px #101010 when focused), a 16px label
+// that floats from the middle to the top on focus, with 16px text below. Buttons: 48px pills with 16px medium text; primary
 // #101010, secondary #f0f0f0. The field sits 32px above Continue.
 
 export const authPrimaryButton =
@@ -174,17 +174,25 @@ export const authPrimaryButton =
 export const authSecondaryButton =
   "flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#f0f0f0] text-base font-medium text-[#101010] transition-colors hover:bg-[#e4e4e4] disabled:opacity-60";
 
+/**
+ * Square-style floating label: while the field is empty the label sits in the middle like a
+ * placeholder; on focus (or once there's a value, including autofill) it slides up to the top
+ * and the border turns black. Pure CSS via the input's placeholder-shown / focus states.
+ */
 export function AuthField({
   label,
   ...input
 }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <label className="block h-16 rounded-[6px] border border-[#dadada] px-4 py-[7px] transition-colors hover:border-[#959595] focus-within:border-2 focus-within:border-[#101010] focus-within:px-[15px] focus-within:py-[6px]">
-      <span className="block text-base font-medium leading-6 text-[#101010]">{label}</span>
+    <label className="relative block h-16 rounded-[6px] border border-[#dadada] transition-[border-color,box-shadow] duration-150 hover:border-[#959595] focus-within:border-[#101010] focus-within:shadow-[inset_0_0_0_1px_#101010]">
       <input
         {...input}
-        className="block h-6 w-full bg-transparent text-base leading-6 text-[#101010] outline-none"
+        placeholder=" "
+        className="peer absolute inset-x-4 bottom-[7px] h-6 bg-transparent text-base leading-6 text-[#101010] outline-none"
       />
+      <span className="pointer-events-none absolute left-4 top-[7px] text-base font-medium leading-6 text-[#101010] transition-all duration-150 ease-out peer-[:placeholder-shown:not(:focus)]:translate-y-[13px] peer-[:placeholder-shown:not(:focus)]:font-normal peer-[:placeholder-shown:not(:focus)]:text-[#666]">
+        {label}
+      </span>
     </label>
   );
 }
