@@ -242,7 +242,10 @@
 @theme inline {
   --font-sans: var(--font-sans);
   /* Marketing page only (fonts are loaded by src/routes/index.tsx). */
-  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
+  /* Newsreader at a fixed 36pt optical size and weight 380 is the closest free match to
+     Square's Exact (compared side by side at 64px). */
+  --font-display: "Newsreader", ui-serif, Georgia, serif;
+  --font-display--font-variation-settings: "opsz" 36;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
   --shadow-card: var(--shadow-card);
 }

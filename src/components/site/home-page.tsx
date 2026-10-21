@@ -53,7 +53,7 @@ const PHOTOS = {
 };
 
 const wrap = "mx-auto w-full max-w-[1440px] px-4 sm:px-8 lg:px-[60px]";
-const serif = "font-display font-normal";
+const serif = "font-display font-[380]";
 const eyebrow = "font-mono text-[13px] uppercase tracking-[0.08em]";
 
 const pillBase =
