@@ -1,6 +1,8 @@
+import type { QueryClient } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
 
 import { supabase } from "@/integrations/supabase/client";
+import type { CurrentBusiness } from "@/lib/use-business";
 
 /**
  * Reusable auth + onboarding guard.
@@ -20,7 +22,7 @@ export function clearOnboardingCache() {
   onboardedCache = undefined;
 }
 
-export async function requireOnboardedUser() {
+export async function requireOnboardedUser(opts?: { context?: { queryClient?: QueryClient } }) {
   // Local read from storage (no network round-trip); refreshes only when stale.
   const { data: sessionData } = await supabase.auth.getSession();
   const user = sessionData.session?.user;
@@ -34,11 +36,20 @@ export async function requireOnboardedUser() {
     return { user };
   }
 
-  const { data: profile } = await supabase
+  // Profile and business in one request.
+  const { data } = await supabase
     .from("profiles")
-    .select("onboarded_at, business_id, user_type")
+    .select(
+      "onboarded_at, business_id, user_type, businesses(id, name, country, currency, timezone, setup_step)",
+    )
     .eq("id", user.id)
     .maybeSingle();
+  const profile = data as {
+    onboarded_at: string | null;
+    business_id: string | null;
+    user_type: string;
+    businesses: (CurrentBusiness & { setup_step: number | null }) | null;
+  } | null;
 
   // Customer logins belong on the customer side; one email is one class of account.
   if (profile?.user_type === "customer")
@@ -48,15 +59,14 @@ export async function requireOnboardedUser() {
 
   if (!profile.business_id) throw redirect({ to: "/business-setup" });
 
-  const { data: business } = await supabase
-    .from("businesses")
-    .select("setup_step")
-    .eq("id", profile.business_id)
-    .maybeSingle();
-
+  const business = profile.businesses;
   if (!business || (business.setup_step ?? 1) < 8) {
     throw redirect({ to: "/business-setup" });
   }
+
+  // Pages read the business through useBusiness(); hand it over so they don't fetch it again.
+  const { setup_step: _setupStep, ...current } = business;
+  opts?.context?.queryClient?.setQueryData<CurrentBusiness>(["current-business"], current);
 
   onboardedCache = { userId: user.id, at: Date.now() };
   return { user };

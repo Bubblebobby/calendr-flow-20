@@ -19,9 +19,8 @@ import {
   formatInZone,
   isUpcoming,
   readRecent,
-  isCustomerAccount,
-  useCustomer,
   useMyAppointments,
+  useSessionUserId,
 } from "@/lib/customer";
 import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -52,8 +51,6 @@ export const Route = createFileRoute("/discover")({
 function DiscoverPage() {
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  const customer = useCustomer();
-  const signedIn = isCustomerAccount(customer.data);
   const [q, setQ] = useState(search.q ?? "");
   const [city, setCity] = useState(search.city ?? "");
   useEffect(() => {
@@ -67,7 +64,9 @@ function DiscoverPage() {
     queryFn: () => fetchVenues(search),
   });
 
-  const appointments = useMyAppointments(signedIn);
+  // Starts with the session, alongside the profile (business logins simply get none back).
+  const sessionUser = useSessionUserId();
+  const appointments = useMyAppointments(!!sessionUser.data);
   const list = appointments.data ?? [];
   const next = list.filter((a) => isUpcoming(a)).at(-1) ?? null;
   // One "book again" tile per salon, most recent visit first.

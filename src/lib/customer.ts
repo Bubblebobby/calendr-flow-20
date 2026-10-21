@@ -99,8 +99,12 @@ export async function requireCustomer({ location }: { location: { href: string }
 export function useCustomer() {
   const queryClient = useQueryClient();
   useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange(() => {
-      void queryClient.invalidateQueries({ queryKey: ["customer"] });
+    // Only real changes of who's signed in (token refreshes don't change the profile).
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
+        void queryClient.invalidateQueries({ queryKey: ["customer"] });
+        void queryClient.invalidateQueries({ queryKey: ["session-user"] });
+      }
     });
     return () => data.subscription.unsubscribe();
   }, [queryClient]);
@@ -221,5 +225,17 @@ export function useMyAppointments(enabled = true) {
       if (error) throw error;
       return (data ?? []) as unknown as MyAppointment[];
     },
+  });
+}
+
+/**
+ * The signed-in user's id from the locally stored session (no network). Lets account data load
+ * in parallel with the profile instead of after it.
+ */
+export function useSessionUserId() {
+  return useQuery({
+    queryKey: ["session-user"],
+    staleTime: Infinity,
+    queryFn: async () => (await supabase.auth.getSession()).data.session?.user.id ?? null,
   });
 }

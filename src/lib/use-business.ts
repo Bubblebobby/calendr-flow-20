@@ -10,7 +10,10 @@ export type CurrentBusiness = {
   timezone: string | null;
 };
 
-/** The signed-in owner's business — the tenant root for every catalog read. */
+/**
+ * The business the signed-in person works in (as owner or staff) — the tenant root for every
+ * read. Comes from the profile's business link in one request; the guard primes this cache.
+ */
 export function useBusiness() {
   return useQuery({
     queryKey: ["current-business"],
@@ -19,18 +22,30 @@ export function useBusiness() {
       const { data: auth } = await supabase.auth.getSession();
       const user = auth.session?.user;
       if (!user) return null;
-
-      const { data, error } = await supabase
-        .from("businesses")
-        .select("id, name, country, currency, timezone")
-        .eq("owner_id", user.id)
-        .order("created_at", { ascending: true })
-        .limit(1)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data;
+      return fetchCurrentBusiness(user.id);
     },
     staleTime: 5 * 60 * 1000,
   });
+}
+
+export async function fetchCurrentBusiness(userId: string): Promise<CurrentBusiness | null> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("businesses(id, name, country, currency, timezone)")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  const linked = (data as { businesses: CurrentBusiness | null } | null)?.businesses ?? null;
+  if (linked) return linked;
+
+  // An owner whose profile isn't linked yet (e.g. part-way through setup).
+  const { data: owned, error: ownedError } = await supabase
+    .from("businesses")
+    .select("id, name, country, currency, timezone")
+    .eq("owner_id", userId)
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (ownedError) throw ownedError;
+  return owned;
 }

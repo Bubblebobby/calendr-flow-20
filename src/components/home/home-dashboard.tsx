@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -8,15 +8,6 @@ import {
   DotsThreeVertical,
   TrendUp,
 } from "@phosphor-icons/react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -25,19 +16,7 @@ import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
 import { statusTone } from "@/components/calendar/calendar-data";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
@@ -47,6 +26,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+// Charts load separately so the rest of the dashboard doesn't wait for the charting library.
+const SalesChart = lazy(() => import("./home-charts").then((m) => ({ default: m.SalesChart })));
+const UpcomingChart = lazy(() =>
+  import("./home-charts").then((m) => ({ default: m.UpcomingChart })),
+);
 
 type DashboardItem = {
   id: string;
@@ -98,33 +83,6 @@ const TIME_PERIODS: Array<{ value: TimePeriod; label: string }> = [
   { value: "this-month", label: "This month" },
   { value: "last-month", label: "Last month" },
 ];
-
-const chartConfig = {
-  sales: { label: "Sales", color: "var(--color-primary)" },
-  appointments: { label: "Appointments", color: "var(--color-chart-appointments)" },
-} satisfies ChartConfig;
-
-const upcomingChartConfig = {
-  confirmed: { label: "Confirmed", color: "var(--color-chart-appointments)" },
-  booked: { label: "Booked", color: "var(--color-primary)" },
-  cancelled: { label: "Cancelled", color: "var(--color-destructive)" },
-} satisfies ChartConfig;
-
-const AXIS_TICK = { fontSize: 12, fill: "var(--color-muted-foreground)" };
-
-function compactMoney(value: number, currency: string) {
-  try {
-    return new Intl.NumberFormat("en", {
-      style: "currency",
-      currency,
-      currencyDisplay: "narrowSymbol",
-      notation: "compact",
-      maximumFractionDigits: 1,
-    }).format(value);
-  } catch {
-    return `${currency} ${value}`;
-  }
-}
 
 function ChartLegend({ items }: { items: Array<{ label: string; color: string }> }) {
   return (
@@ -247,17 +205,18 @@ function DashboardCard({
             <CardDescription className="text-body leading-5">{subtitle}</CardDescription>
           ) : null}
         </div>
-        {action ?? (menu ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="-mr-2 -mt-1 size-9 shrink-0 rounded-full"
-            aria-label={`${title} menu`}
-            onClick={() => toast("Coming soon")}
-          >
-            <DotsThreeVertical size={20} weight="bold" />
-          </Button>
-        ) : null)}
+        {action ??
+          (menu ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="-mr-2 -mt-1 size-9 shrink-0 rounded-full"
+              aria-label={`${title} menu`}
+              onClick={() => toast("Coming soon")}
+            >
+              <DotsThreeVertical size={20} weight="bold" />
+            </Button>
+          ) : null)}
       </CardHeader>
       {children}
     </Card>
@@ -296,7 +255,9 @@ function TimePeriodFilter({
         sideOffset={2}
         className="w-[19.25rem] rounded-lg border-border bg-popover p-4 shadow-card"
       >
-        <label className="text-body font-semibold leading-none text-popover-foreground">Time period</label>
+        <label className="text-body font-semibold leading-none text-popover-foreground">
+          Time period
+        </label>
         <Select value={draft} onValueChange={(next) => setDraft(next as TimePeriod)}>
           <SelectTrigger className="mt-2 h-11 rounded-md border-input bg-card px-4 text-body font-medium">
             <SelectValue />
@@ -397,7 +358,12 @@ function AppointmentList({
     year: "numeric",
     timeZone,
   });
-  const time = new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone });
+  const time = new Intl.DateTimeFormat(locale, {
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+    timeZone,
+  });
   return (
     <div className="max-h-[22rem] overflow-y-auto px-3 pb-3">
       {appointments.map((appointment) => (
@@ -416,7 +382,9 @@ function AppointmentList({
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-body text-muted-foreground">
-                {compactDate ? weekday.format(appointment.start) : fullDate.format(appointment.start)}{" "}
+                {compactDate
+                  ? weekday.format(appointment.start)
+                  : fullDate.format(appointment.start)}{" "}
                 {time.format(appointment.start)}
               </span>
               <StatusBadge status={appointment.status} />
@@ -491,7 +459,11 @@ export function HomeDashboard() {
     enabled: Boolean(business?.id),
     queryFn: async () => {
       if (!business)
-        return { items: [] as DashboardItem[], services: [] as ServiceRow[], sales: [] as SaleRow[] };
+        return {
+          items: [] as DashboardItem[],
+          services: [] as ServiceRow[],
+          sales: [] as SaleRow[],
+        };
       const rangeStart = new Date(now);
       rangeStart.setMonth(rangeStart.getMonth() - 2, 1);
       rangeStart.setHours(0, 0, 0, 0);
@@ -539,14 +511,25 @@ export function HomeDashboard() {
     const todayKey = dateKey(now, timeZone);
     const selectedDates = periodDates(timePeriod, now);
     const recentKeys = selectedDates.map((date) => dateKey(date, timeZone));
-    const activityKeys = new Set(periodDates(activityPeriod, now).map((date) => dateKey(date, timeZone)));
-    const nextKeys = new Set(Array.from({ length: 8 }, (_, index) => dateKey(addDays(now, index), timeZone)));
-    const recentItems = activeItems.filter((item) => recentKeys.includes(dateKey(new Date(item.start_time), timeZone)));
+    const activityKeys = new Set(
+      periodDates(activityPeriod, now).map((date) => dateKey(date, timeZone)),
+    );
+    const nextKeys = new Set(
+      Array.from({ length: 8 }, (_, index) => dateKey(addDays(now, index), timeZone)),
+    );
+    const recentItems = activeItems.filter((item) =>
+      recentKeys.includes(dateKey(new Date(item.start_time), timeZone)),
+    );
     const recentAppointments = groupAppointments(recentItems);
     const upcoming = appointments
-      .filter((appointment) => appointment.end >= now && nextKeys.has(dateKey(appointment.start, timeZone)))
+      .filter(
+        (appointment) =>
+          appointment.end >= now && nextKeys.has(dateKey(appointment.start, timeZone)),
+      )
       .sort((a, b) => a.start.getTime() - b.start.getTime());
-    const today = upcoming.filter((appointment) => dateKey(appointment.start, timeZone) === todayKey);
+    const today = upcoming.filter(
+      (appointment) => dateKey(appointment.start, timeZone) === todayKey,
+    );
 
     // Like Fresha, "Upcoming appointments" covers the next 7 days starting tomorrow,
     // and counts cancellations too (they are excluded from every other card).
@@ -556,11 +539,19 @@ export function HomeDashboard() {
       items.filter((item) => upcomingKeys.includes(dateKey(new Date(item.start_time), timeZone))),
     );
     const upcomingChart = upcomingDates.map((date, index) => {
-      const onDay = upcomingAll.filter((appointment) => dateKey(appointment.start, timeZone) === upcomingKeys[index]);
+      const onDay = upcomingAll.filter(
+        (appointment) => dateKey(appointment.start, timeZone) === upcomingKeys[index],
+      );
       return {
-        label: new Intl.DateTimeFormat(locale, { day: "numeric", weekday: "short", timeZone }).format(date),
+        label: new Intl.DateTimeFormat(locale, {
+          day: "numeric",
+          weekday: "short",
+          timeZone,
+        }).format(date),
         confirmed: onDay.filter((appointment) => appointment.status === "confirmed").length,
-        booked: onDay.filter((appointment) => !["confirmed", "cancelled"].includes(appointment.status)).length,
+        booked: onDay.filter(
+          (appointment) => !["confirmed", "cancelled"].includes(appointment.status),
+        ).length,
         cancelled: onDay.filter((appointment) => appointment.status === "cancelled").length,
       };
     });
@@ -578,7 +569,10 @@ export function HomeDashboard() {
       key,
       label: new Intl.DateTimeFormat(locale, { day: "numeric", weekday: "short", timeZone }).format(
         activeItems.find((item) => dateKey(new Date(item.start_time), timeZone) === key)?.start_time
-          ? new Date(activeItems.find((item) => dateKey(new Date(item.start_time), timeZone) === key)?.start_time ?? now)
+          ? new Date(
+              activeItems.find((item) => dateKey(new Date(item.start_time), timeZone) === key)
+                ?.start_time ?? now,
+            )
           : selectedDates[recentKeys.indexOf(key)],
       ),
       sales: sales
@@ -591,25 +585,45 @@ export function HomeDashboard() {
       ).size,
     }));
 
-    const currentMonth = new Intl.DateTimeFormat("en-CA", { year: "numeric", month: "2-digit", timeZone }).format(now);
+    const currentMonth = new Intl.DateTimeFormat("en-CA", {
+      year: "numeric",
+      month: "2-digit",
+      timeZone,
+    }).format(now);
     const previousDate = new Date(now);
     previousDate.setMonth(previousDate.getMonth() - 1);
-    const previousMonth = new Intl.DateTimeFormat("en-CA", { year: "numeric", month: "2-digit", timeZone }).format(previousDate);
+    const previousMonth = new Intl.DateTimeFormat("en-CA", {
+      year: "numeric",
+      month: "2-digit",
+      timeZone,
+    }).format(previousDate);
     const monthKey = (value: string) =>
-      new Intl.DateTimeFormat("en-CA", { year: "numeric", month: "2-digit", timeZone }).format(new Date(value));
-    const serviceCounts = (data?.services ?? []).map((service) => ({
-      ...service,
-      current: new Set(
-        activeItems
-          .filter((item) => item.services?.id === service.id && monthKey(item.start_time) === currentMonth)
-          .map((item) => item.appointment_id),
-      ).size,
-      previous: new Set(
-        activeItems
-          .filter((item) => item.services?.id === service.id && monthKey(item.start_time) === previousMonth)
-          .map((item) => item.appointment_id),
-      ).size,
-    })).sort((a, b) => b.current - a.current || b.previous - a.previous || a.name.localeCompare(b.name));
+      new Intl.DateTimeFormat("en-CA", { year: "numeric", month: "2-digit", timeZone }).format(
+        new Date(value),
+      );
+    const serviceCounts = (data?.services ?? [])
+      .map((service) => ({
+        ...service,
+        current: new Set(
+          activeItems
+            .filter(
+              (item) =>
+                item.services?.id === service.id && monthKey(item.start_time) === currentMonth,
+            )
+            .map((item) => item.appointment_id),
+        ).size,
+        previous: new Set(
+          activeItems
+            .filter(
+              (item) =>
+                item.services?.id === service.id && monthKey(item.start_time) === previousMonth,
+            )
+            .map((item) => item.appointment_id),
+        ).size,
+      }))
+      .sort(
+        (a, b) => b.current - a.current || b.previous - a.previous || a.name.localeCompare(b.name),
+      );
 
     const memberMap = new Map<string, { name: string; current: number; previous: number }>();
     for (const sale of sales) {
@@ -624,8 +638,9 @@ export function HomeDashboard() {
       if (month === previousMonth) entry.previous += Number(sale.total ?? 0);
       memberMap.set(key, entry);
     }
-    const topMembers = [...memberMap.values()]
-      .sort((a, b) => b.current - a.current || b.previous - a.previous || a.name.localeCompare(b.name));
+    const topMembers = [...memberMap.values()].sort(
+      (a, b) => b.current - a.current || b.previous - a.previous || a.name.localeCompare(b.name),
+    );
 
     return {
       chart,
@@ -646,7 +661,8 @@ export function HomeDashboard() {
     };
   }, [activityPeriod, data, locale, now, timePeriod, timeZone]);
 
-  const timePeriodLabel = TIME_PERIODS.find((period) => period.value === timePeriod)?.label ?? "Last 7 days";
+  const timePeriodLabel =
+    TIME_PERIODS.find((period) => period.value === timePeriod)?.label ?? "Last 7 days";
   const activityPeriodLabel =
     TIME_PERIODS.find((period) => period.value === activityPeriod)?.label ?? "Last 7 days";
 
@@ -675,7 +691,9 @@ export function HomeDashboard() {
   const currency = business.currency;
   const money = (value: number) => formatMoney(value, business.currency, business.country);
   const upcomingTotal =
-    dashboard.upcomingTotals.confirmed + dashboard.upcomingTotals.booked + dashboard.upcomingTotals.cancelled;
+    dashboard.upcomingTotals.confirmed +
+    dashboard.upcomingTotals.booked +
+    dashboard.upcomingTotals.cancelled;
 
   return (
     <div className="min-h-full bg-surface">
@@ -692,38 +710,19 @@ export function HomeDashboard() {
             </p>
             <div className="mt-6 text-body text-muted-foreground">
               <p>
-                Appointments <span className="font-semibold text-foreground">{dashboard.recentCount}</span>
+                Appointments{" "}
+                <span className="font-semibold text-foreground">{dashboard.recentCount}</span>
               </p>
               <p>
                 Appointments value{" "}
-                <span className="font-semibold text-foreground">{money(dashboard.recentValue)}</span>
+                <span className="font-semibold text-foreground">
+                  {money(dashboard.recentValue)}
+                </span>
               </p>
             </div>
-            <ChartContainer config={chartConfig} className="mt-6 aspect-auto h-60 w-full">
-              <LineChart data={dashboard.chart} margin={{ top: 8, right: 8, left: 4, bottom: 0 }}>
-                <CartesianGrid stroke="var(--color-border)" strokeOpacity={0.6} />
-                <XAxis
-                  dataKey="label"
-                  tickLine={false}
-                  axisLine={false}
-                  tick={AXIS_TICK}
-                  angle={-45}
-                  textAnchor="end"
-                  height={44}
-                  interval="preserveStartEnd"
-                />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  tick={AXIS_TICK}
-                  width={64}
-                  tickFormatter={(value: number) => compactMoney(value, currency)}
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Line type="linear" dataKey="appointments" stroke="var(--color-appointments)" strokeWidth={2} dot={{ r: 3, strokeWidth: 0, fill: "var(--color-appointments)" }} />
-                <Line type="linear" dataKey="sales" stroke="var(--color-sales)" strokeWidth={2} dot={{ r: 3, strokeWidth: 0, fill: "var(--color-sales)" }} />
-              </LineChart>
-            </ChartContainer>
+            <Suspense fallback={<Skeleton className="mt-6 h-60 w-full rounded-lg" />}>
+              <SalesChart data={dashboard.chart} currency={currency} />
+            </Suspense>
             <ChartLegend
               items={[
                 { label: "Sales", color: "var(--color-primary)" },
@@ -733,7 +732,12 @@ export function HomeDashboard() {
           </CardContent>
         </DashboardCard>
 
-        <DashboardCard title="Upcoming appointments" subtitle="Next 7 days" menu className="lg:min-h-[33.75rem]">
+        <DashboardCard
+          title="Upcoming appointments"
+          subtitle="Next 7 days"
+          menu
+          className="lg:min-h-[33.75rem]"
+        >
           {upcomingTotal ? (
             <CardContent className="flex flex-1 flex-col px-6 pb-6 pt-0">
               <p className="text-display font-semibold leading-9 tabular-nums text-foreground">
@@ -742,24 +746,20 @@ export function HomeDashboard() {
               <div className="mt-6 text-body text-muted-foreground">
                 <p>
                   Confirmed appointments{" "}
-                  <span className="font-semibold text-foreground">{dashboard.upcomingTotals.confirmed}</span>
+                  <span className="font-semibold text-foreground">
+                    {dashboard.upcomingTotals.confirmed}
+                  </span>
                 </p>
                 <p>
                   Cancelled appointments{" "}
-                  <span className="font-semibold text-foreground">{dashboard.upcomingTotals.cancelled}</span>
+                  <span className="font-semibold text-foreground">
+                    {dashboard.upcomingTotals.cancelled}
+                  </span>
                 </p>
               </div>
-              <ChartContainer config={upcomingChartConfig} className="mt-6 aspect-auto h-60 w-full">
-                <BarChart data={dashboard.upcomingChart} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-                  <CartesianGrid vertical={false} stroke="var(--color-border)" strokeOpacity={0.6} />
-                  <XAxis dataKey="label" tickLine={false} axisLine={false} tick={AXIS_TICK} angle={-45} textAnchor="end" height={44} />
-                  <YAxis tickLine={false} axisLine={false} tick={AXIS_TICK} allowDecimals={false} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="confirmed" stackId="a" fill="var(--color-confirmed)" maxBarSize={28} />
-                  <Bar dataKey="booked" stackId="a" fill="var(--color-booked)" maxBarSize={28} />
-                  <Bar dataKey="cancelled" stackId="a" fill="var(--color-cancelled)" radius={[4, 4, 0, 0]} maxBarSize={28} />
-                </BarChart>
-              </ChartContainer>
+              <Suspense fallback={<Skeleton className="mt-6 h-60 w-full rounded-lg" />}>
+                <UpcomingChart data={dashboard.upcomingChart} />
+              </Suspense>
               <ChartLegend
                 items={[
                   { label: "Confirmed", color: "var(--color-chart-appointments)" },
@@ -782,7 +782,11 @@ export function HomeDashboard() {
           className="min-h-0"
         >
           {dashboard.activity.length ? (
-            <AppointmentList appointments={dashboard.activity} locale={locale} timeZone={timeZone} />
+            <AppointmentList
+              appointments={dashboard.activity}
+              locale={locale}
+              timeZone={timeZone}
+            />
           ) : (
             <EmptyState icon={CalendarCheck} title="No appointment activity">
               New bookings will appear here as they are added.
@@ -792,11 +796,19 @@ export function HomeDashboard() {
 
         <DashboardCard title="Today's next appointments" className="min-h-0">
           {dashboard.today.length ? (
-            <AppointmentList appointments={dashboard.today} locale={locale} timeZone={timeZone} compactDate />
+            <AppointmentList
+              appointments={dashboard.today}
+              locale={locale}
+              timeZone={timeZone}
+              compactDate
+            />
           ) : (
             <EmptyState icon={CalendarBlank} title="No Appointments Today">
               Visit the{" "}
-              <Link to="/calendar" className="font-medium text-primary underline underline-offset-2">
+              <Link
+                to="/calendar"
+                className="font-medium text-primary underline underline-offset-2"
+              >
                 calendar
               </Link>{" "}
               section to add some appointments

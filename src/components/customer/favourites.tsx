@@ -4,15 +4,16 @@ import { Heart } from "@phosphor-icons/react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { isCustomerAccount, useCustomer } from "@/lib/customer";
+import { isCustomerAccount, useCustomer, useSessionUserId } from "@/lib/customer";
 import { cn } from "@/lib/utils";
 
 /** Ids of the salons the signed-in customer has saved. */
 export function useFavourites() {
-  const customer = useCustomer();
+  // Keyed by the session, so it loads alongside the profile (business logins get none back).
+  const sessionUser = useSessionUserId();
   return useQuery({
-    queryKey: ["favourites", customer.data?.id ?? null],
-    enabled: isCustomerAccount(customer.data),
+    queryKey: ["favourites", sessionUser.data ?? null],
+    enabled: !!sessionUser.data,
     queryFn: async (): Promise<string[]> => {
       const { data, error } = await supabase
         .from("favorite_businesses")
