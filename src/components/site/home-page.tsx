@@ -57,16 +57,27 @@ const serif = "font-display font-[450]";
 const eyebrow = "font-mono text-[13px] uppercase tracking-[0.08em]";
 
 const pillBase =
-  "inline-flex h-[47px] items-center justify-center whitespace-nowrap rounded-full px-5 text-[18px] font-medium leading-[27px] transition-colors";
-const pillSolid = cn(pillBase, "bg-[#006aff] text-white hover:bg-[#0055cc]");
+  "inline-flex h-[47px] items-center justify-center whitespace-nowrap rounded-full px-5 text-[18px] font-medium leading-[27px] transition-[background-color,color,box-shadow,transform] duration-200 ease-out motion-safe:hover:-translate-y-px motion-safe:active:translate-y-0 motion-safe:active:scale-[0.97]";
+const pillSolid = cn(
+  pillBase,
+  "bg-[#006aff] text-white hover:bg-[#0055cc] hover:shadow-[0_8px_20px_-6px_rgba(0,106,255,0.55)]",
+);
 const pillOutline = cn(
   pillBase,
-  "border border-[#006aff] text-[#006aff] hover:bg-[#006aff]/[0.06]",
+  "border border-[#006aff] text-[#006aff] hover:bg-[#006aff] hover:text-white",
 );
+
+// Hover: an underline that sweeps in from the left.
+const sweep =
+  "bg-[linear-gradient(currentColor,currentColor)] bg-[length:0%_1px] bg-[position:0_100%] bg-no-repeat pb-0.5 transition-[background-size,color] duration-300 ease-out hover:bg-[length:100%_1px]";
+
+// Photos drift in slightly when their card is hovered.
+const photoZoom =
+  "transition-transform duration-[900ms] ease-[cubic-bezier(0.2,0.7,0.2,1)] motion-safe:group-hover:scale-[1.04]";
 
 export function HomePage() {
   return (
-    <div className="min-h-screen bg-white font-sans text-[#101010] antialiased">
+    <div className="site-home min-h-screen bg-white font-sans text-[#101010] antialiased">
       <SiteHeader />
       <main>
         <Hero />
@@ -209,25 +220,25 @@ function SiteHeader() {
           <div className="flex items-center gap-10">
             <Logo />
             <nav className="hidden items-center gap-7 text-[15px] font-medium lg:flex">
-              <a href="#business-types" className="hover:text-[#006aff]">
+              <a href="#business-types" className={sweep}>
                 Business types
               </a>
-              <a href="#features" className="hover:text-[#006aff]">
+              <a href="#features" className={sweep}>
                 Features
               </a>
-              <a href="#pricing" className="hover:text-[#006aff]">
+              <a href="#pricing" className={sweep}>
                 Pricing
               </a>
-              <Link to="/discover" className="hover:text-[#006aff]">
+              <Link to="/discover" className={sweep}>
                 Find a salon
               </Link>
             </nav>
           </div>
           <div className="flex items-center gap-6 text-[15px] font-medium">
-            <Link to="/sign-in" className="hidden hover:text-[#006aff] md:inline">
+            <Link to="/sign-in" className={cn(sweep, "hidden md:inline")}>
               Book an appointment
             </Link>
-            <Link to="/auth" className="hover:text-[#006aff]">
+            <Link to="/auth" className={sweep}>
               Sign in
             </Link>
           </div>
@@ -238,19 +249,19 @@ function SiteHeader() {
           <div className="flex items-center gap-8">
             <span className="text-[18px] font-semibold">Bookly for salons</span>
             <nav className="hidden items-center gap-7 text-[15px] lg:flex">
-              <a href="#top" className="font-medium">
+              <a href="#top" className={cn(sweep, "font-medium")}>
                 Overview
               </a>
-              <a href="#features" className="text-[#666] hover:text-[#101010]">
+              <a href="#features" className={cn(sweep, "text-[#666] hover:text-[#101010]")}>
                 Features
               </a>
-              <a href="#business-types" className="text-[#666] hover:text-[#101010]">
+              <a href="#business-types" className={cn(sweep, "text-[#666] hover:text-[#101010]")}>
                 Business types
               </a>
-              <a href="#pricing" className="text-[#666] hover:text-[#101010]">
+              <a href="#pricing" className={cn(sweep, "text-[#666] hover:text-[#101010]")}>
                 Pricing
               </a>
-              <a href="#faq" className="text-[#666] hover:text-[#101010]">
+              <a href="#faq" className={cn(sweep, "text-[#666] hover:text-[#101010]")}>
                 FAQ
               </a>
             </nav>
@@ -299,14 +310,17 @@ function Hero() {
         </Link>
       </div>
 
-      <div className="relative mt-12 overflow-hidden rounded-[10px] bg-[#e9e4de] lg:mt-16">
+      <div className="group relative mt-12 overflow-hidden rounded-[10px] bg-[#e9e4de] lg:mt-16">
         <img
           src={photo(PHOTOS.hero, 2000)}
           alt="A client relaxing after a treatment"
-          className="aspect-[4/5] w-full object-cover sm:aspect-[16/9] lg:aspect-[1320/680]"
+          className={cn(
+            photoZoom,
+            "aspect-[4/5] w-full object-cover sm:aspect-[16/9] lg:aspect-[1320/680]",
+          )}
           fetchPriority="high"
         />
-        <div className="absolute inset-x-4 bottom-4 sm:inset-x-auto sm:bottom-10 sm:right-10 sm:w-[560px]">
+        <div className="absolute inset-x-4 bottom-4 transition-transform duration-500 ease-out motion-safe:group-hover:-translate-y-2 sm:inset-x-auto sm:bottom-10 sm:right-10 sm:w-[560px]">
           <CalendarMock />
         </div>
       </div>
@@ -337,36 +351,37 @@ function FeatureRow({
 }) {
   return (
     <section id={id} className={cn(wrap, "scroll-mt-24 pt-24 lg:pt-36")}>
-      <div className="grid items-center gap-10 lg:grid-cols-[433px_1fr] lg:gap-5">
+      <div className="site-reveal grid items-center gap-10 lg:grid-cols-[433px_1fr] lg:gap-5">
         <div className={cn(reverse && "lg:order-2 lg:pl-10")}>
           <h2 className={cn(serif, "text-[36px] leading-[1.1] tracking-[-0.5px] lg:text-[48px]")}>
             {title}
           </h2>
           <p className="mt-5 text-base leading-6 text-[#666]">{text}</p>
-          <Link
-            to="/auth"
-            className="mt-6 inline-block text-base font-medium underline underline-offset-4 hover:text-[#006aff]"
-          >
-            Get started
-          </Link>
+          <ArrowLink className="mt-6">Get started</ArrowLink>
         </div>
-        <div className="relative overflow-hidden rounded-[10px] bg-[#f7f6f5]">
+        <div className="group relative overflow-hidden rounded-[10px] bg-[#f7f6f5]">
           <img
             src={photo(image, 1400)}
             alt=""
             loading="lazy"
-            className="aspect-[4/3] w-full object-cover lg:aspect-[867/578]"
+            className={cn(photoZoom, "aspect-[4/3] w-full object-cover lg:aspect-[867/578]")}
           />
-          <div className="absolute bottom-4 hidden sm:block sm:inset-x-auto sm:bottom-8 sm:right-8 sm:w-[340px]">
+          <div className="absolute bottom-4 hidden transition-transform duration-500 ease-out motion-safe:group-hover:-translate-y-2 sm:inset-x-auto sm:bottom-8 sm:right-8 sm:block sm:w-[340px]">
             {mock}
           </div>
         </div>
       </div>
 
-      <div className="mt-14 grid gap-8 sm:grid-cols-3 sm:gap-5">
+      <div className="site-reveal mt-14 grid gap-8 sm:grid-cols-3 sm:gap-5">
         {features.map(({ icon: Icon, title, text }) => (
-          <div key={title} className="border-t border-[#dadada] pt-6">
-            <Icon size={28} weight="regular" />
+          <div key={title} className="group relative border-t border-[#dadada] pt-6">
+            {/* A dark line draws across the top rule on hover. */}
+            <span className="absolute -top-px left-0 h-px w-0 bg-[#101010] transition-[width] duration-500 ease-out group-hover:w-full" />
+            <Icon
+              size={28}
+              weight="regular"
+              className="transition-[color,transform] duration-300 ease-out group-hover:text-[#006aff] motion-safe:group-hover:-translate-y-1"
+            />
             <h3 className="mt-4 text-base font-medium leading-6">{title}</h3>
             <p className="mt-2 text-base leading-6 text-[#666]">{text}</p>
           </div>
@@ -433,26 +448,21 @@ function ManageSlider() {
       </div>
       <div
         ref={track}
-        className="mt-10 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-px-4 px-4 pb-2 [scrollbar-width:none] sm:scroll-px-8 sm:px-8 lg:scroll-px-[60px] lg:px-[max(60px,calc((100vw-1320px)/2))]"
+        className="site-reveal mt-10 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-px-4 px-4 pb-2 [scrollbar-width:none] sm:scroll-px-8 sm:px-8 lg:scroll-px-[60px] lg:px-[max(60px,calc((100vw-1320px)/2))]"
       >
         {MANAGE.map(({ title, text, icon: Icon, link }) => (
           <article
             key={title}
-            className="flex w-[85vw] shrink-0 snap-start flex-col justify-between rounded-[10px] bg-[#f7f6f5] p-8 sm:w-[560px] lg:h-[460px] lg:p-10"
+            className="group flex w-[85vw] shrink-0 snap-start flex-col justify-between rounded-[10px] bg-[#f7f6f5] p-8 transition-colors duration-300 hover:bg-[#efebe6] sm:w-[560px] lg:h-[460px] lg:p-10"
           >
             <div>
               <h3 className="text-[32px] font-medium leading-[1.1] tracking-[-0.8px] lg:text-[40px]">
                 {title}
               </h3>
               <p className="mt-4 max-w-[400px] text-base leading-6 text-[#666]">{text}</p>
-              <Link
-                to="/auth"
-                className="mt-6 inline-block text-base font-medium underline underline-offset-4 hover:text-[#006aff]"
-              >
-                {link}
-              </Link>
+              <ArrowLink className="mt-6">{link}</ArrowLink>
             </div>
-            <div className="mt-10 flex size-16 items-center justify-center rounded-full bg-white">
+            <div className="mt-10 flex size-16 items-center justify-center rounded-full bg-white transition-[background-color,color,transform] duration-300 ease-out group-hover:bg-[#006aff] group-hover:text-white motion-safe:group-hover:scale-110">
               <Icon size={30} />
             </div>
           </article>
@@ -476,10 +486,29 @@ function SliderButton({
       type="button"
       aria-label={label}
       onClick={onClick}
-      className="flex size-12 items-center justify-center rounded-full border border-[#dadada] transition-colors hover:border-[#101010]"
+      className="flex size-12 items-center justify-center rounded-full border border-[#dadada] transition-[background-color,border-color,color,transform] duration-200 hover:border-[#101010] hover:bg-[#101010] hover:text-white motion-safe:active:scale-90"
     >
       {children}
     </button>
+  );
+}
+
+/** "Get started →": underlined text whose arrow slides on hover. */
+function ArrowLink({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <Link
+      to="/auth"
+      className={cn(
+        "group inline-flex items-center gap-1.5 text-base font-medium transition-colors hover:text-[#006aff]",
+        className,
+      )}
+    >
+      <span className="underline decoration-1 underline-offset-4">{children}</span>
+      <ArrowRight
+        size={16}
+        className="transition-transform duration-300 ease-out motion-safe:group-hover:translate-x-1"
+      />
+    </Link>
   );
 }
 
@@ -507,7 +536,7 @@ function BusinessTypes() {
       >
         Built for your craft
       </h2>
-      <div className="mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-4 px-4 pb-2 [scrollbar-width:none] sm:scroll-px-8 sm:px-8 lg:scroll-px-[60px] lg:px-[max(60px,calc((100vw-1320px)/2))]">
+      <div className="site-reveal mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-4 px-4 pb-2 [scrollbar-width:none] sm:scroll-px-8 sm:px-8 lg:scroll-px-[60px] lg:px-[max(60px,calc((100vw-1320px)/2))]">
         {TYPES.map(({ label, image }) => (
           <Link
             key={label}
@@ -518,12 +547,20 @@ function BusinessTypes() {
               src={photo(image, 600)}
               alt=""
               loading="lazy"
-              className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+              className={cn(
+                photoZoom,
+                "size-full object-cover motion-safe:group-hover:scale-[1.07]",
+              )}
             />
-            <span className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-black/0" />
+            <span className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-black/0 transition-opacity duration-500" />
+            <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-black/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
             <span className="absolute bottom-5 left-5 flex items-center gap-1 text-base font-medium text-white">
               {label}
-              <ArrowUpRight size={16} weight="bold" />
+              <ArrowUpRight
+                size={16}
+                weight="bold"
+                className="transition-transform duration-300 ease-out motion-safe:group-hover:-translate-y-0.5 motion-safe:group-hover:translate-x-0.5"
+              />
             </span>
           </Link>
         ))}
@@ -593,9 +630,12 @@ function Pricing() {
         <p className="mt-5 max-w-[620px] text-base leading-6 text-[#666]">
           Start free for 14 days. No card needed, and you can change plans at any time.
         </p>
-        <div className="mt-12 grid gap-5 lg:grid-cols-3">
+        <div className="site-reveal mt-12 grid gap-5 lg:grid-cols-3">
           {PLANS.map((plan) => (
-            <article key={plan.name} className="flex flex-col rounded-[10px] bg-white p-8">
+            <article
+              key={plan.name}
+              className="flex flex-col rounded-[10px] bg-white p-8 transition-[transform,box-shadow] duration-300 ease-out hover:shadow-[0_20px_50px_-20px_rgba(0,0,0,0.18)] motion-safe:hover:-translate-y-1"
+            >
               <div className="flex items-start justify-between gap-3">
                 <h3 className="text-[24px] font-medium leading-[28.8px] tracking-[-0.24px]">
                   {plan.name}
@@ -683,7 +723,7 @@ function Faq() {
   const [open, setOpen] = useState<number | null>(0);
   return (
     <section id="faq" className={cn(wrap, "scroll-mt-24 pt-20 lg:pt-28")}>
-      <div className="grid gap-8 lg:grid-cols-[433px_1fr] lg:gap-5">
+      <div className="site-reveal grid gap-8 lg:grid-cols-[433px_1fr] lg:gap-5">
         <h2 className={cn(serif, "text-[40px] leading-[45px]")}>FAQ</h2>
         <ul className="border-t border-[#dadada]">
           {FAQS.map((item, index) => {
@@ -694,20 +734,24 @@ function Faq() {
                   type="button"
                   aria-expanded={isOpen}
                   onClick={() => setOpen(isOpen ? null : index)}
-                  className="flex w-full items-center justify-between gap-6 py-6 text-left text-base font-medium leading-6"
+                  className="group flex w-full items-center justify-between gap-6 py-5 text-left text-base font-medium leading-6"
                 >
-                  {item.q}
-                  <Plus
-                    size={20}
-                    className={cn(
-                      "shrink-0 transition-transform duration-200",
-                      isOpen && "rotate-45",
-                    )}
-                  />
+                  <span className="transition-transform duration-300 ease-out motion-safe:group-hover:translate-x-1">
+                    {item.q}
+                  </span>
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full transition-colors duration-200 group-hover:bg-[#f0f0f0]">
+                    <Plus
+                      size={20}
+                      className={cn(
+                        "transition-transform duration-300 ease-out",
+                        isOpen && "rotate-45",
+                      )}
+                    />
+                  </span>
                 </button>
                 <div
                   className={cn(
-                    "grid transition-[grid-template-rows] duration-200",
+                    "grid transition-[grid-template-rows] duration-300 ease-out",
                     isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
                   )}
                 >
@@ -729,7 +773,7 @@ function Faq() {
 function ClosingCta() {
   return (
     <section className={cn(wrap, "py-24 lg:py-36")}>
-      <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
+      <div className="site-reveal flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
         <h2
           className={cn(
             serif,
@@ -802,7 +846,7 @@ function SiteFooter() {
               <ul className="mt-4 space-y-3">
                 {col.links.map(([label, href]) => (
                   <li key={label}>
-                    <a href={href} className="hover:text-white">
+                    <a href={href} className={cn(sweep, "hover:text-white")}>
                       {label}
                     </a>
                   </li>
