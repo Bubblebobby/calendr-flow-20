@@ -31,7 +31,7 @@ export function useBusiness() {
 export async function fetchCurrentBusiness(userId: string): Promise<CurrentBusiness | null> {
   const { data, error } = await supabase
     .from("profiles")
-    .select("businesses(id, name, country, currency, timezone)")
+    .select("businesses!profiles_business_id_fkey(id, name, country, currency, timezone)")
     .eq("id", userId)
     .maybeSingle();
   if (error) throw error;

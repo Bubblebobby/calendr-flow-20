@@ -37,13 +37,18 @@ export async function requireOnboardedUser(opts?: { context?: { queryClient?: Qu
   }
 
   // Profile and business in one request.
-  const { data } = await supabase
+  // Name the link: profiles and businesses are related two ways (the business you're linked to,
+  // and the business you own), and an unnamed embed is rejected as ambiguous.
+  const { data, error } = await supabase
     .from("profiles")
     .select(
-      "onboarded_at, business_id, user_type, businesses(id, name, country, currency, timezone, setup_step)",
+      "onboarded_at, business_id, user_type, businesses!profiles_business_id_fkey(id, name, country, currency, timezone, setup_step)",
     )
     .eq("id", user.id)
     .maybeSingle();
+  // A failed lookup must not look like "not onboarded" (that bounced people between onboarding
+  // and the dashboard forever); surface it instead.
+  if (error) throw error;
   const profile = data as {
     onboarded_at: string | null;
     business_id: string | null;
