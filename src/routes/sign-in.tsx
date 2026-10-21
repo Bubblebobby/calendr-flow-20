@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { EnvelopeSimple } from "@phosphor-icons/react";
 
-import { AuthShell } from "@/components/auth-shell";
+import { AuthField, AuthShell, authPrimaryButton } from "@/components/auth-shell";
 import { supabase } from "@/integrations/supabase/client";
 import { safeNext } from "@/lib/customer";
 
@@ -121,18 +121,15 @@ function SignInPage() {
             void send(email.trim());
           }}
         >
-          <label className="block rounded-lg border border-input px-4 pb-2 pt-2.5 transition-colors focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground">
-            <span className="block text-caption text-muted-foreground">Email</span>
-            <input
-              type="email"
-              required
-              autoFocus
-              autoComplete="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              className="mt-0.5 block h-6 w-full bg-transparent text-body text-foreground outline-none"
-            />
-          </label>
+          <AuthField
+            label="Email"
+            type="email"
+            required
+            autoFocus
+            autoComplete="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+          />
           {error ? (
             <p role="alert" className="mt-3 text-body text-destructive">
               {error}
@@ -141,15 +138,15 @@ function SignInPage() {
           <button
             type="submit"
             disabled={sending || !email.trim()}
-            className="mt-4 flex h-12 w-full items-center justify-center rounded-full bg-ink text-body font-medium text-ink-foreground transition-colors hover:bg-ink/90 disabled:opacity-60"
+            className={`${authPrimaryButton} mt-4`}
           >
             {sending ? "Sending…" : "Continue"}
           </button>
-          <p className="mt-4 text-caption text-muted-foreground">
+          <p className="mt-4 text-xs leading-[18px] text-[#666]">
             Use the email you give salons when you book, and your past bookings will appear in your
             account.
           </p>
-          <p className="mt-8 text-caption text-muted-foreground">
+          <p className="mt-8 text-sm text-[#666]">
             Own a salon?{" "}
             <Link to="/auth" className="font-medium text-foreground underline underline-offset-2">
               Sign in to Bookly for business

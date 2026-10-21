@@ -3,7 +3,13 @@ import { useEffect, useState } from "react";
 import { Loader2, MailCheck } from "lucide-react";
 import { toast } from "sonner";
 
-import { AuthShell } from "@/components/auth-shell";
+import {
+  AuthDivider,
+  AuthField,
+  AuthShell,
+  authPrimaryButton,
+  authSecondaryButton,
+} from "@/components/auth-shell";
 import { supabase } from "@/integrations/supabase/client";
 import { safeNext } from "@/lib/safe-next";
 
@@ -157,48 +163,34 @@ function AuthPage() {
       ) : (
         <>
           <form onSubmit={handleEmail}>
-            <label
-              htmlFor="auth-email"
-              className="block rounded-lg border border-input px-4 pb-2 pt-2.5 transition-colors focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground"
-            >
-              <span className="block text-caption text-muted-foreground">Email</span>
-              <input
-                id="auth-email"
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-0.5 block h-6 w-full bg-transparent text-body text-foreground outline-none"
-              />
-            </label>
-            <button
-              type="submit"
-              disabled={loading}
-              className="mt-4 flex h-12 w-full items-center justify-center rounded-full bg-ink text-body font-medium text-ink-foreground transition-colors hover:bg-ink/90 disabled:opacity-60"
-            >
+            <AuthField
+              label="Email"
+              id="auth-email"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <button type="submit" disabled={loading} className={`${authPrimaryButton} mt-4`}>
               {loading ? <Loader2 className="size-4 animate-spin" /> : "Continue"}
             </button>
           </form>
 
-          <div className="my-5 flex items-center gap-3">
-            <span className="h-px flex-1 bg-border" />
-            <span className="text-caption text-muted-foreground">or</span>
-            <span className="h-px flex-1 bg-border" />
-          </div>
+          <AuthDivider />
 
           <button
             type="button"
             onClick={handleGoogle}
             disabled={googleLoading}
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-secondary text-body font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-60"
+            className={authSecondaryButton}
           >
             {googleLoading ? <Loader2 className="size-4 animate-spin" /> : <GoogleMark />}
             Continue with Google
           </button>
 
-          <p className="mt-6 text-caption leading-relaxed text-muted-foreground">
+          <p className="mt-6 text-xs leading-[18px] text-[#666]">
             By continuing, you agree to our{" "}
             <Link to="/" className="underline underline-offset-2">
               Terms
@@ -209,7 +201,7 @@ function AuthPage() {
             </Link>
             .
           </p>
-          <p className="mt-8 text-caption text-muted-foreground">
+          <p className="mt-8 text-sm text-[#666]">
             Booking an appointment?{" "}
             <Link
               to="/sign-in"

@@ -50,9 +50,7 @@ export function AuthShell({
 
         <div className="flex flex-1 flex-col justify-center py-10">
           <div className="w-full max-w-[420px]">
-            <h1 className="text-[1.75rem] font-semibold leading-9 tracking-[-0.015em] text-foreground">
-              {title}
-            </h1>
+            <h1 className="text-[1.5625rem] font-bold leading-8 text-foreground">{title}</h1>
             {subtitle ? <div className="mt-2 text-body text-foreground">{subtitle}</div> : null}
             <div className="mt-6">{children}</div>
           </div>
@@ -112,7 +110,7 @@ function PreviewCard() {
     { time: "12:00", name: "Tolu · Haircut", tone: "bg-[#fdf3e2] text-[#8a5300]" },
   ];
   return (
-    <div className="absolute right-4 top-1/2 w-44 -translate-y-1/2 rounded-lg bg-white p-2.5 shadow-xl">
+    <div className="absolute right-4 top-1/2 hidden w-44 -translate-y-1/2 rounded-lg bg-white p-2.5 shadow-xl 2xl:block">
       <p className="text-caption font-medium text-foreground">Today</p>
       <ul className="mt-2 space-y-1.5">
         {rows.map((row) => (
@@ -131,6 +129,41 @@ function PreviewCard() {
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+// ── Form pieces, sized from Square's Market tokens ──
+// Field: 64px tall, 6px corners, 1px #dadada border (2px #101010 when focused), a 12px label
+// floating above 16px text. Buttons: 48px pills with 16px medium text; primary #101010,
+// secondary #f0f0f0.
+
+export const authPrimaryButton =
+  "flex h-12 w-full items-center justify-center rounded-full bg-[#101010] text-base font-medium text-white transition-colors hover:bg-[#2b2b2b] disabled:bg-[#dadada] disabled:text-[#959595]";
+export const authSecondaryButton =
+  "flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#f0f0f0] text-base font-medium text-[#101010] transition-colors hover:bg-[#e4e4e4] disabled:opacity-60";
+
+export function AuthField({
+  label,
+  ...input
+}: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <label className="block min-h-16 rounded-[6px] border border-[#dadada] px-3 py-[9px] transition-colors hover:border-[#959595] focus-within:border-[#101010] focus-within:shadow-[inset_0_0_0_1px_#101010]">
+      <span className="block text-xs leading-[18px] text-[#666]">{label}</span>
+      <input
+        {...input}
+        className="block h-6 w-full bg-transparent text-base leading-6 text-[#101010] outline-none"
+      />
+    </label>
+  );
+}
+
+export function AuthDivider() {
+  return (
+    <div className="my-6 flex items-center gap-4">
+      <span className="h-px flex-1 bg-[#f0f0f0]" />
+      <span className="text-sm text-[#666]">or</span>
+      <span className="h-px flex-1 bg-[#f0f0f0]" />
     </div>
   );
 }

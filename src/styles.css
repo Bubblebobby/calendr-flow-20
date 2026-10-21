@@ -89,17 +89,17 @@
   --text-heading: 1rem;
   --text-heading--line-height: 1.5rem;
   --text-body: 0.875rem;
-  --text-body--line-height: 1.25rem;
+  --text-body--line-height: 1.375rem;
   --text-caption: 0.75rem;
-  --text-caption--line-height: 1rem;
+  --text-caption--line-height: 1.125rem;
   /* Square emphasises with medium (500) rather than semibold. */
   --font-weight-semibold: 500;
   --color-toolbar: var(--toolbar);
 }
 
 :root {
-  /* Palette modelled on Square's dashboard (measured Oct 2026): near-black text, neutral
-     greys, black pill buttons, blue for links and highlights. */
+  /* Palette from Square's Market design system (read from its tokens, Oct 2026): text #101010 /
+     #666 / #959595, fills #f0f0f0 / #f7f7f7, dividers #f0f0f0, emphasis is black. */
   --radius: 0.75rem;
   --background: #ffffff;
   --foreground: #101010;
@@ -107,22 +107,22 @@
   --card-foreground: #101010;
   --popover: #ffffff;
   --popover-foreground: #101010;
-  --primary: #006aff;
+  --primary: #101010;
   --primary-foreground: #ffffff;
-  --secondary: #f5f5f5;
+  --secondary: #f0f0f0;
   --secondary-foreground: #101010;
-  --muted: #f9f9f9;
-  --muted-foreground: #757575;
+  --muted: #f7f7f7;
+  --muted-foreground: #666666;
   --accent: #f0f0f0;
   --accent-foreground: #101010;
-  --destructive: #d4163a;
+  --destructive: #bf0020;
   --destructive-foreground: #ffffff;
-  --border: #ebebeb;
-  --input: #d3d3d3;
-  --ring: #006aff;
+  --border: #f0f0f0;
+  --input: #dadada;
+  --ring: #101010;
   --surface: #f5f5f5;
-  --placeholder: #bfbfbf;
-  --toolbar: #f9f9f9;
+  --placeholder: #959595;
+  --toolbar: #f7f7f7;
   --chart-1: #006aff;
   --chart-2: oklch(0.66 0.12 175);
   --chart-3: oklch(0.72 0.13 85);
@@ -137,9 +137,9 @@
   --sidebar-border: oklch(0.32 0.03 240);
   --sidebar-ring: oklch(0.62 0.12 205);
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --shadow-card: 0 0 0 1px #ebebeb;
+  --shadow-card: 0 0 0 1px #f0f0f0;
   --gradient-brand: linear-gradient(135deg, #101010, #006aff);
-  --ink: #171717;
+  --ink: #101010;
   --ink-foreground: #ffffff;
   --slot-blue: oklch(0.9 0.05 230);
   --slot-blue-foreground: oklch(0.35 0.07 240);
@@ -253,18 +253,18 @@
   --card-foreground: #101010;
   --popover: oklch(1 0 0);
   --popover-foreground: #101010;
-  --primary: #006aff;
+  --primary: #101010;
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.952 0 0);
   --secondary-foreground: oklch(0.15 0 0);
   --muted: oklch(0.952 0 0);
-  --muted-foreground: oklch(0.48 0 0);
+  --muted-foreground: #666666;
   --accent: oklch(0.845 0.166 84.5);
   --accent-foreground: oklch(0.17 0 0);
-  --border: oklch(0.827 0 0);
-  --input: oklch(0.827 0 0);
-  --ring: #006aff;
-  --shadow-card: inset 0 0 0 1px oklch(0.827 0 0);
+  --border: #f0f0f0;
+  --input: #dadada;
+  --ring: #101010;
+  --shadow-card: inset 0 0 0 1px #f0f0f0;
 }
 
 @utility surface-card {
