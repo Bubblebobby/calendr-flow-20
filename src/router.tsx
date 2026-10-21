@@ -17,9 +17,17 @@ export const getRouter = () => {
     },
   });
 
+  // On the server, the nonce for this request's Content-Security-Policy (set in server.ts); the
+  // router puts it on every inline script it renders.
+  const nonce =
+    typeof window === "undefined"
+      ? (globalThis as { __booklyCspNonce?: () => string | undefined }).__booklyCspNonce?.()
+      : undefined;
+
   const router = createRouter({
     routeTree,
     context: { queryClient },
+    ...(nonce ? { ssr: { nonce } } : {}),
     scrollRestoration: true,
     // Warm route chunks + loaders on hover/touch so navigation feels instant.
     defaultPreload: "intent",
