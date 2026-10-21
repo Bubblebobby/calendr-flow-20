@@ -5,16 +5,14 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 
-// Sent with every response. The CSP only covers framing, plugins, <base> and form targets;
-// a full script/style policy needs testing against Supabase, fonts and maps first.
+// Sent with every response. The Content-Security-Policy is added per page in src/server.ts,
+// because it carries a fresh nonce for each request.
 const SECURITY_HEADERS = {
   "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "DENY",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), payment=(), geolocation=(self)",
-  "Content-Security-Policy":
-    "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'",
 };
 
 export default defineConfig(({ command }) => ({
