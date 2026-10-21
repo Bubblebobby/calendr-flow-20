@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Loader2, MailCheck } from "lucide-react";
 import { toast } from "sonner";
@@ -124,7 +124,7 @@ function AuthPage() {
             <button
               type="button"
               onClick={() => setMode("signin")}
-              className="font-medium underline underline-offset-2"
+              className="font-semibold underline underline-offset-2"
             >
               Sign in
             </button>
@@ -135,7 +135,7 @@ function AuthPage() {
             <button
               type="button"
               onClick={() => setMode("signup")}
-              className="font-medium underline underline-offset-2"
+              className="font-semibold underline underline-offset-2"
             >
               Sign up
             </button>
@@ -164,7 +164,7 @@ function AuthPage() {
         <>
           <form onSubmit={handleEmail}>
             <AuthField
-              label="Email"
+              label="Email address"
               id="auth-email"
               type="email"
               inputMode="email"
@@ -173,7 +173,7 @@ function AuthPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-            <button type="submit" disabled={loading} className={`${authPrimaryButton} mt-4`}>
+            <button type="submit" disabled={loading} className={`${authPrimaryButton} mt-8`}>
               {loading ? <Loader2 className="size-4 animate-spin" /> : "Continue"}
             </button>
           </form>
@@ -189,27 +189,6 @@ function AuthPage() {
             {googleLoading ? <Loader2 className="size-4 animate-spin" /> : <GoogleMark />}
             Continue with Google
           </button>
-
-          <p className="mt-6 text-xs leading-[18px] text-[#666]">
-            By continuing, you agree to our{" "}
-            <Link to="/" className="underline underline-offset-2">
-              Terms
-            </Link>{" "}
-            and acknowledge our{" "}
-            <Link to="/" className="underline underline-offset-2">
-              Privacy Policy
-            </Link>
-            .
-          </p>
-          <p className="mt-8 text-sm text-[#666]">
-            Booking an appointment?{" "}
-            <Link
-              to="/sign-in"
-              className="font-medium text-foreground underline underline-offset-2"
-            >
-              Sign in as a customer
-            </Link>
-          </p>
         </>
       )}
     </AuthShell>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { EnvelopeSimple } from "@phosphor-icons/react";
 
 import { AuthField, AuthShell, authPrimaryButton } from "@/components/auth-shell";
@@ -34,6 +34,8 @@ function SignInPage() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [wait, setWait] = useState(0);
+  // Same passwordless flow either way; only the wording changes.
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
 
   // Already signed in: go straight on.
   useEffect(() => {
@@ -77,8 +79,32 @@ function SignInPage() {
 
   return (
     <AuthShell
-      title={sentTo ? "Check your email" : "Sign in"}
-      subtitle={sentTo ? null : "One account for every salon you book with. No password needed."}
+      title={sentTo ? "Check your email" : mode === "signup" ? "Create your account" : "Sign in"}
+      subtitle={
+        sentTo ? null : mode === "signup" ? (
+          <>
+            Already have an account?{" "}
+            <button
+              type="button"
+              onClick={() => setMode("signin")}
+              className="font-semibold underline underline-offset-2"
+            >
+              Sign in
+            </button>
+          </>
+        ) : (
+          <>
+            New to Bookly?{" "}
+            <button
+              type="button"
+              onClick={() => setMode("signup")}
+              className="font-semibold underline underline-offset-2"
+            >
+              Sign up
+            </button>
+          </>
+        )
+      }
       features={CUSTOMER_FEATURES}
       panelTitle="Your bookings, all in one place"
       panelText="Find salons near you, book in seconds, and keep your appointments, gift cards and favourites together."
@@ -122,7 +148,7 @@ function SignInPage() {
           }}
         >
           <AuthField
-            label="Email"
+            label="Email address"
             type="email"
             required
             autoFocus
@@ -138,20 +164,10 @@ function SignInPage() {
           <button
             type="submit"
             disabled={sending || !email.trim()}
-            className={`${authPrimaryButton} mt-4`}
+            className={`${authPrimaryButton} mt-8`}
           >
             {sending ? "Sending…" : "Continue"}
           </button>
-          <p className="mt-4 text-xs leading-[18px] text-[#666]">
-            Use the email you give salons when you book, and your past bookings will appear in your
-            account.
-          </p>
-          <p className="mt-8 text-sm text-[#666]">
-            Own a salon?{" "}
-            <Link to="/auth" className="font-medium text-foreground underline underline-offset-2">
-              Sign in to Bookly for business
-            </Link>
-          </p>
         </form>
       )}
     </AuthShell>
@@ -162,9 +178,9 @@ const CUSTOMER_FEATURES = [
   "Find salons near you",
   "Book in seconds",
   "Reschedule anytime",
-  "Book again in one tap",
+  "Book again in a tap",
   "Keep your gift cards",
-  "Track package sessions",
-  "Save your favourites",
-  "Leave a review",
+  "Track your sessions",
+  "Save favourites",
+  "Leave reviews",
 ];
