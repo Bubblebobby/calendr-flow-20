@@ -29,7 +29,7 @@ import {
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { formatMoney } from "@/lib/format";
+import { currencySymbol, formatMoney } from "@/lib/format";
 import { lineDiscounts, lineTaxes } from "@/lib/tax";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
@@ -146,6 +146,7 @@ export function CheckoutScreen({
   const businessId = business?.id;
   const currency = business?.currency ?? "NGN";
   const money = (value: number) => formatMoney(value, currency, business?.country ?? "");
+  const symbol = currencySymbol(currency, business?.country);
 
   const [step, setStep] = useState<Step>("cart");
   const [browse, setBrowse] = useState<
@@ -400,7 +401,10 @@ export function CheckoutScreen({
   const staffNames = [
     ...new Set(
       lines
-        .map((line) => line.teamMemberId && memberById.get(line.teamMemberId)?.first_name)
+        .map((line) => {
+          const member = line.teamMemberId ? memberById.get(line.teamMemberId) : undefined;
+          return member ? personName(member) : null;
+        })
         .filter(Boolean),
     ),
   ].join(", ");
@@ -1073,7 +1077,7 @@ export function CheckoutScreen({
         </div>
         {tip === "custom" ? (
           <label className="mt-4 flex h-12 max-w-xs items-center gap-2 rounded-lg border border-border px-4">
-            <span className="text-muted-foreground">{currency}</span>
+            <span className="text-muted-foreground">{symbol}</span>
             <input
               autoFocus
               inputMode="decimal"
@@ -1550,7 +1554,7 @@ export function CheckoutScreen({
       {/* Amount keypad (Cash / Card / Other) */}
       <GiftCardSellDialog
         open={giftSellOpen}
-        currency={currency}
+        currency={symbol}
         onClose={() => setGiftSellOpen(false)}
         onAdd={(value, extra) =>
           addExtra(
@@ -1575,7 +1579,7 @@ export function CheckoutScreen({
         <AmountModal
           method={amountModal}
           suggested={leftToPay}
-          currency={currency}
+          currency={symbol}
           money={money}
           receivedBy={staffNames.split(", ")[0] || "you"}
           onClose={() => setAmountModal(null)}
@@ -1744,7 +1748,7 @@ export function CheckoutScreen({
               <PromptInput
                 initial={discount ? String(discount) : ""}
                 placeholder="0.00"
-                prefix={currency}
+                prefix={symbol}
                 numeric
                 onSave={(value) => {
                   setDiscount(Math.min(subtotal, Number(value) || 0));
@@ -1888,7 +1892,7 @@ function AmountModal({
         <DialogDescription className="sr-only">Enter the amount received.</DialogDescription>
         <div className="mt-4 flex justify-center">
           <span className="border-b-2 border-border pb-1 text-[2.25rem] font-semibold tabular-nums">
-            {currency} {value || "0"}
+            {currency}{value || "0"}
           </span>
         </div>
         <div className="mt-4 flex gap-2 overflow-x-auto pb-1">

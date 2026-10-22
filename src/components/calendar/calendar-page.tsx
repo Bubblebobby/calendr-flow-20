@@ -5,6 +5,7 @@ import { CalendarPlus, CalendarX, UserPlus, UsersThree, X } from "@phosphor-icon
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
+import { formatMoney } from "@/lib/format";
 import { useBusiness } from "@/lib/use-business";
 import { useBusinessHours } from "@/lib/business-hours";
 import { isoDay, resolveDay, useShiftData } from "@/lib/team-shifts";
@@ -331,7 +332,7 @@ export function CalendarPage({
   const formatPrice = (value: number | null) =>
     value === null || !currency
       ? null
-      : new Intl.NumberFormat(locale, { style: "currency", currency }).format(value);
+      : formatMoney(value, currency, business?.country);
 
   const pickTitle =
     pick?.kind === "block"

@@ -400,10 +400,36 @@ const TIME_ZONES: string[] = (() => {
  * and an "Edit" link per field), drawn with Bookly's own card, colours and type sizes. Edit turns
  * that one row into an input with Save and Cancel.
  */
-type DetailKey = "name" | "timezone" | "website";
+type DetailKey = "name" | "timezone" | "website" | "contact_phone" | "contact_email";
+
+/** Contact phone and email; null until the contact database update has been run. */
+function useBusinessContactRow(businessId: string | undefined) {
+  return useQuery({
+    queryKey: ["business-contact-row", businessId],
+    enabled: Boolean(businessId),
+    retry: false,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("businesses").select("contact_phone, contact_email").eq("id", businessId!).single();
+      if (error) return null;
+      return data;
+    },
+  });
+}
+
+const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+/** Why a draft can't be saved, or null if it can. */
+function detailProblem(key: DetailKey, value: string) {
+  const v = value.trim();
+  if (key === "name" && !v) return "Add a business name.";
+  if (key === "contact_phone" && v && (v.length < 5 || v.length > 30)) return "Check the phone number.";
+  if (key === "contact_email" && v && !EMAIL.test(v)) return "Check the email address.";
+  return null;
+}
 
 function BusinessDetails() {
   const row = useBusinessRow();
+  const contactRow = useBusinessContactRow(row.data?.id);
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState<DetailKey | null>(null);
   const [draft, setDraft] = useState("");
@@ -416,19 +442,24 @@ function BusinessDetails() {
           ? { name: trimmed }
           : key === "timezone"
             ? { timezone: trimmed }
-            : {
-                website: trimmed
-                  ? /^https?:\/\//.test(trimmed)
-                    ? trimmed
-                    : `https://${trimmed}`
-                  : null,
-              };
+            : key === "contact_phone"
+              ? { contact_phone: trimmed || null }
+              : key === "contact_email"
+                ? { contact_email: trimmed || null }
+                : {
+                    website: trimmed
+                      ? /^https?:\/\//.test(trimmed)
+                        ? trimmed
+                        : `https://${trimmed}`
+                      : null,
+                  };
       const { error } = await supabase.from("businesses").update(update).eq("id", row.data!.id);
       if (error) throw error;
     },
     onSuccess: () => {
       setEditing(null);
       queryClient.invalidateQueries({ queryKey: ["business-row"] });
+      queryClient.invalidateQueries({ queryKey: ["business-contact-row"] });
       queryClient.invalidateQueries({ queryKey: ["current-business"] });
       queryClient.invalidateQueries({ queryKey: ["top-bar-profile"] });
       toast.success("Business details saved");
@@ -446,7 +477,8 @@ function BusinessDetails() {
   }
 
   const editor = (key: DetailKey) => {
-    const invalid = key === "name" && !draft.trim();
+    const problem = detailProblem(key, draft);
+    const invalid = problem !== null;
     return (
       <form
         className="flex w-full flex-wrap items-center gap-2"
@@ -471,9 +503,19 @@ function BusinessDetails() {
         ) : (
           <input
             autoFocus
+            type={key === "contact_phone" ? "tel" : key === "contact_email" ? "email" : "text"}
             value={draft}
-            maxLength={key === "name" ? 100 : 200}
-            placeholder={key === "website" ? "www.yoursalon.com" : undefined}
+            maxLength={key === "name" ? 100 : key === "contact_phone" ? 30 : key === "contact_email" ? 254 : 200}
+            placeholder={
+              key === "website"
+                ? "www.yoursalon.com"
+                : key === "contact_phone"
+                  ? "0801 234 5678"
+                  : key === "contact_email"
+                    ? "hello@yoursalon.com"
+                    : undefined
+            }
+            aria-invalid={invalid && draft.trim() !== "" ? true : undefined}
             onChange={(event) => setDraft(event.target.value)}
             className={cn(field, "mt-0 h-10 min-w-0 flex-1")}
           />
@@ -492,12 +534,17 @@ function BusinessDetails() {
         >
           Cancel
         </button>
+        {problem && draft.trim() ? (
+          <p role="alert" className="w-full text-caption text-destructive">
+            {problem}
+          </p>
+        ) : null}
       </form>
     );
   };
 
   return (
-    <PageBlock title="Business details" subtitle="Your business name, location settings and website.">
+    <PageBlock title="Business details" subtitle="Your business name, location settings and how clients can reach you.">
       <TooltipProvider delayDuration={150}>
         <dl className={cn(card, "overflow-hidden")}>
           <DetailRow
@@ -535,6 +582,30 @@ function BusinessDetails() {
           >
             {data.website}
           </DetailRow>
+          {contactRow.data ? (
+            <>
+              <DetailRow
+                label="Contact phone"
+                info="Clients see this on their booking confirmation and booking link."
+                placeholder="Phone number"
+                editing={editing === "contact_phone"}
+                editor={editor("contact_phone")}
+                onEdit={() => startEdit("contact_phone", contactRow.data?.contact_phone ?? "")}
+              >
+                {contactRow.data.contact_phone}
+              </DetailRow>
+              <DetailRow
+                label="Contact email"
+                info="Clients see this on their booking confirmation and booking link."
+                placeholder="Email address"
+                editing={editing === "contact_email"}
+                editor={editor("contact_email")}
+                onEdit={() => startEdit("contact_email", contactRow.data?.contact_email ?? "")}
+              >
+                {contactRow.data.contact_email}
+              </DetailRow>
+            </>
+          ) : null}
         </dl>
       </TooltipProvider>
     </PageBlock>

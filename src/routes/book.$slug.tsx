@@ -1,20 +1,32 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, CheckCircle, Copy, Plus, UserCircle, X } from "@phosphor-icons/react";
+import {
+  ArrowLeft,
+  CalendarPlus,
+  Check,
+  CheckCircle,
+  Copy,
+  Plus,
+  UserCircle,
+  X,
+} from "@phosphor-icons/react";
 import { toast } from "sonner";
 
+import { SalonContact } from "@/components/customer/salon-contact";
 import { pillButton } from "@/components/sales/list-ui";
 import { supabase } from "@/integrations/supabase/client";
 import {
   formatClock,
   freeSlots,
   localDay,
+  openWindow,
   zonedToUtc,
   type Busy,
   type MemberShifts,
   type OpeningHours,
 } from "@/lib/booking-slots";
+import { downloadCalendarFile, formatAddress, fullName, useBusinessContact } from "@/lib/business-contact";
 import { formatDuration, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useApplyBrand } from "@/lib/brand";
@@ -48,7 +60,7 @@ type Page = {
     country: string;
     timezone: string;
     description: string | null;
-    location: { address?: string; city?: string } | null;
+    location: { address?: string; apt?: string; city?: string; state?: string; postcode?: string } | null;
     brand_color?: string | null;
     logo_path?: string | null;
   };
@@ -168,6 +180,7 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
   } | null>(null);
   const [promoError, setPromoError] = useState<string | null>(null);
   const customer = useCustomer();
+  const contact = useBusinessContact(slug);
   // Only customer accounts book as themselves; a business login books like a guest.
   const me = isCustomerAccount(customer.data) ? customer.data : null;
   const queryClient = useQueryClient();
@@ -265,24 +278,42 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
     },
   });
 
-  // Each member's shifts for the day; null if the database update with shifts hasn't been run.
+  const days = useMemo(() => Array.from({ length: 21 }, (_, i) => localDay(tz, i)), [tz]);
+
+  // Each member's shifts for every day in the strip; null if the shifts update hasn't been run.
   const availability = useQuery({
-    queryKey: ["booking-availability", slug, day],
-    enabled: step === "time",
+    queryKey: ["booking-availability", slug, days[0]],
+    enabled: step === "time" || step === "professional",
     retry: false,
-    queryFn: async (): Promise<MemberShifts | null> => {
+    queryFn: async (): Promise<Record<string, MemberShifts> | null> => {
       const { data, error: rpcError } = await supabase.rpc("get_booking_availability", {
         p_slug: slug,
-        p_from: day,
-        p_to: day,
+        p_from: days[0]!,
+        p_to: days[days.length - 1]!,
       });
       if (rpcError) return null;
-      const map: MemberShifts = {};
-      for (const row of data ?? [])
+      const byDay: Record<string, MemberShifts> = {};
+      for (const row of data ?? []) {
+        const map = (byDay[row.day] ??= {});
         map[row.team_member_id] = row.shifts as unknown as MemberShifts[string];
-      return map;
+      }
+      return byDay;
     },
   });
+  const bookableIds = memberId ? [memberId] : eligible.map((m) => m.id);
+  /** No one who can do the chosen services works that day (or the salon is closed). */
+  const isClosed = (value: string) =>
+    availability.data
+      ? !bookableIds.some((id) => (availability.data![value]?.[id] ?? []).length > 0)
+      : openWindow(page.hours, value) === null;
+
+  // Land on the first open day rather than a closed one.
+  useEffect(() => {
+    if (step !== "time" || availability.isLoading || !isClosed(day)) return;
+    const open = days.find((value) => !isClosed(value));
+    if (open) setDay(open);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, availability.isLoading, availability.data, memberId]);
 
   const slots = useMemo(
     () =>
@@ -293,7 +324,7 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
         busy: busy.data ?? [],
         memberIds: memberId ? [memberId] : eligible.map((m) => m.id),
         duration,
-        ...(availability.data ? { shifts: availability.data } : {}),
+        ...(availability.data ? { shifts: availability.data[day] ?? {} } : {}),
       }),
     [day, tz, page.hours, busy.data, memberId, eligible, duration, availability.data],
   );
@@ -343,7 +374,6 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
     },
   });
 
-  const days = Array.from({ length: 21 }, (_, i) => localDay(tz, i));
   const dayLabel = (value: string, options: Intl.DateTimeFormatOptions) =>
     new Intl.DateTimeFormat("en-GB", { ...options, timeZone: "UTC" }).format(
       new Date(`${value}T12:00:00Z`),
@@ -381,18 +411,72 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
           <CheckCircle size={56} weight="fill" className="mx-auto text-[#1f8a3e]" />
           <h1 className="mt-4 text-display font-semibold">Booking confirmed</h1>
           <p className="mt-2 text-body text-muted-foreground">
-            {dayLabel(day, { weekday: "long", day: "numeric", month: "long" })} at{" "}
-            {formatClock(slot ?? 0)} with{" "}
-            {member ? member.first_name : "the first available professional"} at {business.name}.
+            {form.first_name.trim() ? `See you soon, ${form.first_name.trim()}.` : "See you soon."}
           </p>
-          <ul className="mt-6 space-y-2 text-left">
-            {chosen.map((service) => (
-              <li key={service.id} className="flex justify-between text-body">
-                <span>{service.name}</span>
-                <span className="text-muted-foreground">{formatDuration(service.duration)}</span>
+          <div className="mt-6 rounded-xl p-5 text-left shadow-[inset_0_0_0_1px_var(--color-border)]">
+            <p className="text-heading font-semibold">{business.name}</p>
+            <p className="mt-1 text-body">
+              {dayLabel(day, { weekday: "long", day: "numeric", month: "long" })}
+            </p>
+            <p className="text-body text-muted-foreground">
+              {formatClock(slot ?? 0)} – {formatClock((slot ?? 0) + duration)} ·{" "}
+              {member ? `with ${fullName(member)}` : "with the first available professional"}
+            </p>
+            <ul className="mt-4 space-y-2 border-t border-border pt-4">
+              {chosen.map((service) => (
+                <li key={service.id} className="flex justify-between gap-4 text-body">
+                  <span>
+                    {service.name}
+                    <span className="block text-caption text-muted-foreground">
+                      {formatDuration(service.duration)}
+                    </span>
+                  </span>
+                  <span className="shrink-0">{priceText(service, money)}</span>
+                </li>
+              ))}
+              {promoDiscount > 0 ? (
+                <li className="flex justify-between text-body text-muted-foreground">
+                  <span>Promo {promo?.code}</span>
+                  <span>-{money(promoDiscount)}</span>
+                </li>
+              ) : null}
+              <li className="flex justify-between border-t border-border pt-2 text-body font-semibold">
+                <span>Total</span>
+                <span>
+                  {hasFrom ? "from " : ""}
+                  {money(total - promoDiscount)}
+                </span>
               </li>
-            ))}
-          </ul>
+            </ul>
+            <p className="mt-2 text-caption text-muted-foreground">Pay at the salon.</p>
+            <button
+              type="button"
+              onClick={() => {
+                const start = zonedToUtc(day, slot ?? 0, tz);
+                downloadCalendarFile({
+                  title: `${chosen.map((service) => service.name).join(", ")} at ${business.name}`,
+                  start,
+                  end: new Date(start.getTime() + duration * 60000),
+                  location: [business.name, formatAddress(contact.data?.location ?? business.location)]
+                    .filter(Boolean)
+                    .join(", "),
+                  description: manageToken
+                    ? `Manage your booking: ${window.location.origin}/book/manage/${manageToken}`
+                    : "",
+                });
+              }}
+              className={cn(
+                pillButton,
+                "mt-4 h-10 w-full border border-input bg-card text-body hover:bg-secondary",
+              )}
+            >
+              <CalendarPlus size={18} /> Add to calendar
+            </button>
+          </div>
+          <SalonContact
+            contact={contact.data ?? { name: business.name, phone: null, email: null, website: null, location: business.location }}
+            className="mt-4 divide-y divide-border rounded-xl px-5 py-2 text-left shadow-[inset_0_0_0_1px_var(--color-border)]"
+          />
           {manageToken ? (
             <div className="mt-6 rounded-xl bg-secondary p-4 text-left">
               <p className="text-body font-semibold">Save your booking link</p>
@@ -679,27 +763,35 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
             <>
               <h1 className="text-[2rem] font-bold leading-10">Select time</h1>
               <div className="mt-6 flex gap-2 overflow-x-auto pb-2">
-                {days.map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => {
-                      setDay(value);
-                      setSlot(null);
-                    }}
-                    className={cn(
-                      "flex w-16 shrink-0 flex-col items-center gap-1 rounded-xl py-3 transition-colors",
-                      value === day
-                        ? "bg-primary text-primary-foreground"
-                        : "shadow-[inset_0_0_0_1px_var(--color-border)] hover:bg-secondary",
-                    )}
-                  >
-                    <span className="text-caption">{dayLabel(value, { weekday: "short" })}</span>
-                    <span className="text-title font-semibold">
-                      {dayLabel(value, { day: "numeric" })}
-                    </span>
-                  </button>
-                ))}
+                {days.map((value) => {
+                  const closed = !availability.isLoading && isClosed(value);
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      disabled={closed}
+                      aria-label={`${dayLabel(value, { weekday: "long", day: "numeric", month: "long" })}${closed ? ", closed" : ""}`}
+                      onClick={() => {
+                        setDay(value);
+                        setSlot(null);
+                      }}
+                      className={cn(
+                        "flex w-16 shrink-0 flex-col items-center gap-1 rounded-xl py-3 transition-colors",
+                        closed
+                          ? "cursor-not-allowed bg-secondary text-muted-foreground"
+                          : value === day
+                            ? "bg-primary text-primary-foreground"
+                            : "shadow-[inset_0_0_0_1px_var(--color-border)] hover:bg-secondary",
+                      )}
+                    >
+                      <span className="text-caption">{dayLabel(value, { weekday: "short" })}</span>
+                      <span className={cn("text-title font-semibold", closed && "line-through decoration-1")}>
+                        {dayLabel(value, { day: "numeric" })}
+                      </span>
+                      {closed ? <span className="text-[0.6875rem] leading-none">Closed</span> : null}
+                    </button>
+                  );
+                })}
               </div>
               <p className="mt-4 text-heading font-semibold">
                 {dayLabel(day, { weekday: "long", day: "numeric", month: "long" })}
@@ -866,7 +958,7 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
             ) : null}
             {step !== "services" ? (
               <p className="mt-1 text-body text-muted-foreground">
-                {member ? `With ${member.first_name}` : "Any professional"}
+                {member ? `With ${fullName(member)}` : "Any professional"}
               </p>
             ) : null}
             <ul className="mt-4 space-y-3 border-t border-border pt-4">
