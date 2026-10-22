@@ -34,6 +34,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
+import { sendReceiptEmail } from "@/lib/email.functions";
 import { formatMoney } from "@/lib/format";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
@@ -502,9 +503,16 @@ export function SalesList() {
                     Print receipt
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onSelect={() =>
-                      toast("Emailing receipts needs an email provider. Coming in a later update.")
-                    }
+                    onSelect={() => {
+                      const sending = toast.loading("Sending receipt…");
+                      sendReceiptEmail({ data: { sale_id: viewing.id } })
+                        .then((result) =>
+                          result.sent
+                            ? toast.success(`Receipt sent to ${result.to}`, { id: sending })
+                            : toast.error("Email isn't set up yet. Add the Brevo settings to send receipts.", { id: sending }),
+                        )
+                        .catch((error: Error) => toast.error(error.message, { id: sending }));
+                    }}
                     className="rounded-lg px-3 py-2 text-body"
                   >
                     Email receipt

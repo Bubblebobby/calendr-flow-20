@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      email_log: {
+        Row: {
+          appointment_id: string | null
+          business_id: string
+          created_at: string
+          dedupe_key: string | null
+          id: string
+          kind: string
+          recipients: string[]
+          sale_id: string | null
+        }
+        Insert: {
+          appointment_id?: string | null
+          business_id: string
+          created_at?: string
+          dedupe_key?: string | null
+          id?: string
+          kind: string
+          recipients?: string[]
+          sale_id?: string | null
+        }
+        Update: {
+          appointment_id?: string | null
+          business_id?: string
+          created_at?: string
+          dedupe_key?: string | null
+          id?: string
+          kind?: string
+          recipients?: string[]
+          sale_id?: string | null
+        }
+        Relationships: []
+      }
       favorite_businesses: {
         Row: {
           user_id: string
