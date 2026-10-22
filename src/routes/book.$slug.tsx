@@ -27,6 +27,7 @@ import {
   type OpeningHours,
 } from "@/lib/booking-slots";
 import { downloadCalendarFile, formatAddress, fullName, useBusinessContact } from "@/lib/business-contact";
+import { sendBookingEmail } from "@/lib/email.functions";
 import { formatDuration, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useApplyBrand } from "@/lib/brand";
@@ -171,6 +172,7 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
   });
   const [error, setError] = useState<string | null>(null);
   const [manageToken, setManageToken] = useState<string | null>(null);
+  const [emailedTo, setEmailedTo] = useState<string | null>(null);
   const [promoInput, setPromoInput] = useState("");
   const [promo, setPromo] = useState<{
     code: string;
@@ -356,6 +358,17 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
       setError(null);
       const token = (data as { manage_token?: string } | null)?.manage_token ?? null;
       setManageToken(token);
+      setEmailedTo(null);
+      // Email the confirmation (and alert the salon). The booking is already made, so a failed
+      // email never blocks the confirmation screen.
+      const email = form.email.trim();
+      if (token) {
+        void sendBookingEmail({ data: { token, event: "confirmed" } })
+          .then((result) => {
+            if (result.sent && result.clientEmailed && email) setEmailedTo(email);
+          })
+          .catch(() => {});
+      }
       if (me) {
         void supabase
           .rpc("link_my_clients")
@@ -413,6 +426,11 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
           <p className="mt-2 text-body text-muted-foreground">
             {form.first_name.trim() ? `See you soon, ${form.first_name.trim()}.` : "See you soon."}
           </p>
+          {emailedTo ? (
+            <p className="mt-1 text-body text-muted-foreground">
+              We&apos;ve emailed your confirmation to <span className="font-medium text-foreground">{emailedTo}</span>.
+            </p>
+          ) : null}
           <div className="mt-6 rounded-xl p-5 text-left shadow-[inset_0_0_0_1px_var(--color-border)]">
             <p className="text-heading font-semibold">{business.name}</p>
             <p className="mt-1 text-body">

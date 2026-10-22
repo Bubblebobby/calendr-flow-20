@@ -19,6 +19,7 @@ import {
   type OpeningHours,
 } from "@/lib/booking-slots";
 import { formatAddress, fullName, useBusinessContact, type BusinessContact } from "@/lib/business-contact";
+import { sendBookingEmail } from "@/lib/email.functions";
 import { formatDuration, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { SkeletonPanel, SkeletonSlots } from "@/components/ui/skeletons";
@@ -173,6 +174,7 @@ function ManageView({ token, data }: { token: string; data: Manage }) {
       if (e) throw e;
     },
     onSuccess: () => {
+      void sendBookingEmail({ data: { token, event: "cancelled" } }).catch(() => {});
       setDone("cancelled");
       setMode("view");
       refresh();
@@ -365,6 +367,7 @@ function ManageView({ token, data }: { token: string; data: Manage }) {
             duration={duration}
             onCancel={() => setMode("view")}
             onDone={() => {
+              void sendBookingEmail({ data: { token, event: "rescheduled" } }).catch(() => {});
               setDone("rescheduled");
               setMode("view");
               refresh();
