@@ -6,6 +6,7 @@ import {
   ClientSegments,
   OnlineReputation,
 } from "@/components/clients/clients-extra-pages";
+import { sectionTitle } from "@/components/nav/nav-items";
 
 const TABS = ["list", "segments", "loyalty", "reviews"] as const;
 type ClientsTab = (typeof TABS)[number];
@@ -15,11 +16,11 @@ export const Route = createFileRoute("/_authenticated/clients")({
     typeof search["tab"] === "string" && (TABS as readonly string[]).includes(search["tab"])
       ? { tab: search["tab"] as ClientsTab }
       : {},
-  head: () => ({
+  head: ({ match }) => ({
     meta: [
-      { title: "Clients list — Bookly" },
+      { title: `${sectionTitle("clients", match.search.tab)} — Bookly` },
       { name: "description", content: "View, add, edit and delete your client's details." },
-      { property: "og:title", content: "Clients list — Bookly" },
+      { property: "og:title", content: `${sectionTitle("clients", match.search.tab)} — Bookly` },
       {
         property: "og:description",
         content: "View, add, edit and delete your client's details.",

@@ -605,7 +605,7 @@ export function SocialBookings() {
         "Promote your Book now button in posts and ads",
       ]}
       cta="Set up now"
-      onStart={later("Facebook and Instagram bookings")}
+      comingSoon
     />
   );
 }
@@ -620,7 +620,7 @@ export function ReserveWithGoogle() {
         "Bookings land in your Bookly calendar",
         "Reach clients searching for salons near them",
       ]}
-      onStart={later("Reserve with Google")}
+      comingSoon
     />
   );
 }
@@ -631,7 +631,7 @@ export function SmartWebsite() {
       title="A website that keeps itself up to date"
       body="A professional site for your business that updates as your services, team and prices change."
       bullets={["Your services, prices and team, always current", "Online booking built in", "Your own web address"]}
-      onStart={later("Smart website")}
+      comingSoon
     />
   );
 }

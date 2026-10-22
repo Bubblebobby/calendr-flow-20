@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PayRunsPage, TimesheetsPage } from "@/components/team/pay-pages";
 import { ScheduledShifts } from "@/components/team/scheduled-shifts";
 import { TeamMembersList } from "@/components/team/team-members-list";
+import { sectionTitle } from "@/components/nav/nav-items";
 
 const TABS = ["members", "shifts", "timesheets", "payruns"] as const;
 type TeamTab = (typeof TABS)[number];
@@ -12,9 +13,9 @@ export const Route = createFileRoute("/_authenticated/team")({
     typeof search["tab"] === "string" && (TABS as readonly string[]).includes(search["tab"])
       ? { tab: search["tab"] as TeamTab }
       : {},
-  head: () => ({
+  head: ({ match }) => ({
     meta: [
-      { title: "Team — Bookly" },
+      { title: `${sectionTitle("team", match.search.tab)} — Bookly` },
       { name: "description", content: "Team members, scheduled shifts, timesheets and pay runs." },
     ],
   }),

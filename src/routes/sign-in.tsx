@@ -6,12 +6,15 @@ import { AuthField, AuthShell, authPrimaryButton } from "@/components/auth-shell
 import { supabase } from "@/integrations/supabase/client";
 import { safeNext } from "@/lib/customer";
 
-type Search = { next?: string | undefined };
+// mode=signup opens straight on "Create your account" (the same emailed-link flow).
+type Search = { next?: string | undefined; mode?: "signup" | undefined };
 
 export const Route = createFileRoute("/sign-in")({
   ssr: false,
-  validateSearch: (search: Record<string, unknown>): Search =>
-    typeof search["next"] === "string" ? { next: search["next"] } : {},
+  validateSearch: (search: Record<string, unknown>): Search => ({
+    ...(typeof search["next"] === "string" ? { next: search["next"] } : {}),
+    ...(search["mode"] === "signup" ? { mode: "signup" as const } : {}),
+  }),
   head: () => ({
     meta: [
       { title: "Sign in — Bookly" },
@@ -35,7 +38,7 @@ function SignInPage() {
   const [error, setError] = useState<string | null>(null);
   const [wait, setWait] = useState(0);
   // Same passwordless flow either way; only the wording changes.
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup">(search.mode ?? "signin");
 
   // Already signed in: go straight on.
   useEffect(() => {

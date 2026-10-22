@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/format";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
+import { summarise, useBusinessReviews } from "@/lib/reviews";
 
 const DAY = 86_400_000;
 /** Fresha's "high spender" bar, scaled for naira. */
@@ -328,9 +329,7 @@ export function ClientLoyalty() {
         "Reward your clients with exclusive offers, discounts and incentives to celebrate their loyalty",
         "Allow clients to easily track their progress and redeem rewards online",
       ]}
-      onStart={() =>
-        toast("Client loyalty needs its own database tables, coming in a later update")
-      }
+      comingSoon
       art={
         <div className="rounded-3xl bg-card p-5 shadow-lg">
           <p className="text-caption text-muted-foreground">Gold member</p>
@@ -359,6 +358,12 @@ export function ClientLoyalty() {
 export function OnlineReputation() {
   const [tab, setTab] = useState<"overview" | "all">("overview");
   const [videoOpen, setVideoOpen] = useState(true);
+  const reviewsQuery = useBusinessReviews();
+  const reviews = reviewsQuery.data ?? [];
+  const { count, average } = summarise(reviews);
+  const recent = reviews.filter(
+    (review) => Date.now() - new Date(review.created_at).getTime() < 30 * 86_400_000,
+  ).length;
   return (
     <div className="space-y-6">
       <PageHeader
@@ -407,9 +412,9 @@ export function OnlineReputation() {
         <>
           <div className="grid gap-3 sm:grid-cols-3">
             {[
-              ["Overall rating", "0.0"],
-              ["Total reviews", "0"],
-              ["Response rate", "—"],
+              ["Overall rating", count ? average.toFixed(1) : "—"],
+              ["Total reviews", String(count)],
+              ["Last 30 days", String(recent)],
             ].map(([label, value]) => (
               <div key={label} className="rounded-2xl border border-border bg-card p-5">
                 <p className="text-body font-semibold">{label}</p>
@@ -418,16 +423,26 @@ export function OnlineReputation() {
             ))}
           </div>
           <div className="rounded-2xl border border-border bg-card p-5">
-            <p className="text-heading font-semibold">No reviews yet</p>
+            <p className="text-heading font-semibold">
+              {count ? `Based on ${count} review${count === 1 ? "" : "s"}` : "No reviews yet"}
+            </p>
             <div className="mt-4 space-y-2">
-              {[5, 4, 3, 2, 1].map((stars) => (
-                <div key={stars} className="flex items-center gap-3 text-body">
-                  <span className="w-3">{stars}</span>
-                  <Star size={14} weight="fill" className="text-[#f5b301]" />
-                  <div className="h-2 flex-1 rounded-full bg-secondary" />
-                  <span className="w-4 text-right text-muted-foreground">0</span>
-                </div>
-              ))}
+              {[5, 4, 3, 2, 1].map((stars) => {
+                const n = reviews.filter((review) => review.rating === stars).length;
+                return (
+                  <div key={stars} className="flex items-center gap-3 text-body">
+                    <span className="w-3">{stars}</span>
+                    <Star size={14} weight="fill" className="text-[#f5b301]" />
+                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-secondary">
+                      <div
+                        className="h-full rounded-full bg-[#f5b301]"
+                        style={{ width: count ? `${(n / count) * 100}%` : 0 }}
+                      />
+                    </div>
+                    <span className="w-6 text-right tabular-nums text-muted-foreground">{n}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
           <div className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-card p-5">
@@ -449,6 +464,38 @@ export function OnlineReputation() {
             </button>
           </div>
         </>
+      ) : reviews.length ? (
+        <ul className="space-y-3">
+          {reviews.map((review) => (
+            <li key={review.id} className="rounded-2xl border border-border bg-card p-5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-1" aria-label={`${review.rating} out of 5 stars`}>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <Star
+                      key={n}
+                      size={16}
+                      weight="fill"
+                      className={n <= review.rating ? "text-[#f5b301]" : "text-secondary"}
+                    />
+                  ))}
+                </div>
+                <span className="text-caption text-muted-foreground">
+                  {new Date(review.created_at).toLocaleDateString(undefined, {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </span>
+              </div>
+              {review.comment ? <p className="mt-3 text-body">{review.comment}</p> : null}
+              <p className="mt-3 text-caption text-muted-foreground">
+                {[review.author_name, review.services, review.team_member_name && `with ${review.team_member_name}`]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+            </li>
+          ))}
+        </ul>
       ) : (
         <div className="flex flex-col items-center rounded-2xl border border-border bg-card px-6 py-16 text-center">
           <Star size={40} weight="duotone" className="text-primary" />

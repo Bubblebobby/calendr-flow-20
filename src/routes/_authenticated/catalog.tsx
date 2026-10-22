@@ -4,6 +4,7 @@ import { MembershipsPage, PackagesPage } from "@/components/sales/prepaid-pages"
 import { StockOrdersPage, StocktakesPage, SuppliersPage } from "@/components/catalog/inventory-pages";
 import { ProductsPage } from "@/components/catalog/products-pages";
 import { ServiceMenu } from "@/components/catalog/service-menu";
+import { sectionTitle } from "@/components/nav/nav-items";
 
 const TABS = ["services", "packages", "memberships", "products", "stocktakes", "orders", "suppliers"] as const;
 type CatalogTab = (typeof TABS)[number];
@@ -13,11 +14,11 @@ export const Route = createFileRoute("/_authenticated/catalog")({
     typeof search["tab"] === "string" && (TABS as readonly string[]).includes(search["tab"])
       ? { tab: search["tab"] as CatalogTab }
       : {},
-  head: () => ({
+  head: ({ match }) => ({
     meta: [
-      { title: "Service menu — Bookly" },
+      { title: `${sectionTitle("catalog", match.search.tab)} — Bookly` },
       { name: "description", content: "View and manage the services offered by your business." },
-      { property: "og:title", content: "Service menu — Bookly" },
+      { property: "og:title", content: `${sectionTitle("catalog", match.search.tab)} — Bookly` },
       { property: "og:description", content: "View and manage the services offered by your business." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

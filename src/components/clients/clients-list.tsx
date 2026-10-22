@@ -37,6 +37,7 @@ import { businessLocale, formatMoney } from "@/lib/format";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
 import { csvCell } from "@/lib/csv";
+import { summarise, useBusinessReviews } from "@/lib/reviews";
 import { SkeletonRows } from "@/components/ui/skeletons";
 
 type Client = {
@@ -235,6 +236,13 @@ export function ClientsList() {
     month: "short",
     day: "numeric",
   });
+  const reviewsQuery = useBusinessReviews();
+  const reviewLabel = (clientId: string) => {
+    const mine = (reviewsQuery.data ?? []).filter((review) => review.client_id === clientId);
+    if (!mine.length) return "-";
+    const { count, average } = summarise(mine);
+    return `★ ${average.toFixed(1)} (${count})`;
+  };
   const salesLabel = (clientId: string) =>
     business
       ? formatMoney(salesQuery.data?.get(clientId) ?? 0, business.currency, business.country)
@@ -515,7 +523,7 @@ export function ClientsList() {
                     ? [client.phone_country_code, client.phone].filter(Boolean).join(" ")
                     : "-"}
                 </td>
-                <td className="px-4 py-4">-</td>
+                <td className="px-4 py-4">{reviewLabel(client.id)}</td>
                 <td className="px-4 py-4">{salesLabel(client.id)}</td>
                 <td className="px-4 py-4">{dateFormatter.format(new Date(client.created_at))}</td>
                 <td className="px-4 py-4" onClick={(event) => event.stopPropagation()}>

@@ -303,7 +303,7 @@ export function BlastCampaigns() {
         "Send to everyone, a client segment or chosen clients",
         "See how each campaign performs in real time",
       ]}
-      onStart={later("Blast campaigns")}
+      comingSoon
     />
   );
 }
@@ -335,7 +335,7 @@ export function SmartPricing() {
         "Raise prices at peak times",
         "See the effect on bookings and sales",
       ]}
-      onStart={later("Smart pricing")}
+      comingSoon
     />
   );
 }

@@ -1157,7 +1157,7 @@ const FOOTER = [
     links: [
       ["Book an appointment", "/sign-in"],
       ["Find a salon", "/discover"],
-      ["Create an account", "/create-account"],
+      ["Create an account", "/sign-in?mode=signup"],
     ],
   },
   {
