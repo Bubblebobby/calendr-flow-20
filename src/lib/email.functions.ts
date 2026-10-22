@@ -230,7 +230,7 @@ export const sendReceiptEmail = createServerFn({ method: "POST" })
 
     const { data: sale, error } = await supabaseAdmin
       .from("sales")
-      .select("*, clients(first_name, last_name, email), sale_items(*), businesses(*)")
+      .select("*, clients(first_name, last_name, email), team_members(first_name, last_name), sale_items(*), businesses(*)")
       .eq("id", data.sale_id)
       .single();
     if (error) fail("Could not load the sale.", error);
@@ -247,7 +247,10 @@ export const sendReceiptEmail = createServerFn({ method: "POST" })
     if ((count ?? 0) >= RECEIPTS_PER_HOUR) fail("This receipt was emailed a few times already. Try again in an hour.");
 
     const business = sale.businesses as unknown as BusinessRow;
-    const { data: gifts } = await supabaseAdmin.from("gift_card_redemptions").select("amount").eq("sale_id", sale.id);
+    const { data: gifts } = await supabaseAdmin
+      .from("gift_card_redemptions")
+      .select("amount, gift_cards(code)")
+      .eq("sale_id", sale.id);
     const giftPaid = (gifts ?? []).reduce((sum, g) => sum + Number(g.amount), 0);
     const items = [...(sale.sale_items as { description: string; price: number; quantity: number; sort_order: number }[])].sort(
       (a, b) => a.sort_order - b.sort_order,
@@ -256,6 +259,16 @@ export const sendReceiptEmail = createServerFn({ method: "POST" })
     const total = Number(sale.total) + tip;
     const tz = business.timezone ?? "Africa/Lagos";
     const method = METHOD[sale.payment_method] ?? sale.payment_method;
+    const payments = [
+      ...(gifts ?? []).map((g) => ({
+        label: `Gift card ${(g.gift_cards as unknown as { code: string } | null)?.code ?? ""}`.trim(),
+        amount: Number(g.amount),
+      })),
+      ...(total - giftPaid > 0.004 ? [{ label: method[0]!.toUpperCase() + method.slice(1), amount: total - giftPaid }] : []),
+    ];
+    const date = new Date(sale.sale_date);
+    const logoPath = (business as BusinessRow & { logo_path?: string | null }).logo_path;
+    const app = appUrl();
 
     const logId = await claim({ business_id: business.id, sale_id: sale.id, kind: "receipt", dedupe_key: null });
     if (!logId) fail("Could not send the email.");
@@ -266,16 +279,22 @@ export const sendReceiptEmail = createServerFn({ method: "POST" })
         ...(business.contact_email ? { replyTo: { email: business.contact_email, name: business.name } } : {}),
         ...templates.receipt({
           salon: salonOf(business),
+          logoUrl: logoPath && process.env["SUPABASE_URL"] ? `${process.env["SUPABASE_URL"]}/storage/v1/object/public/business-logos/${logoPath}` : null,
+          bookUrl: business.booking_slug ? `${app}/book/${business.booking_slug}` : null,
           clientFirstName: client.first_name || "there",
+          clientName: fullName(client),
+          servedBy: fullName(sale.team_members as { first_name: string; last_name: string | null } | null) || null,
           number: sale.id.slice(0, 8).toUpperCase(),
-          date: new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: tz }).format(new Date(sale.sale_date)),
+          date: new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: tz }).format(date),
+          time: new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: tz }).format(date),
           items: items.map((i) => ({ description: i.description, quantity: i.quantity, amount: Number(i.price) * i.quantity })),
           subtotal: items.reduce((sum, i) => sum + Number(i.price) * i.quantity, 0),
           discount: Number(sale.discount_amount ?? 0),
           tip,
           tax: Number(sale.tax_amount ?? 0),
           total,
-          paidBy: giftPaid > 0.004 ? (giftPaid >= total - 0.004 ? "gift card" : `gift card and ${method}`) : method,
+          payments,
+          refunded: sale.status === "refunded",
           footer: business.receipt_footer ?? null,
           money: (n) => formatMoney(n, business.currency, business.country),
         }),

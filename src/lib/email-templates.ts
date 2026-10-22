@@ -33,16 +33,23 @@ export type BookingDetails = {
 
 export type ReceiptDetails = {
   salon: Salon;
+  /** Public URL of the salon's logo, if it uploaded one. */
+  logoUrl: string | null;
+  bookUrl: string | null;
   clientFirstName: string;
+  clientName: string;
+  servedBy: string | null;
   number: string;
   date: string;
+  time: string;
   items: { description: string; quantity: number; amount: number }[];
   subtotal: number;
   discount: number;
   tip: number;
   tax: number;
   total: number;
-  paidBy: string;
+  payments: { label: string; amount: number }[];
+  refunded: boolean;
   footer: string | null;
   money: (amount: number) => string;
 };
@@ -190,49 +197,166 @@ export function salonAlert(event: "confirmed" | "cancelled" | "rescheduled", b: 
   };
 }
 
+/*
+ * The receipt has its own layout: a grey header with the date and a large thank-you, a big total,
+ * line items, payments, additional information, a "Need help?" panel and a dark footer. Plain
+ * system fonts, with a dark-mode stylesheet for mail apps that support it.
+ */
 export function receipt(r: ReceiptDetails): Rendered {
+  const GREY = "#e8e8e8";
+  const RULE = "#f3f3f3";
+  const SOFT = "#4b4b4b";
+  const font = `font-family:${FONT}`;
+  const divider = (top = 0, bottom = 0) =>
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:${top}px 0 ${bottom}px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td class="rule" style="font-size:1px;line-height:1px;background-color:${RULE}">&nbsp;</td></tr></table></td></tr></table>`;
+  const line = (label: string, value: string, opts: { muted?: boolean; green?: boolean } = {}) =>
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+<td class="${opts.muted || opts.green ? "soft" : ""}" style="${font};font-weight:500;font-size:16px;line-height:20px;padding:15px 12px 15px 0;${opts.muted || opts.green ? `color:${SOFT};` : ""}">${label}</td>
+<td align="right" class="${opts.green ? "" : opts.muted ? "soft" : ""}" style="${font};font-weight:500;font-size:16px;line-height:20px;padding:15px 0;text-align:right;white-space:nowrap;${opts.green ? "color:#18773a;" : opts.muted ? `color:${SOFT};` : ""}">${value}</td>
+</tr></table>`;
+  const info = (label: string, value: string) =>
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+<td style="width:40%;${font};font-weight:500;font-size:16px;line-height:20px;padding-right:16px">${label}</td>
+<td style="width:60%;${font};font-weight:500;font-size:16px;line-height:20px;text-align:right">${value}</td>
+</tr></table>${divider(16, 16)}`;
+  const panelTitle = (text: string, bottom: number) =>
+    `<p style="margin:0;padding:16px 0 ${bottom}px;${font};font-weight:700;font-size:24px;line-height:32px">${text}</p>`;
+
   const items = r.items
-    .map((i) => row(`${esc(i.description)}${i.quantity > 1 ? ` <span style="color:${MUTED}">× ${i.quantity}</span>` : ""}`, esc(r.money(i.amount))))
+    .map((i) => line(`${esc(i.description)}${i.quantity > 1 ? ` <span class="soft" style="color:${SOFT}">× ${i.quantity}</span>` : ""}`, esc(r.money(i.amount))))
     .join("");
-  const totals = [
-    r.discount || r.tip ? row(`<span style="color:${MUTED}">Subtotal</span>`, `<span style="color:${MUTED}">${esc(r.money(r.subtotal))}</span>`) : "",
-    r.discount ? row(`<span style="color:${MUTED}">Discount</span>`, `<span style="color:${MUTED}">-${esc(r.money(r.discount))}</span>`) : "",
-    r.tip ? row(`<span style="color:${MUTED}">Tip</span>`, `<span style="color:${MUTED}">${esc(r.money(r.tip))}</span>`) : "",
-    row("Total", esc(r.money(r.total)), true),
-    r.tax ? row(`<span style="color:${MUTED};font-size:13px">Includes tax</span>`, `<span style="color:${MUTED};font-size:13px">${esc(r.money(r.tax))}</span>`) : "",
+  const adjustments = [
+    r.discount || r.tip ? line("Subtotal", esc(r.money(r.subtotal)), { muted: true }) : "",
+    r.discount ? line("Discount", `-${esc(r.money(r.discount))}`, { green: true }) : "",
+    r.tip ? line("Tip", esc(r.money(r.tip)), { muted: true }) : "",
+    r.tax ? line("Includes tax", esc(r.money(r.tax)), { muted: true }) : "",
   ].join("");
-  const mono = "font-family:'SFMono-Regular',Menlo,Consolas,monospace";
-  return {
-    subject: `Your receipt from ${r.salon.name}`,
-    html: layout({
-      preheader: `${r.money(r.total)} paid at ${r.salon.name}`,
-      heading: "Thank you!",
-      intro: `Hi ${esc(r.clientFirstName)}, here's your receipt.`,
-      salon: r.salon,
-      body: `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${LINE};border-radius:12px"><tr><td style="padding:18px 20px">
+  const payments = r.payments
+    .map(
+      (p) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:12px 0">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-<td style="${mono};font-size:12px;letter-spacing:0.06em;color:${MUTED}">RECEIPT ID<br><span style="font-size:15px;letter-spacing:0;color:${INK}">#${esc(r.number)}</span></td>
-<td align="right" style="${mono};font-size:12px;letter-spacing:0.06em;color:${MUTED}">DATE<br><span style="font-size:15px;letter-spacing:0;color:${INK}">${esc(r.date)}</span></td>
-</tr></table>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;border-top:1px solid ${LINE}">${items}</table>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;border-top:1px solid ${LINE}">${totals}</table>
-<p style="margin:12px 0 0;font-size:14px;color:${MUTED}">Paid by ${esc(r.paidBy)}</p>
-</td></tr></table>${r.footer ? `<p style="margin:20px 0 0;font-size:14px;line-height:20px;color:${MUTED};white-space:pre-line">${esc(r.footer)}</p>` : ""}${salonBlock(r.salon)}`,
-    }),
+<td style="text-align:left;${font};font-weight:500;font-size:16px;line-height:20px">${esc(p.label)}</td>
+<td align="right" style="text-align:right;${font};font-weight:500;font-size:16px;line-height:20px;white-space:nowrap">${esc(r.money(p.amount))}</td>
+</tr><tr>
+<td class="soft" colspan="2" style="padding-top:2px;${font};font-size:14px;line-height:20px;color:${SOFT}">${esc(r.date)} ${esc(r.time)}</td>
+</tr></table></td></tr></table>`,
+    )
+    .join("");
+  const contactHref = r.salon.email ? `mailto:${r.salon.email}` : r.salon.phone ? `tel:${r.salon.phone.replace(/[^\d+]/g, "")}` : null;
+  const help = contactHref
+    ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="panel" style="margin-top:16px;border-collapse:separate;border:2px solid ${RULE};border-radius:16px"><tr><td style="padding:16px">
+<p style="margin:0;padding-bottom:16px;${font};font-weight:700;font-size:20px;line-height:28px">Need help?</p>
+<p style="margin:0;padding-bottom:24px;${font};font-size:14px;line-height:20px">Questions about this visit? ${esc(r.salon.name)} is happy to help.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td class="panel-button" align="center" style="background-color:${RULE};border-radius:8px"><a href="${esc(contactHref)}" style="display:block;padding:12px 16px;${font};font-weight:500;font-size:14px;line-height:16px;color:${INK};text-decoration:none">Contact ${esc(r.salon.name)}</a></td></tr></table>
+</td></tr></table>`
+    : "";
+  const brand = r.logoUrl
+    ? `<img src="${esc(r.logoUrl)}" alt="${esc(r.salon.name)}" height="44" style="display:block;height:44px;width:auto;max-width:180px;border:0;border-radius:8px">`
+    : `<span style="${font};font-weight:700;font-size:24px;line-height:44px;letter-spacing:-0.02em">${esc(r.salon.name)}</span>`;
+  const footerLinks = [
+    r.bookUrl ? `<a href="${esc(r.bookUrl)}" style="color:#ffffff;text-decoration:underline">Book again</a>` : "",
+    r.salon.website ? `<a href="${esc(r.salon.website)}" style="color:#ffffff;text-decoration:underline">Website</a>` : "",
+  ]
+    .filter(Boolean)
+    .map((link, i) => `<p style="margin:${i ? 16 : 0}px 0 0;${font};font-weight:500;font-size:14px;line-height:20px">${link}</p>`)
+    .join("");
+  const headline = r.refunded ? `Your refund from ${r.salon.name}` : `Thanks for visiting, ${r.clientFirstName}`;
+  const sub = r.refunded ? "Here are the details of your refund." : `Here's your receipt from ${r.salon.name}.`;
+
+  const html = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark"><meta name="supported-color-schemes" content="light dark">
+<title>${esc(headline)}</title>
+<style>
+body{margin:0;padding:0;-webkit-text-size-adjust:100%}
+table,td{border-collapse:collapse}
+@media (prefers-color-scheme:dark){
+ .header{background-color:#292929!important;color:#ffffff!important}
+ .header .soft{color:#dddddd!important}
+ .body-root{background-color:#161616!important;color:#ffffff!important}
+ .soft{color:#ababab!important}
+ .rule{background-color:#292929!important}
+ .panel{border-color:#292929!important}
+ .panel-button{background-color:#383838!important}
+ .panel-button a{color:#dedede!important}
+}
+@media only screen and (max-width:599px){
+ .pad{padding-left:24px!important;padding-right:24px!important}
+ .headline{font-size:32px!important;line-height:40px!important}
+ .desktop{display:none!important}
+}
+</style></head>
+<body style="margin:0;padding:0;background-color:#d6d6d5">
+<span style="display:none;max-height:0;overflow:hidden;opacity:0">${esc(`${r.money(r.total)} at ${r.salon.name}, ${r.date}`)}</span>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#d6d6d5"><tr><td align="center">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px">
+<tr><td class="header" style="background-color:${GREY};color:${INK}">
+ <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+  <td class="pad" style="padding:32px 0 8px 48px;vertical-align:middle">${brand}</td>
+  <td class="pad soft" align="right" style="padding:32px 48px 8px 0;vertical-align:top;${font};font-weight:500;font-size:12px;line-height:16px;color:${SOFT};white-space:nowrap">${esc(r.date)}<br>${esc(r.time)}</td>
+ </tr></table>
+ <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+  <td class="pad" style="padding:24px 16px 32px 48px">
+   <p class="headline" style="margin:0;${font};font-weight:700;font-size:40px;line-height:48px;letter-spacing:-0.02em">${esc(headline)}</p>
+   <p style="margin:16px 0 0;${font};font-size:18px;line-height:28px">${esc(sub)}</p>
+  </td>
+  <td class="desktop" align="right" style="padding:0 48px 32px 0;font-size:96px;line-height:1;vertical-align:bottom">${r.refunded ? "" : "&#127881;"}</td>
+ </tr></table>
+</td></tr>
+<tr><td class="body-root pad" style="background-color:#ffffff;color:${INK};padding:32px 48px">
+ <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+  <td style="${font};font-weight:700;font-size:32px;line-height:40px">Total</td>
+  <td align="right" style="${font};font-weight:700;font-size:32px;line-height:40px;white-space:nowrap">${esc(r.money(r.total))}</td>
+ </tr></table>
+ ${divider(24, 0)}
+ ${items}
+ ${adjustments ? divider(0, 0) + adjustments : ""}
+ ${divider(0, 16)}
+ ${panelTitle("Payments", 8)}
+ ${payments}
+ ${divider(0, 8)}
+ ${panelTitle("Additional information", 24)}
+ ${info("Receipt", `#${esc(r.number)}`)}
+ ${info("Client", esc(r.clientName))}
+ ${r.servedBy ? info("Served by", esc(r.servedBy)) : ""}
+ ${r.footer ? `<p class="soft" style="margin:8px 0 0;${font};font-size:14px;line-height:20px;color:${SOFT};white-space:pre-line">${esc(r.footer)}</p>` : ""}
+ ${help}
+</td></tr>
+<tr><td class="pad" style="background-color:#000000;padding:32px 48px">
+ <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+  <td valign="top" style="${font};font-size:14px;line-height:20px;color:#a6a6a6">${esc(r.salon.name)}${r.salon.address ? `<br>${esc(r.salon.address)}` : ""}${r.salon.phone ? `<br>${esc(r.salon.phone)}` : ""}<br><br>Sent with Bookly</td>
+  <td valign="top" align="right" style="text-align:right;white-space:nowrap">${footerLinks}</td>
+ </tr></table>
+</td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
+
+  return {
+    subject: r.refunded ? `Your refund from ${r.salon.name}` : `Your receipt from ${r.salon.name}`,
+    html,
     text: [
-      `Receipt #${r.number} from ${r.salon.name}`,
-      r.date,
+      headline,
+      `${r.date} ${r.time}`,
+      "",
+      `Total: ${r.money(r.total)}`,
       "",
       ...r.items.map((i) => `${i.description}${i.quantity > 1 ? ` x ${i.quantity}` : ""}: ${r.money(i.amount)}`),
-      "",
       r.discount ? `Discount: -${r.money(r.discount)}` : "",
       r.tip ? `Tip: ${r.money(r.tip)}` : "",
-      `Total: ${r.money(r.total)}`,
       r.tax ? `Includes tax: ${r.money(r.tax)}` : "",
-      `Paid by ${r.paidBy}`,
+      "",
+      "Payments",
+      ...r.payments.map((p) => `${p.label}: ${r.money(p.amount)}`),
+      "",
+      `Receipt #${r.number}`,
+      `Client: ${r.clientName}`,
+      r.servedBy ? `Served by: ${r.servedBy}` : "",
       r.footer ? `\n${r.footer}` : "",
+      "",
+      [r.salon.name, r.salon.address, r.salon.phone, r.salon.email].filter(Boolean).join("\n"),
     ]
-      .filter((l) => l !== "")
+      .filter((l, i, all) => l !== "" || all[i - 1] !== "")
       .join("\n"),
   };
 }
