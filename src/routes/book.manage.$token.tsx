@@ -17,6 +17,7 @@ import {
 } from "@/lib/booking-slots";
 import { formatDuration, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { SkeletonPanel, SkeletonSlots } from "@/components/ui/skeletons";
 
 export const Route = createFileRoute("/book/manage/$token")({
   ssr: false,
@@ -78,7 +79,12 @@ function ManageBookingPage() {
     },
   });
 
-  if (valid && data.isLoading) return <Shell>Loading your booking…</Shell>;
+  if (valid && data.isLoading)
+    return (
+      <Shell>
+        <SkeletonPanel label="Loading your booking" />
+      </Shell>
+    );
   if (!valid || !data.data) {
     return (
       <Shell>
@@ -471,7 +477,9 @@ function Reschedule({
         ))}
       </div>
       {busy.isLoading || shifts.isLoading ? (
-        <p className="mt-4 text-body text-muted-foreground">Checking availability…</p>
+        <div className="mt-4">
+          <SkeletonSlots label="Checking availability" />
+        </div>
       ) : slots.length === 0 ? (
         <p className="mt-4 text-body text-muted-foreground">
           No times available on {label(day, { weekday: "long", day: "numeric", month: "long" })}.

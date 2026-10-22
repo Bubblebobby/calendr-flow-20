@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { SkeletonList } from "@/components/ui/skeletons";
 
 export type TeamMember = {
   id: string;
@@ -223,7 +224,7 @@ export function TeamMembersSection({
         </label>
 
         {loading ? (
-          <p className="py-4 text-body text-muted-foreground">Loading team…</p>
+          <SkeletonList rows={3} thumb="round" className="py-2" label="Loading team" />
         ) : members.length === 0 ? (
           <p className="py-4 text-body text-muted-foreground">
             No team members yet — add one below.

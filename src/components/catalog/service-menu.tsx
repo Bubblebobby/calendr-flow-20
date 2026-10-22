@@ -51,6 +51,7 @@ import { formatDuration, formatMoney } from "@/lib/format";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
 import { csvCell } from "@/lib/csv";
+import { SkeletonList } from "@/components/ui/skeletons";
 
 type Category = {
   id: string;
@@ -604,7 +605,7 @@ export function ServiceMenu() {
         {/* Services */}
         <section className="min-w-0 space-y-8">
           {loading ? (
-            <p className="text-body text-muted-foreground">Loading services…</p>
+            <SkeletonList rows={6} label="Loading services" />
           ) : groups.length === 0 || groups.every((group) => group.items.length === 0 && !group.category) ? (
             <EmptyMenu
               filtered={Boolean(search.trim()) || filterCount > 0}

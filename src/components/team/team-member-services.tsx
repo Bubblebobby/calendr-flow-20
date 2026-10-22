@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDuration, formatMoney } from "@/lib/format";
+import { SkeletonList } from "@/components/ui/skeletons";
 
 export type CatalogService = {
   id: string;
@@ -190,7 +191,7 @@ export function TeamMemberServicesSection({
         </label>
 
         {loading ? (
-          <p className="py-6 text-body text-muted-foreground">Loading services…</p>
+          <SkeletonList rows={4} className="py-4" label="Loading services" />
         ) : groups.length === 0 ? (
           <p className="py-6 text-body text-muted-foreground">
             {services.length === 0

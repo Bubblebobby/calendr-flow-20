@@ -27,6 +27,7 @@ import {
   type ReportCategory,
   type Row,
 } from "./report-definitions";
+import { SkeletonRows, SkeletonStats } from "@/components/ui/skeletons";
 
 const FAVOURITES_KEY = "bookly:report-favourites";
 
@@ -294,11 +295,7 @@ export function ReportPage({ reportId }: { reportId: string }) {
               </thead>
               <tbody>
                 {result.isLoading ? (
-                  <tr>
-                    <td colSpan={report.columns.length} className="px-4 py-12 text-center text-muted-foreground">
-                      Loading report…
-                    </td>
-                  </tr>
+                  <SkeletonRows cols={report.columns.length} label="Loading report" />
                 ) : result.isError ? (
                   <tr>
                     <td colSpan={report.columns.length} className="px-4 py-12 text-center text-destructive">
@@ -398,7 +395,7 @@ function PerformanceDashboard({ range, onRange }: { range: DateRange; onRange: (
         <DateRangeButton value={range} onChange={onRange} />
       </div>
       {stats.isLoading ? (
-        <p className="text-body text-muted-foreground">Loading…</p>
+        <SkeletonStats label="Loading dashboard" />
       ) : stats.isError ? (
         <p className="text-body text-destructive">Couldn&apos;t load the dashboard.</p>
       ) : (

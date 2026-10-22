@@ -21,6 +21,7 @@ import { TaxRateSelect } from "@/components/settings/tax-settings";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
 import { csvCell } from "@/lib/csv";
+import { SkeletonRows } from "@/components/ui/skeletons";
 
 export const INVENTORY_DB_NOTICE =
   "Products and inventory need a database update first: run notes/supabase-update-2026-10-19.sql in Supabase.";
@@ -386,10 +387,12 @@ export function ProductsPage() {
                 </td>
               </tr>
             ))}
-            {list.length === 0 ? (
+            {products.isLoading ? (
+              <SkeletonRows cols={5} avatar label="Loading products" />
+            ) : list.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-4 py-12 text-center text-muted-foreground">
-                  {products.isLoading ? "Loading products…" : "No products match."}
+                  No products match.
                 </td>
               </tr>
             ) : null}

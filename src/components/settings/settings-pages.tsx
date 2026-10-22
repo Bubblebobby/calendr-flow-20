@@ -27,6 +27,7 @@ import { EMPTY_ADDRESS, type BusinessAddress } from "@/lib/google-maps";
 import { TIME_OFF_TYPES, isoDay } from "@/lib/team-shifts";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
+import { SkeletonForm } from "@/components/ui/skeletons";
 
 type PageDef = { key: string; label: string };
 type SectionDef = {
@@ -411,7 +412,7 @@ function BusinessDetails() {
     },
     onError: (error: Error) => toast.error(error.message),
   });
-  if (!row.data) return <p className="text-body text-muted-foreground">Loading…</p>;
+  if (!row.data) return <SkeletonForm fields={4} label="Loading settings" />;
   const country = countryByCode(row.data.country);
   return (
     <PageBlock
@@ -474,7 +475,7 @@ function BusinessLocation() {
     },
     onError: (error: Error) => toast.error(error.message),
   });
-  if (!row.data) return <p className="text-body text-muted-foreground">Loading…</p>;
+  if (!row.data) return <SkeletonForm fields={4} label="Loading settings" />;
   const input = (key: keyof BusinessAddress, label: string, required = false) => (
     <label className="block text-body font-semibold">
       {label}

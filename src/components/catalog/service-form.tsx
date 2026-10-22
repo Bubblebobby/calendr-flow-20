@@ -43,6 +43,7 @@ import {
 import { useBusiness } from "@/lib/use-business";
 import { TaxRateSelect, useTaxRates } from "@/components/settings/tax-settings";
 import { cn } from "@/lib/utils";
+import { SkeletonFormPage } from "@/components/ui/skeletons";
 
 const SORTED_TREATMENT_GROUPS = [...TREATMENT_GROUPS].sort((a, b) =>
   a.label.localeCompare(b.label),
@@ -328,8 +329,8 @@ export function ServiceForm({ serviceId, initialCategoryId }: { serviceId?: stri
 
   if (isEdit && serviceQuery.isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <p className="text-base text-muted-foreground">Loading service…</p>
+      <div className="min-h-screen bg-background">
+        <SkeletonFormPage label="Loading service" />
       </div>
     );
   }
