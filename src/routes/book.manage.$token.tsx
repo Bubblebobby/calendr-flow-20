@@ -5,6 +5,8 @@ import { CalendarBlank, CheckCircle, MapPin, XCircle } from "@phosphor-icons/rea
 
 import { pillButton } from "@/components/sales/list-ui";
 import { supabase } from "@/integrations/supabase/client";
+import { useApplyBrand } from "@/lib/brand";
+import { SalonLogo } from "@/components/customer/salon-logo";
 import { policySummary, type BookingPolicy } from "@/lib/booking-policy";
 import {
   formatClock,
@@ -49,6 +51,8 @@ type Manage = {
     timezone: string;
     location: { address?: string; city?: string } | null;
     hours: OpeningHours[];
+    brand_color?: string | null;
+    logo_path?: string | null;
   };
   policy: BookingPolicy;
 };
@@ -103,6 +107,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 function ManageView({ token, data }: { token: string; data: Manage }) {
   const queryClient = useQueryClient();
   const { appointment, business, policy } = data;
+  useApplyBrand(business.brand_color);
   const tz = business.timezone;
   const [mode, setMode] = useState<"view" | "cancel" | "reschedule">("view");
   const [reason, setReason] = useState("");
@@ -167,6 +172,7 @@ function ManageView({ token, data }: { token: string; data: Manage }) {
         ) : null}
 
         <div className="rounded-2xl bg-card p-6 shadow-[inset_0_0_0_1px_var(--color-border)] sm:p-8">
+          <SalonLogo path={business.logo_path} name={business.name} size={48} className="mb-3" />
           <p className="text-caption font-semibold uppercase tracking-wide text-muted-foreground">
             {business.name}
           </p>
