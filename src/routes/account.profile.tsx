@@ -7,6 +7,7 @@ import { solidPill } from "@/components/customer/customer-ui";
 import { supabase } from "@/integrations/supabase/client";
 import { initialsOf, splitName, useCustomer } from "@/lib/customer";
 import { cn } from "@/lib/utils";
+import { SkeletonForm } from "@/components/ui/skeletons";
 
 export const Route = createFileRoute("/account/profile")({
   head: () => ({ meta: [{ title: "Profile — Bookly" }] }),
@@ -62,7 +63,7 @@ function ProfilePage() {
     onError: () => toast.error("Couldn't save your profile"),
   });
 
-  if (!me) return <p className="text-body text-muted-foreground">Loading…</p>;
+  if (!me) return <SkeletonForm fields={5} label="Loading profile" />;
 
   return (
     <div className="max-w-2xl space-y-6">

@@ -132,7 +132,7 @@ const STATUS_HEADER: Record<string, string> = {
   confirmed: "bg-[#2d76ec]",
   arrived: "bg-[#c77700]",
   started: "bg-[#1f8a3e]",
-  completed: "bg-[#5b5b5b]",
+  completed: "bg-[#1f8a3e]",
   no_show: "bg-[#d92d20]",
   cancelled: "bg-[#d92d20]",
 };
@@ -1177,7 +1177,14 @@ export function AppointmentPanel({
             {
               title: "Appointment created",
               at: created,
-              detail: `Booked by ${existing?.created_by && existing.created_by === currentUserId ? "you" : "a team member"}, reference ${existing!.id.slice(0, 8).toUpperCase()}`,
+              // Online bookings (create_booking) don't record a creator; desk bookings always do.
+              detail: `${
+                !existing?.created_by
+                  ? "Booked online by the client"
+                  : existing.created_by === currentUserId
+                    ? "Booked by you"
+                    : "Booked by a team member"
+              }, reference ${existing!.id.slice(0, 8).toUpperCase()}`,
             },
           ]
         : []),

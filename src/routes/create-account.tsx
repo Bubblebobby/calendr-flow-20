@@ -19,7 +19,8 @@ export const Route = createFileRoute("/create-account")({
   beforeLoad: async ({ search }) => {
     const next = safeNext(search.next) ?? "/account/appointments";
     const { data } = await supabase.auth.getSession();
-    if (!data.session) throw redirect({ to: "/sign-in", search: { next } });
+    // Not signed in yet: start at sign-up (the emailed link brings them back here).
+    if (!data.session) throw redirect({ to: "/sign-in", search: { next, mode: "signup" } });
     const { data: profile } = await supabase
       .from("profiles")
       .select("user_type, onboarded_at")

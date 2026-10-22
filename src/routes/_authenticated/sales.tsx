@@ -9,6 +9,7 @@ import {
   PaymentsList,
   RegisterIntro,
 } from "@/components/sales/sales-extra-pages";
+import { sectionTitle } from "@/components/nav/nav-items";
 
 const TAB_LABELS: Record<string, string> = {
   daily: "Daily sales summary",
@@ -28,11 +29,11 @@ export const Route = createFileRoute("/_authenticated/sales")({
         ? (search["tab"] as string)
         : "daily",
   }),
-  head: () => ({
+  head: ({ match }) => ({
     meta: [
-      { title: "Sales — Bookly" },
+      { title: `${sectionTitle("sales", match.search.tab)} — Bookly` },
       { name: "description", content: "Daily sales summary, transactions and cash movement." },
-      { property: "og:title", content: "Sales — Bookly" },
+      { property: "og:title", content: `${sectionTitle("sales", match.search.tab)} — Bookly` },
       { property: "og:description", content: "Daily sales summary, transactions and cash movement." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

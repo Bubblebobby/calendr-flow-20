@@ -1,9 +1,20 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Check, CheckCircle, DoorOpen, Play, Prohibit, type Icon } from "@phosphor-icons/react";
 
 import { timeToMinutes, type BusinessHour } from "@/lib/business-hours";
 import { cn } from "@/lib/utils";
 import { BlockedTimeChip, type BlockedTime } from "./blocked-time";
 import { MemberAvatar } from "./calendar-toolbar";
+
+// A small badge on each appointment block so its status shows without opening it (plain
+// "booked" has none). Colours match the appointment panel's status header.
+const STATUS_BADGE: Record<string, { icon: Icon; label: string; color: string; fill?: boolean }> = {
+  confirmed: { icon: Check, label: "Confirmed", color: "#2d76ec" },
+  arrived: { icon: DoorOpen, label: "Arrived", color: "#c77700" },
+  started: { icon: Play, label: "Started", color: "#1f8a3e", fill: true },
+  completed: { icon: CheckCircle, label: "Completed", color: "#1f8a3e", fill: true },
+  no_show: { icon: Prohibit, label: "No-show", color: "#d92d20" },
+};
 import {
   SLOT_HEIGHT,
   SLOT_MINUTES,
@@ -344,6 +355,7 @@ export function TimeGrid({
                       key={appointment.id}
                       className={cn(
                         "absolute inset-x-1 z-10 flex flex-col justify-start overflow-hidden rounded-[4px] px-1.5 py-1 text-left text-caption leading-4 transition-[filter,opacity] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        STATUS_BADGE[appointment.status] && "pr-5",
                         appointment.status === "no_show" && !faded && "opacity-60",
                         faded ? "pointer-events-none text-[#0d0d0d]/40" : "text-[#0d0d0d]",
                         highlighted && "ring-2 ring-primary",
@@ -368,6 +380,24 @@ export function TimeGrid({
                         if (!picking) onEventClick(appointment);
                       }}
                     >
+                      {STATUS_BADGE[appointment.status] && !faded
+                        ? (() => {
+                            const badge = STATUS_BADGE[appointment.status]!;
+                            return (
+                              <span
+                                title={badge.label}
+                                aria-label={badge.label}
+                                className="absolute right-0.5 top-0.5 z-[1] flex size-4 items-center justify-center rounded-full bg-white/85"
+                              >
+                                <badge.icon
+                                  size={12}
+                                  weight={badge.fill ? "fill" : "bold"}
+                                  style={{ color: badge.color }}
+                                />
+                              </span>
+                            );
+                          })()
+                        : null}
                       {appointment.segments
                         .filter((segment) => segment.type === "processing")
                         .map((segment) => (

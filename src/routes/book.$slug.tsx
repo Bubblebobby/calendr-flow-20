@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -29,8 +29,11 @@ import {
 import { downloadCalendarFile, formatAddress, fullName, useBusinessContact } from "@/lib/business-contact";
 import { formatDuration, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { policySummary, type BookingPolicy } from "@/lib/booking-policy";
+import { useApplyBrand } from "@/lib/brand";
+import { SalonLogo } from "@/components/customer/salon-logo";
+import { policyForBooking, policySummary, type BookingPolicy } from "@/lib/booking-policy";
 import { initialsOf, isCustomerAccount, splitName, useCustomer } from "@/lib/customer";
+import { SkeletonPanel, SkeletonSlots } from "@/components/ui/skeletons";
 
 type Search = { services?: string; team?: string };
 
@@ -58,6 +61,8 @@ type Page = {
     timezone: string;
     description: string | null;
     location: { address?: string; apt?: string; city?: string; state?: string; postcode?: string } | null;
+    brand_color?: string | null;
+    logo_path?: string | null;
   };
   hours: OpeningHours[];
   categories: { id: string; name: string; color: string }[];
@@ -114,7 +119,11 @@ function BookingPage() {
   });
 
   if (page.isLoading) {
-    return <Centered>Loading…</Centered>;
+    return (
+      <Centered>
+        <SkeletonPanel label="Loading booking page" />
+      </Centered>
+    );
   }
   if (page.isError || !page.data) {
     return (
@@ -139,6 +148,7 @@ function Centered({ children }: { children: React.ReactNode }) {
 
 function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; preselect: Search }) {
   const { business } = page;
+  useApplyBrand(business.brand_color);
   const tz = business.timezone;
   const money = (amount: number) => formatMoney(amount, business.currency, business.country);
 
@@ -397,6 +407,7 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
     return (
       <div className="flex min-h-screen items-center justify-center bg-surface px-6">
         <div className="w-full max-w-md rounded-2xl bg-card p-8 text-center shadow-[inset_0_0_0_1px_var(--color-border)]">
+          <SalonLogo path={business.logo_path} name={business.name} size={56} className="mx-auto mb-4" />
           <CheckCircle size={56} weight="fill" className="mx-auto text-[#1f8a3e]" />
           <h1 className="mt-4 text-display font-semibold">Booking confirmed</h1>
           <p className="mt-2 text-body text-muted-foreground">
@@ -470,8 +481,8 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
             <div className="mt-6 rounded-xl bg-secondary p-4 text-left">
               <p className="text-body font-semibold">Save your booking link</p>
               <p className="mt-1 text-caption text-muted-foreground">
-                {policy.data
-                  ? policySummary(policy.data)
+                {policy.data && slot !== null
+                  ? policyForBooking(policy.data, zonedToUtc(day, slot, tz), business.name)
                   : "Use it to view or change your booking."}{" "}
                 Keep this link private.
               </p>
@@ -786,7 +797,9 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                 {dayLabel(day, { weekday: "long", day: "numeric", month: "long" })}
               </p>
               {busy.isLoading || availability.isLoading ? (
-                <p className="mt-4 text-body text-muted-foreground">Checking availability…</p>
+                <div className="mt-4">
+                  <SkeletonSlots label="Checking availability" />
+                </div>
               ) : slots.length === 0 ? (
                 <div className="mt-4 rounded-xl p-6 text-center shadow-[inset_0_0_0_1px_var(--color-border)]">
                   <p className="text-heading font-semibold">No times available</p>
@@ -873,6 +886,7 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                       maxLength={20}
                       onChange={(event) => setPromoInput(event.target.value.toUpperCase())}
                       placeholder="Enter code"
+                      aria-label="Promo code"
                       className="h-12 min-w-0 flex-1 rounded-[8px] border border-input px-4 font-mono uppercase tracking-wider outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
                     />
                     <button
@@ -893,7 +907,9 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                 <div className="mt-6 rounded-xl bg-secondary p-4">
                   <p className="text-body font-semibold">Cancellation policy</p>
                   <p className="mt-1 text-body text-muted-foreground">
-                    {policySummary(policy.data)}
+                    {slot !== null
+                      ? policyForBooking(policy.data, zonedToUtc(day, slot, tz), business.name)
+                      : policySummary(policy.data)}
                   </p>
                   {policy.data.text ? (
                     <p className="mt-2 whitespace-pre-line text-body text-muted-foreground">
@@ -927,6 +943,7 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
         {/* Summary */}
         <aside className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-white p-4 lg:sticky lg:top-24 lg:h-fit lg:rounded-xl lg:border-0 lg:p-6 lg:shadow-[inset_0_0_0_1px_var(--color-border)]">
           <div className="hidden lg:block">
+            <SalonLogo path={business.logo_path} name={business.name} size={48} className="mb-3" />
             <p className="text-heading font-semibold">{business.name}</p>
             {business.location?.address ? (
               <p className="text-caption text-muted-foreground">
@@ -1081,11 +1098,17 @@ function TextField({
   readOnly?: boolean | undefined;
   hint?: string | undefined;
 }) {
+  // Explicit label/field link so every screen reader names the field.
+  const id = useId();
   return (
-    <label className="block text-body font-semibold">
-      {label}
-      {required ? <span className="text-destructive"> *</span> : null}
+    <div className="block text-body font-semibold">
+      <label htmlFor={id}>
+        {label}
+        {required ? <span className="text-destructive"> *</span> : null}
+      </label>
       <input
+        id={id}
+        aria-describedby={hint ? `${id}-hint` : undefined}
         type={type}
         value={value}
         required={required}
@@ -1099,8 +1122,10 @@ function TextField({
         )}
       />
       {hint ? (
-        <span className="mt-1 block text-caption font-normal text-muted-foreground">{hint}</span>
+        <span id={`${id}-hint`} className="mt-1 block text-caption font-normal text-muted-foreground">
+          {hint}
+        </span>
       ) : null}
-    </label>
+    </div>
   );
 }

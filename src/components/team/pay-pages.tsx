@@ -16,6 +16,7 @@ import { addDays, isoDay, weekStart } from "@/lib/team-shifts";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
 import { csvCell } from "@/lib/csv";
+import { SkeletonRows, SkeletonTable } from "@/components/ui/skeletons";
 
 const NOTICE = "Timesheets and pay runs need a database update first: run notes/supabase-update-2026-10-19.sql in Supabase.";
 const field = "mt-2 h-12 w-full rounded-[8px] border border-input bg-card px-4 text-body font-normal outline-none focus:border-primary focus:ring-2 focus:ring-primary/15";
@@ -626,11 +627,7 @@ function PayRunBuilder({ onDone }: { onDone: (id?: string) => void }) {
           </thead>
           <tbody>
             {data.isLoading ? (
-              <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-muted-foreground">
-                  Adding up…
-                </td>
-              </tr>
+              <SkeletonRows cols={7} rows={4} avatar label="Adding up pay" />
             ) : (
               lines.map((l) => (
                 <tr key={l.team_member_id}>
@@ -718,7 +715,7 @@ function PayRunDetail({ runId, onBack }: { runId: string; onBack: () => void }) 
     link.click();
     URL.revokeObjectURL(link.href);
   };
-  if (!run.data) return <p className="text-body text-muted-foreground">Loading…</p>;
+  if (!run.data) return <SkeletonTable cols={6} rows={5} label="Loading pay run" />;
   const r = run.data;
   return (
     <div className="space-y-6">

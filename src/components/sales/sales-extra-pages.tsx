@@ -28,6 +28,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/format";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
+import { SkeletonTable } from "@/components/ui/skeletons";
 
 const NEEDS_SETUP = "This arrives with the Catalog tab (it needs its own database table)";
 
@@ -169,7 +170,7 @@ export function PaymentsList() {
         />
       </ListToolbar>
       {isLoading ? (
-        <div className="h-40 animate-pulse rounded-2xl bg-secondary" />
+        <SkeletonTable cols={6} label="Loading sales" />
       ) : rows.length === 0 ? (
         <EmptyCard
           icon={<CreditCard size={44} weight="duotone" />}
@@ -294,7 +295,7 @@ export function RegisterIntro() {
         "Seamlessly track every cash movement for full visibility",
         "Stay on top of petty cash and float balances",
       ]}
-      onStart={() => toast("Registers need their own database table, coming in a later update")}
+      comingSoon
       art={
         <div className="rounded-3xl bg-card p-5 shadow-lg">
           <p className="text-body font-semibold">Register</p>

@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { countryByCode, flagEmoji, guessCountryCode } from "@/lib/countries";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { SkeletonFormPage } from "@/components/ui/skeletons";
 
 export const Route = createFileRoute("/onboarding")({
   ssr: false,
@@ -153,8 +154,8 @@ function OnboardingPage() {
 
   if (!ready) {
     return (
-      <div className="flex h-[100svh] items-center justify-center bg-background">
-        <Loader2 className="size-5 animate-spin text-muted-foreground" />
+      <div className="min-h-[100svh] bg-background">
+        <SkeletonFormPage fields={3} label="Loading" />
       </div>
     );
   }

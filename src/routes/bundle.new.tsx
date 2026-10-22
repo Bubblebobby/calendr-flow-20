@@ -367,7 +367,7 @@ function BundleFormPage() {
     <div className="bg-background min-h-screen lg:flex lg:h-screen lg:flex-col lg:overflow-hidden">
       <header className="shrink-0 z-20 border-b border-border/60 bg-background/85 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-8 py-4">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          <h1 className="text-display font-semibold leading-9 text-foreground">
             {editing ? "Edit bundle" : "New bundle"}
           </h1>
           <div className="flex items-center gap-3">

@@ -9,6 +9,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { requireOnboardedUser } from "@/lib/auth-guard";
 import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { SkeletonPanel } from "@/components/ui/skeletons";
+import { useApplyBrand } from "@/lib/brand";
+import { SalonLogo } from "@/components/customer/salon-logo";
 
 export const Route = createFileRoute("/receipt/$saleId")({
   ssr: false,
@@ -18,7 +21,7 @@ export const Route = createFileRoute("/receipt/$saleId")({
     links: [
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400..600&display=swap",
       },
     ],
   }),
@@ -38,7 +41,7 @@ type SaleRow = {
   clients: { first_name: string; last_name: string | null; email: string | null; phone: string | null } | null;
   team_members: { first_name: string; last_name: string | null } | null;
   sale_items: { description: string; price: number; quantity: number; tax_amount?: number | null; sort_order: number }[];
-  businesses: { name: string; currency: string; country: string; location: { address?: string; city?: string } | null; receipt_footer?: string | null } | null;
+  businesses: { name: string; currency: string; country: string; location: { address?: string; city?: string } | null; receipt_footer?: string | null; brand_color?: string | null; logo_path?: string | null } | null;
 };
 
 const METHOD: Record<string, string> = { cash: "Cash", card: "Card", other: "Other" };
@@ -68,7 +71,14 @@ function ReceiptPage() {
     },
   });
 
-  if (sale.isLoading) return <div className="p-10 text-center text-body text-muted-foreground">Loading receipt…</div>;
+  useApplyBrand(sale.data?.businesses?.brand_color);
+
+  if (sale.isLoading)
+    return (
+      <div className="flex min-h-screen justify-center bg-surface px-4 py-8">
+        <SkeletonPanel lines={7} label="Loading receipt" />
+      </div>
+    );
   if (!sale.data) return <div className="p-10 text-center text-body text-muted-foreground">Receipt not found.</div>;
   const s = sale.data;
   const b = s.businesses;
@@ -101,7 +111,7 @@ function ReceiptPage() {
         </button>
       </div>
 
-      <article className="relative mx-auto max-w-[26rem] px-4 font-receipt tracking-[-0.011em] drop-shadow-[0_24px_40px_rgba(30,41,82,0.08)] print:drop-shadow-none">
+      <article className="relative mx-auto max-w-[26rem] px-4 drop-shadow-[0_24px_40px_rgba(30,41,82,0.08)] print:drop-shadow-none">
         {/* Top: thank you */}
         <section className="rounded-t-[1.75rem] bg-card px-8 pb-8 pt-10 text-center">
           <span aria-hidden className="block text-[3.5rem] leading-none">
@@ -168,7 +178,8 @@ function ReceiptPage() {
         {/* Barcode stub */}
         <section className="bg-card px-8 pb-10 pt-7 text-center">
           <Barcode value={number} />
-          <p className="mt-5 text-body font-semibold">{b?.name}</p>
+          {b ? <SalonLogo path={b.logo_path} name={b.name} size={40} className="mx-auto mt-6" /> : null}
+          <p className={cn("text-body font-semibold", b?.logo_path ? "mt-2" : "mt-5")}>{b?.name}</p>
           {address ? <p className="text-caption text-muted-foreground">{address}</p> : null}
           {b?.receipt_footer ? <p className="mt-3 whitespace-pre-line text-caption text-muted-foreground">{b.receipt_footer}</p> : null}
         </section>
