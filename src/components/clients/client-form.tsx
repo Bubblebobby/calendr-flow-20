@@ -545,7 +545,7 @@ export function ClientForm({
 
         <div className="mt-10 grid gap-12 lg:grid-cols-[240px_minmax(0,1fr)]">
           {/* Left navigation */}
-          <nav className="h-fit rounded-2xl border border-[#D3D3D3] bg-white p-3">
+          <nav className="h-fit space-y-1 rounded-2xl border border-[#D3D3D3] bg-white p-3">
             <p className="px-3 py-2 text-body font-semibold text-foreground">Personal</p>
             <button
               type="button"

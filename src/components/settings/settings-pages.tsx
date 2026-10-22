@@ -231,7 +231,7 @@ export function SettingsSection({ sectionKey, pageKey }: { sectionKey: string; p
       <div className="grid items-start gap-8 lg:grid-cols-[240px_1fr]">
         <nav className="rounded-xl bg-card px-2 py-4 shadow-[inset_0_0_0_1px_var(--color-border)]">
           <p className="px-4 pb-2 text-heading font-semibold">{section.title}</p>
-          <ul>
+          <ul className="space-y-1">
             {section.pages.map((p) => (
               <li key={p.key}>
                 <button
