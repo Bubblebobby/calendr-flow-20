@@ -338,7 +338,7 @@ function PageBlock({ title, subtitle, children, action }: { title: string; subti
     <section className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-[1.5rem] font-semibold leading-8">{title}</h2>
+          <h2 className="text-display font-semibold leading-9 text-foreground">{title}</h2>
           <p className="mt-1 max-w-2xl text-body text-muted-foreground">{subtitle}</p>
         </div>
         {action}

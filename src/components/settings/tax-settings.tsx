@@ -119,7 +119,7 @@ export function TaxSettings() {
   return (
     <section className="space-y-6">
       <div>
-        <h2 className="text-[1.5rem] font-semibold leading-8">Tax rates</h2>
+        <h2 className="text-display font-semibold leading-9 text-foreground">Tax rates</h2>
         <p className="mt-1 max-w-2xl text-body text-muted-foreground">
           Prices include tax. Checkout shows how much of each sale is tax, and it appears on receipts and in reports. Give services and
           products their own rate, or they use the default.
