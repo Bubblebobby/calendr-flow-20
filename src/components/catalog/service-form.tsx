@@ -43,6 +43,7 @@ import {
 import { useBusiness } from "@/lib/use-business";
 import { TaxRateSelect, useTaxRates } from "@/components/settings/tax-settings";
 import { cn } from "@/lib/utils";
+import { SkeletonFormPage } from "@/components/ui/skeletons";
 
 const SORTED_TREATMENT_GROUPS = [...TREATMENT_GROUPS].sort((a, b) =>
   a.label.localeCompare(b.label),
@@ -328,8 +329,8 @@ export function ServiceForm({ serviceId, initialCategoryId }: { serviceId?: stri
 
   if (isEdit && serviceQuery.isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <p className="text-base text-muted-foreground">Loading service…</p>
+      <div className="min-h-screen bg-background">
+        <SkeletonFormPage label="Loading service" />
       </div>
     );
   }
@@ -368,7 +369,7 @@ export function ServiceForm({ serviceId, initialCategoryId }: { serviceId?: stri
       <div className="mt-8 grid items-start gap-x-24 gap-y-6 lg:grid-cols-[296px_1fr]">
         {/* Section nav */}
         <nav className="h-fit self-start rounded-xl bg-card px-4 py-6">
-          <ul>
+          <ul className="space-y-1">
             {NAV_PRIMARY.map((item) => {
               const selectable = item.key === "basic" || item.key === "team";
               return (
@@ -393,7 +394,7 @@ export function ServiceForm({ serviceId, initialCategoryId }: { serviceId?: stri
           </ul>
           <div className="mx-4 my-4 h-px bg-border" />
           <p className="px-4 pb-2 text-heading font-semibold text-foreground">Settings</p>
-          <ul>
+          <ul className="space-y-1">
             {NAV_SETTINGS.map((item) => (
               <li key={item.label}>
                 <NavRow

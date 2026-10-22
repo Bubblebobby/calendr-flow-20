@@ -34,6 +34,7 @@ import {
 } from "@/lib/team-shifts";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
+import { SkeletonRows } from "@/components/ui/skeletons";
 
 const NEEDS_DB = "Shifts need a database update first: run notes/supabase-update-2026-10-18.sql in Supabase";
 const menuItem = "h-10 rounded-[8px] px-3 text-body font-medium";
@@ -216,10 +217,12 @@ export function ScheduledShifts() {
             </tr>
           </thead>
           <tbody>
-            {members.length === 0 ? (
+            {team.isLoading ? (
+              <SkeletonRows cols={8} avatar rows={5} label="Loading shifts" />
+            ) : members.length === 0 ? (
               <tr>
                 <td colSpan={8} className="px-4 py-16 text-center text-body text-muted-foreground">
-                  {team.isLoading ? "Loading team…" : "Add team members to schedule their shifts."}
+                  Add team members to schedule their shifts.
                 </td>
               </tr>
             ) : null}

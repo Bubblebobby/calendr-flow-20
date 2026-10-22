@@ -6,6 +6,7 @@ import { EmptyState, outlinePill } from "@/components/customer/customer-ui";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { SkeletonList } from "@/components/ui/skeletons";
 
 export const Route = createFileRoute("/account/wallet")({
   head: () => ({ meta: [{ title: "Wallet — Bookly" }] }),
@@ -65,7 +66,7 @@ function WalletPage() {
   });
 
   if (wallet.isLoading)
-    return <p className="text-body text-muted-foreground">Loading your wallet…</p>;
+    return <SkeletonList rows={3} thumb="square" label="Loading your wallet" />;
   if (wallet.isError || !wallet.data)
     return (
       <p className="text-body text-destructive">Couldn&apos;t load your wallet. Please refresh.</p>

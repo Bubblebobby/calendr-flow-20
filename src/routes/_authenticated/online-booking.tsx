@@ -7,6 +7,7 @@ import {
   SmartWebsite,
   SocialBookings,
 } from "@/components/online-booking/online-booking-pages";
+import { sectionTitle } from "@/components/nav/nav-items";
 
 const TABS = ["profile", "google", "social", "links", "website"] as const;
 type OnlineBookingTab = (typeof TABS)[number];
@@ -16,9 +17,9 @@ export const Route = createFileRoute("/_authenticated/online-booking")({
     typeof search["tab"] === "string" && (TABS as readonly string[]).includes(search["tab"])
       ? { tab: search["tab"] as OnlineBookingTab }
       : {},
-  head: () => ({
+  head: ({ match }) => ({
     meta: [
-      { title: "Online booking — Bookly" },
+      { title: `${sectionTitle("online-booking", match.search.tab)} — Bookly` },
       { name: "description", content: "Your public booking page, booking links and QR codes." },
     ],
   }),

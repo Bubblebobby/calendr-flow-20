@@ -23,6 +23,7 @@ import {
   ClientAddressesPanel,
   type ClientAddressValue,
 } from "@/components/clients/client-addresses";
+import { SkeletonFormPage } from "@/components/ui/skeletons";
 
 const FIELD = "h-12 rounded-xl border border-border bg-transparent text-base";
 
@@ -509,8 +510,8 @@ export function ClientForm({
 
   if (isEdit && clientQuery.isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
-        <p className="text-base text-muted-foreground">Loading client…</p>
+      <div className="min-h-screen bg-white">
+        <SkeletonFormPage label="Loading client" />
       </div>
     );
   }
@@ -539,13 +540,13 @@ export function ClientForm({
       </header>
 
       <div className="mx-auto w-full max-w-6xl px-8 pb-24">
-        <h1 className="text-4xl font-semibold tracking-tight text-foreground">
+        <h1 className="text-display font-semibold leading-9 text-foreground">
           {isEdit ? "Edit client" : "Add a new client"}
         </h1>
 
         <div className="mt-10 grid gap-12 lg:grid-cols-[240px_minmax(0,1fr)]">
           {/* Left navigation */}
-          <nav className="h-fit rounded-2xl border border-[#D3D3D3] bg-white p-3">
+          <nav className="h-fit space-y-1 rounded-2xl border border-[#D3D3D3] bg-white p-3">
             <p className="px-3 py-2 text-body font-semibold text-foreground">Personal</p>
             <button
               type="button"

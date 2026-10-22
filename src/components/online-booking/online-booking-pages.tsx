@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatDuration } from "@/lib/format";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
+import { SkeletonForm, SkeletonHeader } from "@/components/ui/skeletons";
 
 const NEEDS_DB =
   "Online booking needs a database update first: run supabase/migrations/20261018090000_online_booking.sql in Supabase.";
@@ -90,7 +91,13 @@ export function BookingProfile() {
   const queryClient = useQueryClient();
   const [setupOpen, setSetupOpen] = useState(false);
 
-  if (settings.isLoading) return <p className="text-body text-muted-foreground">Loading…</p>;
+  if (settings.isLoading)
+    return (
+      <div className="space-y-8">
+        <SkeletonHeader />
+        <SkeletonForm fields={3} label="Loading booking profile" />
+      </div>
+    );
   if (settings.error && isMissingColumn(settings.error as { code?: string; message?: string })) return <DbNotice />;
   if (!settings.data) return null;
 
@@ -598,7 +605,7 @@ export function SocialBookings() {
         "Promote your Book now button in posts and ads",
       ]}
       cta="Set up now"
-      onStart={later("Facebook and Instagram bookings")}
+      comingSoon
     />
   );
 }
@@ -613,7 +620,7 @@ export function ReserveWithGoogle() {
         "Bookings land in your Bookly calendar",
         "Reach clients searching for salons near them",
       ]}
-      onStart={later("Reserve with Google")}
+      comingSoon
     />
   );
 }
@@ -624,7 +631,7 @@ export function SmartWebsite() {
       title="A website that keeps itself up to date"
       body="A professional site for your business that updates as your services, team and prices change."
       bullets={["Your services, prices and team, always current", "Online booking built in", "Your own web address"]}
-      onStart={later("Smart website")}
+      comingSoon
     />
   );
 }

@@ -6,6 +6,8 @@ import { CalendarBlank, CheckCircle, XCircle } from "@phosphor-icons/react";
 import { SalonContact } from "@/components/customer/salon-contact";
 import { pillButton } from "@/components/sales/list-ui";
 import { supabase } from "@/integrations/supabase/client";
+import { useApplyBrand } from "@/lib/brand";
+import { SalonLogo } from "@/components/customer/salon-logo";
 import { policySummary, type BookingPolicy } from "@/lib/booking-policy";
 import {
   formatClock,
@@ -19,6 +21,7 @@ import {
 import { formatAddress, fullName, useBusinessContact, type BusinessContact } from "@/lib/business-contact";
 import { formatDuration, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { SkeletonPanel, SkeletonSlots } from "@/components/ui/skeletons";
 
 export const Route = createFileRoute("/book/manage/$token")({
   ssr: false,
@@ -51,6 +54,8 @@ type Manage = {
     timezone: string;
     location: { address?: string; apt?: string; city?: string; state?: string; postcode?: string } | null;
     hours: OpeningHours[];
+    brand_color?: string | null;
+    logo_path?: string | null;
   };
   policy: BookingPolicy;
 };
@@ -80,7 +85,12 @@ function ManageBookingPage() {
     },
   });
 
-  if (valid && data.isLoading) return <Shell>Loading your booking…</Shell>;
+  if (valid && data.isLoading)
+    return (
+      <Shell>
+        <SkeletonPanel label="Loading your booking" />
+      </Shell>
+    );
   if (!valid || !data.data) {
     return (
       <Shell>
@@ -105,6 +115,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 function ManageView({ token, data }: { token: string; data: Manage }) {
   const queryClient = useQueryClient();
   const { appointment, business, policy } = data;
+  useApplyBrand(business.brand_color);
   const tz = business.timezone;
   const [mode, setMode] = useState<"view" | "cancel" | "reschedule">("view");
   const [reason, setReason] = useState("");
@@ -192,6 +203,7 @@ function ManageView({ token, data }: { token: string; data: Manage }) {
         ) : null}
 
         <div className="rounded-2xl bg-card p-6 shadow-[inset_0_0_0_1px_var(--color-border)] sm:p-8">
+          <SalonLogo path={business.logo_path} name={business.name} size={48} className="mb-3" />
           <p className="text-caption font-semibold uppercase tracking-wide text-muted-foreground">
             {business.name}
           </p>
@@ -500,7 +512,9 @@ function Reschedule({
         ))}
       </div>
       {busy.isLoading || shifts.isLoading ? (
-        <p className="mt-4 text-body text-muted-foreground">Checking availability…</p>
+        <div className="mt-4">
+          <SkeletonSlots label="Checking availability" />
+        </div>
       ) : slots.length === 0 ? (
         <p className="mt-4 text-body text-muted-foreground">
           No times available on {label(day, { weekday: "long", day: "numeric", month: "long" })}.
