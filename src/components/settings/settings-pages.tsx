@@ -390,8 +390,9 @@ const TIME_ZONES: string[] = (() => {
 })();
 
 /*
- * Business details in Square's settings-table style: a grey label column, a hatched value column
- * and an "Edit" link per field. Edit turns that one row into an input with Save and Cancel.
+ * Business details laid out like Square's settings table (a label column, a hatched value column
+ * and an "Edit" link per field), drawn with Bookly's own card, colours and type sizes. Edit turns
+ * that one row into an input with Save and Cancel.
  */
 type DetailKey = "name" | "timezone" | "website";
 
@@ -453,7 +454,7 @@ function BusinessDetails() {
             autoFocus
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
-            className={cn(field, "mt-0 h-11 min-w-0 flex-1")}
+            className={cn(field, "mt-0 h-10 min-w-0 flex-1")}
           >
             {TIME_ZONES.map((tz) => (
               <option key={tz} value={tz}>
@@ -468,20 +469,20 @@ function BusinessDetails() {
             maxLength={key === "name" ? 100 : 200}
             placeholder={key === "website" ? "www.yoursalon.com" : undefined}
             onChange={(event) => setDraft(event.target.value)}
-            className={cn(field, "mt-0 h-11 min-w-0 flex-1")}
+            className={cn(field, "mt-0 h-10 min-w-0 flex-1")}
           />
         )}
         <button
           type="submit"
           disabled={invalid || save.isPending}
-          className={cn(pillButton, "h-11 bg-ink text-ink-foreground hover:bg-ink/90")}
+          className={cn(pillButton, "h-10 bg-ink text-ink-foreground hover:bg-ink/90")}
         >
           Save
         </button>
         <button
           type="button"
           onClick={() => setEditing(null)}
-          className={cn(pillButton, "h-11 hover:bg-secondary")}
+          className={cn(pillButton, "h-10 hover:bg-secondary")}
         >
           Cancel
         </button>
@@ -492,7 +493,7 @@ function BusinessDetails() {
   return (
     <PageBlock title="Business details" subtitle="Your business name, location settings and website.">
       <TooltipProvider delayDuration={150}>
-        <dl className="overflow-hidden border border-[#d9d9d9] bg-card">
+        <dl className={cn(card, "overflow-hidden")}>
           <DetailRow
             label="Display business name"
             editing={editing === "name"}
@@ -534,9 +535,9 @@ function BusinessDetails() {
   );
 }
 
-// Square's read-only value cell: fine diagonal hatching on white.
+// Read-only value cell: fine diagonal hatching in the border colour.
 const hatched =
-  "bg-[repeating-linear-gradient(-45deg,#e3e3e3_0_1px,transparent_1px_9px)]";
+  "bg-[repeating-linear-gradient(-45deg,var(--color-border)_0_1px,transparent_1px_9px)]";
 
 function DetailRow({
   label,
@@ -557,8 +558,8 @@ function DetailRow({
 }) {
   const empty = children === null || children === undefined || children === "";
   return (
-    <div className="grid border-b border-[#d9d9d9] last:border-b-0 sm:grid-cols-[minmax(200px,1fr)_2fr]">
-      <dt className="flex items-center justify-between gap-3 bg-[#f2f2f2] px-5 py-4 text-base font-medium leading-6 text-foreground sm:px-8 sm:py-7">
+    <div className="grid border-b border-border last:border-b-0 sm:grid-cols-[minmax(180px,1fr)_2fr]">
+      <dt className="flex items-center justify-between gap-3 bg-muted px-6 py-4 text-body font-semibold text-foreground">
         {label}
         {info ? (
           <Tooltip>
@@ -567,7 +568,7 @@ function DetailRow({
               aria-label={`About ${label.toLowerCase()}`}
               className="shrink-0 rounded-full text-muted-foreground transition-colors hover:text-foreground"
             >
-              <Info size={22} />
+              <Info size={18} />
             </TooltipTrigger>
             <TooltipContent side="top" className="max-w-[260px] text-caption">
               {info}
@@ -577,7 +578,7 @@ function DetailRow({
       </dt>
       <dd
         className={cn(
-          "flex min-h-[72px] items-center justify-between gap-4 px-5 py-4 text-base leading-6 sm:px-8 sm:py-6",
+          "flex min-h-16 items-center justify-between gap-4 px-6 py-3 text-body",
           editing ? "bg-card" : hatched,
         )}
       >
@@ -585,7 +586,7 @@ function DetailRow({
           editor
         ) : (
           <>
-            <span className={cn("min-w-0 break-words", empty && "text-[#b3b3b3]")}>
+            <span className={cn("min-w-0 break-words", empty && "text-placeholder")}>
               {empty ? (placeholder ?? "—") : children}
             </span>
             {onEdit ? (
@@ -593,7 +594,7 @@ function DetailRow({
                 type="button"
                 onClick={onEdit}
                 aria-label={`Edit ${label.toLowerCase()}`}
-                className="shrink-0 text-base font-medium underline decoration-1 underline-offset-4 transition-opacity hover:opacity-70"
+                className="shrink-0 text-body font-semibold underline decoration-1 underline-offset-4 transition-opacity hover:opacity-70"
               >
                 Edit
               </button>
