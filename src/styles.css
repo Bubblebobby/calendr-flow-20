@@ -82,12 +82,16 @@
   --color-placeholder: var(--placeholder);
   /* Type scale modelled on Square's dashboard (Oct 2026): 14px body, 16px card titles,
      20px section titles, large light page titles. */
+  /* Headings are set tight wherever these sizes are used (a tracking utility still wins). */
   --text-display: 2rem;
   --text-display--line-height: 2.5rem;
+  --text-display--letter-spacing: -0.035em;
   --text-title: 1.25rem;
   --text-title--line-height: 1.75rem;
+  --text-title--letter-spacing: -0.025em;
   --text-heading: 1rem;
   --text-heading--line-height: 1.5rem;
+  --text-heading--letter-spacing: -0.02em;
   --text-body: 0.875rem;
   --text-body--line-height: 1.375rem;
   --text-caption: 0.75rem;
@@ -331,21 +335,21 @@
   h1,
   h2,
   h3 {
-    letter-spacing: -0.025em;
+    letter-spacing: -0.03em;
   }
 }
 
 /* Page titles are large and light, like Square's (beats the font-semibold utility on the h1). */
 h1.text-display {
   font-weight: 400;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
 }
 
 /* Fluid step heading: shrinks on short/narrow viewports, full size on desktop. */
 @utility step-title {
   font-size: clamp(1.6rem, 1.05rem + 2.1vw, 2.9rem);
   line-height: 1.08;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
   font-weight: 500;
 }
 
