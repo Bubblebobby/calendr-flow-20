@@ -18,7 +18,6 @@ import { statusTone } from "@/components/calendar/calendar-data";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SetupGuide } from "./setup-guide";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
@@ -699,7 +698,6 @@ export function HomeDashboard() {
   return (
     <div className="min-h-full bg-surface">
       <div className="mx-auto grid w-full max-w-6xl items-start gap-x-8 gap-y-4 p-4 sm:p-6 lg:grid-cols-2">
-        <SetupGuide className="mb-6 lg:col-span-2" />
         <DashboardCard
           title="Recent sales"
           subtitle={timePeriodLabel}

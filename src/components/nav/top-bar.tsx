@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CaretRight, ChartBar, ChatCircleDots, RocketLaunch, SignOut } from "@phosphor-icons/react";
 
 import { NotificationsMenu, SearchMenu } from "./top-bar-menus";
-import { SetupMenu } from "@/components/home/setup-guide";
+import { SetupButton } from "@/components/home/setup-guide";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -61,7 +61,7 @@ export function TopBar() {
       </Link>
 
       <div className="flex items-center gap-1.5">
-        <SetupMenu />
+        <SetupButton />
         <SearchMenu />
         <button
           type="button"

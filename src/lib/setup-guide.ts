@@ -181,7 +181,10 @@ export function useSetupGuide() {
 
   return {
     ready: query.isSuccess,
-    // Only owners and admins set the business up, and the guide goes once everything's done.
+    isError: query.isError,
+    // Only owners and admins set the business up.
+    isAdmin: query.isSuccess && query.data.isAdmin,
+    // The top-bar button shows until everything's done.
     visible: query.isSuccess && query.data.isAdmin && remaining.length > 0,
     items,
     remaining,
