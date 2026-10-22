@@ -1219,9 +1219,26 @@ function SiteFooter() {
 
 // ── Below 1280: the two main buttons sit in a bar at the bottom of the screen, as on Square ──
 
+/*
+ * Square keeps the bar 72px below the screen until the page has scrolled past the 72px top bar
+ * (the moment the product bar sticks), then slides it up over 0.15s; scrolling back hides it.
+ */
 function BottomCtaBar() {
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setShown(window.scrollY > 72);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 flex gap-1.5 border-t border-[#f2f2f2] bg-white/95 px-4 pb-[max(12px,env(safe-area-inset-bottom))] pt-3 backdrop-blur sm:px-5 xl:hidden">
+    <div
+      inert={!shown}
+      className={cn(
+        "fixed inset-x-0 bottom-0 z-40 flex gap-1.5 border-t border-[#f2f2f2] bg-white/95 px-4 pb-[max(12px,env(safe-area-inset-bottom))] pt-3 backdrop-blur transition-transform duration-150 ease-[cubic-bezier(0,0,0.2,1)] sm:px-5 xl:hidden",
+        shown ? "translate-y-0" : "translate-y-[calc(100%+1px)]",
+      )}
+    >
       <a href="#pricing" className={cn(pillOutline, "h-[41px] flex-1")}>
         See pricing
       </a>
