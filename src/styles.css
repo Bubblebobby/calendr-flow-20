@@ -247,6 +247,9 @@
   --font-display: "Newsreader", ui-serif, Georgia, serif;
   --font-display--font-variation-settings: "opsz" 36;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  /* Receipt page only (fonts are loaded by src/routes/receipt.$saleId.tsx). */
+  --font-receipt: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-receipt-mono: "Geist Mono", ui-monospace, monospace;
   --shadow-card: var(--shadow-card);
 }
 

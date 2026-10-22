@@ -13,7 +13,15 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/receipt/$saleId")({
   ssr: false,
   beforeLoad: requireOnboardedUser,
-  head: () => ({ meta: [{ title: "Receipt — Bookly" }] }),
+  head: () => ({
+    meta: [{ title: "Receipt — Bookly" }],
+    links: [
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap",
+      },
+    ],
+  }),
   component: ReceiptPage,
 });
 
@@ -73,7 +81,8 @@ function ReceiptPage() {
   const giftPaid = (gifts.data ?? []).reduce((sum, g) => sum + Number(g.amount), 0);
   const grand = Number(s.total) + tip;
   const date = new Date(s.sale_date);
-  const when = `${new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric" }).format(date)} · ${new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(date)}`;
+  const day = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric" }).format(date);
+  const time = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(date);
 
   const refunded = s.status === "refunded";
   const number = s.id.slice(0, 8).toUpperCase();
@@ -92,7 +101,7 @@ function ReceiptPage() {
         </button>
       </div>
 
-      <article className="relative mx-auto max-w-[26rem] px-4 drop-shadow-[0_24px_40px_rgba(30,41,82,0.08)] print:drop-shadow-none">
+      <article className="relative mx-auto max-w-[26rem] px-4 font-receipt tracking-[-0.011em] drop-shadow-[0_24px_40px_rgba(30,41,82,0.08)] print:drop-shadow-none">
         {/* Top: thank you */}
         <section className="rounded-t-[1.75rem] bg-card px-8 pb-8 pt-10 text-center">
           <span aria-hidden className="block text-[3.5rem] leading-none">
@@ -113,9 +122,10 @@ function ReceiptPage() {
           <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-6">
             <Field label="Receipt ID" value={`#${number}`} />
             <Field label="Amount" value={money(grand)} right />
-            <Field label="Date & time" value={when} />
+            <Field label="Date" value={day} />
+            <Field label="Time" value={time} right />
             {s.team_members ? (
-              <Field label="Served by" value={[s.team_members.first_name, s.team_members.last_name].filter(Boolean).join(" ")} right />
+              <Field label="Served by" value={[s.team_members.first_name, s.team_members.last_name].filter(Boolean).join(" ")} wide />
             ) : null}
           </dl>
 
@@ -126,11 +136,11 @@ function ReceiptPage() {
                   {item.description}
                   {item.quantity > 1 ? <span className="text-muted-foreground"> × {item.quantity}</span> : null}
                 </span>
-                <span className="tabular-nums">{money(Number(item.price) * item.quantity)}</span>
+                <span className="font-receipt-mono">{money(Number(item.price) * item.quantity)}</span>
               </li>
             ))}
           </ul>
-          <dl className="mt-4 space-y-1 border-t border-border pt-4 text-body">
+          <dl className="mt-4 space-y-1 border-t border-border pt-4 font-receipt-mono text-body">
             {discount || tip ? <Row label="Subtotal" value={money(subtotal)} muted /> : null}
             {discount ? <Row label="Discount" value={`-${money(discount)}`} muted /> : null}
             {tip ? <Row label="Tip" value={money(tip)} muted /> : null}
@@ -192,11 +202,11 @@ function Scallops() {
   );
 }
 
-function Field({ label, value, right }: { label: string; value: string; right?: boolean }) {
+function Field({ label, value, right, wide }: { label: string; value: string; right?: boolean; wide?: boolean }) {
   return (
-    <div className={cn(right && "text-right")}>
-      <dt className="text-body text-muted-foreground">{label}</dt>
-      <dd className="mt-1 text-[1.0625rem] font-medium tabular-nums text-foreground">{value}</dd>
+    <div className={cn(right && "text-right", wide && "col-span-2")}>
+      <dt className="font-receipt-mono text-caption uppercase tracking-[0.06em] text-muted-foreground">{label}</dt>
+      <dd className="mt-1.5 font-receipt-mono text-[1.0625rem] font-medium tracking-[-0.02em] text-foreground">{value}</dd>
     </div>
   );
 }
@@ -207,7 +217,7 @@ function PaidBy({ icon, title, detail }: { icon: React.ReactNode; title: string;
       <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-card text-foreground">{icon}</span>
       <span className="min-w-0">
         <span className="block truncate text-body font-semibold">{title}</span>
-        <span className="block text-body text-muted-foreground">{detail}</span>
+        <span className="block font-receipt-mono text-caption text-muted-foreground">{detail}</span>
       </span>
     </div>
   );
@@ -225,7 +235,7 @@ function Barcode({ value }: { value: string }) {
       margin: 0,
       fontSize: 13,
       textMargin: 6,
-      font: "ui-monospace, SFMono-Regular, monospace",
+      font: "Geist Mono, ui-monospace, monospace",
       background: "transparent",
       lineColor: "#101010",
     });
