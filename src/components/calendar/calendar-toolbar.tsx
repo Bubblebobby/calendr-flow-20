@@ -83,7 +83,7 @@ export function MemberAvatar({
   return (
     <span
       className={cn(
-        "flex shrink-0 items-center justify-center overflow-hidden rounded-full font-semibold text-[#0075a8] ring-1 ring-white",
+        "flex shrink-0 items-center justify-center overflow-hidden rounded-full font-semibold text-info ring-1 ring-white",
         className,
       )}
       style={{

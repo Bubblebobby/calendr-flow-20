@@ -407,7 +407,7 @@ function ReviewDialog({
               aria-checked={rating === n}
               aria-label={`${n} star${n > 1 ? "s" : ""}`}
               onClick={() => setRating(n)}
-              className="rounded-full p-1 text-[#f5a623] hover:bg-secondary"
+              className="rounded-full p-1 text-rating hover:bg-secondary"
             >
               <Star size={32} weight={rating >= n ? "fill" : "regular"} />
             </button>

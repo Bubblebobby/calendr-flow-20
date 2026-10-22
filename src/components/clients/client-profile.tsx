@@ -826,7 +826,7 @@ export function ClientProfile({
                   value={newTag}
                   onChange={(event) => setNewTag(event.target.value)}
                   placeholder="New tag"
-                  className="h-9 min-w-0 flex-1 rounded-lg border border-border px-3 text-body"
+                  className="h-9 min-w-0 flex-1 rounded-lg border border-input px-3 text-body"
                 />
                 <button
                   type="submit"
@@ -943,7 +943,7 @@ export function ClientProfile({
               value={noteDraft}
               onChange={(event) => setNoteDraft(event.target.value)}
               placeholder="Add a note visible to your team only"
-              className="min-h-40 w-full resize-y rounded-xl border border-border p-3 text-body outline-none focus:border-primary"
+              className="min-h-40 w-full resize-y rounded-xl border border-input p-3 text-body outline-none focus:border-primary"
             />
             <div className="mt-3 flex justify-end gap-2">
               <button
@@ -1258,7 +1258,7 @@ export function ClientProfile({
                 type="button"
                 disabled={deleteClient.isPending}
                 onClick={() => deleteClient.mutate()}
-                className={cn(pillButton, "h-12 bg-[#c8273a] text-white hover:bg-[#b01f31]")}
+                className={cn(pillButton, "h-12 bg-destructive text-white hover:bg-destructive/90")}
               >
                 Delete
               </button>

@@ -29,7 +29,7 @@ import {
   useBusinessServices,
 } from "./team-member-services";
 
-const FIELD = "h-12 rounded-xl border border-border bg-transparent text-base";
+const FIELD = "h-12 rounded-xl border border-input bg-transparent text-base";
 
 /** Fixed calendar palette — this colour tints the member's appointments. */
 export const CALENDAR_COLORS = [
@@ -295,7 +295,7 @@ export function TeamMemberForm() {
         <div className="mx-auto flex w-full max-w-6xl items-center justify-end gap-3 px-8 py-4">
           <Button
             variant="outline"
-            className="h-11 rounded-full border-[#D3D3D3] bg-white px-6 text-base font-semibold text-foreground hover:bg-white hover:text-foreground"
+            className="h-11 rounded-full border-input bg-white px-6 text-base font-semibold text-foreground hover:bg-white hover:text-foreground"
             onClick={() => navigate({ to: "/team" })}
           >
             Close
@@ -314,19 +314,19 @@ export function TeamMemberForm() {
         <h1 className="text-display font-semibold leading-9 text-foreground">Add team member</h1>
 
         <div className="mt-10 grid gap-12 lg:grid-cols-[240px_minmax(0,1fr)]">
-          <nav className="h-fit space-y-1 rounded-2xl border border-[#D3D3D3] bg-white p-3">
+          <nav className="h-fit space-y-1 rounded-2xl border border-border bg-white p-3">
             <p className="px-3 py-2 text-body font-semibold text-foreground">Personal</p>
             {navItem("Profile", undefined, "profile")}
             {navItem("Addresses")}
             {navItem("Emergency contacts")}
 
-            <div className="my-2 h-px bg-[#D3D3D3]" />
+            <div className="my-2 h-px bg-border" />
             <p className="px-3 py-2 text-body font-semibold text-foreground">Workspace</p>
             {navItem("Services", selectedServices.length, "services")}
             {navItem("Locations", 1)}
             {navItem("Settings")}
 
-            <div className="my-2 h-px bg-[#D3D3D3]" />
+            <div className="my-2 h-px bg-border" />
             <p className="px-3 py-2 text-body font-semibold text-foreground">Pay</p>
             {navItem("Wages and timesheets")}
             {navItem("Commissions")}
@@ -350,7 +350,7 @@ export function TeamMemberForm() {
 
             <section className="space-y-6">
               <div>
-                <h2 className="text-2xl font-semibold tracking-tight text-foreground">Profile</h2>
+                <h2 className="text-2xl font-semibold text-foreground">Profile</h2>
                 <p className="mt-1 text-body text-muted-foreground">
                   Manage your team member&apos;s personal profile
                 </p>
@@ -364,7 +364,7 @@ export function TeamMemberForm() {
                     <User size={48} className="text-primary" weight="regular" />
                   )}
                 </div>
-                <label className="absolute bottom-1 right-1 flex size-8 cursor-pointer items-center justify-center rounded-full border border-[#D3D3D3] bg-white">
+                <label className="absolute bottom-1 right-1 flex size-8 cursor-pointer items-center justify-center rounded-full border border-input bg-white">
                   <PencilSimple size={14} className="text-foreground" />
                   <span className="sr-only">Upload photo</span>
                   <input
@@ -618,12 +618,12 @@ export function TeamMemberForm() {
               </div>
             </section>
 
-            <div className="h-px bg-[#D3D3D3]" />
+            <div className="h-px bg-border" />
 
             {/* Work details */}
             <section className="space-y-6">
               <div>
-                <h2 className="text-2xl font-semibold tracking-tight text-foreground">Work details</h2>
+                <h2 className="text-2xl font-semibold text-foreground">Work details</h2>
                 <p className="mt-1 text-body text-muted-foreground">
                   Manage your team member&apos;s start date, and employment details
                 </p>

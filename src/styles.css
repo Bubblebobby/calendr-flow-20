@@ -80,6 +80,14 @@
   --color-chart-appointments: var(--chart-appointments);
   --color-surface: var(--surface);
   --color-placeholder: var(--placeholder);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-rating: var(--rating);
   /* Type scale modelled on Square's dashboard (Oct 2026): 14px body, 16px card titles,
      20px section titles, large light page titles. */
   /* Headings are set tight wherever these sizes are used (a tracking utility still wins). */
@@ -103,7 +111,10 @@
 
 :root {
   /* Palette from Square's Market design system (read from its tokens, Oct 2026): text #101010 /
-     #666 / #959595, fills #f0f0f0 / #f7f7f7, dividers #f0f0f0, emphasis is black. */
+     #666, fills #f0f0f0 / #f7f7f7, emphasis is black.
+     Contrast (WCAG 2.2 AA): every text colour here is at least 4.5:1 on white and on its own soft
+     background; input borders and rating stars are at least 3:1. Use these tokens rather than hex
+     values so every screen stays the same. */
   --radius: 0.75rem;
   --background: #ffffff;
   --foreground: #101010;
@@ -121,11 +132,21 @@
   --accent-foreground: #101010;
   --destructive: #bf0020;
   --destructive-foreground: #ffffff;
-  --border: #f0f0f0;
-  --input: #dadada;
+  --destructive-soft: #fdecef;
+  --success: #18773a;
+  --success-soft: #e6f5ea;
+  --warning: #8a5300;
+  --warning-soft: #fff7e6;
+  --info: #1f5fcc;
+  --info-soft: #eaf1fd;
+  --rating: #c77700;
+  /* Dividers and card edges. */
+  --border: #e5e5e5;
+  /* Form fields and outlined buttons: 3.4:1 on white, so their edges can be seen. */
+  --input: #8c8c8c;
   --ring: #101010;
   --surface: #f5f5f5;
-  --placeholder: #959595;
+  --placeholder: #707070;
   --toolbar: #f7f7f7;
   --chart-1: #006aff;
   --chart-2: oklch(0.66 0.12 175);
@@ -141,7 +162,7 @@
   --sidebar-border: oklch(0.32 0.03 240);
   --sidebar-ring: oklch(0.62 0.12 205);
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
-  --shadow-card: 0 0 0 1px #f0f0f0;
+  --shadow-card: 0 0 0 1px var(--border);
   --gradient-brand: linear-gradient(135deg, #101010, #006aff);
   --ink: #101010;
   --ink-foreground: #ffffff;
@@ -155,13 +176,13 @@
   --slot-mint-foreground: oklch(0.36 0.07 180);
   /* Appointment status pills (Fresha-style tinted pills) */
   --status-booked: #eaf1fd;
-  --status-booked-foreground: #2d76ec;
+  --status-booked-foreground: var(--info);
   --status-arrived: #fdf3e2;
-  --status-arrived-foreground: #b26b00;
+  --status-arrived-foreground: var(--warning);
   --status-completed: #e6f5ea;
-  --status-completed-foreground: #1f8a3e;
+  --status-completed-foreground: var(--success);
   --status-cancelled: #fdecec;
-  --status-cancelled-foreground: #d92d20;
+  --status-cancelled-foreground: var(--destructive);
   --chart-appointments: #3c7d3a;
   /* Calendar grid */
   --grid-line: #f0f0f0;
@@ -273,10 +294,10 @@
   --muted-foreground: #666666;
   --accent: oklch(0.845 0.166 84.5);
   --accent-foreground: oklch(0.17 0 0);
-  --border: #f0f0f0;
-  --input: #dadada;
+  --border: #e5e5e5;
+  --input: #8c8c8c;
   --ring: #101010;
-  --shadow-card: inset 0 0 0 1px #f0f0f0;
+  --shadow-card: inset 0 0 0 1px var(--border);
 }
 
 @utility surface-card {

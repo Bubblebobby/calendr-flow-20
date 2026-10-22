@@ -78,7 +78,7 @@ function useBookingSettings() {
 
 function DbNotice() {
   return (
-    <div className="rounded-xl bg-[#fff7e6] px-5 py-4 text-body text-[#7a4b00] shadow-[inset_0_0_0_1px_#f5d9a6]">{NEEDS_DB}</div>
+    <div className="rounded-xl bg-warning-soft px-5 py-4 text-body text-warning shadow-[inset_0_0_0_1px_#f5d9a6]">{NEEDS_DB}</div>
   );
 }
 

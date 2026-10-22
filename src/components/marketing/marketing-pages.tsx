@@ -130,7 +130,7 @@ export function AutomationsPage() {
       </div>
 
       {missingTable ? (
-        <p className="flex items-start gap-2 rounded-xl bg-[#fff7e6] px-5 py-4 text-body text-[#7a4b00]">
+        <p className="flex items-start gap-2 rounded-xl bg-warning-soft px-5 py-4 text-body text-warning">
           <Info size={20} className="mt-0.5 shrink-0" />
           Saving your choices needs a database update: run notes/supabase-update-2026-10-18.sql in Supabase.
         </p>
@@ -172,7 +172,7 @@ export function AutomationsPage() {
                           className={cn(
                             "inline-flex h-8 items-center rounded-full px-3 text-caption font-semibold transition-colors",
                             enabled
-                              ? "bg-[#e6f6ea] text-[#1f8a3e] hover:bg-[#d4efdb]"
+                              ? "bg-success-soft text-success hover:bg-[#d4efdb]"
                               : "border border-input bg-card text-foreground hover:bg-secondary",
                           )}
                         >

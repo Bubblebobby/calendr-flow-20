@@ -555,7 +555,7 @@ export function SalesList() {
                 type="button"
                 disabled={refund.isPending}
                 onClick={() => refund.mutate(viewing.id)}
-                className={cn(pillButton, "h-12 bg-[#c8273a] text-white hover:bg-[#b01f31]")}
+                className={cn(pillButton, "h-12 bg-destructive text-white hover:bg-destructive/90")}
               >
                 {refund.isPending ? "Refunding…" : "Refund"}
               </button>

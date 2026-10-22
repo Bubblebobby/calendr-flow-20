@@ -47,7 +47,7 @@ const BUCKET = "bundle-portfolio-images";
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 
 const FIELD =
-  "h-12 rounded-xl border border-border bg-transparent text-base transition-colors";
+  "h-12 rounded-xl border border-input bg-transparent text-base transition-colors";
 
 type BundleService = {
   id: string;

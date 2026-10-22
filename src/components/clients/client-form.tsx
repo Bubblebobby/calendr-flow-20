@@ -25,7 +25,7 @@ import {
 } from "@/components/clients/client-addresses";
 import { SkeletonFormPage } from "@/components/ui/skeletons";
 
-const FIELD = "h-12 rounded-xl border border-border bg-transparent text-base";
+const FIELD = "h-12 rounded-xl border border-input bg-transparent text-base";
 
 const AVATAR_COLORS = [
   "#7c3aed",
@@ -109,7 +109,7 @@ function Section({
 }) {
   return (
     <section className="rounded-3xl border border-border bg-card p-8">
-      <h2 className="text-lg font-semibold tracking-tight text-foreground">{title}</h2>
+      <h2 className="text-lg font-semibold text-foreground">{title}</h2>
       {description ? (
         <p className="mt-1 text-body text-muted-foreground">{description}</p>
       ) : null}
@@ -524,7 +524,7 @@ export function ClientForm({
         <div className="mx-auto flex w-full max-w-6xl items-center justify-end gap-3 px-8 py-4">
           <Button
             variant="outline"
-            className="h-11 rounded-full border-[#D3D3D3] bg-white px-6 text-base font-semibold text-foreground hover:bg-white hover:text-foreground"
+            className="h-11 rounded-full border-input bg-white px-6 text-base font-semibold text-foreground hover:bg-white hover:text-foreground"
             onClick={() => (onClose ? onClose() : navigate({ to: "/clients" }))}
           >
             Close
@@ -546,7 +546,7 @@ export function ClientForm({
 
         <div className="mt-10 grid gap-12 lg:grid-cols-[240px_minmax(0,1fr)]">
           {/* Left navigation */}
-          <nav className="h-fit space-y-1 rounded-2xl border border-[#D3D3D3] bg-white p-3">
+          <nav className="h-fit space-y-1 rounded-2xl border border-border bg-white p-3">
             <p className="px-3 py-2 text-body font-semibold text-foreground">Personal</p>
             <button
               type="button"
@@ -579,7 +579,7 @@ export function ClientForm({
             >
               Emergency contacts
             </button>
-            <div className="my-2 h-px bg-[#D3D3D3]" />
+            <div className="my-2 h-px bg-border" />
             <button
               type="button"
               onClick={() => toast("Coming soon")}
@@ -600,7 +600,7 @@ export function ClientForm({
             ) : null}
             <section className={cn("space-y-6", section !== "profile" && "hidden")}>
               <div>
-                <h2 className="text-2xl font-semibold tracking-tight text-foreground">Profile</h2>
+                <h2 className="text-2xl font-semibold text-foreground">Profile</h2>
                 <p className="mt-1 text-body text-muted-foreground">
                   Manage your client&apos;s personal profile
                 </p>
@@ -614,7 +614,7 @@ export function ClientForm({
                     <User size={34} className="text-primary" weight="regular" />
                   )}
                 </div>
-                <label className="absolute -bottom-1 right-0 flex size-7 cursor-pointer items-center justify-center rounded-full border border-[#D3D3D3] bg-white">
+                <label className="absolute -bottom-1 right-0 flex size-7 cursor-pointer items-center justify-center rounded-full border border-input bg-white">
                   <PencilSimple size={13} className="text-foreground" />
                   <input
                     type="file"
@@ -777,11 +777,11 @@ export function ClientForm({
               </div>
             </section>
 
-            <div className="h-px bg-[#D3D3D3]" />
+            <div className="h-px bg-border" />
 
             <section className={cn("space-y-6", section !== "profile" && "hidden")}>
               <div>
-                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                <h2 className="text-2xl font-semibold text-foreground">
                   Additional info
                 </h2>
                 <p className="mt-1 text-body text-muted-foreground">
@@ -847,7 +847,7 @@ export function ClientForm({
                       />
                       <Button
                         variant="outline"
-                        className="h-12 rounded-xl border-[#D3D3D3] bg-white px-4 font-semibold text-foreground hover:bg-white hover:text-foreground"
+                        className="h-12 rounded-xl border-input bg-white px-4 font-semibold text-foreground hover:bg-white hover:text-foreground"
                         disabled={!quickAddName.trim() || quickAddClient.isPending}
                         onClick={() => quickAddClient.mutate(quickAddName.trim())}
                       >
@@ -895,7 +895,7 @@ export function ClientForm({
                       />
                       <Button
                         variant="outline"
-                        className="h-12 rounded-xl border-[#D3D3D3] bg-white px-4 font-semibold text-foreground hover:bg-white hover:text-foreground"
+                        className="h-12 rounded-xl border-input bg-white px-4 font-semibold text-foreground hover:bg-white hover:text-foreground"
                         disabled={!newLanguage.trim()}
                         onClick={() => {
                           const value = newLanguage.trim();
@@ -1006,7 +1006,7 @@ export function ClientForm({
                           "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-body font-medium transition-colors",
                           active
                             ? "border-primary bg-primary text-primary-foreground"
-                            : "border-[#D3D3D3] text-foreground hover:bg-muted",
+                            : "border-input text-foreground hover:bg-muted",
                         )}
                       >
                         {active ? <Check size={14} weight="bold" /> : null}
@@ -1024,7 +1024,7 @@ export function ClientForm({
                   />
                   <Button
                     variant="outline"
-                    className="h-12 gap-2 rounded-xl border-[#D3D3D3] bg-white px-5 font-semibold text-foreground hover:bg-white hover:text-foreground"
+                    className="h-12 gap-2 rounded-xl border-input bg-white px-5 font-semibold text-foreground hover:bg-white hover:text-foreground"
                     disabled={!newTag.trim() || !businessId || createTag.isPending}
                     onClick={() => createTag.mutate(newTag.trim())}
                   >
@@ -1042,7 +1042,7 @@ export function ClientForm({
                 <Textarea
                   id="notes"
                   rows={4}
-                  className="rounded-xl border border-[#D3D3D3] bg-transparent text-base"
+                  className="rounded-xl border border-input bg-transparent text-base"
                   value={notes}
                   onChange={(event) => setNotes(event.target.value)}
                 />

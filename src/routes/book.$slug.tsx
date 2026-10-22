@@ -408,7 +408,7 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
       <div className="flex min-h-screen items-center justify-center bg-surface px-6">
         <div className="w-full max-w-md rounded-2xl bg-card p-8 text-center shadow-[inset_0_0_0_1px_var(--color-border)]">
           <SalonLogo path={business.logo_path} name={business.name} size={56} className="mx-auto mb-4" />
-          <CheckCircle size={56} weight="fill" className="mx-auto text-[#1f8a3e]" />
+          <CheckCircle size={56} weight="fill" className="mx-auto text-success" />
           <h1 className="mt-4 text-display font-semibold">Booking confirmed</h1>
           <p className="mt-2 text-body text-muted-foreground">
             {form.first_name.trim() ? `See you soon, ${form.first_name.trim()}.` : "See you soon."}
@@ -788,7 +788,7 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                       <span className={cn("text-title font-semibold", closed && "line-through decoration-1")}>
                         {dayLabel(value, { day: "numeric" })}
                       </span>
-                      {closed ? <span className="text-[0.6875rem] leading-none">Closed</span> : null}
+                      {closed ? <span className="text-caption leading-none">Closed</span> : null}
                     </button>
                   );
                 })}
@@ -933,7 +933,7 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
           {error ? (
             <p
               role="alert"
-              className="mt-6 rounded-xl bg-[#fdecef] px-4 py-3 text-body text-destructive"
+              className="mt-6 rounded-xl bg-destructive-soft px-4 py-3 text-body text-destructive"
             >
               {error}
             </p>
@@ -987,7 +987,7 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                 <li className="text-body text-muted-foreground">No services selected</li>
               ) : null}
               {promo && promoDiscount > 0 ? (
-                <li className="flex justify-between text-body text-[#1f8a3e]">
+                <li className="flex justify-between text-body text-success">
                   <span>Promo {promo.code}</span>
                   <span>-{money(promoDiscount)}</span>
                 </li>

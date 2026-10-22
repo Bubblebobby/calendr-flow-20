@@ -50,7 +50,7 @@ export function CustomerHeader({ search = true }: { search?: boolean }) {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-16 w-full max-w-[1200px] items-center gap-3 px-4 sm:px-8">
-        <Link to="/discover" className="text-[1.375rem] font-bold tracking-tight">
+        <Link to="/discover" className="text-[1.375rem] font-bold">
           bookly
         </Link>
         {search ? (
@@ -166,7 +166,7 @@ export function Rating({
 
 export function Stars({ value, size = 14 }: { value: number; size?: number }) {
   return (
-    <span className="inline-flex text-[#f5a623]" aria-label={`${value} out of 5 stars`}>
+    <span className="inline-flex text-rating" aria-label={`${value} out of 5 stars`}>
       {[1, 2, 3, 4, 5].map((n) => (
         <Star key={n} size={size} weight={value >= n - 0.25 ? "fill" : "regular"} />
       ))}
@@ -192,7 +192,7 @@ export function SalonVisual({ name, className }: { name: string; className?: str
       style={{ background: `linear-gradient(135deg, ${from}, ${to})` }}
       aria-hidden
     >
-      <span className="text-[2.5rem] font-bold tracking-tight text-ink/70">{initialsOf(name)}</span>
+      <span className="text-[2.5rem] font-bold text-ink/70">{initialsOf(name)}</span>
     </div>
   );
 }

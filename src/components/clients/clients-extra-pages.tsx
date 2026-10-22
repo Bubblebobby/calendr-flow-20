@@ -432,10 +432,10 @@ export function OnlineReputation() {
                 return (
                   <div key={stars} className="flex items-center gap-3 text-body">
                     <span className="w-3">{stars}</span>
-                    <Star size={14} weight="fill" className="text-[#f5b301]" />
+                    <Star size={14} weight="fill" className="text-rating" />
                     <div className="h-2 flex-1 overflow-hidden rounded-full bg-secondary">
                       <div
-                        className="h-full rounded-full bg-[#f5b301]"
+                        className="h-full rounded-full bg-rating"
                         style={{ width: count ? `${(n / count) * 100}%` : 0 }}
                       />
                     </div>
@@ -475,7 +475,7 @@ export function OnlineReputation() {
                       key={n}
                       size={16}
                       weight="fill"
-                      className={n <= review.rating ? "text-[#f5b301]" : "text-secondary"}
+                      className={n <= review.rating ? "text-rating" : "text-secondary"}
                     />
                   ))}
                 </div>

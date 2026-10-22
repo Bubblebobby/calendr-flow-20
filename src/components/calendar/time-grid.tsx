@@ -9,11 +9,11 @@ import { MemberAvatar } from "./calendar-toolbar";
 // A small badge on each appointment block so its status shows without opening it (plain
 // "booked" has none). Colours match the appointment panel's status header.
 const STATUS_BADGE: Record<string, { icon: Icon; label: string; color: string; fill?: boolean }> = {
-  confirmed: { icon: Check, label: "Confirmed", color: "#2d76ec" },
-  arrived: { icon: DoorOpen, label: "Arrived", color: "#c77700" },
-  started: { icon: Play, label: "Started", color: "#1f8a3e", fill: true },
-  completed: { icon: CheckCircle, label: "Completed", color: "#1f8a3e", fill: true },
-  no_show: { icon: Prohibit, label: "No-show", color: "#d92d20" },
+  confirmed: { icon: Check, label: "Confirmed", color: "var(--info)" },
+  arrived: { icon: DoorOpen, label: "Arrived", color: "var(--warning)" },
+  started: { icon: Play, label: "Started", color: "var(--success)", fill: true },
+  completed: { icon: CheckCircle, label: "Completed", color: "var(--success)", fill: true },
+  no_show: { icon: Prohibit, label: "No-show", color: "var(--destructive)" },
 };
 import {
   SLOT_HEIGHT,
@@ -356,8 +356,8 @@ export function TimeGrid({
                       className={cn(
                         "absolute inset-x-1 z-10 flex flex-col justify-start overflow-hidden rounded-[4px] px-1.5 py-1 text-left text-caption leading-4 transition-[filter,opacity] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         STATUS_BADGE[appointment.status] && "pr-5",
-                        appointment.status === "no_show" && !faded && "opacity-60",
-                        faded ? "pointer-events-none text-[#0d0d0d]/40" : "text-[#0d0d0d]",
+                        appointment.status === "no_show" && !faded && "line-through decoration-1",
+                        faded ? "pointer-events-none text-foreground/40" : "text-foreground",
                         highlighted && "ring-2 ring-primary",
                       )}
                       style={{

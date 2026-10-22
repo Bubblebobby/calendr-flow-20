@@ -153,7 +153,7 @@ export function ReportsList({ view }: { view: "all" | "favourites" | "dashboards
               onClick={() => toggle(report.id)}
               className="flex size-10 items-center justify-center rounded-full hover:bg-secondary"
             >
-              <Star size={20} weight={favourites.includes(report.id) ? "fill" : "regular"} className={favourites.includes(report.id) ? "text-[#f5a623]" : "text-muted-foreground"} />
+              <Star size={20} weight={favourites.includes(report.id) ? "fill" : "regular"} className={favourites.includes(report.id) ? "text-rating" : "text-muted-foreground"} />
             </button>
           </li>
         ))}
@@ -258,7 +258,7 @@ export function ReportPage({ reportId }: { reportId: string }) {
               onClick={() => toggle(report.id)}
               className="flex size-9 items-center justify-center rounded-full hover:bg-secondary"
             >
-              <Star size={22} weight={favourites.includes(report.id) ? "fill" : "regular"} className={favourites.includes(report.id) ? "text-[#f5a623]" : "text-muted-foreground"} />
+              <Star size={22} weight={favourites.includes(report.id) ? "fill" : "regular"} className={favourites.includes(report.id) ? "text-rating" : "text-muted-foreground"} />
             </button>
           </h1>
           <p className="mt-1 text-body text-muted-foreground">{report.description}</p>

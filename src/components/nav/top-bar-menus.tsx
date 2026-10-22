@@ -36,9 +36,9 @@ type Notification = {
 const KIND_ICON: Record<string, React.ReactNode> = {
   online_booking: <CalendarCheck size={20} className="text-primary" />,
   client_cancelled: <CalendarX size={20} className="text-destructive" />,
-  client_rescheduled: <ClockCounterClockwise size={20} className="text-[#2d76ec]" />,
-  low_stock: <Package size={20} className="text-[#9a4b00]" />,
-  review: <Star size={20} weight="fill" className="text-[#f5a623]" />,
+  client_rescheduled: <ClockCounterClockwise size={20} className="text-info" />,
+  low_stock: <Package size={20} className="text-warning" />,
+  review: <Star size={20} weight="fill" className="text-rating" />,
 };
 
 function timeAgo(iso: string) {

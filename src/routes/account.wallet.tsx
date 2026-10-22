@@ -118,7 +118,7 @@ function WalletPage() {
                   </p>
                   <p className="mt-1 text-caption opacity-80">left of {money(Number(g.initial))}</p>
                   <div className="mt-5 flex items-end justify-between gap-3">
-                    <span className="rounded-lg bg-white/20 px-2 py-1 font-mono text-body tracking-widest">
+                    <span className="rounded-lg bg-white/20 px-2 py-1 font-mono text-body tracking-wider">
                       {g.code}
                     </span>
                     <span className="text-right text-caption opacity-90">
@@ -218,7 +218,7 @@ function WalletPage() {
                     <Crown
                       size={20}
                       weight="fill"
-                      className={active ? "text-[#f5a623]" : "text-muted-foreground"}
+                      className={active ? "text-rating" : "text-muted-foreground"}
                     />
                     <p className="text-heading font-semibold">{m.name}</p>
                   </div>

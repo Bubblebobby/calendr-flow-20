@@ -720,7 +720,7 @@ export function CheckoutScreen({
     leftPane = (
       <div className="flex min-h-[70vh] flex-col items-center justify-center text-center">
         <CheckCircle size={72} weight="fill" className="text-primary" />
-        <h1 className="mt-6 text-[2rem] font-semibold tracking-tight">Sale completed</h1>
+        <h1 className="mt-6 text-[2rem] font-semibold">Sale completed</h1>
         <p className="mt-2 text-body text-muted-foreground">
           {money(toPay)} paid
           {payments.length
@@ -733,7 +733,7 @@ export function CheckoutScreen({
               Gift card code{issuedCodes.length > 1 ? "s" : ""}
             </p>
             {issuedCodes.map((code) => (
-              <p key={code} className="mt-1 font-mono text-title font-semibold tracking-widest">
+              <p key={code} className="mt-1 font-mono text-title font-semibold tracking-wider">
                 {code}
               </p>
             ))}
@@ -1098,9 +1098,9 @@ export function CheckoutScreen({
         <div className="mt-6 grid grid-cols-3 gap-3">
           {(
             [
-              ["cash", "Cash", Money, "text-[#1f8a3e]"],
-              ["card", "Card", CreditCard, "text-[#2d76ec]"],
-              ["gift", "Redeem gift", Gift, "text-[#1f8a3e]"],
+              ["cash", "Cash", Money, "text-success"],
+              ["card", "Card", CreditCard, "text-info"],
+              ["gift", "Redeem gift", Gift, "text-success"],
               ["split", "Split payment", Receipt, "text-foreground"],
               ["other", "Other", CurrencyCircleDollar, "text-primary"],
             ] as const
@@ -1638,7 +1638,7 @@ export function CheckoutScreen({
                   onChange={(event) =>
                     setEditLine({ ...editLine, teamMemberId: event.target.value || null })
                   }
-                  className="mt-1 h-11 w-full rounded-lg border border-border bg-card px-3 font-normal"
+                  className="mt-1 h-11 w-full rounded-lg border border-input bg-card px-3 font-normal"
                 >
                   <option value="">No team member</option>
                   {members.map((member) => (
@@ -1733,7 +1733,7 @@ export function CheckoutScreen({
                   onChange={(event) => setPromoInput(event.target.value.toUpperCase())}
                   placeholder="Promo code"
                   maxLength={20}
-                  className="h-11 min-w-0 flex-1 rounded-lg border border-border px-3 font-mono uppercase tracking-wider outline-none focus:border-primary"
+                  className="h-11 min-w-0 flex-1 rounded-lg border border-input px-3 font-mono uppercase tracking-wider outline-none focus:border-primary"
                 />
                 <button
                   type="submit"
@@ -1796,7 +1796,7 @@ export function CheckoutScreen({
                 setConfirmDiscard(false);
                 onClose();
               }}
-              className={cn(pill, "bg-[#c8273a] text-white hover:bg-[#b01f31]")}
+              className={cn(pill, "bg-destructive text-white hover:bg-destructive/90")}
             >
               Discard
             </button>

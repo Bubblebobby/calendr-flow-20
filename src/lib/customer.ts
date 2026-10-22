@@ -159,12 +159,12 @@ export const isUpcoming = (a: MyAppointment, now = Date.now()) =>
 
 export const STATUS_LABEL: Record<string, { label: string; tone: string }> = {
   booked: { label: "Booked", tone: "bg-accent text-primary" },
-  confirmed: { label: "Confirmed", tone: "bg-[#e6f6ea] text-[#1f8a3e]" },
-  arrived: { label: "Checked in", tone: "bg-[#e6f6ea] text-[#1f8a3e]" },
-  started: { label: "In progress", tone: "bg-[#e6f6ea] text-[#1f8a3e]" },
+  confirmed: { label: "Confirmed", tone: "bg-success-soft text-success" },
+  arrived: { label: "Checked in", tone: "bg-success-soft text-success" },
+  started: { label: "In progress", tone: "bg-success-soft text-success" },
   completed: { label: "Completed", tone: "bg-secondary text-foreground" },
-  no_show: { label: "No show", tone: "bg-[#fdecef] text-destructive" },
-  cancelled: { label: "Cancelled", tone: "bg-[#fdecef] text-destructive" },
+  no_show: { label: "No show", tone: "bg-destructive-soft text-destructive" },
+  cancelled: { label: "Cancelled", tone: "bg-destructive-soft text-destructive" },
 };
 
 /** "Book again" link: same services (and professional, if there was only one). */

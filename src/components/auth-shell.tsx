@@ -45,20 +45,20 @@ export function AuthShell({
   return (
     <div className="theme-fresha grid min-h-[100svh] bg-white lg:grid-cols-2">
       {/* Left */}
-      <div className="flex flex-col lg:border-r lg:border-[#f0f0f0]">
+      <div className="flex flex-col lg:border-r lg:border-border">
         <Link to="/" className="ml-5 mt-8 flex w-fit items-center gap-2 sm:ml-6 lg:mt-11">
           <span className="flex size-[22px] items-center justify-center rounded-[4px] bg-[#101010] text-white">
             <CalendarCheck size={15} weight="bold" />
           </span>
-          <span className="text-[22px] font-medium leading-7 tracking-[-0.01em] text-[#101010]">
+          <span className="text-[22px] font-medium leading-7 text-foreground">
             Bookly
           </span>
         </Link>
 
         <div className="flex flex-1 flex-col justify-center px-5 py-12 sm:px-10 lg:px-[72px]">
-          <h1 className="text-[28px] font-bold leading-9 text-[#101010]">{title}</h1>
+          <h1 className="text-[28px] font-bold leading-9 text-foreground">{title}</h1>
           {subtitle ? (
-            <div className="mt-4 text-base leading-6 text-[#101010]">{subtitle}</div>
+            <div className="mt-4 text-base leading-6 text-foreground">{subtitle}</div>
           ) : null}
           <div className="mt-4">{children}</div>
         </div>
@@ -70,8 +70,8 @@ export function AuthShell({
           <FeatureReel features={features} />
           <PreviewCard />
         </div>
-        <h2 className="mt-10 text-[32px] font-bold leading-10 text-[#101010]">{panelTitle}</h2>
-        <p className="mt-4 max-w-[560px] text-lg leading-7 text-[#666]">{panelText}</p>
+        <h2 className="mt-10 text-[32px] font-bold leading-10 text-foreground">{panelTitle}</h2>
+        <p className="mt-4 max-w-[560px] text-lg leading-7 text-muted-foreground">{panelText}</p>
       </div>
     </div>
   );
@@ -135,17 +135,17 @@ function FeatureReel({ features }: { features: string[] }) {
 function PreviewCard() {
   const rows = [
     { time: "09:00", name: "Ada · Blow dry", tone: "bg-[#dbe8ff] text-[#0b3d91]" },
-    { time: "10:30", name: "Chi · Gel nails", tone: "bg-[#e6f5ea] text-[#1f6b35]" },
-    { time: "12:00", name: "Tolu · Haircut", tone: "bg-[#fdf3e2] text-[#8a5300]" },
-    { time: "14:15", name: "Ife · Lashes", tone: "bg-[#fdecef] text-[#9b1c3a]" },
+    { time: "10:30", name: "Chi · Gel nails", tone: "bg-success-soft text-success" },
+    { time: "12:00", name: "Tolu · Haircut", tone: "bg-warning-soft text-warning" },
+    { time: "14:15", name: "Ife · Lashes", tone: "bg-destructive-soft text-[#9b1c3a]" },
   ];
   return (
-    <div className="absolute right-0 top-[32%] hidden h-[196px] w-[245px] rounded-l-md bg-[#f7f7f7] p-3 min-[1400px]:block">
-      <p className="text-[11px] font-medium text-[#101010]">Today</p>
+    <div className="absolute right-0 top-[32%] hidden h-[196px] w-[245px] rounded-l-md bg-muted p-3 min-[1400px]:block">
+      <p className="text-[11px] font-medium text-foreground">Today</p>
       <ul className="mt-2 space-y-1.5">
         {rows.map((row) => (
           <li key={row.time} className="flex items-center gap-2">
-            <span className="w-9 text-[10px] tabular-nums text-[#666]">{row.time}</span>
+            <span className="w-9 text-[10px] tabular-nums text-muted-foreground">{row.time}</span>
             <span
               className={cn("flex-1 truncate rounded px-2 py-1 text-[10px] font-medium", row.tone)}
             >
@@ -155,10 +155,10 @@ function PreviewCard() {
         ))}
       </ul>
       <div className="absolute -bottom-3 right-3 w-[150px] rounded-md bg-white p-2 shadow-lg">
-        <CheckCircle size={12} weight="fill" className="text-[#1f8a3e]" />
-        <p className="mt-0.5 text-[8px] font-medium text-[#1f8a3e]">Booking confirmed</p>
-        <p className="text-[11px] font-bold text-[#101010]">Gel nails, 10:30</p>
-        <p className="text-[8px] text-[#666]">Reminder sent</p>
+        <CheckCircle size={12} weight="fill" className="text-success" />
+        <p className="mt-0.5 text-[8px] font-medium text-success">Booking confirmed</p>
+        <p className="text-[11px] font-bold text-foreground">Gel nails, 10:30</p>
+        <p className="text-[8px] text-muted-foreground">Reminder sent</p>
       </div>
     </div>
   );
@@ -170,9 +170,9 @@ function PreviewCard() {
 // #101010, secondary #f0f0f0. The field sits 32px above Continue.
 
 export const authPrimaryButton =
-  "flex h-12 w-full items-center justify-center rounded-full bg-[#101010] text-base font-medium text-white transition-colors hover:bg-[#2b2b2b] disabled:bg-[#dadada] disabled:text-[#959595]";
+  "flex h-12 w-full items-center justify-center rounded-full bg-[#101010] text-base font-medium text-white transition-colors hover:bg-[#2b2b2b] disabled:bg-[#dadada] disabled:text-placeholder";
 export const authSecondaryButton =
-  "flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#f0f0f0] text-base font-medium text-[#101010] transition-colors hover:bg-[#e4e4e4] disabled:opacity-60";
+  "flex h-12 w-full items-center justify-center gap-2 rounded-full bg-secondary text-base font-medium text-foreground transition-colors hover:bg-[#e4e4e4] disabled:opacity-60";
 
 /**
  * Square's floating label (read from their field component): empty, the label sits in the
@@ -185,13 +185,13 @@ export function AuthField({
   ...input
 }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <label className="relative block h-16 rounded-[6px] border border-[#dadada] transition-[border-color,box-shadow] duration-100 ease-[cubic-bezier(0.76,0,0.24,1)] hover:not-focus-within:border-[#959595] focus-within:border-[#101010] focus-within:shadow-[inset_0_0_0_1px_#101010]">
+    <label className="relative block h-16 rounded-[6px] border border-input transition-[border-color,box-shadow] duration-100 ease-[cubic-bezier(0.76,0,0.24,1)] hover:not-focus-within:border-foreground/60 focus-within:border-foreground focus-within:shadow-[inset_0_0_0_1px_#101010]">
       <input
         {...input}
         placeholder=" "
-        className="peer absolute inset-x-4 top-[31px] h-6 bg-transparent text-base leading-6 text-[#101010] outline-none"
+        className="peer absolute inset-x-4 top-[31px] h-6 bg-transparent text-base leading-6 text-foreground outline-none"
       />
-      <span className="pointer-events-none absolute left-4 top-2 text-[14px] font-[600] leading-[22px] text-[#101010] transition-[top,font-size,line-height,font-weight,color] duration-100 ease-[cubic-bezier(0.76,0,0.24,1)] peer-[:placeholder-shown:not(:focus)]:top-[19px] peer-[:placeholder-shown:not(:focus)]:text-base peer-[:placeholder-shown:not(:focus)]:font-[400] peer-[:placeholder-shown:not(:focus)]:leading-6 peer-[:placeholder-shown:not(:focus)]:text-[#666]">
+      <span className="pointer-events-none absolute left-4 top-2 text-[14px] font-[600] leading-[22px] text-foreground transition-[top,font-size,line-height,font-weight,color] duration-100 ease-[cubic-bezier(0.76,0,0.24,1)] peer-[:placeholder-shown:not(:focus)]:top-[19px] peer-[:placeholder-shown:not(:focus)]:text-base peer-[:placeholder-shown:not(:focus)]:font-[400] peer-[:placeholder-shown:not(:focus)]:leading-6 peer-[:placeholder-shown:not(:focus)]:text-muted-foreground">
         {label}
       </span>
     </label>
@@ -201,9 +201,9 @@ export function AuthField({
 export function AuthDivider() {
   return (
     <div className="my-6 flex items-center gap-8">
-      <span className="h-px flex-1 bg-[#f0f0f0]" />
-      <span className="text-base text-[#101010]">or</span>
-      <span className="h-px flex-1 bg-[#f0f0f0]" />
+      <span className="h-px flex-1 bg-secondary" />
+      <span className="text-base text-foreground">or</span>
+      <span className="h-px flex-1 bg-secondary" />
     </div>
   );
 }

@@ -111,7 +111,7 @@ export function TaxSettings({ view }: { view: "tax" | "receipts" }) {
   });
   if (isMissingTable(rates.error as { code?: string; message?: string } | null)) {
     return (
-      <p className="rounded-xl bg-[#fff7e6] px-5 py-4 text-body text-[#7a4b00]">
+      <p className="rounded-xl bg-warning-soft px-5 py-4 text-body text-warning">
         Tax rates need a database update first: run notes/supabase-update-2026-10-19.sql in Supabase.
       </p>
     );

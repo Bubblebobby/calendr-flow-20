@@ -194,7 +194,7 @@ function ManageView({ token, data }: { token: string; data: Manage }) {
     <div className="min-h-screen bg-surface px-4 py-10 sm:px-6">
       <div className="mx-auto w-full max-w-lg space-y-4">
         {done ? (
-          <div className="flex items-center gap-3 rounded-xl bg-[#e6f6ea] px-5 py-4 text-body text-[#1f6b33]">
+          <div className="flex items-center gap-3 rounded-xl bg-success-soft px-5 py-4 text-body text-success">
             <CheckCircle size={24} weight="fill" />
             {done === "cancelled"
               ? "Your booking has been cancelled."
@@ -216,7 +216,7 @@ function ManageView({ token, data }: { token: string; data: Manage }) {
             className={cn(
               "mt-3 inline-flex rounded-full px-3 py-1 text-caption font-semibold",
               appointment.status === "cancelled" || appointment.status === "no_show"
-                ? "bg-[#fdecef] text-destructive"
+                ? "bg-destructive-soft text-destructive"
                 : "bg-accent text-primary",
             )}
           >
@@ -373,7 +373,7 @@ function ManageView({ token, data }: { token: string; data: Manage }) {
           />
         )}
         {error ? (
-          <p role="alert" className="rounded-xl bg-[#fdecef] px-4 py-3 text-body text-destructive">
+          <p role="alert" className="rounded-xl bg-destructive-soft px-4 py-3 text-body text-destructive">
             {error}
           </p>
         ) : null}

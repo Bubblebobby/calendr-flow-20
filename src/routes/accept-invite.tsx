@@ -108,7 +108,7 @@ function AcceptInvitePage() {
             <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <Sparkle size={24} weight="fill" />
             </span>
-            <h1 className="mt-5 text-3xl font-semibold tracking-tight text-foreground">
+            <h1 className="mt-5 text-3xl font-semibold text-foreground">
               Welcome, {invite.data.first_name}!
             </h1>
             <p className="mt-2 text-base text-muted-foreground">

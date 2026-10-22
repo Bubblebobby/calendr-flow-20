@@ -362,7 +362,7 @@ export function ClientsList() {
                 onClick={() =>
                   toast("Client import (CSV/Excel upload) is coming in a later update")
                 }
-                className="inline-flex h-10 items-center gap-2 rounded-full bg-white px-5 text-body font-medium text-[#0d0d0d]"
+                className="inline-flex h-10 items-center gap-2 rounded-full bg-white px-5 text-body font-medium text-foreground"
               >
                 <DownloadSimple size={16} /> Start import
               </button>
@@ -656,7 +656,7 @@ export function ClientsList() {
                   <select
                     value={draft[group.key]}
                     onChange={(event) => setDraft({ ...draft, [group.key]: event.target.value })}
-                    className="mt-2 h-12 w-full rounded-lg border border-border bg-card px-4 text-body font-normal capitalize"
+                    className="mt-2 h-12 w-full rounded-lg border border-input bg-card px-4 text-body font-normal capitalize"
                   >
                     {group.options.map((option) => (
                       <option key={option.value} value={option.value}>

@@ -39,7 +39,7 @@ export type ClientAddressValue = {
   country: string;
 };
 
-const FIELD = "h-12 rounded-xl border border-[#D3D3D3] bg-transparent text-base";
+const FIELD = "h-12 rounded-xl border border-input bg-transparent text-base";
 
 const TYPES: { value: ClientAddressType; label: string; icon: typeof House }[] = [
   { value: "home", label: "Home", icon: House },
@@ -119,12 +119,12 @@ export function ClientAddressesPanel({
       ) : null}
 
       <div>
-        <h2 className="text-2xl font-semibold tracking-tight text-foreground">Addresses</h2>
+        <h2 className="text-2xl font-semibold text-foreground">Addresses</h2>
         <p className="mt-1 text-body text-muted-foreground">Manage your client&apos;s address</p>
       </div>
 
       {value ? (
-        <div className="flex items-start gap-4 rounded-2xl border border-[#D3D3D3] bg-white p-5">
+        <div className="flex items-start gap-4 rounded-2xl border border-border bg-white p-5">
           <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-accent/40 text-primary">
             <TypeIcon size={20} />
           </div>
@@ -228,7 +228,7 @@ function AddressModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90svh] w-full max-w-lg overflow-y-auto rounded-3xl p-0 [&>button]:hidden">
         <div className="flex items-start justify-between px-7 pt-7">
-          <h3 className="text-2xl font-semibold tracking-tight text-foreground">New address</h3>
+          <h3 className="text-2xl font-semibold text-foreground">New address</h3>
           <button
             type="button"
             aria-label="Close"
@@ -253,7 +253,7 @@ function AddressModal({
                     "relative flex flex-col items-center gap-2 rounded-2xl border p-4 transition-colors",
                     active
                       ? "border-primary bg-accent/30"
-                      : "border-[#D3D3D3] hover:border-foreground/30",
+                      : "border-input hover:border-foreground/30",
                   )}
                 >
                   {active ? (
@@ -298,7 +298,7 @@ function AddressModal({
             </div>
           </div>
 
-          <div className="divide-y divide-[#D3D3D3] rounded-2xl border border-[#D3D3D3]">
+          <div className="divide-y divide-border rounded-2xl border border-border">
             {BREAKDOWN.map((field) => {
               const raw = draft[field.key];
               const current = typeof raw === "string" ? raw : "";
@@ -359,7 +359,7 @@ function AddressModal({
         <div className="flex items-center justify-end gap-3 px-7 pb-7 pt-4">
           <Button
             variant="outline"
-            className="h-11 rounded-full border-[#D3D3D3] bg-white px-6 text-base font-semibold text-foreground hover:bg-white hover:text-foreground"
+            className="h-11 rounded-full border-input bg-white px-6 text-base font-semibold text-foreground hover:bg-white hover:text-foreground"
             onClick={() => onOpenChange(false)}
           >
             Cancel

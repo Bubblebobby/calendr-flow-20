@@ -640,7 +640,7 @@ export function WaitlistDrawer({
                 type="date"
                 value={picked.date}
                 onChange={(event) => setPicked({ ...picked, date: event.target.value })}
-                className="h-12 w-full rounded-lg border border-border px-4"
+                className="h-12 w-full rounded-lg border border-input px-4"
               />
             </label>
             <label>
@@ -648,7 +648,7 @@ export function WaitlistDrawer({
               <select
                 value={picked.time}
                 onChange={(event) => setPicked({ ...picked, time: event.target.value })}
-                className="h-12 w-full rounded-lg border border-border bg-card px-4"
+                className="h-12 w-full rounded-lg border border-input bg-card px-4"
               >
                 <option value="any">Any time</option>
                 {["morning", "afternoon", "evening"].map((part) => (
@@ -749,7 +749,7 @@ export function WaitlistDrawer({
         ))}
       </div>
       {entries.data?.missing ? (
-        <div className="m-6 rounded-xl bg-[#fff6e5] p-4 text-body text-[#7a4b00]">
+        <div className="m-6 rounded-xl bg-warning-soft p-4 text-body text-warning">
           {MISSING_TABLE_MESSAGE}
         </div>
       ) : visible.length === 0 ? (

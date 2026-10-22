@@ -97,7 +97,7 @@ export function TimesheetsPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  if (missing(entries.error)) return <p className="rounded-xl bg-[#fff7e6] px-5 py-4 text-body text-[#7a4b00]">{NOTICE}</p>;
+  if (missing(entries.error)) return <p className="rounded-xl bg-warning-soft px-5 py-4 text-body text-warning">{NOTICE}</p>;
   const list = entries.data ?? [];
   const weekEntries = list.filter((e) => new Date(e.clock_in) >= from && new Date(e.clock_in) < to);
 
@@ -121,7 +121,7 @@ export function TimesheetsPage() {
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-body font-semibold">{memberName(m)}</span>
-                <span className={cn("block text-caption", open ? "text-[#1f8a3e]" : "text-muted-foreground")}>
+                <span className={cn("block text-caption", open ? "text-success" : "text-muted-foreground")}>
                   {open ? `Clocked in since ${fmtTime(open.clock_in)}` : `${hoursLabel(week)} this week`}
                 </span>
               </span>
@@ -176,7 +176,7 @@ export function TimesheetsPage() {
                   <td className="px-4 font-semibold">{m ? memberName(m) : "—"}</td>
                   <td className="px-4">{fmtDate(e.clock_in)}</td>
                   <td className="px-4 tabular-nums">{fmtTime(e.clock_in)}</td>
-                  <td className="px-4 tabular-nums">{e.clock_out ? fmtTime(e.clock_out) : <span className="text-[#1f8a3e]">Working</span>}</td>
+                  <td className="px-4 tabular-nums">{e.clock_out ? fmtTime(e.clock_out) : <span className="text-success">Working</span>}</td>
                   <td className="px-4 text-right tabular-nums">{e.break_minutes ? `${e.break_minutes} min` : "—"}</td>
                   <td className="px-4 text-right font-semibold tabular-nums">{e.clock_out ? hoursLabel(workedHours(e)) : "—"}</td>
                   <td className="px-4">
@@ -346,7 +346,7 @@ export function PayRunsPage() {
       return (data ?? []) as unknown as Run[];
     },
   });
-  if (missing(runs.error)) return <p className="rounded-xl bg-[#fff7e6] px-5 py-4 text-body text-[#7a4b00]">{NOTICE}</p>;
+  if (missing(runs.error)) return <p className="rounded-xl bg-warning-soft px-5 py-4 text-body text-warning">{NOTICE}</p>;
   if (opened) return <PayRunDetail runId={opened} onBack={() => { setOpened(null); queryClient.invalidateQueries({ queryKey: ["pay-runs"] }); }} />;
   if (building) return <PayRunBuilder onDone={(id) => { setBuilding(false); queryClient.invalidateQueries({ queryKey: ["pay-runs"] }); if (id) setOpened(id); }} />;
 
@@ -403,7 +403,7 @@ export function PayRunsPage() {
                   </span>
                 </span>
                 <span className="text-body font-semibold tabular-nums">{money(r.pay_run_lines.reduce((s, l) => s + Number(l.total), 0))}</span>
-                <span className={cn("rounded-full px-2 py-0.5 text-caption font-semibold", r.status === "paid" ? "bg-[#e6f6ea] text-[#1f8a3e]" : "bg-secondary text-muted-foreground")}>
+                <span className={cn("rounded-full px-2 py-0.5 text-caption font-semibold", r.status === "paid" ? "bg-success-soft text-success" : "bg-secondary text-muted-foreground")}>
                   {r.status === "paid" ? "Paid" : "Draft"}
                 </span>
               </button>

@@ -307,7 +307,7 @@ export function SalesAppointmentsList() {
               <Funnel size={14} className="mr-1.5" />
               Filters
               {activeFilterCount > 0 && (
-                <span className="ml-1.5 flex size-5 items-center justify-center rounded-full bg-primary text-[0.6875rem] font-semibold text-primary-foreground">
+                <span className="ml-1.5 flex size-5 items-center justify-center rounded-full bg-primary text-caption font-semibold text-primary-foreground">
                   {activeFilterCount}
                 </span>
               )}
