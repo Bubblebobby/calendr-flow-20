@@ -5,6 +5,7 @@ import { Heart } from "@phosphor-icons/react";
 import { EmptyState, outlinePill, VenueTile } from "@/components/customer/customer-ui";
 import { FavouriteButton, useFavourites } from "@/components/customer/favourites";
 import { fetchVenues } from "@/lib/customer";
+import { SkeletonCards } from "@/components/ui/skeletons";
 
 export const Route = createFileRoute("/account/favourites")({
   head: () => ({ meta: [{ title: "Favourites — Bookly" }] }),
@@ -24,7 +25,7 @@ function FavouritesPage() {
     <div className="space-y-6">
       <h1 className="text-display font-semibold">Favourites</h1>
       {favourites.isLoading || (ids.length > 0 && venues.isLoading) ? (
-        <p className="text-body text-muted-foreground">Loading…</p>
+        <SkeletonCards label="Loading favourites" />
       ) : ids.length === 0 ? (
         <EmptyState
           icon={Heart}

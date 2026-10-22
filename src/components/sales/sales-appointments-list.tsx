@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SkeletonRows } from "@/components/ui/skeletons";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -386,11 +387,7 @@ export function SalesAppointmentsList() {
           </thead>
           <tbody>
             {appointmentsQuery.isLoading ? (
-              <tr>
-                <td colSpan={8} className="px-5 py-10 text-center text-muted-foreground">
-                  Loading appointments…
-                </td>
-              </tr>
+              <SkeletonRows cols={8} label="Loading appointments" />
             ) : filtered.length === 0 ? (
               <tr>
                 <td colSpan={8} className="px-5 py-10 text-center text-muted-foreground">

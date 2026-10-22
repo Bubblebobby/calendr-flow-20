@@ -37,6 +37,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/format";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
+import { SkeletonTable } from "@/components/ui/skeletons";
 
 type SaleRow = {
   id: string;
@@ -296,7 +297,7 @@ export function SalesList() {
       </ListToolbar>
 
       {salesQuery.isLoading ? (
-        <div className="h-40 animate-pulse rounded-2xl bg-secondary" />
+        <SkeletonTable cols={6} label="Loading sales" />
       ) : rows.length === 0 ? (
         <EmptyCard
           icon={<Receipt size={44} weight="duotone" />}

@@ -25,6 +25,8 @@ import {
 import { rememberRecent } from "@/lib/customer";
 import { formatDuration, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { SkeletonHeader, SkeletonList } from "@/components/ui/skeletons";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/salon/$slug")({
   ssr: false,
@@ -128,7 +130,11 @@ function SalonPage() {
     return (
       <div className="min-h-screen bg-white">
         <CustomerHeader />
-        <p className="p-10 text-center text-body text-muted-foreground">Loading…</p>
+        <div className="mx-auto w-full max-w-6xl space-y-6 px-6 py-8">
+          <SkeletonHeader actions={1} />
+          <Skeleton className="h-48 w-full rounded-2xl sm:h-72" />
+          <SkeletonList rows={5} label="Loading salon" />
+        </div>
       </div>
     );
   }

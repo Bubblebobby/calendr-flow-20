@@ -21,6 +21,7 @@ import { useApplyBrand } from "@/lib/brand";
 import { SalonLogo } from "@/components/customer/salon-logo";
 import { policySummary, type BookingPolicy } from "@/lib/booking-policy";
 import { initialsOf, isCustomerAccount, splitName, useCustomer } from "@/lib/customer";
+import { SkeletonPanel, SkeletonSlots } from "@/components/ui/skeletons";
 
 type Search = { services?: string; team?: string };
 
@@ -106,7 +107,11 @@ function BookingPage() {
   });
 
   if (page.isLoading) {
-    return <Centered>Loading…</Centered>;
+    return (
+      <Centered>
+        <SkeletonPanel label="Loading booking page" />
+      </Centered>
+    );
   }
   if (page.isError || !page.data) {
     return (
@@ -700,7 +705,9 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                 {dayLabel(day, { weekday: "long", day: "numeric", month: "long" })}
               </p>
               {busy.isLoading || availability.isLoading ? (
-                <p className="mt-4 text-body text-muted-foreground">Checking availability…</p>
+                <div className="mt-4">
+                  <SkeletonSlots label="Checking availability" />
+                </div>
               ) : slots.length === 0 ? (
                 <div className="mt-4 rounded-xl p-6 text-center shadow-[inset_0_0_0_1px_var(--color-border)]">
                   <p className="text-heading font-semibold">No times available</p>

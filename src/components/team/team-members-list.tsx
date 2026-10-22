@@ -31,6 +31,7 @@ import { revokeTeamAccess, sendTeamInvite, setTeamAccessLevel } from "@/lib/team
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
 import { csvCell } from "@/lib/csv";
+import { SkeletonRows } from "@/components/ui/skeletons";
 
 export type InviteStatus = "not_invited" | "invited" | "active";
 
@@ -250,10 +251,11 @@ export function TeamMembersList() {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 && (
+            {membersQuery.isLoading && <SkeletonRows cols={5} avatar label="Loading team" />}
+            {!membersQuery.isLoading && filtered.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-4 py-16 text-center text-body text-muted-foreground">
-                  {membersQuery.isLoading ? "Loading team…" : "No team members yet."}
+                  No team members yet.
                 </td>
               </tr>
             )}

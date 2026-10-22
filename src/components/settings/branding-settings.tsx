@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, ImageSquare, RocketLaunch, Trash, UploadSimple } from "@phosphor-icons/react";
 import { toast } from "sonner";
 
+import { SkeletonForm } from "@/components/ui/skeletons";
 import { pillButton } from "@/components/sales/list-ui";
 import { supabase } from "@/integrations/supabase/client";
 import { BRAND_PRESETS, LOGO_BUCKET, brandHex, logoUrl, type BrandKey } from "@/lib/brand";
@@ -117,7 +118,7 @@ export function BrandingSettings() {
         Branding couldn't load. Run the latest database update in Supabase, then refresh.
       </p>
     );
-  if (!row.data) return <p className="text-body text-muted-foreground">Loading…</p>;
+  if (!row.data) return <SkeletonForm fields={3} label="Loading branding" />;
   const canEdit = row.data.isOwner;
 
   return (

@@ -23,6 +23,7 @@ import {
   ClientAddressesPanel,
   type ClientAddressValue,
 } from "@/components/clients/client-addresses";
+import { SkeletonFormPage } from "@/components/ui/skeletons";
 
 const FIELD = "h-12 rounded-xl border border-border bg-transparent text-base";
 
@@ -509,8 +510,8 @@ export function ClientForm({
 
   if (isEdit && clientQuery.isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
-        <p className="text-base text-muted-foreground">Loading client…</p>
+      <div className="min-h-screen bg-white">
+        <SkeletonFormPage label="Loading client" />
       </div>
     );
   }

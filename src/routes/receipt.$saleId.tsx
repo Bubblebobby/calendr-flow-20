@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { requireOnboardedUser } from "@/lib/auth-guard";
 import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { SkeletonPanel } from "@/components/ui/skeletons";
 import { useApplyBrand } from "@/lib/brand";
 import { SalonLogo } from "@/components/customer/salon-logo";
 
@@ -62,7 +63,12 @@ function ReceiptPage() {
 
   useApplyBrand(sale.data?.businesses?.brand_color);
 
-  if (sale.isLoading) return <div className="p-10 text-center text-body text-muted-foreground">Loading receipt…</div>;
+  if (sale.isLoading)
+    return (
+      <div className="flex min-h-screen justify-center bg-surface px-4 py-8">
+        <SkeletonPanel lines={7} label="Loading receipt" />
+      </div>
+    );
   if (!sale.data) return <div className="p-10 text-center text-body text-muted-foreground">Receipt not found.</div>;
   const s = sale.data;
   const b = s.businesses;

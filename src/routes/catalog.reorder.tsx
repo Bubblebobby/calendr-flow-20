@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { requireOnboardedUser } from "@/lib/auth-guard";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
+import { SkeletonList } from "@/components/ui/skeletons";
 
 export const Route = createFileRoute("/catalog/reorder")({
   ssr: false,
@@ -231,7 +232,7 @@ function SetMenuOrderPage() {
         </DropdownMenu>
 
         {!groups ? (
-          <p className="mt-6 text-body text-muted-foreground">Loading menu…</p>
+          <SkeletonList rows={6} className="mt-6" label="Loading menu" />
         ) : groups.length === 0 ? (
           <p className="mt-6 text-body text-muted-foreground">Add services to your menu first.</p>
         ) : (
