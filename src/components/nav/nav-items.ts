@@ -165,8 +165,6 @@ export const navItems: NavItem[] = [
 export function sectionTitle(key: string, tab?: string) {
   const item = navItems.find((entry) => entry.key === key);
   const children = item?.groups?.flatMap((group) => group.children) ?? [];
-  const child = tab
-    ? children.find((entry) => entry.search?.["tab"] === tab)
-    : children[0];
+  const child = children.find((entry) => entry.search?.["tab"] === tab) ?? children[0];
   return child?.title ?? item?.title ?? "Bookly";
 }
