@@ -564,7 +564,7 @@ export function ServiceMenu() {
         {/* Categories */}
         <aside className="rounded-lg bg-card px-8 py-6">
           <p className="pb-2 text-title font-semibold">Categories</p>
-          <ul className="-mx-4">
+          <ul className="-mx-4 space-y-1">
             <CategoryRow
               label="All categories"
               count={visibleItems.length}
