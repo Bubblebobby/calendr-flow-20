@@ -286,7 +286,7 @@ export function DateRangeButton({
           <select
             value={draft.preset}
             onChange={(event) => setDraft(makeRange(event.target.value as RangePreset))}
-            className="mt-2 h-11 w-full rounded-lg border border-border bg-card px-3 text-body font-normal"
+            className="mt-2 h-11 w-full rounded-lg border border-input bg-card px-3 text-body font-normal"
           >
             {(Object.keys(RANGE_LABELS) as RangePreset[]).map((key) => (
               <option key={key} value={key}>
@@ -418,7 +418,7 @@ export function FilterSelect({
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-2 h-12 w-full rounded-lg border border-border bg-card px-4 text-body font-normal"
+        className="mt-2 h-12 w-full rounded-lg border border-input bg-card px-4 text-body font-normal"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
@@ -482,7 +482,7 @@ export function FeatureIntro({
         <p
           className={cn(
             "text-caption font-semibold tracking-wide",
-            comingSoon ? "text-muted-foreground" : "text-[#1f8a3e]",
+            comingSoon ? "text-muted-foreground" : "text-success",
           )}
         >
           {label}

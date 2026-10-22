@@ -79,7 +79,7 @@ export function AddOnsPage({ tab }: { tab: "add-ons" | "integrations" }) {
                 <span
                   className={cn(
                     "rounded-full px-2 py-0.5 text-caption font-semibold",
-                    item.status === "Included" ? "bg-[#e6f6ea] text-[#1f8a3e]" : "bg-secondary text-muted-foreground",
+                    item.status === "Included" ? "bg-success-soft text-success" : "bg-secondary text-muted-foreground",
                   )}
                 >
                   {item.status}

@@ -226,7 +226,7 @@ function Salon({ slug, venue, reviews }: { slug: string; venue: Venue; reviews: 
             <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-body">
               <Rating value={reviews?.rating ?? null} count={reviews?.count ?? 0} />
               <span className="text-muted-foreground">·</span>
-              <span className={open.open ? "text-[#1f8a3e]" : "text-muted-foreground"}>
+              <span className={open.open ? "text-success" : "text-muted-foreground"}>
                 {open.label}
               </span>
               {area ? (
@@ -418,7 +418,7 @@ function Salon({ slug, venue, reviews }: { slug: string; venue: Venue; reviews: 
                     >
                       <span className="flex items-center gap-2">
                         <span
-                          className={cn("size-2 rounded-full", w ? "bg-[#1f8a3e]" : "bg-border")}
+                          className={cn("size-2 rounded-full", w ? "bg-success" : "bg-border")}
                         />
                         {DAYS[d]}
                       </span>

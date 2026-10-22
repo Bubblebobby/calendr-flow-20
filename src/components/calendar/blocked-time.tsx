@@ -65,7 +65,7 @@ const BLOCK_TYPES = [
 
 const TIMES = Array.from({ length: 288 }, (_, index) => index * 5);
 const field =
-  "h-12 w-full rounded-lg border border-border bg-card px-4 text-body outline-none focus:border-primary focus:ring-2 focus:ring-primary/20";
+  "h-12 w-full rounded-lg border border-input bg-card px-4 text-body outline-none focus:border-primary focus:ring-2 focus:ring-primary/20";
 
 export type BlockDraft = {
   member: TeamMember;
@@ -355,7 +355,7 @@ export function BlockedTimeDrawer({
               maxLength={255}
               onChange={(event) => setDescription(event.target.value)}
               placeholder="Add description or note"
-              className="min-h-28 w-full rounded-lg border border-border p-4 text-body outline-none focus:border-primary"
+              className="min-h-28 w-full rounded-lg border border-input p-4 text-body outline-none focus:border-primary"
             />
           </label>
           <label className="flex items-center gap-3 text-body">
@@ -392,7 +392,7 @@ export function BlockedTimeChip({ block, onClick }: { block: BlockedTime; onClic
         onClick();
       }}
       onMouseMove={(event) => event.stopPropagation()}
-      className="flex h-full w-full flex-col justify-start overflow-hidden rounded-[4px] bg-[#c9c9cf] px-1.5 py-1 text-left text-caption leading-4 text-[#0d0d0d] hover:brightness-95"
+      className="flex h-full w-full flex-col justify-start overflow-hidden rounded-[4px] bg-[#c9c9cf] px-1.5 py-1 text-left text-caption leading-4 text-foreground hover:brightness-95"
     >
       <span className="block truncate">
         {formatTime(minutesOfDay(new Date(block.start_time)))} -{" "}

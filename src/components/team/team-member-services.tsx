@@ -100,7 +100,7 @@ export async function reconcileTeamMemberServices(
 
 function CountBadge({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-muted px-1.5 text-[11px] font-semibold text-muted-foreground">
+    <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-muted px-1.5 text-caption font-semibold text-muted-foreground">
       {children}
     </span>
   );
@@ -159,7 +159,7 @@ export function TeamMemberServicesSection({
   return (
     <section className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold tracking-tight text-foreground">Services</h2>
+        <h2 className="text-lg font-semibold text-foreground">Services</h2>
         <p className="mt-1 text-body text-muted-foreground">
           Choose the services this team member provides
         </p>

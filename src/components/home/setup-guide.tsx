@@ -32,7 +32,7 @@ const STEP_ICONS: Record<SetupStepKey, Icon> = {
   sale: Receipt,
 };
 
-const GREEN = "#1f8a3e";
+const GREEN = "var(--success)";
 const stepButton =
   "inline-flex h-9 items-center justify-center rounded-full px-5 text-[14px] font-medium transition-colors";
 
@@ -62,7 +62,7 @@ export function SetupPage() {
   return (
     <div className="min-h-full bg-surface">
       <div className="mx-auto w-full max-w-4xl p-4 sm:p-8">
-        <h1 className="text-[28px] font-normal leading-9 tracking-[-0.5px] text-foreground sm:text-[36px] sm:leading-10">
+        <h1 className="text-[28px] font-normal leading-9 text-foreground sm:text-[36px] sm:leading-10">
           Set up your business to start taking bookings
         </h1>
 
@@ -83,7 +83,7 @@ export function SetupPage() {
             </p>
 
             {/* Square's progress card. */}
-            <div className="mt-6 rounded-xl bg-[#f7f7f7] p-4">
+            <div className="mt-6 rounded-xl bg-muted p-4">
               <div
                 role="progressbar"
                 aria-valuemin={0}
@@ -116,7 +116,7 @@ export function SetupPage() {
                 ))}
               </ul>
             ) : (
-              <div className="mt-6 flex flex-col items-start gap-4 rounded-xl border border-[#f0f0f0] bg-card p-6">
+              <div className="mt-6 flex flex-col items-start gap-4 rounded-xl border border-border bg-card p-6">
                 <CheckCircle size={32} weight="fill" style={{ color: GREEN }} />
                 <div>
                   <h2 className="text-base font-medium leading-6 text-foreground">
@@ -141,7 +141,7 @@ export function SetupPage() {
             {finished.length > 0 ? (
               <section className="mt-10">
                 <h2 className="text-base font-medium leading-6 text-foreground">Completed</h2>
-                <ul className="mt-3 divide-y divide-[#f0f0f0] rounded-xl border border-[#f0f0f0] bg-card">
+                <ul className="mt-3 divide-y divide-border rounded-xl border border-border bg-card">
                   {finished.map((item) => (
                     <li key={item.key}>
                       <Link
@@ -174,7 +174,7 @@ export function SetupPage() {
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mt-6 rounded-xl border border-[#f0f0f0] bg-card p-6 text-[14px] leading-5 text-muted-foreground">
+    <div className="mt-6 rounded-xl border border-border bg-card p-6 text-[14px] leading-5 text-muted-foreground">
       {children}
     </div>
   );
@@ -191,10 +191,10 @@ function StepCard({
 }) {
   const StepIcon = STEP_ICONS[item.key];
   return (
-    <div className="flex h-full flex-col rounded-xl border border-[#f0f0f0] bg-card p-6">
+    <div className="flex h-full flex-col rounded-xl border border-border bg-card p-6">
       {upNext ? (
         <p
-          className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-[0.06em]"
+          className="flex items-center gap-2 text-caption font-semibold uppercase tracking-wide"
           style={{ color: GREEN }}
         >
           <StepIcon size={24} />

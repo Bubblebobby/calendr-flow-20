@@ -68,7 +68,7 @@ function Header({
 }
 
 const Notice = () => (
-  <p className="rounded-xl bg-[#fff7e6] px-5 py-4 text-body text-[#7a4b00]">{NOTICE}</p>
+  <p className="rounded-xl bg-warning-soft px-5 py-4 text-body text-warning">{NOTICE}</p>
 );
 const missing = (e: unknown) => isMissingTable(e as { code?: string; message?: string } | null);
 
@@ -80,9 +80,9 @@ function Badge({
   children: React.ReactNode;
 }) {
   const tones = {
-    green: "bg-[#e6f6ea] text-[#1f8a3e]",
+    green: "bg-success-soft text-success",
     grey: "bg-secondary text-muted-foreground",
-    red: "bg-[#fdecef] text-destructive",
+    red: "bg-destructive-soft text-destructive",
     purple: "bg-accent text-primary",
   };
   return (
@@ -643,7 +643,7 @@ export function PackagesPage() {
               </span>
               <span className="mt-3 block text-title font-semibold">{money(Number(p.price))}</span>
               {full > Number(p.price) ? (
-                <span className="block text-caption font-semibold text-[#1f8a3e]">
+                <span className="block text-caption font-semibold text-success">
                   Saves {money(full - Number(p.price))}
                 </span>
               ) : null}

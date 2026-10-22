@@ -38,8 +38,8 @@ export function EventChip({
     <button
       type="button"
       className={cn(
-        "block w-full truncate rounded-[4px] px-1.5 text-left text-[0.75rem] leading-6 text-[#0d0d0d] transition-[filter] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        appointment.status === "no_show" && "opacity-60",
+        "block w-full truncate rounded-[4px] px-1.5 text-left text-[0.75rem] leading-6 text-foreground transition-[filter] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        appointment.status === "no_show" && "line-through decoration-1",
       )}
       style={{ backgroundColor: member?.calendar_color || "#a5d8f3" }}
       onMouseEnter={(event) => member && onHover(event, appointment, member)}

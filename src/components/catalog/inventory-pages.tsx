@@ -102,7 +102,7 @@ function ModalShell({
 }
 
 const DbNotice = () => (
-  <p className="rounded-xl bg-[#fff7e6] px-5 py-4 text-body text-[#7a4b00]">
+  <p className="rounded-xl bg-warning-soft px-5 py-4 text-body text-warning">
     {INVENTORY_DB_NOTICE}
   </p>
 );
@@ -384,8 +384,8 @@ type OrderRow = {
 const ORDER_STATUS: Record<string, { label: string; className: string }> = {
   draft: { label: "Draft", className: "bg-secondary text-muted-foreground" },
   ordered: { label: "Ordered", className: "bg-accent text-primary" },
-  received: { label: "Received", className: "bg-[#e6f6ea] text-[#1f8a3e]" },
-  cancelled: { label: "Cancelled", className: "bg-[#fdecef] text-destructive" },
+  received: { label: "Received", className: "bg-success-soft text-success" },
+  cancelled: { label: "Cancelled", className: "bg-destructive-soft text-destructive" },
 };
 
 export function StockOrdersPage() {
@@ -1021,7 +1021,7 @@ export function StocktakesPage() {
                         diff === null || diff === 0
                           ? "text-muted-foreground"
                           : diff > 0
-                            ? "text-[#1f8a3e]"
+                            ? "text-success"
                             : "text-destructive",
                       )}
                     >
@@ -1105,7 +1105,7 @@ export function StocktakesPage() {
                   {t.completed_at ? ` · completed ${dateFmt(t.completed_at)}` : ""}
                 </span>
               </span>
-              <span className="rounded-full bg-[#e6f6ea] px-2 py-0.5 text-caption font-semibold text-[#1f8a3e]">
+              <span className="rounded-full bg-success-soft px-2 py-0.5 text-caption font-semibold text-success">
                 Completed
               </span>
             </li>

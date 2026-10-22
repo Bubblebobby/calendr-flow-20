@@ -104,7 +104,7 @@ export function StockBadge({ product }: { product: Product }) {
         <span
           className={cn(
             "rounded-full px-2 py-0.5 text-caption font-semibold",
-            state === "out" ? "bg-[#fdecef] text-destructive" : "bg-[#fff1e6] text-[#9a4b00]",
+            state === "out" ? "bg-destructive-soft text-destructive" : "bg-[#fff1e6] text-warning",
           )}
         >
           {state === "out" ? "Out of stock" : "Low stock"}
@@ -186,7 +186,7 @@ export function ProductsPage() {
 
   if (products.error && isMissingTable(products.error as { code?: string; message?: string })) {
     return (
-      <p className="rounded-xl bg-[#fff7e6] px-5 py-4 text-body text-[#7a4b00]">
+      <p className="rounded-xl bg-warning-soft px-5 py-4 text-body text-warning">
         {INVENTORY_DB_NOTICE}
       </p>
     );
@@ -276,7 +276,7 @@ export function ProductsPage() {
         <button
           type="button"
           onClick={() => setLowOnly(true)}
-          className="w-full rounded-xl bg-[#fff1e6] px-5 py-3 text-left text-body text-[#9a4b00]"
+          className="w-full rounded-xl bg-[#fff1e6] px-5 py-3 text-left text-body text-warning"
         >
           {lowCount} product{lowCount === 1 ? " is" : "s are"} low or out of stock.{" "}
           <span className="font-semibold underline">Show them</span>
@@ -1036,7 +1036,7 @@ function StockHistoryDialog({
             <span
               className={cn(
                 "text-body font-semibold tabular-nums",
-                m.change > 0 ? "text-[#1f8a3e]" : "text-destructive",
+                m.change > 0 ? "text-success" : "text-destructive",
               )}
             >
               {m.change > 0 ? `+${m.change}` : m.change}

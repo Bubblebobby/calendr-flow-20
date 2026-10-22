@@ -128,13 +128,13 @@ export const STATUS_OPTIONS = [
 ] as const;
 
 const STATUS_HEADER: Record<string, string> = {
-  booked: "bg-[#2d76ec]",
-  confirmed: "bg-[#2d76ec]",
+  booked: "bg-info",
+  confirmed: "bg-info",
   arrived: "bg-[#c77700]",
-  started: "bg-[#1f8a3e]",
-  completed: "bg-[#1f8a3e]",
-  no_show: "bg-[#d92d20]",
-  cancelled: "bg-[#d92d20]",
+  started: "bg-success",
+  completed: "bg-success",
+  no_show: "bg-destructive",
+  cancelled: "bg-destructive",
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -281,7 +281,7 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 }
 
 const fieldClass =
-  "h-12 w-full rounded-lg border border-border bg-card px-4 text-body outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:bg-muted disabled:text-muted-foreground";
+  "h-12 w-full rounded-lg border border-input bg-card px-4 text-body outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:bg-muted disabled:text-muted-foreground";
 
 // ─── Panel ──────────────────────────────────────────────────────────────────
 
@@ -1922,7 +1922,7 @@ export function AppointmentPanel({
             value={noteDraft}
             onChange={(event) => setNoteDraft(event.target.value)}
             placeholder="Add an appointment note here..."
-            className="mt-2 min-h-48 w-full resize-y rounded-xl border border-border p-4 text-body outline-none focus:border-primary"
+            className="mt-2 min-h-48 w-full resize-y rounded-xl border border-input p-4 text-body outline-none focus:border-primary"
           />
           <div className="mt-2 flex justify-end">
             <button
@@ -2013,7 +2013,7 @@ function CancelScreen({
             Close
           </button>
         </div>
-        <h1 className="mt-6 text-[2.25rem] font-semibold leading-tight tracking-tight">
+        <h1 className="mt-6 text-[2.25rem] font-semibold leading-tight">
           Are you sure you want to cancel?
         </h1>
         <div className="mt-8 grid gap-8 lg:grid-cols-2">
@@ -2078,7 +2078,7 @@ function CancelScreen({
               type="button"
               disabled={pending}
               onClick={() => onConfirm(reason, includeFollowing)}
-              className={cn(pill, "mt-6 w-full bg-[#c8273a] text-white hover:bg-[#b01f31]")}
+              className={cn(pill, "mt-6 w-full bg-destructive text-white hover:bg-destructive/90")}
             >
               {pending ? "Cancelling…" : "Cancel appointment"}
             </button>

@@ -56,7 +56,7 @@ export function TopBar() {
 
   return (
     <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-border bg-card pl-4 pr-6 sm:pr-8">
-      <Link to="/home" className="text-[1.625rem] font-bold tracking-tight text-foreground">
+      <Link to="/home" className="text-[1.625rem] font-bold text-foreground">
         bookly
       </Link>
 
@@ -87,7 +87,7 @@ export function TopBar() {
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label="Account"
-            className="ml-1 flex size-12 items-center justify-center rounded-full border border-white bg-[#ebf8fe] text-[1rem] font-semibold leading-6 text-[#0075a8] transition-shadow hover:ring-2 hover:ring-border"
+            className="ml-1 flex size-12 items-center justify-center rounded-full border border-white bg-info-soft text-[1rem] font-semibold leading-6 text-info transition-shadow hover:ring-2 hover:ring-border"
           >
             {initials}
           </DropdownMenuTrigger>

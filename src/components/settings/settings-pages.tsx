@@ -309,7 +309,7 @@ function SettingsPage({ sectionKey, pageKey }: { sectionKey: string; pageKey: st
             {["Cash", "Card", "Other"].map((label) => (
               <li key={label} className="flex items-center justify-between px-5 py-4 text-body font-medium">
                 {label}
-                <span className="rounded-full bg-[#e6f6ea] px-2 py-0.5 text-caption font-semibold text-[#1f8a3e]">Active</span>
+                <span className="rounded-full bg-success-soft px-2 py-0.5 text-caption font-semibold text-success">Active</span>
               </li>
             ))}
           </ul>
@@ -725,7 +725,7 @@ function BusinessLocation() {
       }
     >
       {/^test address/i.test(address.address) ? (
-        <p className="rounded-xl bg-[#fff7e6] px-5 py-4 text-body text-[#7a4b00]">This is a placeholder address. Replace it with your real one.</p>
+        <p className="rounded-xl bg-warning-soft px-5 py-4 text-body text-warning">This is a placeholder address. Replace it with your real one.</p>
       ) : null}
       <div className={cn(card, "grid gap-4 p-6 sm:grid-cols-2 sm:p-8")}>
         {input("address", "Address", true)}

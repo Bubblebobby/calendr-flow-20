@@ -420,7 +420,7 @@ export function RedeemGiftDialog({
             placeholder="e.g. PLTTRXS5"
             onChange={(e) => setCode(e.target.value.toUpperCase())}
             onKeyDown={(e) => e.key === "Enter" && code.trim().length >= 8 && lookup()}
-            className={cn(field, "font-mono uppercase tracking-widest")}
+            className={cn(field, "font-mono uppercase tracking-wider")}
           />
           {error ? (
             <span className="mt-2 block text-caption font-normal text-destructive">{error}</span>

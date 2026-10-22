@@ -75,7 +75,7 @@ export function DealsPage() {
 
   if (isMissingTable(deals.error as { code?: string; message?: string } | null)) {
     return (
-      <p className="rounded-xl bg-[#fff7e6] px-5 py-4 text-body text-[#7a4b00]">
+      <p className="rounded-xl bg-warning-soft px-5 py-4 text-body text-warning">
         Deals need a database update first: run notes/supabase-update-2026-10-19.sql in Supabase.
       </p>
     );
@@ -175,7 +175,7 @@ export function DealsPage() {
                     <span
                       className={cn(
                         "rounded-full px-2 py-0.5 text-caption font-semibold",
-                        status === "Active" ? "bg-[#e6f6ea] text-[#1f8a3e]" : status === "Scheduled" ? "bg-accent text-primary" : "bg-secondary text-muted-foreground",
+                        status === "Active" ? "bg-success-soft text-success" : status === "Scheduled" ? "bg-accent text-primary" : "bg-secondary text-muted-foreground",
                       )}
                     >
                       {status}

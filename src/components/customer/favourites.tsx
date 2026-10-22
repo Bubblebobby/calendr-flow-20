@@ -79,7 +79,7 @@ export function FavouriteButton({
       <Heart
         size={compact ? 18 : 20}
         weight={saved ? "fill" : "regular"}
-        className={saved ? "text-[#e5484d]" : ""}
+        className={saved ? "text-destructive" : ""}
       />
     </button>
   );

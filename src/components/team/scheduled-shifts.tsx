@@ -176,7 +176,7 @@ export function ScheduledShifts() {
       </div>
 
       {data && !data.available ? (
-        <p className="flex items-start gap-2 rounded-xl bg-[#fff7e6] px-5 py-4 text-body text-[#7a4b00]">
+        <p className="flex items-start gap-2 rounded-xl bg-warning-soft px-5 py-4 text-body text-warning">
           <Info size={20} className="mt-0.5 shrink-0" />
           Showing opening hours for everyone. {NEEDS_DB}.
         </p>
@@ -369,7 +369,7 @@ function ShiftCell({
           state.kind === "closed"
             ? "bg-[repeating-linear-gradient(135deg,var(--color-secondary)_0_6px,transparent_6px_12px)] text-muted-foreground"
             : state.kind === "time_off"
-              ? "bg-[#fff1e6] text-[#9a4b00] hover:bg-[#ffe6d1]"
+              ? "bg-[#fff1e6] text-warning hover:bg-[#ffe6d1]"
               : working
                 ? "bg-[#e9e6fe] font-medium text-foreground hover:bg-[#ddd8fd]"
                 : "text-muted-foreground hover:bg-secondary",
