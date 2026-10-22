@@ -251,6 +251,8 @@
   --font-display: "Newsreader", ui-serif, Georgia, serif;
   --font-display--font-variation-settings: "opsz" 36;
   --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  /* Receipt figures (font loaded by src/routes/receipt.$saleId.tsx). */
+  --font-receipt-mono: "Geist Mono", ui-monospace, monospace;
   --shadow-card: var(--shadow-card);
 }
 
