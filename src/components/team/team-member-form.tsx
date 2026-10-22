@@ -311,7 +311,7 @@ export function TeamMemberForm() {
       </header>
 
       <div className="mx-auto w-full max-w-6xl px-8 pb-24">
-        <h1 className="text-4xl font-semibold tracking-tight text-foreground">Add team member</h1>
+        <h1 className="text-display font-semibold leading-9 text-foreground">Add team member</h1>
 
         <div className="mt-10 grid gap-12 lg:grid-cols-[240px_minmax(0,1fr)]">
           <nav className="h-fit rounded-2xl border border-[#D3D3D3] bg-white p-3">

@@ -539,7 +539,7 @@ export function ClientForm({
       </header>
 
       <div className="mx-auto w-full max-w-6xl px-8 pb-24">
-        <h1 className="text-4xl font-semibold tracking-tight text-foreground">
+        <h1 className="text-display font-semibold leading-9 text-foreground">
           {isEdit ? "Edit client" : "Add a new client"}
         </h1>
 
