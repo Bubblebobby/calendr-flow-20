@@ -4,16 +4,25 @@ import { createFileRoute, Outlet, redirect, useRouterState } from "@tanstack/rea
 import { AppNav } from "@/components/nav/app-nav";
 import { TopBar } from "@/components/nav/top-bar";
 import { requireOnboardedUser } from "@/lib/auth-guard";
+import { SkeletonAppShell } from "@/components/ui/skeletons";
+import { useApplyBrand, useBranding } from "@/lib/brand";
+import { useBusiness } from "@/lib/use-business";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: requireOnboardedUser,
-
+  // While sign-in is checked, show the app's outline straight away instead of a blank page.
+  pendingComponent: SkeletonAppShell,
+  pendingMs: 0,
+  pendingMinMs: 200,
   component: AuthenticatedLayout,
 });
 
-
 function AuthenticatedLayout() {
+  // The salon's brand colour tints the whole dashboard (buttons, highlights, focus rings).
+  const { data: business } = useBusiness();
+  const { data: branding } = useBranding(business?.id);
+  useApplyBrand(branding?.brandColor);
   // Each page or sub-tab opens at the top-left. Without this, main kept the previous page's
   // scroll (e.g. a wide table scrolled sideways carried over to the next Sales tab).
   const main = useRef<HTMLElement>(null);

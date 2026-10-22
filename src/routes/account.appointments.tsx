@@ -30,6 +30,7 @@ import {
 } from "@/lib/customer";
 import { formatDuration, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { SkeletonList } from "@/components/ui/skeletons";
 
 type Search = { id?: string };
 
@@ -52,7 +53,7 @@ function AppointmentsPage() {
     void navigate({ search: appointmentId ? { id: appointmentId } : {}, replace: true });
 
   if (appointments.isLoading)
-    return <p className="text-body text-muted-foreground">Loading your appointments…</p>;
+    return <SkeletonList rows={4} thumb="square" label="Loading your appointments" />;
   if (appointments.isError)
     return (
       <p className="text-body text-destructive">

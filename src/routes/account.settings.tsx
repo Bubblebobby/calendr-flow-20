@@ -7,6 +7,7 @@ import { outlinePill } from "@/components/customer/customer-ui";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useCustomer, type CustomerProfile } from "@/lib/customer";
+import { SkeletonForm } from "@/components/ui/skeletons";
 
 export const Route = createFileRoute("/account/settings")({
   head: () => ({ meta: [{ title: "Settings — Bookly" }] }),
@@ -55,7 +56,7 @@ function SettingsPage() {
     },
   });
 
-  if (!me) return <p className="text-body text-muted-foreground">Loading…</p>;
+  if (!me) return <SkeletonForm fields={3} label="Loading settings" />;
 
   return (
     <div className="max-w-2xl space-y-6">

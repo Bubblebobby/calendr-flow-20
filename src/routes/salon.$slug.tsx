@@ -13,6 +13,8 @@ import {
 } from "@/components/customer/customer-ui";
 import { FavouriteButton } from "@/components/customer/favourites";
 import { supabase } from "@/integrations/supabase/client";
+import { useApplyBrand } from "@/lib/brand";
+import { SalonLogo } from "@/components/customer/salon-logo";
 import {
   formatClock,
   localDay,
@@ -23,6 +25,8 @@ import {
 import { rememberRecent } from "@/lib/customer";
 import { formatDuration, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { SkeletonHeader, SkeletonList } from "@/components/ui/skeletons";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/salon/$slug")({
   ssr: false,
@@ -46,6 +50,8 @@ type Venue = {
     country: string;
     timezone: string;
     description: string | null;
+    brand_color?: string | null;
+    logo_path?: string | null;
     location: {
       address?: string;
       apt?: string;
@@ -111,6 +117,8 @@ function SalonPage() {
     },
   });
 
+  useApplyBrand(venue.data?.business.brand_color);
+
   useEffect(() => {
     if (venue.data) {
       rememberRecent(venue.data.business.id);
@@ -122,7 +130,11 @@ function SalonPage() {
     return (
       <div className="min-h-screen bg-white">
         <CustomerHeader />
-        <p className="p-10 text-center text-body text-muted-foreground">Loading…</p>
+        <div className="mx-auto w-full max-w-6xl space-y-6 px-6 py-8">
+          <SkeletonHeader actions={1} />
+          <Skeleton className="h-48 w-full rounded-2xl sm:h-72" />
+          <SkeletonList rows={5} label="Loading salon" />
+        </div>
       </div>
     );
   }
@@ -205,9 +217,12 @@ function Salon({ slug, venue, reviews }: { slug: string; venue: Venue; reviews: 
 
         <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="text-[2rem] font-bold leading-tight sm:text-[2.5rem]">
-              {business.name}
-            </h1>
+            <div className="flex items-center gap-4">
+              <SalonLogo path={business.logo_path} name={business.name} size={64} />
+              <h1 className="text-[2rem] font-bold leading-tight sm:text-[2.5rem]">
+                {business.name}
+              </h1>
+            </div>
             <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-body">
               <Rating value={reviews?.rating ?? null} count={reviews?.count ?? 0} />
               <span className="text-muted-foreground">·</span>

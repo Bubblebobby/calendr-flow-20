@@ -38,6 +38,7 @@ import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
 import { csvCell } from "@/lib/csv";
 import { summarise, useBusinessReviews } from "@/lib/reviews";
+import { SkeletonRows } from "@/components/ui/skeletons";
 
 type Client = {
   id: string;
@@ -466,17 +467,15 @@ export function ClientsList() {
             </tr>
           </thead>
           <tbody>
-            {pageRows.length === 0 ? (
+            {clientsQuery.isLoading ? (
+              <SkeletonRows cols={7} avatar label="Loading clients" />
+            ) : pageRows.length === 0 ? (
               <tr>
                 <td
                   colSpan={7}
                   className="px-4 py-16 text-center text-body text-muted-foreground"
                 >
-                  {clientsQuery.isLoading
-                    ? "Loading clients…"
-                    : clients.length
-                      ? "No clients match your search."
-                      : "No clients yet."}
+                  {clients.length ? "No clients match your search." : "No clients yet."}
                 </td>
               </tr>
             ) : null}

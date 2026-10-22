@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SkeletonRows } from "@/components/ui/skeletons";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -244,7 +245,7 @@ export function SalesAppointmentsList() {
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Appointments</h1>
+          <h1 className="text-display font-semibold leading-9 text-foreground">Appointments</h1>
           <p className="mt-1 text-body text-muted-foreground">
             View, filter and export appointments booked by your clients.
           </p>
@@ -386,11 +387,7 @@ export function SalesAppointmentsList() {
           </thead>
           <tbody>
             {appointmentsQuery.isLoading ? (
-              <tr>
-                <td colSpan={8} className="px-5 py-10 text-center text-muted-foreground">
-                  Loading appointments…
-                </td>
-              </tr>
+              <SkeletonRows cols={8} label="Loading appointments" />
             ) : filtered.length === 0 ? (
               <tr>
                 <td colSpan={8} className="px-5 py-10 text-center text-muted-foreground">

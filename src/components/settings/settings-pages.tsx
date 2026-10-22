@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Buildings,
+  Info,
   CalendarDots,
   CreditCard,
   FileText,
@@ -17,16 +18,19 @@ import { toast } from "sonner";
 
 import { isMissingTable } from "@/components/calendar/blocked-time";
 import { ConfirmDialog } from "@/components/catalog/catalog-ui";
+import { BrandingSettings } from "@/components/settings/branding-settings";
 import { BusinessHoursPanel } from "@/components/settings/business-hours-panel";
 import { TaxSettings } from "@/components/settings/tax-settings";
 import { CLIENT_SOURCES } from "@/components/clients/client-form";
 import { pillButton } from "@/components/sales/list-ui";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { countryByCode } from "@/lib/countries";
 import { EMPTY_ADDRESS, type BusinessAddress } from "@/lib/google-maps";
 import { TIME_OFF_TYPES, isoDay } from "@/lib/team-shifts";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
+import { SkeletonForm } from "@/components/ui/skeletons";
 
 type PageDef = { key: string; label: string };
 type SectionDef = {
@@ -41,10 +45,11 @@ export const SECTIONS: SectionDef[] = [
   {
     key: "business",
     title: "Business setup",
-    description: "Customise business details and manage your location.",
+    description: "Customise business details, branding and your location.",
     icon: <Buildings size={24} />,
     pages: [
       { key: "details", label: "Business details" },
+      { key: "branding", label: "Branding" },
       { key: "location", label: "Location" },
       { key: "service-menu", label: "Service menu" },
       { key: "clients-list", label: "Clients list" },
@@ -231,7 +236,7 @@ export function SettingsSection({ sectionKey, pageKey }: { sectionKey: string; p
       <div className="grid items-start gap-8 lg:grid-cols-[240px_1fr]">
         <nav className="rounded-xl bg-card px-2 py-4 shadow-[inset_0_0_0_1px_var(--color-border)]">
           <p className="px-4 pb-2 text-heading font-semibold">{section.title}</p>
-          <ul>
+          <ul className="space-y-1">
             {section.pages.map((p) => (
               <li key={p.key}>
                 <button
@@ -268,6 +273,8 @@ function SettingsPage({ sectionKey, pageKey }: { sectionKey: string; pageKey: st
   switch (`${sectionKey}/${pageKey}`) {
     case "business/details":
       return <BusinessDetails />;
+    case "business/branding":
+      return <BrandingSettings />;
     case "business/location":
       return <BusinessLocation />;
     case "scheduling/hours":
@@ -339,7 +346,7 @@ function PageBlock({ title, subtitle, children, action }: { title: string; subti
     <section className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-[1.5rem] font-semibold leading-8">{title}</h2>
+          <h2 className="text-display font-semibold leading-9 text-foreground">{title}</h2>
           <p className="mt-1 max-w-2xl text-body text-muted-foreground">{subtitle}</p>
         </div>
         {action}
@@ -388,23 +395,39 @@ const TIME_ZONES: string[] = (() => {
   }
 })();
 
+/*
+ * Business details laid out like Square's settings table (a label column, a hatched value column
+ * and an "Edit" link per field), drawn with Bookly's own card, colours and type sizes. Edit turns
+ * that one row into an input with Save and Cancel.
+ */
+type DetailKey = "name" | "timezone" | "website";
+
 function BusinessDetails() {
   const row = useBusinessRow();
   const queryClient = useQueryClient();
-  const [form, setForm] = useState({ name: "", website: "", timezone: "Africa/Lagos" });
-  useEffect(() => {
-    if (row.data) setForm({ name: row.data.name, website: row.data.website ?? "", timezone: row.data.timezone ?? "Africa/Lagos" });
-  }, [row.data]);
+  const [editing, setEditing] = useState<DetailKey | null>(null);
+  const [draft, setDraft] = useState("");
+
   const save = useMutation({
-    mutationFn: async () => {
-      const website = form.website.trim();
-      const { error } = await supabase
-        .from("businesses")
-        .update({ name: form.name.trim(), website: website ? (/^https?:\/\//.test(website) ? website : `https://${website}`) : null, timezone: form.timezone })
-        .eq("id", row.data!.id);
+    mutationFn: async ({ key, value }: { key: DetailKey; value: string }) => {
+      const trimmed = value.trim();
+      const update =
+        key === "name"
+          ? { name: trimmed }
+          : key === "timezone"
+            ? { timezone: trimmed }
+            : {
+                website: trimmed
+                  ? /^https?:\/\//.test(trimmed)
+                    ? trimmed
+                    : `https://${trimmed}`
+                  : null,
+              };
+      const { error } = await supabase.from("businesses").update(update).eq("id", row.data!.id);
       if (error) throw error;
     },
     onSuccess: () => {
+      setEditing(null);
       queryClient.invalidateQueries({ queryKey: ["business-row"] });
       queryClient.invalidateQueries({ queryKey: ["current-business"] });
       queryClient.invalidateQueries({ queryKey: ["top-bar-profile"] });
@@ -412,48 +435,180 @@ function BusinessDetails() {
     },
     onError: (error: Error) => toast.error(error.message),
   });
-  if (!row.data) return <p className="text-body text-muted-foreground">Loading…</p>;
-  const country = countryByCode(row.data.country);
-  return (
-    <PageBlock
-      title="Business details"
-      subtitle="Your business name, time zone and website."
-      action={
-        <button type="button" disabled={!form.name.trim() || save.isPending} onClick={() => save.mutate()} className={cn(pillButton, "bg-ink text-ink-foreground hover:bg-ink/90")}>
-          Save
-        </button>
-      }
-    >
-      <div className={cn(card, "grid gap-4 p-6 sm:grid-cols-2 sm:p-8")}>
-        <label className="block text-body font-semibold sm:col-span-2">
-          Business name
-          <input value={form.name} maxLength={100} onChange={(e) => setForm({ ...form, name: e.target.value })} className={field} />
-        </label>
-        <label className="block text-body font-semibold">
-          Country
-          <input value={country?.name ?? row.data.country} disabled className={cn(field, "bg-secondary text-muted-foreground")} />
-        </label>
-        <label className="block text-body font-semibold">
-          Currency
-          <input value={row.data.currency} disabled className={cn(field, "bg-secondary text-muted-foreground")} />
-        </label>
-        <label className="block text-body font-semibold">
-          Time zone
-          <select value={form.timezone} onChange={(e) => setForm({ ...form, timezone: e.target.value })} className={field}>
+
+  if (!row.data) return <SkeletonForm fields={4} label="Loading settings" />;
+  const data = row.data;
+  const country = countryByCode(data.country);
+
+  function startEdit(key: DetailKey, value: string) {
+    setDraft(value);
+    setEditing(key);
+  }
+
+  const editor = (key: DetailKey) => {
+    const invalid = key === "name" && !draft.trim();
+    return (
+      <form
+        className="flex w-full flex-wrap items-center gap-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (!invalid) save.mutate({ key, value: draft });
+        }}
+      >
+        {key === "timezone" ? (
+          <select
+            autoFocus
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            className={cn(field, "mt-0 h-10 min-w-0 flex-1")}
+          >
             {TIME_ZONES.map((tz) => (
               <option key={tz} value={tz}>
                 {tz.replaceAll("_", " ")}
               </option>
             ))}
           </select>
-          <span className="mt-1 block text-caption font-normal text-muted-foreground">Online booking shows times in this time zone.</span>
-        </label>
-        <label className="block text-body font-semibold">
-          Website <span className="font-normal text-muted-foreground">(optional)</span>
-          <input value={form.website} maxLength={200} placeholder="www.yoursalon.com" onChange={(e) => setForm({ ...form, website: e.target.value })} className={field} />
-        </label>
-      </div>
+        ) : (
+          <input
+            autoFocus
+            value={draft}
+            maxLength={key === "name" ? 100 : 200}
+            placeholder={key === "website" ? "www.yoursalon.com" : undefined}
+            onChange={(event) => setDraft(event.target.value)}
+            className={cn(field, "mt-0 h-10 min-w-0 flex-1")}
+          />
+        )}
+        <button
+          type="submit"
+          disabled={invalid || save.isPending}
+          className={cn(pillButton, "h-10 bg-ink text-ink-foreground hover:bg-ink/90")}
+        >
+          Save
+        </button>
+        <button
+          type="button"
+          onClick={() => setEditing(null)}
+          className={cn(pillButton, "h-10 hover:bg-secondary")}
+        >
+          Cancel
+        </button>
+      </form>
+    );
+  };
+
+  return (
+    <PageBlock title="Business details" subtitle="Your business name, location settings and website.">
+      <TooltipProvider delayDuration={150}>
+        <dl className={cn(card, "overflow-hidden")}>
+          <DetailRow
+            label="Display business name"
+            editing={editing === "name"}
+            editor={editor("name")}
+            onEdit={() => startEdit("name", data.name)}
+          >
+            {data.name}
+          </DetailRow>
+          <DetailRow
+            label="Country"
+            info="Set when your business was created. It decides your currency, so it can't be changed here."
+          >
+            {country?.name ?? data.country}
+          </DetailRow>
+          <DetailRow label="Currency" info="Prices, sales and reports all use this currency.">
+            {data.currency}
+          </DetailRow>
+          <DetailRow
+            label="Time zone"
+            info="Online booking and reminders show times in this time zone."
+            editing={editing === "timezone"}
+            editor={editor("timezone")}
+            onEdit={() => startEdit("timezone", data.timezone ?? "Africa/Lagos")}
+          >
+            {(data.timezone ?? "Africa/Lagos").replaceAll("_", " ")}
+          </DetailRow>
+          <DetailRow
+            label="Website"
+            placeholder="Website"
+            editing={editing === "website"}
+            editor={editor("website")}
+            onEdit={() => startEdit("website", data.website ?? "")}
+          >
+            {data.website}
+          </DetailRow>
+        </dl>
+      </TooltipProvider>
     </PageBlock>
+  );
+}
+
+// Read-only value cell: fine diagonal hatching in the border colour.
+const hatched =
+  "bg-[repeating-linear-gradient(-45deg,var(--color-border)_0_1px,transparent_1px_9px)]";
+
+function DetailRow({
+  label,
+  info,
+  placeholder,
+  editing,
+  editor,
+  onEdit,
+  children,
+}: {
+  label: string;
+  info?: string;
+  placeholder?: string;
+  editing?: boolean;
+  editor?: React.ReactNode;
+  onEdit?: () => void;
+  children?: React.ReactNode;
+}) {
+  const empty = children === null || children === undefined || children === "";
+  return (
+    <div className="grid border-b border-border last:border-b-0 sm:grid-cols-[minmax(180px,1fr)_2fr]">
+      <dt className="flex items-center justify-between gap-3 bg-muted px-6 py-4 text-body font-semibold text-foreground">
+        {label}
+        {info ? (
+          <Tooltip>
+            <TooltipTrigger
+              type="button"
+              aria-label={`About ${label.toLowerCase()}`}
+              className="shrink-0 rounded-full text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <Info size={18} />
+            </TooltipTrigger>
+            <TooltipContent side="top" className="max-w-[260px] text-caption">
+              {info}
+            </TooltipContent>
+          </Tooltip>
+        ) : null}
+      </dt>
+      <dd
+        className={cn(
+          "flex min-h-16 items-center justify-between gap-4 px-6 py-3 text-body",
+          editing ? "bg-card" : hatched,
+        )}
+      >
+        {editing ? (
+          editor
+        ) : (
+          <>
+            <span className={cn("min-w-0 break-words", empty && "text-placeholder")}>
+              {empty ? (placeholder ?? "—") : children}
+            </span>
+            {onEdit ? (
+              <button
+                type="button"
+                onClick={onEdit}
+                aria-label={`Edit ${label.toLowerCase()}`}
+                className="shrink-0 text-body font-semibold underline decoration-1 underline-offset-4 transition-opacity hover:opacity-70"
+              >
+                Edit
+              </button>
+            ) : null}
+          </>
+        )}
+      </dd>
+    </div>
   );
 }
 
@@ -475,7 +630,7 @@ function BusinessLocation() {
     },
     onError: (error: Error) => toast.error(error.message),
   });
-  if (!row.data) return <p className="text-body text-muted-foreground">Loading…</p>;
+  if (!row.data) return <SkeletonForm fields={4} label="Loading settings" />;
   const input = (key: keyof BusinessAddress, label: string, required = false) => (
     <label className="block text-body font-semibold">
       {label}

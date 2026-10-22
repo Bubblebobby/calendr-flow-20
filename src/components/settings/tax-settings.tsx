@@ -120,7 +120,7 @@ export function TaxSettings({ view }: { view: "tax" | "receipts" }) {
     return (
       <section className="space-y-6">
         <div>
-          <h2 className="text-[1.5rem] font-semibold leading-8">Receipts</h2>
+          <h2 className="text-display font-semibold leading-9 text-foreground">Receipts</h2>
           <p className="mt-1 max-w-2xl text-body text-muted-foreground">
             Every receipt shows your business name, address, the items, tax and how it was paid. Add a
             line of your own at the bottom.
@@ -142,7 +142,7 @@ export function TaxSettings({ view }: { view: "tax" | "receipts" }) {
   return (
     <section className="space-y-6">
       <div>
-        <h2 className="text-[1.5rem] font-semibold leading-8">Tax rates</h2>
+        <h2 className="text-display font-semibold leading-9 text-foreground">Tax rates</h2>
         <p className="mt-1 max-w-2xl text-body text-muted-foreground">
           Prices include tax. Checkout shows how much of each sale is tax, and it appears on receipts and in reports. Give services and
           products their own rate, or they use the default.

@@ -131,7 +131,7 @@ const STATUS_HEADER: Record<string, string> = {
   confirmed: "bg-[#2d76ec]",
   arrived: "bg-[#c77700]",
   started: "bg-[#1f8a3e]",
-  completed: "bg-[#5b5b5b]",
+  completed: "bg-[#1f8a3e]",
   no_show: "bg-[#d92d20]",
   cancelled: "bg-[#d92d20]",
 };

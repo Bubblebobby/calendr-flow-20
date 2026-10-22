@@ -7,6 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { requireOnboardedUser } from "@/lib/auth-guard";
 import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { SkeletonPanel } from "@/components/ui/skeletons";
+import { useApplyBrand } from "@/lib/brand";
+import { SalonLogo } from "@/components/customer/salon-logo";
 
 export const Route = createFileRoute("/receipt/$saleId")({
   ssr: false,
@@ -28,7 +31,7 @@ type SaleRow = {
   clients: { first_name: string; last_name: string | null; email: string | null; phone: string | null } | null;
   team_members: { first_name: string } | null;
   sale_items: { description: string; price: number; quantity: number; tax_amount?: number | null; sort_order: number }[];
-  businesses: { name: string; currency: string; country: string; location: { address?: string; city?: string } | null; receipt_footer?: string | null } | null;
+  businesses: { name: string; currency: string; country: string; location: { address?: string; city?: string } | null; receipt_footer?: string | null; brand_color?: string | null; logo_path?: string | null } | null;
 };
 
 const METHOD: Record<string, string> = { cash: "Cash", card: "Card", other: "Other" };
@@ -58,7 +61,14 @@ function ReceiptPage() {
     },
   });
 
-  if (sale.isLoading) return <div className="p-10 text-center text-body text-muted-foreground">Loading receipt…</div>;
+  useApplyBrand(sale.data?.businesses?.brand_color);
+
+  if (sale.isLoading)
+    return (
+      <div className="flex min-h-screen justify-center bg-surface px-4 py-8">
+        <SkeletonPanel lines={7} label="Loading receipt" />
+      </div>
+    );
   if (!sale.data) return <div className="p-10 text-center text-body text-muted-foreground">Receipt not found.</div>;
   const s = sale.data;
   const b = s.businesses;
@@ -84,6 +94,7 @@ function ReceiptPage() {
       </div>
       <article className="mx-auto max-w-md bg-card px-8 py-10 shadow-[inset_0_0_0_1px_var(--color-border)] print:max-w-none print:shadow-none">
         <header className="text-center">
+          {b ? <SalonLogo path={b.logo_path} name={b.name} size={64} className="mx-auto mb-3" /> : null}
           <h1 className="text-title font-semibold">{b?.name}</h1>
           {b?.location?.address ? (
             <p className="text-caption text-muted-foreground">{[b.location.address, b.location.city].filter(Boolean).join(", ")}</p>

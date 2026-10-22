@@ -17,8 +17,11 @@ import {
 } from "@/lib/booking-slots";
 import { formatDuration, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { useApplyBrand } from "@/lib/brand";
+import { SalonLogo } from "@/components/customer/salon-logo";
 import { policyForBooking, policySummary, type BookingPolicy } from "@/lib/booking-policy";
 import { initialsOf, isCustomerAccount, splitName, useCustomer } from "@/lib/customer";
+import { SkeletonPanel, SkeletonSlots } from "@/components/ui/skeletons";
 
 type Search = { services?: string; team?: string };
 
@@ -46,6 +49,8 @@ type Page = {
     timezone: string;
     description: string | null;
     location: { address?: string; city?: string } | null;
+    brand_color?: string | null;
+    logo_path?: string | null;
   };
   hours: OpeningHours[];
   categories: { id: string; name: string; color: string }[];
@@ -102,7 +107,11 @@ function BookingPage() {
   });
 
   if (page.isLoading) {
-    return <Centered>Loading…</Centered>;
+    return (
+      <Centered>
+        <SkeletonPanel label="Loading booking page" />
+      </Centered>
+    );
   }
   if (page.isError || !page.data) {
     return (
@@ -127,6 +136,7 @@ function Centered({ children }: { children: React.ReactNode }) {
 
 function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; preselect: Search }) {
   const { business } = page;
+  useApplyBrand(business.brand_color);
   const tz = business.timezone;
   const money = (amount: number) => formatMoney(amount, business.currency, business.country);
 
@@ -367,6 +377,7 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
     return (
       <div className="flex min-h-screen items-center justify-center bg-surface px-6">
         <div className="w-full max-w-md rounded-2xl bg-card p-8 text-center shadow-[inset_0_0_0_1px_var(--color-border)]">
+          <SalonLogo path={business.logo_path} name={business.name} size={56} className="mx-auto mb-4" />
           <CheckCircle size={56} weight="fill" className="mx-auto text-[#1f8a3e]" />
           <h1 className="mt-4 text-display font-semibold">Booking confirmed</h1>
           <p className="mt-2 text-body text-muted-foreground">
@@ -694,7 +705,9 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                 {dayLabel(day, { weekday: "long", day: "numeric", month: "long" })}
               </p>
               {busy.isLoading || availability.isLoading ? (
-                <p className="mt-4 text-body text-muted-foreground">Checking availability…</p>
+                <div className="mt-4">
+                  <SkeletonSlots label="Checking availability" />
+                </div>
               ) : slots.length === 0 ? (
                 <div className="mt-4 rounded-xl p-6 text-center shadow-[inset_0_0_0_1px_var(--color-border)]">
                   <p className="text-heading font-semibold">No times available</p>
@@ -838,6 +851,7 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
         {/* Summary */}
         <aside className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-white p-4 lg:sticky lg:top-24 lg:h-fit lg:rounded-xl lg:border-0 lg:p-6 lg:shadow-[inset_0_0_0_1px_var(--color-border)]">
           <div className="hidden lg:block">
+            <SalonLogo path={business.logo_path} name={business.name} size={48} className="mb-3" />
             <p className="text-heading font-semibold">{business.name}</p>
             {business.location?.address ? (
               <p className="text-caption text-muted-foreground">
