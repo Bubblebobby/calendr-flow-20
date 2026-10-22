@@ -63,7 +63,7 @@ const esc = (value: string) =>
 // fonts (Gmail, Outlook) fall back to the system font.
 const FONT = "'Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 const FONT_LINK =
-  '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">';
+  '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&display=swap" rel="stylesheet">';
 const INK = "#101010";
 const MUTED = "#666666";
 const LINE = "#e5e5e5";
@@ -78,8 +78,8 @@ function layout({ preheader, heading, intro, body, salon }: { preheader: string;
 <tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:16px;border:1px solid ${LINE}">
 <tr><td style="padding:32px 32px 8px">
-<p style="margin:0 0 20px;font-size:13px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:${MUTED}">${esc(salon.name)}</p>
-<h1 style="margin:0;font-size:26px;line-height:32px;font-weight:700;letter-spacing:-0.02em">${esc(heading)}</h1>
+<p style="margin:0 0 20px;font-size:13px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;color:${MUTED}">${esc(salon.name)}</p>
+<h1 style="margin:0;font-size:26px;line-height:32px;font-weight:600;letter-spacing:-0.02em">${esc(heading)}</h1>
 <p style="margin:10px 0 0;font-size:15px;line-height:22px;color:${MUTED}">${intro}</p>
 </td></tr>
 <tr><td style="padding:16px 32px 32px">${body}</td></tr>
@@ -90,11 +90,11 @@ function layout({ preheader, heading, intro, body, salon }: { preheader: string;
 }
 
 function button(href: string, label: string) {
-  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px"><tr><td style="border-radius:999px;background:${INK}"><a href="${esc(href)}" style="display:inline-block;padding:12px 24px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none">${esc(label)}</a></td></tr></table>`;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px"><tr><td style="border-radius:999px;background:${INK}"><a href="${esc(href)}" style="display:inline-block;padding:12px 24px;font-size:15px;font-weight:500;color:#ffffff;text-decoration:none">${esc(label)}</a></td></tr></table>`;
 }
 
 function row(label: string, value: string, strong = false) {
-  const weight = strong ? "font-weight:700;font-size:16px" : "font-size:15px";
+  const weight = strong ? "font-weight:600;font-size:16px" : "font-size:15px";
   return `<tr><td style="padding:6px 0;${weight}">${label}</td><td align="right" style="padding:6px 0;${weight};white-space:nowrap">${value}</td></tr>`;
 }
 
@@ -108,10 +108,10 @@ function bookingCard(b: BookingDetails, struck = false) {
     .join("");
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${LINE};border-radius:12px">
 <tr><td style="padding:18px 20px">
-<p style="margin:0;font-size:17px;font-weight:700;${deco}">${esc(b.when.date)}</p>
+<p style="margin:0;font-size:17px;font-weight:600;${deco}">${esc(b.when.date)}</p>
 <p style="margin:2px 0 0;font-size:15px;color:${MUTED};${deco}">${esc(b.when.time)}</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;border-top:1px solid ${LINE}">${lines}
-${b.total > 0 ? `<tr><td style="padding:10px 0 0;border-top:1px solid ${LINE};font-size:15px;font-weight:700;${deco}">Total</td><td align="right" style="padding:10px 0 0;border-top:1px solid ${LINE};font-size:15px;font-weight:700;${deco}">${esc(b.money(b.total))}</td></tr>` : ""}
+${b.total > 0 ? `<tr><td style="padding:10px 0 0;border-top:1px solid ${LINE};font-size:15px;font-weight:600;${deco}">Total</td><td align="right" style="padding:10px 0 0;border-top:1px solid ${LINE};font-size:15px;font-weight:600;${deco}">${esc(b.money(b.total))}</td></tr>` : ""}
 </table>
 </td></tr></table>`;
 }
@@ -122,7 +122,7 @@ function salonBlock(salon: Salon) {
     salon.phone ? `<p style="margin:0 0 4px">${esc(salon.phone)}</p>` : "",
     salon.email ? `<p style="margin:0">${esc(salon.email)}</p>` : "",
   ].join("");
-  return parts ? `<div style="margin-top:20px;font-size:14px;line-height:20px;color:${MUTED}"><p style="margin:0 0 6px;font-weight:600;color:${INK}">${esc(salon.name)}</p>${parts}</div>` : "";
+  return parts ? `<div style="margin-top:20px;font-size:14px;line-height:20px;color:${MUTED}"><p style="margin:0 0 6px;font-weight:500;color:${INK}">${esc(salon.name)}</p>${parts}</div>` : "";
 }
 
 function bookingText(b: BookingDetails) {
@@ -215,16 +215,16 @@ export function receipt(r: ReceiptDetails): Rendered {
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:${top}px 0 ${bottom}px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td class="rule" style="font-size:1px;line-height:1px;background-color:${RULE}">&nbsp;</td></tr></table></td></tr></table>`;
   const line = (label: string, value: string, opts: { muted?: boolean; green?: boolean } = {}) =>
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-<td class="${opts.muted || opts.green ? "soft" : ""}" style="${font};font-weight:500;font-size:16px;line-height:20px;padding:15px 12px 15px 0;${opts.muted || opts.green ? `color:${SOFT};` : ""}">${label}</td>
-<td align="right" class="${opts.green ? "" : opts.muted ? "soft" : ""}" style="${font};font-weight:500;font-size:16px;line-height:20px;padding:15px 0;text-align:right;white-space:nowrap;${opts.green ? "color:#18773a;" : opts.muted ? `color:${SOFT};` : ""}">${value}</td>
+<td class="${opts.muted || opts.green ? "soft" : ""}" style="${font};font-weight:450;font-size:16px;line-height:20px;padding:15px 12px 15px 0;${opts.muted || opts.green ? `color:${SOFT};` : ""}">${label}</td>
+<td align="right" class="${opts.green ? "" : opts.muted ? "soft" : ""}" style="${font};font-weight:450;font-size:16px;line-height:20px;padding:15px 0;text-align:right;white-space:nowrap;${opts.green ? "color:#18773a;" : opts.muted ? `color:${SOFT};` : ""}">${value}</td>
 </tr></table>`;
   const info = (label: string, value: string) =>
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-<td style="width:40%;${font};font-weight:500;font-size:16px;line-height:20px;padding-right:16px">${label}</td>
-<td style="width:60%;${font};font-weight:500;font-size:16px;line-height:20px;text-align:right">${value}</td>
+<td style="width:40%;${font};font-weight:450;font-size:16px;line-height:20px;padding-right:16px">${label}</td>
+<td style="width:60%;${font};font-weight:450;font-size:16px;line-height:20px;text-align:right">${value}</td>
 </tr></table>${divider(16, 16)}`;
   const panelTitle = (text: string, bottom: number) =>
-    `<p style="margin:0;padding:16px 0 ${bottom}px;${font};font-weight:700;font-size:24px;line-height:32px">${text}</p>`;
+    `<p style="margin:0;padding:16px 0 ${bottom}px;${font};font-weight:600;font-size:24px;line-height:32px">${text}</p>`;
 
   const items = r.items
     .map((i) => line(`${esc(i.description)}${i.quantity > 1 ? ` <span class="soft" style="color:${SOFT}">× ${i.quantity}</span>` : ""}`, esc(r.money(i.amount))))
@@ -239,8 +239,8 @@ export function receipt(r: ReceiptDetails): Rendered {
     .map(
       (p) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:12px 0">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-<td style="text-align:left;${font};font-weight:500;font-size:16px;line-height:20px">${esc(p.label)}</td>
-<td align="right" style="text-align:right;${font};font-weight:500;font-size:16px;line-height:20px;white-space:nowrap">${esc(r.money(p.amount))}</td>
+<td style="text-align:left;${font};font-weight:450;font-size:16px;line-height:20px">${esc(p.label)}</td>
+<td align="right" style="text-align:right;${font};font-weight:450;font-size:16px;line-height:20px;white-space:nowrap">${esc(r.money(p.amount))}</td>
 </tr><tr>
 <td class="soft" colspan="2" style="padding-top:2px;${font};font-size:14px;line-height:20px;color:${SOFT}">${esc(r.date)} ${esc(r.time)}</td>
 </tr></table></td></tr></table>`,
@@ -249,20 +249,20 @@ export function receipt(r: ReceiptDetails): Rendered {
   const contactHref = r.salon.email ? `mailto:${r.salon.email}` : r.salon.phone ? `tel:${r.salon.phone.replace(/[^\d+]/g, "")}` : null;
   const help = contactHref
     ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="panel" style="margin-top:16px;border-collapse:separate;border:2px solid ${RULE};border-radius:16px"><tr><td style="padding:16px">
-<p style="margin:0;padding-bottom:16px;${font};font-weight:700;font-size:20px;line-height:28px">Need help?</p>
+<p style="margin:0;padding-bottom:16px;${font};font-weight:600;font-size:20px;line-height:28px">Need help?</p>
 <p style="margin:0;padding-bottom:24px;${font};font-size:14px;line-height:20px">Questions about this visit? ${esc(r.salon.name)} is happy to help.</p>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td class="panel-button" align="center" style="background-color:${RULE};border-radius:8px"><a href="${esc(contactHref)}" style="display:block;padding:12px 16px;${font};font-weight:500;font-size:14px;line-height:16px;color:${INK};text-decoration:none">Contact ${esc(r.salon.name)}</a></td></tr></table>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td class="panel-button" align="center" style="background-color:${RULE};border-radius:8px"><a href="${esc(contactHref)}" style="display:block;padding:12px 16px;${font};font-weight:450;font-size:14px;line-height:16px;color:${INK};text-decoration:none">Contact ${esc(r.salon.name)}</a></td></tr></table>
 </td></tr></table>`
     : "";
   const brand = r.logoUrl
     ? `<img src="${esc(r.logoUrl)}" alt="${esc(r.salon.name)}" height="44" style="display:block;height:44px;width:auto;max-width:180px;border:0;border-radius:8px">`
-    : `<span style="${font};font-weight:700;font-size:24px;line-height:44px;letter-spacing:-0.02em">${esc(r.salon.name)}</span>`;
+    : `<span style="${font};font-weight:600;font-size:24px;line-height:44px;letter-spacing:-0.02em">${esc(r.salon.name)}</span>`;
   const footerLinks = [
     r.bookUrl ? `<a href="${esc(r.bookUrl)}" style="color:#ffffff;text-decoration:underline">Book again</a>` : "",
     r.salon.website ? `<a href="${esc(r.salon.website)}" style="color:#ffffff;text-decoration:underline">Website</a>` : "",
   ]
     .filter(Boolean)
-    .map((link, i) => `<p style="margin:${i ? 16 : 0}px 0 0;${font};font-weight:500;font-size:14px;line-height:20px">${link}</p>`)
+    .map((link, i) => `<p style="margin:${i ? 16 : 0}px 0 0;${font};font-weight:450;font-size:14px;line-height:20px">${link}</p>`)
     .join("");
   const headline = r.refunded ? `Your refund from ${r.salon.name}` : `Thanks for visiting, ${r.clientFirstName}`;
   const sub = r.refunded ? "Here are the details of your refund." : `Here's your receipt from ${r.salon.name}.`;
@@ -296,19 +296,19 @@ table,td{border-collapse:collapse}
 <tr><td class="header" style="background-color:${GREY};color:${INK}">
  <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
   <td class="pad" style="padding:32px 0 8px 48px;vertical-align:middle">${brand}</td>
-  <td class="pad soft" align="right" style="padding:32px 48px 8px 0;vertical-align:top;${font};font-weight:500;font-size:12px;line-height:16px;color:${SOFT};white-space:nowrap">${esc(r.date)}<br>${esc(r.time)}</td>
+  <td class="pad soft" align="right" style="padding:32px 48px 8px 0;vertical-align:top;${font};font-weight:450;font-size:12px;line-height:16px;color:${SOFT};white-space:nowrap">${esc(r.date)}<br>${esc(r.time)}</td>
  </tr></table>
  <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
   <td class="pad" style="padding:24px 48px 32px">
-   <p class="headline" style="margin:0;${font};font-weight:700;font-size:40px;line-height:48px;letter-spacing:-0.02em">${esc(headline)}</p>
+   <p class="headline" style="margin:0;${font};font-weight:600;font-size:40px;line-height:48px;letter-spacing:-0.02em">${esc(headline)}</p>
    <p style="margin:16px 0 0;${font};font-size:18px;line-height:28px">${esc(sub)}</p>
   </td>
  </tr></table>
 </td></tr>
 <tr><td class="body-root pad" style="background-color:#ffffff;color:${INK};padding:32px 48px">
  <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-  <td style="${font};font-weight:700;font-size:32px;line-height:40px">Total</td>
-  <td align="right" style="${font};font-weight:700;font-size:32px;line-height:40px;white-space:nowrap">${esc(r.money(r.total))}</td>
+  <td style="${font};font-weight:600;font-size:32px;line-height:40px">Total</td>
+  <td align="right" style="${font};font-weight:600;font-size:32px;line-height:40px;white-space:nowrap">${esc(r.money(r.total))}</td>
  </tr></table>
  ${divider(24, 0)}
  ${items}
