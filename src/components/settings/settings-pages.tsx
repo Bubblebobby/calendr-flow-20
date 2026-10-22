@@ -17,6 +17,7 @@ import { toast } from "sonner";
 
 import { isMissingTable } from "@/components/calendar/blocked-time";
 import { ConfirmDialog } from "@/components/catalog/catalog-ui";
+import { BrandingSettings } from "@/components/settings/branding-settings";
 import { BusinessHoursPanel } from "@/components/settings/business-hours-panel";
 import { TaxSettings } from "@/components/settings/tax-settings";
 import { CLIENT_SOURCES } from "@/components/clients/client-form";
@@ -41,10 +42,11 @@ export const SECTIONS: SectionDef[] = [
   {
     key: "business",
     title: "Business setup",
-    description: "Customise business details and manage your location.",
+    description: "Customise business details, branding and your location.",
     icon: <Buildings size={24} />,
     pages: [
       { key: "details", label: "Business details" },
+      { key: "branding", label: "Branding" },
       { key: "location", label: "Location" },
       { key: "service-menu", label: "Service menu" },
       { key: "clients-list", label: "Clients list" },
@@ -268,6 +270,8 @@ function SettingsPage({ sectionKey, pageKey }: { sectionKey: string; pageKey: st
   switch (`${sectionKey}/${pageKey}`) {
     case "business/details":
       return <BusinessDetails />;
+    case "business/branding":
+      return <BrandingSettings />;
     case "business/location":
       return <BusinessLocation />;
     case "scheduling/hours":

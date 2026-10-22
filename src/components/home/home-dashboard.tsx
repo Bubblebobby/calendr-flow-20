@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -11,6 +11,7 @@ import {
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
+import { useDashboardLayout, type DashboardCardId } from "@/lib/dashboard-layout";
 import { formatDuration, formatMoney } from "@/lib/format";
 import { useBusiness } from "@/lib/use-business";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,7 @@ import { statusTone } from "@/components/calendar/calendar-data";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CustomiseDashboard } from "./customise-dashboard";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
@@ -440,6 +442,7 @@ function RankTable({
 }
 
 export function HomeDashboard() {
+  const { layout } = useDashboardLayout();
   const { data: business, isLoading: businessLoading } = useBusiness();
   const locale = useMemo(() => {
     const browserLocale = typeof navigator !== "undefined" ? navigator.language : "en";
@@ -695,162 +698,173 @@ export function HomeDashboard() {
     dashboard.upcomingTotals.booked +
     dashboard.upcomingTotals.cancelled;
 
-  return (
-    <div className="min-h-full bg-surface">
-      <div className="mx-auto grid w-full max-w-6xl items-start gap-x-8 gap-y-4 p-4 sm:p-6 lg:grid-cols-2">
-        <DashboardCard
-          title="Recent sales"
-          subtitle={timePeriodLabel}
-          className="lg:min-h-[33.75rem]"
-          action={<TimePeriodFilter value={timePeriod} onApply={setTimePeriod} />}
-        >
+  const cards: Record<DashboardCardId, ReactNode> = {
+    sales: (
+      <DashboardCard
+        title="Recent sales"
+        subtitle={timePeriodLabel}
+        className="lg:min-h-[33.75rem]"
+        action={<TimePeriodFilter value={timePeriod} onApply={setTimePeriod} />}
+      >
+        <CardContent className="flex flex-1 flex-col px-6 pb-6 pt-0">
+          <p className="text-display font-semibold leading-9 tabular-nums text-foreground">
+            {money(dashboard.recentSalesTotal)}
+          </p>
+          <div className="mt-6 text-body text-muted-foreground">
+            <p>
+              Appointments{" "}
+              <span className="font-semibold text-foreground">{dashboard.recentCount}</span>
+            </p>
+            <p>
+              Appointments value{" "}
+              <span className="font-semibold text-foreground">{money(dashboard.recentValue)}</span>
+            </p>
+          </div>
+          <Suspense fallback={<Skeleton className="mt-6 h-60 w-full rounded-lg" />}>
+            <SalesChart data={dashboard.chart} currency={currency} />
+          </Suspense>
+          <ChartLegend
+            items={[
+              { label: "Sales", color: "var(--color-primary)" },
+              { label: "Appointments", color: "var(--color-chart-appointments)" },
+            ]}
+          />
+        </CardContent>
+      </DashboardCard>
+    ),
+    upcoming: (
+      <DashboardCard
+        title="Upcoming appointments"
+        subtitle="Next 7 days"
+        menu
+        className="lg:min-h-[33.75rem]"
+      >
+        {upcomingTotal ? (
           <CardContent className="flex flex-1 flex-col px-6 pb-6 pt-0">
             <p className="text-display font-semibold leading-9 tabular-nums text-foreground">
-              {money(dashboard.recentSalesTotal)}
+              {upcomingTotal} booked
             </p>
             <div className="mt-6 text-body text-muted-foreground">
               <p>
-                Appointments{" "}
-                <span className="font-semibold text-foreground">{dashboard.recentCount}</span>
+                Confirmed appointments{" "}
+                <span className="font-semibold text-foreground">
+                  {dashboard.upcomingTotals.confirmed}
+                </span>
               </p>
               <p>
-                Appointments value{" "}
+                Cancelled appointments{" "}
                 <span className="font-semibold text-foreground">
-                  {money(dashboard.recentValue)}
+                  {dashboard.upcomingTotals.cancelled}
                 </span>
               </p>
             </div>
             <Suspense fallback={<Skeleton className="mt-6 h-60 w-full rounded-lg" />}>
-              <SalesChart data={dashboard.chart} currency={currency} />
+              <UpcomingChart data={dashboard.upcomingChart} />
             </Suspense>
             <ChartLegend
               items={[
-                { label: "Sales", color: "var(--color-primary)" },
-                { label: "Appointments", color: "var(--color-chart-appointments)" },
+                { label: "Confirmed", color: "var(--color-chart-appointments)" },
+                { label: "Booked", color: "var(--color-primary)" },
+                { label: "Cancelled", color: "var(--color-destructive)" },
               ]}
             />
           </CardContent>
-        </DashboardCard>
-
-        <DashboardCard
-          title="Upcoming appointments"
-          subtitle="Next 7 days"
-          menu
-          className="lg:min-h-[33.75rem]"
-        >
-          {upcomingTotal ? (
-            <CardContent className="flex flex-1 flex-col px-6 pb-6 pt-0">
-              <p className="text-display font-semibold leading-9 tabular-nums text-foreground">
-                {upcomingTotal} booked
-              </p>
-              <div className="mt-6 text-body text-muted-foreground">
-                <p>
-                  Confirmed appointments{" "}
-                  <span className="font-semibold text-foreground">
-                    {dashboard.upcomingTotals.confirmed}
-                  </span>
-                </p>
-                <p>
-                  Cancelled appointments{" "}
-                  <span className="font-semibold text-foreground">
-                    {dashboard.upcomingTotals.cancelled}
-                  </span>
-                </p>
-              </div>
-              <Suspense fallback={<Skeleton className="mt-6 h-60 w-full rounded-lg" />}>
-                <UpcomingChart data={dashboard.upcomingChart} />
-              </Suspense>
-              <ChartLegend
-                items={[
-                  { label: "Confirmed", color: "var(--color-chart-appointments)" },
-                  { label: "Booked", color: "var(--color-primary)" },
-                  { label: "Cancelled", color: "var(--color-destructive)" },
-                ]}
-              />
-            </CardContent>
-          ) : (
-            <EmptyState icon={ChartBar} title="Your schedule is empty">
-              Make some appointments for schedule data to appear
+        ) : (
+          <EmptyState icon={ChartBar} title="Your schedule is empty">
+            Make some appointments for schedule data to appear
+          </EmptyState>
+        )}
+      </DashboardCard>
+    ),
+    activity: (
+      <DashboardCard
+        title="Appointments activity"
+        action={<TimePeriodFilter value={activityPeriod} onApply={setActivityPeriod} />}
+        subtitle={activityPeriod === "last-7-days" ? undefined : activityPeriodLabel}
+        className="min-h-0"
+      >
+        {dashboard.activity.length ? (
+          <AppointmentList appointments={dashboard.activity} locale={locale} timeZone={timeZone} />
+        ) : (
+          <EmptyState icon={CalendarCheck} title="No appointment activity">
+            New bookings will appear here as they are added.
+          </EmptyState>
+        )}
+      </DashboardCard>
+    ),
+    today: (
+      <DashboardCard title="Today's next appointments" className="min-h-0">
+        {dashboard.today.length ? (
+          <AppointmentList
+            appointments={dashboard.today}
+            locale={locale}
+            timeZone={timeZone}
+            compactDate
+          />
+        ) : (
+          <EmptyState icon={CalendarBlank} title="No Appointments Today">
+            Visit the{" "}
+            <Link to="/calendar" className="font-medium text-primary underline underline-offset-2">
+              calendar
+            </Link>{" "}
+            section to add some appointments
+          </EmptyState>
+        )}
+      </DashboardCard>
+    ),
+    services: (
+      <DashboardCard title="Top services" className="min-h-[17.5rem]">
+        <RankTable
+          label="Service"
+          rows={dashboard.serviceCounts.map((service) => ({
+            key: service.id,
+            name: service.name,
+            current: service.current,
+            previous: service.previous,
+          }))}
+          empty={
+            <EmptyState icon={ChartBar} title="No services yet">
+              Add services to your menu for data to appear
             </EmptyState>
-          )}
-        </DashboardCard>
-
-        <DashboardCard
-          title="Appointments activity"
-          action={<TimePeriodFilter value={activityPeriod} onApply={setActivityPeriod} />}
-          subtitle={activityPeriod === "last-7-days" ? undefined : activityPeriodLabel}
-          className="min-h-0"
-        >
-          {dashboard.activity.length ? (
-            <AppointmentList
-              appointments={dashboard.activity}
-              locale={locale}
-              timeZone={timeZone}
-            />
-          ) : (
-            <EmptyState icon={CalendarCheck} title="No appointment activity">
-              New bookings will appear here as they are added.
-            </EmptyState>
-          )}
-        </DashboardCard>
-
-        <DashboardCard title="Today's next appointments" className="min-h-0">
-          {dashboard.today.length ? (
-            <AppointmentList
-              appointments={dashboard.today}
-              locale={locale}
-              timeZone={timeZone}
-              compactDate
-            />
-          ) : (
-            <EmptyState icon={CalendarBlank} title="No Appointments Today">
-              Visit the{" "}
-              <Link
-                to="/calendar"
-                className="font-medium text-primary underline underline-offset-2"
-              >
-                calendar
-              </Link>{" "}
-              section to add some appointments
-            </EmptyState>
-          )}
-        </DashboardCard>
-
-        <DashboardCard title="Top services" className="min-h-[17.5rem]">
-          <RankTable
-            label="Service"
-            rows={dashboard.serviceCounts.map((service) => ({
-              key: service.id,
-              name: service.name,
-              current: service.current,
-              previous: service.previous,
+          }
+        />
+      </DashboardCard>
+    ),
+    team: (
+      <DashboardCard title="Top team member" className="min-h-[17.5rem]">
+        <RankTable
+          label="Team member"
+          rows={dashboard.topMembers
+            .filter((member) => member.current > 0 || member.previous > 0)
+            .map((member, index) => ({
+              key: `${member.name}-${index}`,
+              name: member.name,
+              current: money(member.current),
+              previous: money(member.previous),
             }))}
-            empty={
-              <EmptyState icon={ChartBar} title="No services yet">
-                Add services to your menu for data to appear
-              </EmptyState>
-            }
-          />
-        </DashboardCard>
+          empty={
+            <EmptyState icon={TrendUp} title="No sales this month">
+              Create some sales for sales data to appear
+            </EmptyState>
+          }
+        />
+      </DashboardCard>
+    ),
+  };
 
-        <DashboardCard title="Top team member" className="min-h-[17.5rem]">
-          <RankTable
-            label="Team member"
-            rows={dashboard.topMembers
-              .filter((member) => member.current > 0 || member.previous > 0)
-              .map((member, index) => ({
-                key: `${member.name}-${index}`,
-                name: member.name,
-                current: money(member.current),
-                previous: money(member.previous),
-              }))}
-            empty={
-              <EmptyState icon={TrendUp} title="No sales this month">
-                Create some sales for sales data to appear
-              </EmptyState>
-            }
-          />
-        </DashboardCard>
+  return (
+    <div className="min-h-full bg-surface">
+      <div className="mx-auto flex w-full max-w-6xl justify-end px-4 pt-4 sm:px-6 sm:pt-6">
+        <CustomiseDashboard />
+      </div>
+      <div className="mx-auto grid w-full max-w-6xl items-start gap-x-8 gap-y-4 px-4 pb-4 pt-3 sm:px-6 sm:pb-6 lg:grid-cols-2">
+        {layout
+          .filter((item) => !item.hidden)
+          .map((item) => (
+            <div key={item.id} className={cn("min-w-0", item.wide && "lg:col-span-2")}>
+              {cards[item.id]}
+            </div>
+          ))}
       </div>
     </div>
   );
