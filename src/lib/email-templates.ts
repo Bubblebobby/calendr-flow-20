@@ -59,7 +59,11 @@ type Rendered = { subject: string; html: string; text: string };
 const esc = (value: string) =>
   value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 
-const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+// Bookly's Geist, loaded from Google Fonts. Apple Mail and iOS Mail show it; apps that block web
+// fonts (Gmail, Outlook) fall back to the system font.
+const FONT = "'Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+const FONT_LINK =
+  '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">';
 const INK = "#101010";
 const MUTED = "#666666";
 const LINE = "#e5e5e5";
@@ -67,7 +71,7 @@ const LINE = "#e5e5e5";
 function layout({ preheader, heading, intro, body, salon }: { preheader: string; heading: string; intro: string; body: string; salon: Salon }) {
   // The salon's address and contact details sit in the body (salonBlock), not repeated here.
   return `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(heading)}</title></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${FONT_LINK}<title>${esc(heading)}</title></head>
 <body style="margin:0;padding:0;background:#f5f5f5;font-family:${FONT};color:${INK}">
 <span style="display:none;max-height:0;overflow:hidden;opacity:0">${esc(preheader)}</span>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:32px 12px">
@@ -265,7 +269,7 @@ export function receipt(r: ReceiptDetails): Rendered {
 
   const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="color-scheme" content="light dark"><meta name="supported-color-schemes" content="light dark">
+<meta name="color-scheme" content="light dark"><meta name="supported-color-schemes" content="light dark">${FONT_LINK}
 <title>${esc(headline)}</title>
 <style>
 body{margin:0;padding:0;-webkit-text-size-adjust:100%}
@@ -283,7 +287,6 @@ table,td{border-collapse:collapse}
 @media only screen and (max-width:599px){
  .pad{padding-left:24px!important;padding-right:24px!important}
  .headline{font-size:32px!important;line-height:40px!important}
- .desktop{display:none!important}
 }
 </style></head>
 <body style="margin:0;padding:0;background-color:#d6d6d5">
@@ -296,11 +299,10 @@ table,td{border-collapse:collapse}
   <td class="pad soft" align="right" style="padding:32px 48px 8px 0;vertical-align:top;${font};font-weight:500;font-size:12px;line-height:16px;color:${SOFT};white-space:nowrap">${esc(r.date)}<br>${esc(r.time)}</td>
  </tr></table>
  <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-  <td class="pad" style="padding:24px 16px 32px 48px">
+  <td class="pad" style="padding:24px 48px 32px">
    <p class="headline" style="margin:0;${font};font-weight:700;font-size:40px;line-height:48px;letter-spacing:-0.02em">${esc(headline)}</p>
    <p style="margin:16px 0 0;${font};font-size:18px;line-height:28px">${esc(sub)}</p>
   </td>
-  <td class="desktop" align="right" style="padding:0 48px 32px 0;font-size:96px;line-height:1;vertical-align:bottom">${r.refunded ? "" : "&#127881;"}</td>
  </tr></table>
 </td></tr>
 <tr><td class="body-root pad" style="background-color:#ffffff;color:${INK};padding:32px 48px">
