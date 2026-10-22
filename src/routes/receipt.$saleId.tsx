@@ -26,7 +26,7 @@ type SaleRow = {
   tax_amount?: number | null;
   discount_amount?: number | null;
   clients: { first_name: string; last_name: string | null; email: string | null; phone: string | null } | null;
-  team_members: { first_name: string } | null;
+  team_members: { first_name: string; last_name: string | null } | null;
   sale_items: { description: string; price: number; quantity: number; tax_amount?: number | null; sort_order: number }[];
   businesses: { name: string; currency: string; country: string; location: { address?: string; city?: string } | null; receipt_footer?: string | null } | null;
 };
@@ -41,7 +41,7 @@ function ReceiptPage() {
     queryFn: async (): Promise<SaleRow> => {
       const { data, error } = await supabase
         .from("sales")
-        .select("*, clients(first_name, last_name, email, phone), team_members(first_name), sale_items(*), businesses(*)")
+        .select("*, clients(first_name, last_name, email, phone), team_members(first_name, last_name), sale_items(*), businesses(*)")
         .eq("id", saleId)
         .single();
       if (error) throw error;
@@ -103,7 +103,7 @@ function ReceiptPage() {
         {s.team_members ? (
           <p className="text-body">
             <span className="text-muted-foreground">Served by: </span>
-            {s.team_members.first_name}
+            {[s.team_members.first_name, s.team_members.last_name].filter(Boolean).join(" ")}
           </p>
         ) : null}
 

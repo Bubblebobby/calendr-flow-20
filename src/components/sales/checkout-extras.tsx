@@ -250,7 +250,7 @@ export function GiftCardSellDialog({
                   : "border-input hover:bg-secondary",
               )}
             >
-              {currency} {preset.toLocaleString()}
+              {currency}{preset.toLocaleString()}
             </button>
           ))}
         </div>

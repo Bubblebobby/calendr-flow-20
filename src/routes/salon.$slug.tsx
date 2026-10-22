@@ -316,7 +316,7 @@ function Salon({ slug, venue, reviews }: { slug: string; venue: Venue; reviews: 
                       >
                         {t.initials || t.first_name[0]}
                       </span>
-                      <p className="mt-2 truncate text-body font-semibold">{t.first_name}</p>
+                      <p className="mt-2 truncate text-body font-semibold">{[t.first_name, t.last_name].filter(Boolean).join(" ")}</p>
                       {t.job_title ? (
                         <p className="truncate text-caption text-muted-foreground">{t.job_title}</p>
                       ) : null}

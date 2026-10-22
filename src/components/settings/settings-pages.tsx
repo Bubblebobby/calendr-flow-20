@@ -387,13 +387,37 @@ const TIME_ZONES: string[] = (() => {
   }
 })();
 
+/** Contact phone and email; null until the contact database update has been run. */
+function useBusinessContactRow(businessId: string | undefined) {
+  return useQuery({
+    queryKey: ["business-contact-row", businessId],
+    enabled: Boolean(businessId),
+    retry: false,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("businesses").select("contact_phone, contact_email").eq("id", businessId!).single();
+      if (error) return null;
+      return data;
+    },
+  });
+}
+
+const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
 function BusinessDetails() {
   const row = useBusinessRow();
+  const contactRow = useBusinessContactRow(row.data?.id);
   const queryClient = useQueryClient();
   const [form, setForm] = useState({ name: "", website: "", timezone: "Africa/Lagos" });
+  const [contact, setContact] = useState({ phone: "", email: "" });
   useEffect(() => {
     if (row.data) setForm({ name: row.data.name, website: row.data.website ?? "", timezone: row.data.timezone ?? "Africa/Lagos" });
   }, [row.data]);
+  useEffect(() => {
+    if (contactRow.data) setContact({ phone: contactRow.data.contact_phone ?? "", email: contactRow.data.contact_email ?? "" });
+  }, [contactRow.data]);
+  const phone = contact.phone.trim();
+  const email = contact.email.trim();
+  const contactValid = (!phone || (phone.length >= 5 && phone.length <= 30)) && (!email || EMAIL.test(email));
   const save = useMutation({
     mutationFn: async () => {
       const website = form.website.trim();
@@ -402,9 +426,17 @@ function BusinessDetails() {
         .update({ name: form.name.trim(), website: website ? (/^https?:\/\//.test(website) ? website : `https://${website}`) : null, timezone: form.timezone })
         .eq("id", row.data!.id);
       if (error) throw error;
+      if (contactRow.data) {
+        const { error: contactError } = await supabase
+          .from("businesses")
+          .update({ contact_phone: phone || null, contact_email: email || null })
+          .eq("id", row.data!.id);
+        if (contactError) throw contactError;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["business-row"] });
+      queryClient.invalidateQueries({ queryKey: ["business-contact-row"] });
       queryClient.invalidateQueries({ queryKey: ["current-business"] });
       queryClient.invalidateQueries({ queryKey: ["top-bar-profile"] });
       toast.success("Business details saved");
@@ -416,9 +448,9 @@ function BusinessDetails() {
   return (
     <PageBlock
       title="Business details"
-      subtitle="Your business name, time zone and website."
+      subtitle="Your business name, time zone and how clients can reach you."
       action={
-        <button type="button" disabled={!form.name.trim() || save.isPending} onClick={() => save.mutate()} className={cn(pillButton, "bg-ink text-ink-foreground hover:bg-ink/90")}>
+        <button type="button" disabled={!form.name.trim() || !contactValid || save.isPending} onClick={() => save.mutate()} className={cn(pillButton, "bg-ink text-ink-foreground hover:bg-ink/90")}>
           Save
         </button>
       }
@@ -451,6 +483,22 @@ function BusinessDetails() {
           Website <span className="font-normal text-muted-foreground">(optional)</span>
           <input value={form.website} maxLength={200} placeholder="www.yoursalon.com" onChange={(e) => setForm({ ...form, website: e.target.value })} className={field} />
         </label>
+        {contactRow.data ? (
+          <>
+            <label className="block text-body font-semibold">
+              Contact phone <span className="font-normal text-muted-foreground">(optional)</span>
+              <input type="tel" value={contact.phone} maxLength={30} placeholder="0801 234 5678" onChange={(e) => setContact({ ...contact, phone: e.target.value })} className={field} />
+            </label>
+            <label className="block text-body font-semibold">
+              Contact email <span className="font-normal text-muted-foreground">(optional)</span>
+              <input type="email" value={contact.email} maxLength={254} placeholder="hello@yoursalon.com" onChange={(e) => setContact({ ...contact, email: e.target.value })} className={field} />
+              {email && !EMAIL.test(email) ? <span className="mt-1 block text-caption font-normal text-destructive">Check the email address.</span> : null}
+            </label>
+            <p className="text-caption text-muted-foreground sm:col-span-2">
+              Clients see these on their booking confirmation and booking link, so they can reach you.
+            </p>
+          </>
+        ) : null}
       </div>
     </PageBlock>
   );

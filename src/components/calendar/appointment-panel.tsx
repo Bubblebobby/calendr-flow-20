@@ -15,6 +15,7 @@ import {
   NotePencil,
   PencilSimple,
   Plus,
+  Receipt,
   Trash,
   UserPlus,
   X,
@@ -23,7 +24,7 @@ import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import type { CurrentBusiness } from "@/lib/use-business";
-import { formatMoney } from "@/lib/format";
+import { currencySymbol, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { describeRule, repeatDates, type RepeatRule } from "@/lib/repeat-rule";
 import { ClientForm } from "@/components/clients/client-form";
@@ -371,6 +372,24 @@ export function AppointmentPanel({
         .single();
       if (error) throw error;
       return data as unknown as ExistingRow;
+    },
+  });
+
+  // The sale a completed appointment was checked out with, for its receipt.
+  const { data: paidSale } = useQuery({
+    queryKey: ["appointment-sale", appointmentId],
+    enabled: Boolean(appointmentId) && existing?.status === "completed",
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("sales")
+        .select("id")
+        .eq("appointment_id", appointmentId!)
+        .neq("status", "draft")
+        .order("sale_date", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
     },
   });
 
@@ -1038,7 +1057,7 @@ export function AppointmentPanel({
               <label>
                 <FieldLabel>Service price</FieldLabel>
                 <span className="flex h-12 items-center gap-2 rounded-lg border border-border px-4 focus-within:border-primary">
-                  <span className="text-muted-foreground">{currency}</span>
+                  <span className="text-muted-foreground">{currencySymbol(currency, business?.country)}</span>
                   <input
                     inputMode="decimal"
                     value={String(draft.price)}
@@ -1629,7 +1648,18 @@ export function AppointmentPanel({
                 </button>
               </>
             ) : status === "completed" ? (
-              <span className={cn(pill, "flex-1 bg-muted text-muted-foreground")}>Paid</span>
+              paidSale ? (
+                <a
+                  href={`/receipt/${paidSale.id}`}
+                  target="_blank"
+                  rel="noopener"
+                  className={cn(pill, "flex-1 gap-2 border border-input bg-card hover:bg-secondary")}
+                >
+                  <Receipt size={18} /> View receipt
+                </a>
+              ) : (
+                <span className={cn(pill, "flex-1 bg-muted text-muted-foreground")}>Paid</span>
+              )
             ) : status === "cancelled" ? (
               <span className={cn(pill, "flex-1 bg-muted text-muted-foreground")}>Cancelled</span>
             ) : (

@@ -16,27 +16,52 @@ export function businessLocale(countryCode?: string | null): string {
   return countryCode ? `${language}-${countryCode.toUpperCase()}` : cleaned;
 }
 
+/**
+ * "₦15,000" or "₦15,000.50": whole amounts drop the ".00", others keep two decimals,
+ * so every screen shows money the same way.
+ */
 export function formatMoney(
   amount: number,
   currency: string,
   countryCode?: string | null,
 ): string {
+  const whole = Math.abs(amount - Math.round(amount)) < 0.005;
+  const digits = whole ? { minimumFractionDigits: 0, maximumFractionDigits: 0 } : {};
   try {
     return new Intl.NumberFormat(businessLocale(countryCode), {
       style: "currency",
       currency,
       currencyDisplay: "narrowSymbol",
-    }).format(amount);
+      ...digits,
+    }).format(whole ? Math.round(amount) : amount);
   } catch {
     try {
       return new Intl.NumberFormat(businessLocale(countryCode), {
         style: "currency",
         currency,
-      }).format(amount);
+        ...digits,
+      }).format(whole ? Math.round(amount) : amount);
     } catch {
       // Unknown/invalid ISO code — still avoid a hardcoded symbol.
-      return `${currency} ${amount.toFixed(2)}`;
+      return `${currency} ${whole ? Math.round(amount) : amount.toFixed(2)}`;
     }
+  }
+}
+
+/** The currency's symbol on its own ("₦"), for input prefixes. Falls back to the code. */
+export function currencySymbol(currency: string, countryCode?: string | null): string {
+  try {
+    return (
+      new Intl.NumberFormat(businessLocale(countryCode), {
+        style: "currency",
+        currency,
+        currencyDisplay: "narrowSymbol",
+      })
+        .formatToParts(0)
+        .find((part) => part.type === "currency")?.value ?? currency
+    );
+  } catch {
+    return currency;
   }
 }
 

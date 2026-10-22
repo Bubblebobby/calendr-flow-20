@@ -1374,6 +1374,8 @@ export type Database = {
           booking_policy: string | null
           booking_description: string | null
           booking_slug: string | null
+          contact_email: string | null
+          contact_phone: string | null
           online_booking_enabled: boolean
           categories: Json
           country: string
@@ -1403,6 +1405,8 @@ export type Database = {
           booking_policy?: string | null
           booking_description?: string | null
           booking_slug?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           online_booking_enabled?: boolean
           categories?: Json
           country?: string
@@ -1432,6 +1436,8 @@ export type Database = {
           booking_policy?: string | null
           booking_description?: string | null
           booking_slug?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           online_booking_enabled?: boolean
           categories?: Json
           country?: string
@@ -2431,6 +2437,10 @@ export type Database = {
         Returns: Json
       }
       get_booking_policy: {
+        Args: { p_slug: string }
+        Returns: Json
+      }
+      get_business_contact: {
         Args: { p_slug: string }
         Returns: Json
       }

@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarBlank, CheckCircle, MapPin, XCircle } from "@phosphor-icons/react";
+import { CalendarBlank, CheckCircle, XCircle } from "@phosphor-icons/react";
 
+import { SalonContact } from "@/components/customer/salon-contact";
 import { pillButton } from "@/components/sales/list-ui";
 import { supabase } from "@/integrations/supabase/client";
 import { policySummary, type BookingPolicy } from "@/lib/booking-policy";
@@ -15,6 +16,7 @@ import {
   type MemberShifts,
   type OpeningHours,
 } from "@/lib/booking-slots";
+import { formatAddress, fullName, useBusinessContact, type BusinessContact } from "@/lib/business-contact";
 import { formatDuration, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -47,7 +49,7 @@ type Manage = {
     currency: string;
     country: string;
     timezone: string;
-    location: { address?: string; city?: string } | null;
+    location: { address?: string; apt?: string; city?: string; state?: string; postcode?: string } | null;
     hours: OpeningHours[];
   };
   policy: BookingPolicy;
@@ -108,6 +110,29 @@ function ManageView({ token, data }: { token: string; data: Manage }) {
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<"cancelled" | "rescheduled" | null>(null);
+  const contactQuery = useBusinessContact(business.slug);
+  const contact: BusinessContact = contactQuery.data ?? {
+    name: business.name,
+    phone: null,
+    email: null,
+    website: null,
+    location: business.location,
+  };
+  const hasContact = Boolean(contact.phone || contact.email);
+  // Full staff names from the public booking page (this RPC only has first names).
+  const team = useQuery({
+    queryKey: ["booking-page-team", business.slug],
+    enabled: Boolean(business.slug),
+    retry: false,
+    queryFn: async () => {
+      const { data: page, error: e } = await supabase.rpc("get_booking_page", { p_slug: business.slug! });
+      if (e) return new Map<string, string>();
+      const members = (page as { team?: { id: string; first_name: string; last_name: string | null }[] } | null)?.team ?? [];
+      return new Map(members.map((m) => [m.id, fullName(m)]));
+    },
+  });
+  const staffName = (item: Manage["appointment"]["items"][number]) =>
+    team.data?.get(item.team_member_id) ?? item.team_member;
 
   const fmt = (iso: string, options: Intl.DateTimeFormatOptions) =>
     new Intl.DateTimeFormat("en-GB", { ...options, timeZone: tz }).format(new Date(iso));
@@ -206,14 +231,6 @@ function ManageView({ token, data }: { token: string; data: Manage }) {
               </span>
             </p>
           ) : null}
-          {business.location?.address ? (
-            <p className="mt-3 flex items-start gap-3 text-body">
-              <MapPin size={22} className="mt-0.5 shrink-0 text-muted-foreground" />
-              <span>
-                {[business.location.address, business.location.city].filter(Boolean).join(", ")}
-              </span>
-            </p>
-          ) : null}
 
           <ul className="mt-6 space-y-3 border-t border-border pt-5">
             {appointment.items.map((item, index) => (
@@ -222,7 +239,7 @@ function ManageView({ token, data }: { token: string; data: Manage }) {
                   <span className="block font-medium">{item.service ?? "Service"}</span>
                   <span className="block text-muted-foreground">
                     {item.duration ? formatDuration(item.duration) : ""}
-                    {item.team_member ? ` · with ${item.team_member}` : ""}
+                    {staffName(item) ? ` · with ${staffName(item)}` : ""}
                   </span>
                 </span>
                 <span>{item.price ? money(Number(item.price)) : ""}</span>
@@ -279,7 +296,8 @@ function ManageView({ token, data }: { token: string; data: Manage }) {
             ) : appointment.status === "booked" || appointment.status === "confirmed" ? (
               <p className="mt-4 text-body text-muted-foreground">
                 It&apos;s too close to your appointment to change it online. Please contact{" "}
-                {business.name}.
+                {business.name}
+                {hasContact ? " using the details below" : ""}.
               </p>
             ) : null}
             {business.slug &&
@@ -347,7 +365,18 @@ function ManageView({ token, data }: { token: string; data: Manage }) {
             {error}
           </p>
         ) : null}
+        <SalonCard contact={contact} />
       </div>
+    </div>
+  );
+}
+
+function SalonCard({ contact }: { contact: BusinessContact }) {
+  if (!formatAddress(contact.location) && !contact.phone && !contact.email && !contact.website) return null;
+  return (
+    <div className="rounded-2xl bg-card p-6 shadow-[inset_0_0_0_1px_var(--color-border)]">
+      <p className="text-body font-semibold">Contact {contact.name}</p>
+      <SalonContact contact={contact} className="mt-2 divide-y divide-border" />
     </div>
   );
 }
