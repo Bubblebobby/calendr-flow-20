@@ -102,7 +102,7 @@ function ReceiptPage() {
             {refunded ? "Refund issued" : "Thank you!"}
           </h1>
           <p className="mx-auto mt-2 max-w-[16rem] text-body leading-6 text-muted-foreground">
-            {refunded ? `Your refund from ${b?.name ?? "the salon"} has been issued` : `Your payment to ${b?.name ?? "the salon"} was successful`}
+            {refunded ? `Your refund from ${b?.name ?? "the salon"} has been issued` : "Your booking was successful"}
           </p>
         </section>
 
