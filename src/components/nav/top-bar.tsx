@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CaretRight, ChartBar, ChatCircleDots, RocketLaunch, SignOut } from "@phosphor-icons/react";
 
 import { NotificationsMenu, SearchMenu } from "./top-bar-menus";
+import { SetupButton } from "@/components/home/setup-guide";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -28,7 +29,11 @@ export function TopBar() {
       const { data: auth } = await supabase.auth.getSession();
       const user = auth.session?.user;
       if (!user) return null;
-      const { data } = await supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle();
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .maybeSingle();
       const name = data?.full_name?.trim() || user.email || "You";
       return { name, email: user.email ?? "" };
     },
@@ -56,21 +61,27 @@ export function TopBar() {
       </Link>
 
       <div className="flex items-center gap-1.5">
+        <SetupButton />
+        <SearchMenu />
         <button
           type="button"
-          onClick={() => navigate({ to: "/settings" })}
-          className="mr-1 hidden h-10 items-center gap-2 rounded-full bg-primary px-4 text-body font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
+          aria-label="Performance insights"
+          className={iconButton}
+          onClick={() =>
+            navigate({ to: "/reports/$reportId", params: { reportId: "performance-dashboard" } })
+          }
         >
-          <RocketLaunch size={18} />
-          Continue setup
-          <CaretRight size={14} weight="bold" />
-        </button>
-        <SearchMenu />
-        <button type="button" aria-label="Performance insights" className={iconButton} onClick={() => navigate({ to: "/reports/$reportId", params: { reportId: "performance-dashboard" } })}>
           <ChartBar size={24} />
         </button>
         <NotificationsMenu />
-        <button type="button" aria-label="Messages" className={iconButton} onClick={() => toast("Client messaging needs an SMS or WhatsApp provider. Coming in a later update.")}>
+        <button
+          type="button"
+          aria-label="Messages"
+          className={iconButton}
+          onClick={() =>
+            toast("Client messaging needs an SMS or WhatsApp provider. Coming in a later update.")
+          }
+        >
           <ChatCircleDots size={24} />
         </button>
         <DropdownMenu>
@@ -83,10 +94,15 @@ export function TopBar() {
           <DropdownMenuContent align="end" className="w-60 rounded-xl p-1.5">
             <DropdownMenuLabel className="px-3 py-2">
               <span className="block truncate text-body font-semibold">{me?.name}</span>
-              <span className="block truncate text-caption font-normal text-muted-foreground">{me?.email}</span>
+              <span className="block truncate text-caption font-normal text-muted-foreground">
+                {me?.email}
+              </span>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={() => void signOut()} className="gap-3 rounded-lg px-3 py-2 text-body">
+            <DropdownMenuItem
+              onSelect={() => void signOut()}
+              className="gap-3 rounded-lg px-3 py-2 text-body"
+            >
               <SignOut size={18} />
               Sign out
             </DropdownMenuItem>
