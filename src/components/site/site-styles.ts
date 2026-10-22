@@ -72,32 +72,34 @@ export type SiteIcon = (typeof SITE_ICONS)[number];
 
 export const ICON_FONT_URL = `https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=${[...SITE_ICONS].sort().join(",")}&display=block`;
 
-export const wrap = "mx-auto w-full max-w-[1440px] px-4 sm:px-8 lg:px-[60px]";
+export const wrap = "mx-auto w-full max-w-[1440px] px-4 sm:px-8 lg:px-10 xl:px-[60px]";
 export const serif = "font-display font-[450]";
 // DESIGN.md eyebrow-mono: 14px / 500 / 1.4px tracking, uppercase, #707070.
-export const eyebrow = "font-mono text-[14px] font-medium uppercase tracking-[1.4px]";
-// Section headings: 44px on phones, display-xl (72px, -2.88px) on desktop.
+// Square drops it to 12px / 1.2px between 1024 and 1279.
+export const eyebrow =
+  "font-mono text-[14px] font-medium uppercase tracking-[1.4px] lg:text-[12px] lg:tracking-[1.2px] xl:text-[14px] xl:tracking-[1.4px]";
+// Section headings: 44px on phones, 56px from 1024 (as Square), display-xl (72px, -2.88px) from 1280.
 export const bigHeading = cn(
   serif,
-  "text-[44px] leading-[1.02] tracking-[-1.5px] lg:text-[72px] lg:leading-none lg:tracking-[-2.88px]",
+  "text-[44px] leading-[1.02] tracking-[-1.5px] lg:text-[56px] lg:leading-none lg:tracking-[-2.24px] xl:text-[72px] xl:tracking-[-2.88px]",
 );
-// Feature-band headings: display-md (40px / 1.125 / -0.8px).
+// Feature-band headings: 36px / 40.5 below 1280 (as Square), display-md (40px / -0.8px) above.
 export const bandHeading = cn(
   serif,
-  "text-[36px] leading-[1.125] tracking-[-0.6px] lg:text-[40px] lg:tracking-[-0.8px]",
+  "text-[36px] leading-[1.125] tracking-[-0.72px] xl:text-[40px] xl:tracking-[-0.8px]",
 );
 
 /*
  * Buttons, as on Square: the pill's background is a pseudo-element that grows 5% on hover
  * (0.15s, cubic-bezier(0, 0, 0.2, 1)) while the label stays put, and the whole button dips 5%
- * when pressed.
+ * when pressed. Below 1280 Square's buttons are 44px with 16px labels; 47px / 18px above.
  */
 const pillBase =
-  "relative isolate inline-flex h-[47px] items-center justify-center whitespace-nowrap rounded-full px-5 font-medium transition-transform duration-150 ease-[cubic-bezier(0,0,0.2,1)] active:translate-y-[5%] before:absolute before:inset-0 before:-z-10 before:rounded-full before:transition-[transform,background-color] before:duration-150 before:ease-[cubic-bezier(0,0,0.2,1)] motion-safe:hover:before:scale-105";
+  "relative isolate inline-flex h-11 xl:h-[47px] items-center justify-center whitespace-nowrap rounded-full px-5 font-medium transition-transform duration-150 ease-[cubic-bezier(0,0,0.2,1)] active:translate-y-[5%] before:absolute before:inset-0 before:-z-10 before:rounded-full before:transition-[transform,background-color] before:duration-150 before:ease-[cubic-bezier(0,0,0.2,1)] motion-safe:hover:before:scale-105";
 // button-primary: black fill, white 18px/500 label; pressed #1a1a1a.
 export const pillSolid = cn(
   pillBase,
-  "text-[18px] leading-[27px] text-white before:bg-black active:before:bg-[#1a1a1a]",
+  "text-base leading-6 xl:text-[18px] xl:leading-[27px] text-white before:bg-black active:before:bg-[#1a1a1a]",
 );
 // button-secondary: white with a 1px Square Blue outline and blue 16px/500 label.
 export const pillOutline = cn(
@@ -105,8 +107,11 @@ export const pillOutline = cn(
   "text-base leading-6 text-[#006aff] before:border before:border-[#006aff] before:bg-white",
 );
 // button-on-dark: white fill, black label.
-export const pillOnDark = cn(pillBase, "text-[18px] leading-[27px] text-black before:bg-white");
-export const pillSmall = "h-10 px-4 text-[15px] leading-5";
+export const pillOnDark = cn(
+  pillBase,
+  "text-base leading-6 xl:text-[18px] xl:leading-[27px] text-black before:bg-white",
+);
+export const pillSmall = "h-10 xl:h-10 px-4 text-[15px] xl:text-[15px] leading-5";
 
 // Square's text links: underlined, fading to 70% on hover.
 export const textLink =

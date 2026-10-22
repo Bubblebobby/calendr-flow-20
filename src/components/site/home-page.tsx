@@ -50,12 +50,11 @@ import { ArrowLink, Icon, Logo, RoundButton, Words } from "./site-ui";
  */
 
 export function HomePage() {
-  const [pastHero, setPastHero] = useState(false);
   return (
-    <div className="site-home min-h-screen bg-white pb-20 font-sans text-black antialiased md:pb-0">
+    <div className="site-home min-h-screen bg-white pb-[72px] font-sans text-black antialiased xl:pb-0">
       <SiteHeader />
       <main>
-        <Hero onPassed={setPastHero} />
+        <Hero />
         <ExploreSolutions />
         {FEATURE_SECTIONS.map((section) => (
           <FeatureSection key={section.id} {...section} />
@@ -68,7 +67,7 @@ export function HomePage() {
         <ClosingCta />
       </main>
       <SiteFooter />
-      <MobileCtaBar visible={pastHero} />
+      <BottomCtaBar />
     </div>
   );
 }
@@ -166,14 +165,14 @@ function SiteHeader() {
         className="sticky top-0 z-40 border-b border-[#f2f2f2] bg-white/95 backdrop-blur"
       >
         <div className={cn(wrap, "flex h-[72px] items-center justify-between gap-3 sm:gap-6")}>
-          <span className="hidden text-[18px] font-medium lg:inline">Bookly for salons</span>
+          <span className="hidden text-[18px] font-medium xl:inline">Bookly for salons</span>
           {/* Below desktop the section links fold into this menu, like Square's. */}
           <button
             type="button"
             aria-expanded={menuOpen}
             aria-controls="site-menu"
             onClick={() => setMenuOpen((open) => !open)}
-            className="-ml-2 flex h-11 items-center gap-1 whitespace-nowrap rounded-full px-2 text-base font-medium sm:text-[17px] lg:hidden"
+            className="-ml-2 flex h-11 items-center gap-1 whitespace-nowrap rounded-full px-2 text-base font-medium sm:text-[17px] lg:text-[18px] xl:hidden"
           >
             Bookly for salons
             <Icon
@@ -185,7 +184,7 @@ function SiteHeader() {
 
           {/* Desktop: links sit on the right next to the buttons, as on Square. */}
           <div className="flex items-center gap-7">
-            <nav className="hidden items-center gap-7 text-[15px] font-medium lg:flex">
+            <nav className="hidden items-center gap-7 text-[15px] font-medium xl:flex">
               <a href="#top" className="text-black">
                 Overview
               </a>
@@ -232,8 +231,9 @@ function SiteHeader() {
                 Pricing
               </a>
             </nav>
-            <div className="flex items-center gap-3">
-              <a href="#pricing" className={cn(pillOutline, pillSmall, "hidden sm:inline-flex")}>
+            {/* Below 1280 these move to the bottom bar, as on Square. */}
+            <div className="hidden items-center gap-3 xl:flex">
+              <a href="#pricing" className={cn(pillOutline, pillSmall)}>
                 See pricing
               </a>
               <Link to="/auth" className={cn(pillSolid, pillSmall)}>
@@ -245,7 +245,7 @@ function SiteHeader() {
         <nav
           id="site-menu"
           hidden={!menuOpen}
-          className="absolute inset-x-0 top-full max-h-[calc(100svh-72px)] overflow-y-auto border-b border-[#f2f2f2] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.32)] lg:hidden"
+          className="absolute inset-x-0 top-full max-h-[calc(100svh-72px)] overflow-y-auto border-b border-[#f2f2f2] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.32)] xl:hidden"
         >
           <ul className={cn(wrap, "py-2")}>
             {SECTIONS.map(([label, href]) => (
@@ -288,9 +288,8 @@ const HERO_SCENES = [
   { image: PHOTOS.heroListing, alt: "A smiling client", mock: <ListingMock /> },
 ];
 
-function Hero({ onPassed }: { onPassed: (passed: boolean) => void }) {
+function Hero() {
   const [scene, setScene] = useState(0);
-  const buttons = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -298,38 +297,26 @@ function Hero({ onPassed }: { onPassed: (passed: boolean) => void }) {
     return () => window.clearInterval(timer);
   }, []);
 
-  // Once the hero buttons scroll away, phones get the bottom bar instead.
-  useEffect(() => {
-    const el = buttons.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry) onPassed(!entry.isIntersecting && entry.boundingClientRect.top < 0);
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [onPassed]);
-
   return (
-    <section id="top" className={cn(wrap, "pt-12 lg:pt-16")}>
+    <section id="top" className={cn(wrap, "pt-12 lg:pt-10 lg:text-center xl:pt-16 xl:text-left")}>
       <p className={cn(eyebrow, "site-fade-load text-[#707070]")}>Appointments</p>
       <h1
         className={cn(
           serif,
-          "mt-[17.5px] max-w-[1000px] text-[44px] leading-[1.05] tracking-[-0.5px] sm:text-[56px] lg:text-[72px] lg:leading-none lg:tracking-[-2.88px]",
+          "mt-[17.5px] max-w-[1000px] text-[44px] leading-[1.05] tracking-[-0.5px] sm:text-[56px] lg:mx-auto lg:leading-none lg:tracking-[-2.24px] xl:mx-0 xl:text-[72px] xl:tracking-[-2.88px]",
         )}
       >
         <Words text="Booking software that keeps your chairs full" onLoad />
       </h1>
       <p
-        className="site-fade-load mt-5 max-w-[620px] text-[18px] font-medium leading-[27px]"
+        className="site-fade-load mt-5 max-w-[620px] text-[18px] font-medium leading-[27px] lg:mx-auto xl:mx-0"
         style={{ animationDelay: "450ms" }}
       >
         Bookly brings online booking, your calendar, checkout, clients and your team together —
         built for salons, barbers, spas and studios.
       </p>
       <div
-        ref={buttons}
-        className="site-fade-load mt-8 flex flex-wrap gap-3"
+        className="site-fade-load mt-8 flex flex-wrap gap-3 lg:justify-center xl:justify-start"
         style={{ animationDelay: "600ms" }}
       >
         <a href="#pricing" className={pillOutline}>
@@ -340,7 +327,7 @@ function Hero({ onPassed }: { onPassed: (passed: boolean) => void }) {
         </Link>
       </div>
 
-      <div className="relative mt-12 aspect-[4/5] overflow-hidden rounded-[10px] bg-[#f7f6f5] sm:aspect-[16/9] lg:mt-16 lg:aspect-[1320/680]">
+      <div className="relative mt-12 aspect-[4/5] overflow-hidden rounded-[10px] bg-[#f7f6f5] sm:aspect-[16/9] lg:mt-20 xl:mt-16 xl:aspect-[1320/680]">
         {HERO_SCENES.map((item, index) => (
           <div
             key={item.image}
@@ -599,11 +586,11 @@ function FeatureSection({
     </>
   );
   return (
-    <section id={id} className={cn(wrap, "scroll-mt-24 pt-24 lg:pt-[120px]")}>
+    <section id={id} className={cn(wrap, "scroll-mt-24 pt-24 xl:pt-[120px]")}>
       {image ? (
         // Text on the left, picture on the right (Square keeps this order for every band).
-        <div className="grid items-center gap-10 lg:grid-cols-[433px_1fr] lg:gap-5">
-          <div className="lg:pr-10">
+        <div className="grid items-center gap-10 lg:grid-cols-[325px_1fr] lg:gap-5 xl:grid-cols-[433px_1fr]">
+          <div className="xl:pr-10">
             {heading}
             {text ? <p className="site-fade mt-5 text-base leading-6">{text}</p> : null}
             <ArrowLink className="site-fade mt-3">Get started</ArrowLink>
@@ -613,7 +600,7 @@ function FeatureSection({
               src={photo(image, 1400)}
               alt=""
               loading="lazy"
-              className="aspect-[4/3] w-full object-cover lg:aspect-[867/578]"
+              className="aspect-[4/3] w-full object-cover lg:aspect-[3/2]"
             />
             {mock ? (
               <div className="absolute bottom-4 hidden sm:bottom-8 sm:right-8 sm:block sm:w-[340px]">
@@ -629,7 +616,11 @@ function FeatureSection({
       <div
         className={cn(
           "site-reveal mt-14 grid gap-x-5 gap-y-10 sm:grid-cols-2",
-          columns === 4 ? "lg:grid-cols-4" : "lg:grid-cols-3",
+          columns === 4
+            ? image
+              ? "lg:grid-cols-4"
+              : "lg:grid-cols-2 xl:grid-cols-4"
+            : "lg:grid-cols-3",
         )}
       >
         {features.map(({ icon, title: featureTitle, text: featureText, link }) => (
@@ -713,12 +704,12 @@ function useSlider() {
 }
 
 const sliderTrack =
-  "site-reveal mt-10 flex snap-x snap-mandatory overflow-x-auto scroll-px-4 px-4 pb-2 [scrollbar-width:none] sm:scroll-px-8 sm:px-8 lg:scroll-px-[60px] lg:px-[max(60px,calc((100vw-1320px)/2))]";
+  "site-reveal mt-10 flex snap-x snap-mandatory overflow-x-auto scroll-px-4 px-4 pb-2 [scrollbar-width:none] sm:scroll-px-8 sm:px-8 lg:scroll-px-10 lg:px-10 xl:scroll-px-[60px] xl:px-[max(60px,calc((100vw-1320px)/2))]";
 
 function ManageSlider() {
   const { track, scroll } = useSlider();
   return (
-    <section id="manage" className="scroll-mt-24 pt-24 lg:pt-[120px]">
+    <section id="manage" className="scroll-mt-24 pt-24 xl:pt-[120px]">
       <div className={cn(wrap, "flex items-end justify-between gap-6")}>
         <h2 className={cn(bigHeading, "max-w-[900px]")}>
           <Words text="Run every part of your salon" />
@@ -733,12 +724,12 @@ function ManageSlider() {
           // DESIGN.md card-feature: cream, 50px corners, 40px padding, flat.
           <article
             key={title}
-            className="grid w-[85vw] shrink-0 snap-start grid-rows-[auto_1fr] gap-8 overflow-hidden rounded-[50px] bg-[#f7f6f5] p-8 sm:w-[600px] sm:grid-cols-[1fr_240px] sm:grid-rows-1 lg:h-[413px] lg:p-10"
+            className="grid w-[85vw] shrink-0 snap-start grid-rows-[auto_1fr] gap-8 overflow-hidden rounded-[50px] bg-[#f7f6f5] p-8 sm:w-[600px] sm:grid-cols-[1fr_240px] sm:grid-rows-1 lg:h-[583px] lg:w-[calc(100vw-80px)] lg:grid-cols-[1fr_320px] lg:p-[60px] xl:h-[413px] xl:w-[600px] xl:grid-cols-[1fr_240px] xl:p-10"
           >
             <div className="flex flex-col justify-between gap-8">
               <Icon name={icon} size={30} />
               <div>
-                <h3 className="text-[24px] font-medium leading-[1.2] tracking-[-0.24px]">
+                <h3 className="text-[24px] font-medium leading-[1.2] tracking-[-0.24px] lg:text-[36px] lg:leading-[40.5px] lg:tracking-[-0.72px] xl:text-[24px] xl:leading-[1.2] xl:tracking-[-0.24px]">
                   {title}
                 </h3>
                 <p className="mt-3 text-base leading-6">{text}</p>
@@ -769,18 +760,18 @@ const TYPES = [
 
 function BusinessTypes() {
   return (
-    <section id="business-types" className="scroll-mt-24 pt-24 lg:pt-[120px]">
+    <section id="business-types" className="scroll-mt-24 pt-24 xl:pt-[120px]">
       <h2 className={cn(wrap, bigHeading, "text-center")}>
         <Words text="Built for your craft" />
       </h2>
-      <div className={cn(sliderTrack, "gap-4 lg:justify-center")}>
+      <div className={cn(sliderTrack, "gap-4 lg:gap-2.5 xl:justify-center xl:gap-4")}>
         {TYPES.map(({ label, image }) => (
           <Link
             key={label}
             to="/auth"
             className={cn(
               fadeLink,
-              "relative h-[364px] w-[256px] shrink-0 snap-start overflow-hidden rounded-[10px] bg-[#f7f6f5]",
+              "relative h-[364px] w-[256px] lg:h-[408px] lg:w-[280px] xl:h-[364px] xl:w-[256px] shrink-0 snap-start overflow-hidden rounded-[10px] bg-[#f7f6f5]",
             )}
           >
             <img src={photo(image, 600)} alt="" loading="lazy" className="size-full object-cover" />
@@ -826,7 +817,7 @@ function Devices() {
   const step = (dir: number) => setIndex((i) => (i + dir + DEVICES.length) % DEVICES.length);
   const current = DEVICES[index] as (typeof DEVICES)[number];
   return (
-    <section id="devices" className={cn(wrap, "scroll-mt-24 pt-24 lg:pt-[120px]")}>
+    <section id="devices" className={cn(wrap, "scroll-mt-24 pt-24 xl:pt-[120px]")}>
       <h2 className={cn(bigHeading, "text-center")}>
         <Words text="Works on the devices you already have" />
       </h2>
@@ -919,14 +910,14 @@ function Pricing() {
   return (
     <section
       id="pricing"
-      className="mt-24 scroll-mt-24 bg-[#f7f6f5] py-20 lg:mt-[120px] lg:py-[120px]"
+      className="mt-24 scroll-mt-24 bg-[#f7f6f5] py-20 xl:mt-[120px] xl:py-[120px]"
     >
       <div className={wrap}>
         <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
           <div>
             <p className={cn(eyebrow, "site-fade pb-[17.5px] text-[#707070]")}>Pricing</p>
             {/* Square sets this heading in its sans (DESIGN.md heading-lg tier). */}
-            <h2 className="site-fade max-w-[760px] text-[32px] font-medium leading-[1.1] tracking-[-0.8px] lg:text-[40px]">
+            <h2 className="site-fade max-w-[760px] text-[32px] font-medium leading-[1.1] tracking-[-0.8px] lg:text-[48px] lg:leading-none lg:tracking-[-1.44px] xl:text-[40px] xl:leading-[1.1] xl:tracking-[-0.8px]">
               Choose the plan that fits your salon
             </h2>
           </div>
@@ -959,9 +950,11 @@ function Pricing() {
               </div>
               <p className="mt-2 min-h-12 text-base leading-6">{plan.blurb}</p>
               <div className="mt-6 border-t border-black/15 pt-6">
-                <p className="text-[56px] font-medium leading-none tracking-[-1.68px]">
+                <p className="text-[56px] font-medium leading-none tracking-[-1.68px] lg:text-[48px] lg:tracking-[-1.44px] xl:text-[56px] xl:tracking-[-1.68px]">
                   {plan.price}
-                  <span className="text-[40px] tracking-[-1px]">/mo.</span>
+                  <span className="text-[40px] tracking-[-1px] lg:text-[32px] xl:text-[40px]">
+                    /mo.
+                  </span>
                 </p>
                 <p className="mt-3 text-sm tracking-[0.28px] text-[#707070]">per location</p>
               </div>
@@ -969,7 +962,7 @@ function Pricing() {
                 to="/auth"
                 className={cn(
                   plan.featured ? pillSolid : pillOutline,
-                  "mt-8 h-11 w-full text-base",
+                  "mt-8 w-full xl:h-11 xl:text-base",
                 )}
               >
                 {plan.cta}
@@ -1004,7 +997,7 @@ function Pricing() {
             <h3 className="mt-1 text-[24px] font-medium leading-[1.2] tracking-[-0.24px] lg:text-[32px]">
               Get custom pricing
             </h3>
-            <Link to="/auth" className={cn(pillSolid, "mt-5 h-11 text-base")}>
+            <Link to="/auth" className={cn(pillSolid, "mt-5 xl:h-11 xl:text-base")}>
               Talk to our team
             </Link>
           </div>
@@ -1062,7 +1055,7 @@ const FAQS = [
 function Faq() {
   const [open, setOpen] = useState<number | null>(null);
   return (
-    <section id="faq" className={cn(wrap, "scroll-mt-24 pt-20 lg:pt-[120px]")}>
+    <section id="faq" className={cn(wrap, "scroll-mt-24 pt-20 xl:pt-[120px]")}>
       <h2 className={bandHeading}>
         <Words text="FAQ" />
       </h2>
@@ -1109,17 +1102,17 @@ function Faq() {
 
 function ClosingCta() {
   return (
-    <section className={cn(wrap, "py-24 lg:py-[120px]")}>
+    <section className={cn(wrap, "py-24 xl:py-[120px]")}>
       <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
         <h2
           className={cn(
             serif,
-            "max-w-[760px] text-[40px] leading-none tracking-[-1px] lg:text-[56px] lg:tracking-[-1.68px]",
+            "max-w-[760px] text-[40px] leading-none tracking-[-1px] lg:max-w-[657px] lg:text-[48px] lg:tracking-[-1.44px] xl:text-[56px] xl:tracking-[-1.68px]",
           )}
         >
           <Words text="Ready to get started? Your next client is waiting." />
         </h2>
-        <div className="site-fade flex flex-wrap gap-3">
+        <div className="site-fade flex flex-wrap gap-3 lg:shrink-0 lg:flex-nowrap">
           <a href="#pricing" className={pillOutline}>
             See pricing
           </a>
@@ -1181,7 +1174,7 @@ function SiteFooter() {
   return (
     <footer className="bg-black text-[14px] leading-[1.5] tracking-[0.28px] text-[#707070]">
       <div className={cn(wrap, "py-20")}>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-12 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-12 xl:grid-cols-4">
           {FOOTER.map((col) => (
             <div key={col.title}>
               <p>{col.title}</p>
@@ -1224,29 +1217,15 @@ function SiteFooter() {
   );
 }
 
-// ── Phones: the two main buttons stay at the bottom once the hero has scrolled away ──
+// ── Below 1280: the two main buttons sit in a bar at the bottom of the screen, as on Square ──
 
-function MobileCtaBar({ visible }: { visible: boolean }) {
+function BottomCtaBar() {
   return (
-    <div
-      aria-hidden={!visible}
-      className={cn(
-        "fixed inset-x-0 bottom-0 z-40 flex gap-2 border-t border-[#f2f2f2] bg-white/95 px-4 pb-[max(12px,env(safe-area-inset-bottom))] pt-3 backdrop-blur transition-transform duration-300 ease-out md:hidden",
-        visible ? "translate-y-0" : "pointer-events-none translate-y-full",
-      )}
-    >
-      <a
-        href="#pricing"
-        tabIndex={visible ? 0 : -1}
-        className={cn(pillOutline, "h-11 flex-1 text-base")}
-      >
+    <div className="fixed inset-x-0 bottom-0 z-40 flex gap-1.5 border-t border-[#f2f2f2] bg-white/95 px-4 pb-[max(12px,env(safe-area-inset-bottom))] pt-3 backdrop-blur sm:px-5 xl:hidden">
+      <a href="#pricing" className={cn(pillOutline, "h-[41px] flex-1")}>
         See pricing
       </a>
-      <Link
-        to="/auth"
-        tabIndex={visible ? 0 : -1}
-        className={cn(pillSolid, "h-11 flex-1 text-base")}
-      >
+      <Link to="/auth" className={cn(pillSolid, "h-[41px] flex-1")}>
         Get started
       </Link>
     </div>
