@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Check, CheckCircle, Copy, Plus, UserCircle, X } from "@phosphor-icons/react";
@@ -17,7 +17,7 @@ import {
 } from "@/lib/booking-slots";
 import { formatDuration, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { policySummary, type BookingPolicy } from "@/lib/booking-policy";
+import { policyForBooking, policySummary, type BookingPolicy } from "@/lib/booking-policy";
 import { initialsOf, isCustomerAccount, splitName, useCustomer } from "@/lib/customer";
 
 type Search = { services?: string; team?: string };
@@ -386,8 +386,8 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
             <div className="mt-6 rounded-xl bg-secondary p-4 text-left">
               <p className="text-body font-semibold">Save your booking link</p>
               <p className="mt-1 text-caption text-muted-foreground">
-                {policy.data
-                  ? policySummary(policy.data)
+                {policy.data && slot !== null
+                  ? policyForBooking(policy.data, zonedToUtc(day, slot, tz), business.name)
                   : "Use it to view or change your booking."}{" "}
                 Keep this link private.
               </p>
@@ -781,6 +781,7 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                       maxLength={20}
                       onChange={(event) => setPromoInput(event.target.value.toUpperCase())}
                       placeholder="Enter code"
+                      aria-label="Promo code"
                       className="h-12 min-w-0 flex-1 rounded-[8px] border border-input px-4 font-mono uppercase tracking-wider outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
                     />
                     <button
@@ -801,7 +802,9 @@ function BookingFlow({ slug, page, preselect }: { slug: string; page: Page; pres
                 <div className="mt-6 rounded-xl bg-secondary p-4">
                   <p className="text-body font-semibold">Cancellation policy</p>
                   <p className="mt-1 text-body text-muted-foreground">
-                    {policySummary(policy.data)}
+                    {slot !== null
+                      ? policyForBooking(policy.data, zonedToUtc(day, slot, tz), business.name)
+                      : policySummary(policy.data)}
                   </p>
                   {policy.data.text ? (
                     <p className="mt-2 whitespace-pre-line text-body text-muted-foreground">
@@ -989,11 +992,17 @@ function TextField({
   readOnly?: boolean | undefined;
   hint?: string | undefined;
 }) {
+  // Explicit label/field link so every screen reader names the field.
+  const id = useId();
   return (
-    <label className="block text-body font-semibold">
-      {label}
-      {required ? <span className="text-destructive"> *</span> : null}
+    <div className="block text-body font-semibold">
+      <label htmlFor={id}>
+        {label}
+        {required ? <span className="text-destructive"> *</span> : null}
+      </label>
       <input
+        id={id}
+        aria-describedby={hint ? `${id}-hint` : undefined}
         type={type}
         value={value}
         required={required}
@@ -1007,8 +1016,10 @@ function TextField({
         )}
       />
       {hint ? (
-        <span className="mt-1 block text-caption font-normal text-muted-foreground">{hint}</span>
+        <span id={`${id}-hint`} className="mt-1 block text-caption font-normal text-muted-foreground">
+          {hint}
+        </span>
       ) : null}
-    </label>
+    </div>
   );
 }

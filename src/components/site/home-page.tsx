@@ -901,7 +901,7 @@ const FOOTER = [
     title: "For clients",
     links: [
       ["Book an appointment", "/sign-in"],
-      ["Create an account", "/create-account"],
+      ["Create an account", "/sign-in?mode=signup"],
       ["Find a salon", "/discover"],
     ],
   },

@@ -1158,7 +1158,14 @@ export function AppointmentPanel({
             {
               title: "Appointment created",
               at: created,
-              detail: `Booked by ${existing?.created_by && existing.created_by === currentUserId ? "you" : "a team member"}, reference ${existing!.id.slice(0, 8).toUpperCase()}`,
+              // Online bookings (create_booking) don't record a creator; desk bookings always do.
+              detail: `${
+                !existing?.created_by
+                  ? "Booked online by the client"
+                  : existing.created_by === currentUserId
+                    ? "Booked by you"
+                    : "Booked by a team member"
+              }, reference ${existing!.id.slice(0, 8).toUpperCase()}`,
             },
           ]
         : []),

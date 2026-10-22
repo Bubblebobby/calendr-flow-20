@@ -48,6 +48,7 @@ type SaleRow = {
   payment_method: string;
   total: number;
   tip_amount?: number | null;
+  discount_amount?: number | null;
   clients: { first_name: string; last_name: string | null } | null;
   team_members: { first_name: string; last_name: string | null } | null;
   sale_items: { description: string; price: number; quantity: number; service_id: string | null; product_id?: string | null }[];
@@ -177,12 +178,13 @@ export const REPORTS: ReportDef[] = [
     id: "sales-summary",
     name: "Sales summary",
     category: "Sales",
-    description: "Sales quantities and value, excluding tips.",
+    description: "Sales quantities and value, excluding tips. Net sales are after discounts and refunds.",
     columns: [
       { key: "type", label: "Type" },
       { key: "sales", label: "Sales qty", format: "number" },
       { key: "items", label: "Items sold", format: "number" },
       { key: "gross", label: "Gross sales", format: "money" },
+      { key: "discounts", label: "Discounts", format: "money" },
       { key: "refunds", label: "Refunds", format: "money" },
       { key: "net", label: "Net sales", format: "money" },
     ],
@@ -191,25 +193,39 @@ export const REPORTS: ReportDef[] = [
       const groups = new Map<string, Row>();
       for (const sale of sales) {
         const seen = new Set<string>();
+        // The sale's discount is spread over its lines in proportion to their value, so each
+        // type's net matches what was actually charged (the same total as Home and Payments).
+        const saleGross = sale.sale_items.reduce((total, item) => total + Number(item.price) * item.quantity, 0);
+        const saleDiscount = Number(sale.discount_amount ?? 0);
         for (const item of sale.sale_items) {
           const type = item.product_id ? "Product" : item.service_id ? "Service" : "Other";
-          const row = groups.get(type) ?? { type, sales: 0, items: 0, gross: 0, refunds: 0, net: 0 };
+          const row = groups.get(type) ?? { type, sales: 0, items: 0, gross: 0, discounts: 0, refunds: 0, net: 0 };
           const amount = Number(item.price) * item.quantity;
+          const discount = saleGross > 0 ? (saleDiscount * amount) / saleGross : 0;
           if (!seen.has(type)) {
             row["sales"] = Number(row["sales"]) + 1;
             seen.add(type);
           }
           row["items"] = Number(row["items"]) + item.quantity;
           row["gross"] = Number(row["gross"]) + amount;
-          if (sale.status === "refunded") row["refunds"] = Number(row["refunds"]) + amount;
-          row["net"] = Number(row["gross"]) - Number(row["refunds"]);
+          row["discounts"] = Number(row["discounts"]) + discount;
+          if (sale.status === "refunded") row["refunds"] = Number(row["refunds"]) + amount - discount;
+          row["net"] = Number(row["gross"]) - Number(row["discounts"]) - Number(row["refunds"]);
           groups.set(type, row);
         }
       }
       const rows = [...groups.values()];
       return {
         rows,
-        total: { type: "Total", sales: sales.length, items: sum(rows, "items"), gross: sum(rows, "gross"), refunds: sum(rows, "refunds"), net: sum(rows, "net") },
+        total: {
+          type: "Total",
+          sales: sales.length,
+          items: sum(rows, "items"),
+          gross: sum(rows, "gross"),
+          discounts: sum(rows, "discounts"),
+          refunds: sum(rows, "refunds"),
+          net: sum(rows, "net"),
+        },
       };
     },
   },

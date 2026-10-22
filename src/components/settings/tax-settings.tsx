@@ -50,7 +50,8 @@ export function TaxRateSelect({ value, onChange }: { value: string; onChange: (i
   );
 }
 
-export function TaxSettings() {
+/** Settings → Sales: "tax" shows tax rates; "receipts" shows the receipt footer. */
+export function TaxSettings({ view }: { view: "tax" | "receipts" }) {
   const { data: business } = useBusiness();
   const queryClient = useQueryClient();
   const rates = useTaxRates();
@@ -115,6 +116,28 @@ export function TaxSettings() {
       </p>
     );
   }
+  if (view === "receipts") {
+    return (
+      <section className="space-y-6">
+        <div>
+          <h2 className="text-[1.5rem] font-semibold leading-8">Receipts</h2>
+          <p className="mt-1 max-w-2xl text-body text-muted-foreground">
+            Every receipt shows your business name, address, the items, tax and how it was paid. Add a
+            line of your own at the bottom.
+          </p>
+        </div>
+        <div className={cn(card, "p-6")}>
+          <label className="block text-body font-semibold">
+            Receipt footer <span className="font-normal text-muted-foreground">(optional)</span>
+            <textarea rows={2} maxLength={300} value={footer} placeholder="e.g. Thank you for visiting! Follow us @yoursalon" onChange={(e) => setFooter(e.target.value)} className="mt-2 w-full resize-none rounded-[8px] border border-input p-4 text-body font-normal" />
+          </label>
+          <button type="button" disabled={footer === (biz.data?.receipt_footer ?? "")} onClick={() => update.mutate({ receipt_footer: footer.trim() || null })} className={cn(pillButton, "mt-3 border border-input bg-card hover:bg-secondary")}>
+            Save footer
+          </button>
+        </div>
+      </section>
+    );
+  }
   const valid = form.name.trim() && form.rate !== "" && Number(form.rate) >= 0 && Number(form.rate) <= 100;
   return (
     <section className="space-y-6">
@@ -169,15 +192,6 @@ export function TaxSettings() {
         ))}
         {rates.data && rates.data.length === 0 ? <li className="px-5 py-8 text-center text-body text-muted-foreground">No tax rates. Sales show no tax.</li> : null}
       </ul>
-      <div className={cn(card, "p-6")}>
-        <label className="block text-body font-semibold">
-          Receipt footer <span className="font-normal text-muted-foreground">(optional)</span>
-          <textarea rows={2} maxLength={300} value={footer} placeholder="e.g. Thank you for visiting! Follow us @yoursalon" onChange={(e) => setFooter(e.target.value)} className="mt-2 w-full resize-none rounded-[8px] border border-input p-4 text-body font-normal" />
-        </label>
-        <button type="button" disabled={footer === (biz.data?.receipt_footer ?? "")} onClick={() => update.mutate({ receipt_footer: footer.trim() || null })} className={cn(pillButton, "mt-3 border border-input bg-card hover:bg-secondary")}>
-          Save footer
-        </button>
-      </div>
       <ConfirmDialog
         open={remove !== null}
         destructive

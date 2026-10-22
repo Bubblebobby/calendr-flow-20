@@ -8,6 +8,7 @@ import {
   MessagesHistory,
   SmartPricing,
 } from "@/components/marketing/marketing-pages";
+import { sectionTitle } from "@/components/nav/nav-items";
 
 const TABS = ["campaigns", "automations", "history", "deals", "pricing"] as const;
 type MarketingTab = (typeof TABS)[number];
@@ -17,9 +18,9 @@ export const Route = createFileRoute("/_authenticated/marketing")({
     typeof search["tab"] === "string" && (TABS as readonly string[]).includes(search["tab"])
       ? { tab: search["tab"] as MarketingTab }
       : {},
-  head: () => ({
+  head: ({ match }) => ({
     meta: [
-      { title: "Marketing — Bookly" },
+      { title: `${sectionTitle("marketing", match.search.tab)} — Bookly` },
       { name: "description", content: "Automated client messages, campaigns and deals." },
     ],
   }),

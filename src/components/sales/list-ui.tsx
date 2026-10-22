@@ -452,14 +452,18 @@ export function EmptyCard({
   );
 }
 
-/** Fresha's "INCLUDED IN YOUR PLAN" intro page for features not set up yet. */
+/**
+ * Fresha's "INCLUDED IN YOUR PLAN" intro page for features not set up yet. `comingSoon` is for
+ * features that aren't built: it says so (matching Add-ons) and shows no start button.
+ */
 export function FeatureIntro({
-  eyebrow = "INCLUDED IN YOUR PLAN",
+  eyebrow,
   title,
   body,
   bullets,
   cta = "Start now",
   onStart,
+  comingSoon = false,
   art,
 }: {
   eyebrow?: string;
@@ -467,13 +471,22 @@ export function FeatureIntro({
   body: string;
   bullets: string[];
   cta?: string;
-  onStart: () => void;
+  onStart?: () => void;
+  comingSoon?: boolean;
   art?: React.ReactNode;
 }) {
+  const label = comingSoon ? "COMING SOON" : (eyebrow ?? "INCLUDED IN YOUR PLAN");
   return (
     <div className="grid items-center gap-10 py-6 lg:grid-cols-[1fr_minmax(16rem,22rem)]">
       <div>
-        <p className="text-caption font-semibold tracking-wide text-[#1f8a3e]">{eyebrow}</p>
+        <p
+          className={cn(
+            "text-caption font-semibold tracking-wide",
+            comingSoon ? "text-muted-foreground" : "text-[#1f8a3e]",
+          )}
+        >
+          {label}
+        </p>
         <h1 className="mt-3 text-[2.25rem] font-semibold leading-tight">{title}</h1>
         <p className="mt-4 max-w-lg text-[1rem] text-muted-foreground">{body}</p>
         <ul className="mt-5 space-y-3">
@@ -485,13 +498,19 @@ export function FeatureIntro({
           ))}
         </ul>
         <div className="mt-8 flex items-center gap-5">
-          <button
-            type="button"
-            onClick={onStart}
-            className={cn(pillButton, "h-12 bg-ink px-7 text-ink-foreground hover:bg-ink/90")}
-          >
-            {cta}
-          </button>
+          {comingSoon ? (
+            <span className="inline-flex h-12 items-center rounded-full bg-secondary px-7 text-heading font-semibold text-muted-foreground">
+              Coming soon
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={onStart}
+              className={cn(pillButton, "h-12 bg-ink px-7 text-ink-foreground hover:bg-ink/90")}
+            >
+              {cta}
+            </button>
+          )}
           <span className="cursor-pointer text-body font-semibold hover:underline">
             Learn more
           </span>

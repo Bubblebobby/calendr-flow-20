@@ -160,3 +160,13 @@ export const navItems: NavItem[] = [
   { key: "add-ons", title: "Add-ons", to: "/add-ons", icon: SquaresFour },
   { key: "settings", title: "Settings", to: "/settings", icon: Gear },
 ];
+
+/** Page title for a section's tab, from the side menu's labels (the first child is the default). */
+export function sectionTitle(key: string, tab?: string) {
+  const item = navItems.find((entry) => entry.key === key);
+  const children = item?.groups?.flatMap((group) => group.children) ?? [];
+  const child = tab
+    ? children.find((entry) => entry.search?.["tab"] === tab)
+    : children[0];
+  return child?.title ?? item?.title ?? "Bookly";
+}

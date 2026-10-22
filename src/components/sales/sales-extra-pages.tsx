@@ -294,7 +294,7 @@ export function RegisterIntro() {
         "Seamlessly track every cash movement for full visibility",
         "Stay on top of petty cash and float balances",
       ]}
-      onStart={() => toast("Registers need their own database table, coming in a later update")}
+      comingSoon
       art={
         <div className="rounded-3xl bg-card p-5 shadow-lg">
           <p className="text-body font-semibold">Register</p>

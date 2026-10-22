@@ -549,8 +549,9 @@ export function HomeDashboard() {
           timeZone,
         }).format(date),
         confirmed: onDay.filter((appointment) => appointment.status === "confirmed").length,
-        booked: onDay.filter(
-          (appointment) => !["confirmed", "cancelled"].includes(appointment.status),
+        // Still to happen: completed (checked out early) and no-shows aren't upcoming bookings.
+        booked: onDay.filter((appointment) =>
+          ["booked", "arrived", "started"].includes(appointment.status),
         ).length,
         cancelled: onDay.filter((appointment) => appointment.status === "cancelled").length,
       };

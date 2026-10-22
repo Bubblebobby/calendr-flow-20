@@ -292,8 +292,9 @@ function SettingsPage({ sectionKey, pageKey }: { sectionKey: string; pageKey: st
         </PageBlock>
       );
     case "sales/tax":
+      return <TaxSettings view="tax" />;
     case "sales/receipts":
-      return <TaxSettings />;
+      return <TaxSettings view="receipts" />;
     case "sales/payment-methods":
       return (
         <PageBlock title="Payment methods" subtitle="How clients can pay at checkout.">
