@@ -82,12 +82,16 @@
   --color-placeholder: var(--placeholder);
   /* Type scale modelled on Square's dashboard (Oct 2026): 14px body, 16px card titles,
      20px section titles, large light page titles. */
+  /* Headings are set tight wherever these sizes are used (a tracking utility still wins). */
   --text-display: 2rem;
-  --text-display--line-height: 2.5rem;
+  --text-display--line-height: 2.25rem;
+  --text-display--letter-spacing: -0.035em;
   --text-title: 1.25rem;
   --text-title--line-height: 1.75rem;
+  --text-title--letter-spacing: -0.025em;
   --text-heading: 1rem;
   --text-heading--line-height: 1.5rem;
+  --text-heading--letter-spacing: -0.02em;
   --text-body: 0.875rem;
   --text-body--line-height: 1.375rem;
   --text-caption: 0.75rem;
@@ -136,7 +140,7 @@
   --sidebar-accent-foreground: oklch(0.97 0.005 235);
   --sidebar-border: oklch(0.32 0.03 240);
   --sidebar-ring: oklch(0.62 0.12 205);
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
   --shadow-card: 0 0 0 1px #f0f0f0;
   --gradient-brand: linear-gradient(135deg, #101010, #006aff);
   --ink: #101010;
@@ -246,7 +250,7 @@
      Square's Exact (compared side by side at 64px). */
   --font-display: "Newsreader", ui-serif, Georgia, serif;
   --font-display--font-variation-settings: "opsz" 36;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
   --shadow-card: var(--shadow-card);
 }
 
@@ -321,23 +325,25 @@
 }
 
 @layer base {
+  /* Geist set tight: slightly negative tracking on text, more on headings. Utilities that set
+     their own tracking still win. */
   body {
     font-family: var(--font-sans);
+    letter-spacing: -0.011em;
     -webkit-font-smoothing: antialiased;
   }
-}
-
-/* Page titles are large and light, like Square's (beats the font-semibold utility on the h1). */
-h1.text-display {
-  font-weight: 400;
-  letter-spacing: -0.015em;
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.03em;
+  }
 }
 
 /* Fluid step heading: shrinks on short/narrow viewports, full size on desktop. */
 @utility step-title {
   font-size: clamp(1.6rem, 1.05rem + 2.1vw, 2.9rem);
   line-height: 1.08;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.035em;
   font-weight: 500;
 }
 
@@ -448,4 +454,22 @@ h1.text-display {
     opacity: 1;
     transform: none;
   }
+}
+
+/* Square's ArrowLink: on hover the arrow nudges forward and back twice (375ms each way). */
+@media (prefers-reduced-motion: no-preference) {
+  .site-arrow-link:hover .site-nudge {
+    animation: site-nudge 375ms cubic-bezier(0, 0, 0.2, 1) 2 alternate;
+  }
+}
+@keyframes site-nudge {
+  to {
+    transform: translateX(4px);
+  }
+}
+
+/* Keyboard focus on the marketing site: Square Blue ring, 2px out. */
+.site-home :focus-visible {
+  outline: 2px solid #006aff;
+  outline-offset: 2px;
 }

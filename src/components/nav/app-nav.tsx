@@ -122,7 +122,7 @@ export function AppNav() {
                     <p className="px-3 pb-2 text-caption font-medium uppercase tracking-wide text-muted-foreground">
                       {group.title}
                     </p>
-                    <ul>
+                    <ul className="space-y-1">
                       {group.children.map((child) => (
                         <li key={child.title}>
                           <Link
@@ -130,7 +130,7 @@ export function AppNav() {
                             search={child.search as never}
                             activeProps={{}}
                             className={cn(
-                              "flex h-9 items-center rounded-md px-3 text-body font-medium text-foreground transition-colors",
+                              "flex h-9 items-center rounded-md px-3 text-body font-medium tracking-[-0.011em] text-foreground transition-colors",
                               isChildActive(renderedItem, child)
                                 ? "bg-accent"
                                 : "hover:bg-secondary",

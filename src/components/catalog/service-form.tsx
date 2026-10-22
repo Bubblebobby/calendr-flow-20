@@ -369,7 +369,7 @@ export function ServiceForm({ serviceId, initialCategoryId }: { serviceId?: stri
       <div className="mt-8 grid items-start gap-x-24 gap-y-6 lg:grid-cols-[296px_1fr]">
         {/* Section nav */}
         <nav className="h-fit self-start rounded-xl bg-card px-4 py-6">
-          <ul>
+          <ul className="space-y-1">
             {NAV_PRIMARY.map((item) => {
               const selectable = item.key === "basic" || item.key === "team";
               return (
@@ -394,7 +394,7 @@ export function ServiceForm({ serviceId, initialCategoryId }: { serviceId?: stri
           </ul>
           <div className="mx-4 my-4 h-px bg-border" />
           <p className="px-4 pb-2 text-heading font-semibold text-foreground">Settings</p>
-          <ul>
+          <ul className="space-y-1">
             {NAV_SETTINGS.map((item) => (
               <li key={item.label}>
                 <NavRow

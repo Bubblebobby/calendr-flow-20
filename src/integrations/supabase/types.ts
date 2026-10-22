@@ -1364,6 +1364,24 @@ export type Database = {
           },
         ]
       }
+      dashboard_layouts: {
+        Row: {
+          layout: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          layout?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          layout?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       businesses: {
         Row: {
           default_tax_rate_id: string | null
@@ -1393,6 +1411,8 @@ export type Database = {
           team_size: string | null
           timezone: string | null
           website: string | null
+          brand_color: string
+          logo_path: string | null
         }
         Insert: {
           default_tax_rate_id?: string | null
@@ -1422,6 +1442,8 @@ export type Database = {
           team_size?: string | null
           timezone?: string | null
           website?: string | null
+          brand_color?: string
+          logo_path?: string | null
         }
         Update: {
           default_tax_rate_id?: string | null
@@ -1451,6 +1473,8 @@ export type Database = {
           team_size?: string | null
           timezone?: string | null
           website?: string | null
+          brand_color?: string
+          logo_path?: string | null
         }
         Relationships: [
           {
