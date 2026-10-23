@@ -14,6 +14,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      automation_runs: {
+        Row: { failed: number; id: string; ran_at: string; sent: number }
+        Insert: { failed?: number; id?: string; ran_at?: string; sent?: number }
+        Update: { failed?: number; id?: string; ran_at?: string; sent?: number }
+        Relationships: []
+      }
       email_log: {
         Row: {
           appointment_id: string | null
@@ -22,6 +28,7 @@ export type Database = {
           dedupe_key: string | null
           id: string
           kind: string
+          notified_start: string | null
           recipients: string[]
           sale_id: string | null
         }
@@ -32,6 +39,7 @@ export type Database = {
           dedupe_key?: string | null
           id?: string
           kind: string
+          notified_start?: string | null
           recipients?: string[]
           sale_id?: string | null
         }
@@ -42,6 +50,7 @@ export type Database = {
           dedupe_key?: string | null
           id?: string
           kind?: string
+          notified_start?: string | null
           recipients?: string[]
           sale_id?: string | null
         }

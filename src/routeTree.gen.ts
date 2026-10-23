@@ -51,6 +51,7 @@ import { Route as ServiceServiceIdRouteImport } from './routes/service.$serviceI
 import { Route as ServiceNewRouteImport } from './routes/service.new'
 import { Route as TeamNewRouteImport } from './routes/team.new'
 import { Route as AuthenticatedReportsReportIdRouteImport } from './routes/_authenticated/reports_.$reportId'
+import { Route as ApiCronAutomationsRouteImport } from './routes/api/cron/automations'
 import { Route as BookManageTokenRouteImport } from './routes/book.manage.$token'
 import { Route as TeamShiftsMemberIdRouteImport } from './routes/team.shifts.$memberId'
 
@@ -265,6 +266,11 @@ const AuthenticatedReportsReportIdRoute =
     path: '/reports/$reportId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiCronAutomationsRoute = ApiCronAutomationsRouteImport.update({
+  id: '/api/cron/automations',
+  path: '/api/cron/automations',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BookManageTokenRoute = BookManageTokenRouteImport.update({
   id: '/book/manage/$token',
   path: '/book/manage/$token',
@@ -318,6 +324,7 @@ export interface FileRoutesByFullPath {
   '/team/new': typeof TeamNewRoute
   '/account/': typeof AccountIndexRoute
   '/reports/$reportId': typeof AuthenticatedReportsReportIdRoute
+  '/api/cron/automations': typeof ApiCronAutomationsRoute
   '/book/manage/$token': typeof BookManageTokenRoute
   '/team/shifts/$memberId': typeof TeamShiftsMemberIdRoute
 }
@@ -362,6 +369,7 @@ export interface FileRoutesByTo {
   '/team/new': typeof TeamNewRoute
   '/account': typeof AccountIndexRoute
   '/reports/$reportId': typeof AuthenticatedReportsReportIdRoute
+  '/api/cron/automations': typeof ApiCronAutomationsRoute
   '/book/manage/$token': typeof BookManageTokenRoute
   '/team/shifts/$memberId': typeof TeamShiftsMemberIdRoute
 }
@@ -409,6 +417,7 @@ export interface FileRoutesById {
   '/team/new': typeof TeamNewRoute
   '/account/': typeof AccountIndexRoute
   '/_authenticated/reports_/$reportId': typeof AuthenticatedReportsReportIdRoute
+  '/api/cron/automations': typeof ApiCronAutomationsRoute
   '/book/manage/$token': typeof BookManageTokenRoute
   '/team/shifts/$memberId': typeof TeamShiftsMemberIdRoute
 }
@@ -456,6 +465,7 @@ export interface FileRouteTypes {
     | '/team/new'
     | '/account/'
     | '/reports/$reportId'
+    | '/api/cron/automations'
     | '/book/manage/$token'
     | '/team/shifts/$memberId'
   fileRoutesByTo: FileRoutesByTo
@@ -500,6 +510,7 @@ export interface FileRouteTypes {
     | '/team/new'
     | '/account'
     | '/reports/$reportId'
+    | '/api/cron/automations'
     | '/book/manage/$token'
     | '/team/shifts/$memberId'
   id:
@@ -546,6 +557,7 @@ export interface FileRouteTypes {
     | '/team/new'
     | '/account/'
     | '/_authenticated/reports_/$reportId'
+    | '/api/cron/automations'
     | '/book/manage/$token'
     | '/team/shifts/$memberId'
   fileRoutesById: FileRoutesById
@@ -572,6 +584,7 @@ export interface RootRouteChildren {
   ServiceServiceIdRoute: typeof ServiceServiceIdRoute
   ServiceNewRoute: typeof ServiceNewRoute
   TeamNewRoute: typeof TeamNewRoute
+  ApiCronAutomationsRoute: typeof ApiCronAutomationsRoute
   BookManageTokenRoute: typeof BookManageTokenRoute
   TeamShiftsMemberIdRoute: typeof TeamShiftsMemberIdRoute
 }
@@ -872,6 +885,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReportsReportIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/cron/automations': {
+      id: '/api/cron/automations'
+      path: '/api/cron/automations'
+      fullPath: '/api/cron/automations'
+      preLoaderRoute: typeof ApiCronAutomationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/book/manage/$token': {
       id: '/book/manage/$token'
       path: '/book/manage/$token'
@@ -979,6 +999,7 @@ const rootRouteChildren: RootRouteChildren = {
   ServiceServiceIdRoute: ServiceServiceIdRoute,
   ServiceNewRoute: ServiceNewRoute,
   TeamNewRoute: TeamNewRoute,
+  ApiCronAutomationsRoute: ApiCronAutomationsRoute,
   BookManageTokenRoute: BookManageTokenRoute,
   TeamShiftsMemberIdRoute: TeamShiftsMemberIdRoute,
 }
