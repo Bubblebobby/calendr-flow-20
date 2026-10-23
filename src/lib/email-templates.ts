@@ -141,46 +141,51 @@ function bookingText(b: BookingDetails) {
     .join("\n");
 }
 
-export function clientConfirmed(b: BookingDetails): Rendered {
-  const intro = `Thanks, ${esc(b.clientFirstName)}. Here are your booking details.`;
-  return {
-    subject: `Booking confirmed: ${b.when.date} at ${b.when.time.split(" ")[0]}, ${b.salon.name}`,
-    html: layout({
-      preheader: `${b.when.date}, ${b.when.time} at ${b.salon.name}`,
-      heading: "Your booking is confirmed",
-      intro,
-      salon: b.salon,
-      body: `${bookingCard(b)}<p style="margin:16px 0 0;font-size:14px;color:${MUTED}">Pay at the salon.</p>${button(b.manageUrl, "View or change booking")}${salonBlock(b.salon)}`,
-    }),
-    text: `Your booking at ${b.salon.name} is confirmed.\n\n${bookingText(b)}\n\nView or change your booking: ${b.manageUrl}`,
-  };
+/** Fills an automation's text: {client}, {business}, {date}, {time}. */
+export function fillAutomationText(text: string, b: BookingDetails) {
+  return text
+    .replaceAll("{client}", b.clientFirstName)
+    .replaceAll("{business}", b.salon.name)
+    .replaceAll("{date}", b.when.date)
+    .replaceAll("{time}", b.when.time.split(" ")[0] ?? b.when.time);
 }
 
-export function clientCancelled(b: BookingDetails): Rendered {
+/**
+ * A client email for one of the automations (reminders and appointment updates). The subject and
+ * opening line are the automation's own text, the same words shown in its Preview, followed by
+ * the booking details and the button that fits the message.
+ */
+export function clientAutomation(
+  key: string,
+  text: { subject: string; body: string },
+  b: BookingDetails,
+  links: { reviewUrl: string | null },
+): Rendered {
+  const subject = fillAutomationText(text.subject, b);
+  const intro = fillAutomationText(text.body, b);
+  const over = key === "appointment_cancelled" || key === "appointment_no_show";
+  const action =
+    key === "appointment_thank_you"
+      ? links.reviewUrl
+        ? { href: links.reviewUrl, label: "Leave a review" }
+        : null
+      : over
+        ? b.bookUrl
+          ? { href: b.bookUrl, label: "Book again" }
+          : null
+        : { href: b.manageUrl, label: "View or change booking" };
+  const card = key === "appointment_thank_you" ? "" : bookingCard(b, over);
+  const payNote = key === "appointment_new" ? `<p style="margin:16px 0 0;font-size:14px;color:${MUTED}">Pay at the salon.</p>` : "";
   return {
-    subject: `Booking cancelled: ${b.when.date}, ${b.salon.name}`,
+    subject,
     html: layout({
-      preheader: `Your booking on ${b.when.date} has been cancelled`,
-      heading: "Your booking is cancelled",
-      intro: `Hi ${esc(b.clientFirstName)}, this booking has been cancelled. Nothing more to do.`,
+      preheader: intro,
+      heading: subject,
+      intro: esc(intro),
       salon: b.salon,
-      body: `${bookingCard(b, true)}${b.bookUrl ? button(b.bookUrl, "Book again") : ""}${salonBlock(b.salon)}`,
+      body: `${card}${payNote}${action ? button(action.href, action.label) : ""}${salonBlock(b.salon)}`,
     }),
-    text: `Your booking at ${b.salon.name} has been cancelled.\n\n${bookingText(b)}${b.bookUrl ? `\n\nBook again: ${b.bookUrl}` : ""}`,
-  };
-}
-
-export function clientRescheduled(b: BookingDetails): Rendered {
-  return {
-    subject: `Booking moved: ${b.when.date} at ${b.when.time.split(" ")[0]}, ${b.salon.name}`,
-    html: layout({
-      preheader: `Your booking is now ${b.when.date}, ${b.when.time}`,
-      heading: "Your booking has moved",
-      intro: `Hi ${esc(b.clientFirstName)}, here's your new time.`,
-      salon: b.salon,
-      body: `${bookingCard(b)}${button(b.manageUrl, "View or change booking")}${salonBlock(b.salon)}`,
-    }),
-    text: `Your booking at ${b.salon.name} has moved.\n\n${bookingText(b)}\n\nView or change your booking: ${b.manageUrl}`,
+    text: `${intro}\n\n${key === "appointment_thank_you" ? "" : `${bookingText(b)}\n\n`}${action ? `${action.label}: ${action.href}` : ""}`.trim(),
   };
 }
 

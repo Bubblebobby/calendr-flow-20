@@ -9,47 +9,9 @@ import { FeatureIntro, PageHeader } from "@/components/sales/list-ui";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useBusiness } from "@/lib/use-business";
+import { AUTOMATIONS, AUTOMATION_GROUPS as GROUPS, type Automation } from "@/lib/automations";
+import { getAutomationStatus } from "@/lib/automations.functions";
 import { cn } from "@/lib/utils";
-
-type Automation = {
-  key: string;
-  group: string;
-  title: string;
-  description: string;
-  defaultOn: boolean;
-  trigger: string;
-  subject: string;
-  body: string;
-};
-
-const GROUPS = [
-  "Reminders",
-  "Appointment updates",
-  "Waitlist updates",
-  "Increase bookings",
-  "Celebrate milestones",
-  "Client loyalty",
-] as const;
-
-export const AUTOMATIONS: Automation[] = [
-  { key: "reminder_3_days", group: "Reminders", title: "3 days upcoming appointment reminder", description: "Reminds clients of their appointment three days before.", defaultOn: true, trigger: "3 days before an upcoming appointment", subject: "See you on {date}", body: "Hi {client}, just a reminder about your appointment at {business} on {date} at {time}." },
-  { key: "reminder_24_hours", group: "Reminders", title: "24 hours upcoming appointment reminder", description: "Reminds clients of their appointment the day before.", defaultOn: true, trigger: "24 hours before an upcoming appointment", subject: "Reminder about your appointment on {date} at {time}", body: "Hi {client}, just a reminder about your appointment at {business} tomorrow at {time}." },
-  { key: "reminder_1_hour", group: "Reminders", title: "1 hour upcoming appointment reminder", description: "Reminds clients an hour before their appointment.", defaultOn: true, trigger: "1 hour before an upcoming appointment", subject: "See you soon", body: "Hi {client}, your appointment at {business} starts at {time}." },
-  { key: "appointment_new", group: "Appointment updates", title: "New appointment", description: "Lets clients know when an appointment is booked for them.", defaultOn: true, trigger: "When an appointment is booked", subject: "Your appointment is booked", body: "Hi {client}, you're booked in at {business} on {date} at {time}." },
-  { key: "appointment_rescheduled", group: "Appointment updates", title: "Rescheduled appointment", description: "Sent when an appointment's start time changes.", defaultOn: true, trigger: "When an appointment's start time changes", subject: "Your appointment has moved", body: "Hi {client}, your appointment at {business} is now on {date} at {time}." },
-  { key: "appointment_cancelled", group: "Appointment updates", title: "Cancelled appointment", description: "Sent when an appointment is cancelled.", defaultOn: true, trigger: "When an appointment is cancelled", subject: "Your appointment was cancelled", body: "Hi {client}, your appointment at {business} on {date} has been cancelled." },
-  { key: "appointment_no_show", group: "Appointment updates", title: "Did not show up", description: "Sent when an appointment is marked as a no-show.", defaultOn: true, trigger: "When an appointment is marked as a no-show", subject: "We missed you today", body: "Hi {client}, we missed you at {business} today. Book again whenever suits you." },
-  { key: "appointment_thank_you", group: "Appointment updates", title: "Thank you for visiting", description: "Sent after checkout, with a link to leave a review.", defaultOn: true, trigger: "When an appointment is checked out", subject: "Thanks for visiting {business}", body: "Hi {client}, thank you for visiting. We'd love to hear how it went." },
-  { key: "waitlist_joined", group: "Waitlist updates", title: "Joined the waitlist", description: "Sent when a client joins the waitlist.", defaultOn: true, trigger: "When a client joins the waitlist", subject: "You're on the waitlist", body: "Hi {client}, you're on the waitlist at {business}. We'll let you know when a time opens up." },
-  { key: "waitlist_slot_available", group: "Waitlist updates", title: "Time slot available", description: "Sent when a time the client wants becomes free.", defaultOn: true, trigger: "When a matching time becomes free", subject: "A time just opened up", body: "Hi {client}, a time you wanted at {business} is now free. Book it before it goes." },
-  { key: "rebook_reminder", group: "Increase bookings", title: "Reminder to rebook", description: "Reminds clients to rebook a few weeks after their last visit.", defaultOn: true, trigger: "Weeks after a client's last appointment (set per service)", subject: "Time for your next visit?", body: "Hi {client}, it's been a while. Book your next appointment at {business}." },
-  { key: "birthday", group: "Increase bookings", title: "Celebrate birthdays", description: "Surprise clients on their birthday.", defaultOn: false, trigger: "On a client's birthday", subject: "Happy birthday from {business}", body: "Happy birthday, {client}! Treat yourself to something special." },
-  { key: "win_back", group: "Increase bookings", title: "Win back lapsed clients", description: "Reach clients you haven't seen in a while.", defaultOn: false, trigger: "When a client hasn't visited for 8 weeks", subject: "We miss you", body: "Hi {client}, we haven't seen you for a while. Come back and see us at {business}." },
-  { key: "reward_loyal", group: "Increase bookings", title: "Reward loyal clients", description: "Message your top spenders with a special offer.", defaultOn: false, trigger: "When a client becomes a top spender", subject: "A thank you from {business}", body: "Hi {client}, thank you for being one of our best clients." },
-  { key: "welcome_new", group: "Celebrate milestones", title: "Welcome new clients", description: "Welcome new clients after their first visit.", defaultOn: false, trigger: "After a client's first appointment", subject: "Welcome to {business}", body: "Hi {client}, welcome! We're glad you found us." },
-  { key: "loyalty_points", group: "Client loyalty", title: "Earned points summary", description: "Send clients a summary of points earned.", defaultOn: false, trigger: "After points are earned", subject: "You earned points", body: "Hi {client}, here's what you've earned at {business}." },
-  { key: "loyalty_tier", group: "Client loyalty", title: "Achieved loyalty tier", description: "Tell clients when they reach a new tier.", defaultOn: false, trigger: "When a client reaches a new tier", subject: "You've reached a new tier", body: "Congratulations {client}, you've reached a new loyalty tier at {business}." },
-];
 
 type SavedRow = { key: string; enabled: boolean; channels: string[] };
 
@@ -83,6 +45,12 @@ export function AutomationsPage() {
     },
   });
   const missingTable = isMissingTable(saved.error as { code?: string; message?: string } | null);
+  const status = useQuery({
+    queryKey: ["automation-status"],
+    retry: false,
+    refetchInterval: 60_000,
+    queryFn: () => getAutomationStatus(),
+  });
 
   const state = useMemo(() => {
     const map = new Map((saved.data ?? []).map((row) => [row.key, row]));
@@ -116,18 +84,7 @@ export function AutomationsPage() {
     <div className="space-y-8">
       <PageHeader title="Automations" subtitle="View and manage all automated messages sent to your clients." learnMore />
 
-      <div className={cn(card, "flex items-start gap-4 px-6 py-5")}>
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent text-primary">
-          <EnvelopeSimple size={22} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="text-heading font-semibold">Message delivery isn&apos;t connected yet</p>
-          <p className="mt-1 text-body text-muted-foreground">
-            Choose which messages you want here. Nothing is sent to clients until an email, SMS or WhatsApp provider is
-            connected to Bookly.
-          </p>
-        </div>
-      </div>
+      <DeliveryBanner email={status.data?.email ?? null} lastRun={status.data?.lastRun ?? null} />
 
       {missingTable ? (
         <p className="flex items-start gap-2 rounded-xl bg-[#fff7e6] px-5 py-4 text-body text-[#7a4b00]">
@@ -165,6 +122,11 @@ export function AutomationsPage() {
                         <p className="mt-1 text-body text-muted-foreground">{automation.description}</p>
                       </button>
                       <div className="mt-4 flex items-center justify-between">
+                        {!automation.live ? (
+                          <span className="inline-flex h-8 items-center rounded-full bg-secondary px-3 text-caption font-semibold text-muted-foreground">
+                            Coming soon
+                          </span>
+                        ) : (
                         <button
                           type="button"
                           disabled={toggle.isPending}
@@ -178,6 +140,7 @@ export function AutomationsPage() {
                         >
                           {enabled ? "Enabled" : "Enable"}
                         </button>
+                        )}
                         <button type="button" onClick={() => setOpen(automation)} className="text-body font-medium text-primary hover:underline">
                           Preview
                         </button>
@@ -198,6 +161,45 @@ export function AutomationsPage() {
         onToggle={(enabled) => open && toggle.mutate({ key: open.key, enabled })}
         onClose={() => setOpen(null)}
       />
+    </div>
+  );
+}
+
+/** Whether automated emails are actually going out: email connected, and the scheduler running. */
+function DeliveryBanner({ email, lastRun }: { email: boolean | null; lastRun: string | null }) {
+  if (email === null) return null;
+  const minutesAgo = lastRun ? Math.round((Date.now() - new Date(lastRun).getTime()) / 60000) : null;
+  const running = minutesAgo !== null && minutesAgo <= 30;
+  const title = !email
+    ? "Email isn't connected"
+    : running
+      ? "Automated emails are on"
+      : "Reminders aren't scheduled yet";
+  const body = !email
+    ? "Nothing below is sent until email is connected to Bookly."
+    : running
+      ? `Reminders and appointment updates you enable below are emailed to clients who have an email address. Last checked ${minutesAgo! < 1 ? "just now" : `${minutesAgo} min ago`}.`
+      : "Confirmations, cancellations and changes made from the online booking page are emailed straight away. Reminders and updates made in your calendar start once the scheduler is running.";
+  return (
+    <div
+      className={cn(
+        card,
+        "flex items-start gap-4 px-6 py-5",
+        email && running ? "bg-[#e6f6ea] shadow-none" : "",
+      )}
+    >
+      <span
+        className={cn(
+          "flex size-10 shrink-0 items-center justify-center rounded-full",
+          email && running ? "bg-card text-[#1f8a3e]" : "bg-accent text-primary",
+        )}
+      >
+        <EnvelopeSimple size={22} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-heading font-semibold">{title}</p>
+        <p className="mt-1 text-body text-muted-foreground">{body}</p>
+      </div>
     </div>
   );
 }
@@ -263,15 +265,18 @@ function AutomationDialog({
                   </div>
                   <div>
                     <dt className="font-semibold">Channels</dt>
-                    <dd className="text-muted-foreground">Email (SMS and WhatsApp once connected)</dd>
+                    <dd className="text-muted-foreground">Email (SMS and WhatsApp aren&apos;t available yet)</dd>
                   </div>
                   <div>
                     <dt className="font-semibold">Status</dt>
-                    <dd className="text-muted-foreground">{enabled ? "Enabled" : "Disabled"}</dd>
+                    <dd className="text-muted-foreground">{!automation.live ? "Coming soon" : enabled ? "Enabled" : "Disabled"}</dd>
                   </div>
                 </dl>
               )}
               <div className="mt-8 flex justify-end">
+                {!automation.live ? (
+                  <p className="text-body text-muted-foreground">This automation is coming in a later update.</p>
+                ) : (
                 <button
                   type="button"
                   onClick={() => onToggle(!enabled)}
@@ -282,6 +287,7 @@ function AutomationDialog({
                 >
                   {enabled ? "Disable" : "Enable"}
                 </button>
+                )}
               </div>
             </div>
           </>

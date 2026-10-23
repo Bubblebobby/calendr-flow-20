@@ -2,14 +2,16 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { BusinessRow } from "@/lib/email-core.server";
 import { formatMoney } from "@/lib/format";
-import type { BookingDetails, Salon } from "@/lib/email-templates";
 
 /*
  * Booking and receipt emails through Brevo.
  * - sendBookingEmail: called by the public booking and manage pages with the booking's private
- *   manage token. Emails the client and the salon. Each event is logged with a unique key, so it
- *   can only ever be sent once.
+ *   manage token, right after a client books, cancels or reschedules online. The client's email
+ *   follows the matching automation (New / Cancelled / Rescheduled appointment) and can be
+ *   switched off in Marketing → Automations; the salon's alert always goes. The automations
+ *   runner uses the same keys, so it never sends the same update a second time.
  * - sendReceiptEmail: signed-in staff email a sale's receipt to its client (rate limited).
  * Without Brevo settings on the server, both return { sent: false, reason: "not_configured" }.
  */
@@ -24,81 +26,15 @@ const receiptInput = (input: unknown) => z.object({ sale_id: z.string().uuid() }
 const CONFIRM_WINDOW_MS = 2 * 60 * 60 * 1000;
 const RECEIPTS_PER_HOUR = 3;
 
+const AUTOMATION_FOR: Record<BookingEvent, string> = {
+  confirmed: "appointment_new",
+  cancelled: "appointment_cancelled",
+  rescheduled: "appointment_rescheduled",
+};
+
 function fail(publicMessage: string, cause?: unknown): never {
   if (cause) console.error(`[email] ${publicMessage}`, cause);
   throw new Error(publicMessage);
-}
-
-function appUrl() {
-  return (process.env["APP_URL"] ?? "https://bookly-taupe.vercel.app").replace(/\/$/, "");
-}
-
-type Location = { address?: string; apt?: string; district?: string; city?: string; state?: string; postcode?: string } | null;
-
-function addressOf(location: Location) {
-  if (!location) return "";
-  return [location.address, location.apt, location.district, location.city, location.state, location.postcode]
-    .map((part) => part?.trim())
-    .filter(Boolean)
-    .join(", ");
-}
-
-const fullName = (p: { first_name: string; last_name?: string | null } | null | undefined) =>
-  p ? [p.first_name, p.last_name].filter(Boolean).join(" ") : "";
-
-type BusinessRow = {
-  id: string;
-  name: string;
-  owner_id: string | null;
-  booking_slug: string | null;
-  timezone: string | null;
-  currency: string;
-  country: string;
-  location: unknown;
-  website: string | null;
-  contact_phone?: string | null;
-  contact_email?: string | null;
-  receipt_footer?: string | null;
-};
-
-function salonOf(b: BusinessRow): Salon {
-  return {
-    name: b.name,
-    address: addressOf(b.location as Location),
-    phone: b.contact_phone ?? null,
-    email: b.contact_email ?? null,
-    website: b.website,
-  };
-}
-
-/** Where alerts for the salon go: its contact email, or the owner's login email. */
-async function salonInbox(b: BusinessRow): Promise<string | null> {
-  if (b.contact_email) return b.contact_email;
-  if (!b.owner_id) return null;
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data } = await supabaseAdmin.auth.admin.getUserById(b.owner_id);
-  return data.user?.email ?? null;
-}
-
-/** Claims an email event. Returns false if it was already sent (the key exists). */
-async function claim(row: { business_id: string; appointment_id?: string; sale_id?: string; kind: string; dedupe_key: string | null }) {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data, error } = await supabaseAdmin.from("email_log").insert(row).select("id").maybeSingle();
-  if (error) {
-    if (error.code === "23505") return null;
-    fail("Could not send the email.", error);
-  }
-  return data?.id ?? null;
-}
-
-async function release(id: string) {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  await supabaseAdmin.from("email_log").delete().eq("id", id);
-}
-
-async function recordRecipients(id: string, recipients: string[]) {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  await supabaseAdmin.from("email_log").update({ recipients }).eq("id", id);
 }
 
 export const sendBookingEmail = createServerFn({ method: "POST" })
@@ -108,104 +44,73 @@ export const sendBookingEmail = createServerFn({ method: "POST" })
     if (!brevoConfigured()) return { sent: false as const, reason: "not_configured" as const };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const templates = await import("@/lib/email-templates");
+    const { automationByKey } = await import("@/lib/automations");
+    const core = await import("@/lib/email-core.server");
 
-    const { data: appt, error } = await supabaseAdmin
+    const { data: row, error } = await supabaseAdmin
       .from("appointments")
-      .select(
-        "id, status, notes, created_at, business_id, manage_token, clients(first_name, last_name, email, phone), appointment_items(start_time, end_time, price, sort_order, services(name), team_members(first_name, last_name)), businesses(*)",
-      )
+      .select(core.APPOINTMENT_SELECT)
       .eq("manage_token", data.token)
       .maybeSingle();
     if (error) fail("Could not load the booking.", error);
-    if (!appt) fail("Booking not found.");
+    if (!row) fail("Booking not found.");
+    const appt = core.toLoaded(row as unknown as Record<string, unknown>);
+    if (!appt) fail("This booking has no services.");
 
-    const status = appt.status as string;
-    const active = status === "booked" || status === "confirmed";
+    const active = appt.status === "booked" || appt.status === "confirmed";
     // Each event only makes sense in the matching state, so a token can't be used to send
     // misleading emails.
-    if (data.event === "cancelled" && status !== "cancelled") fail("This booking isn't cancelled.");
+    if (data.event === "cancelled" && appt.status !== "cancelled") fail("This booking isn't cancelled.");
     if (data.event !== "cancelled" && !active) fail("This booking can't be emailed.");
-    if (data.event === "confirmed" && Date.now() - new Date(appt.created_at).getTime() > CONFIRM_WINDOW_MS) {
+    if (data.event === "confirmed" && Date.now() - appt.createdAt.getTime() > CONFIRM_WINDOW_MS) {
       return { sent: false as const, reason: "too_late" as const };
     }
 
-    const business = appt.businesses as unknown as BusinessRow;
-    const client = appt.clients as { first_name: string; last_name: string | null; email: string | null; phone: string | null } | null;
-    const items = [...((appt.appointment_items ?? []) as unknown as {
-      start_time: string;
-      end_time: string;
-      price: number | null;
-      sort_order: number;
-      services: { name: string } | null;
-      team_members: { first_name: string; last_name: string | null } | null;
-    }[])].sort((a, b) => a.sort_order - b.sort_order);
-    if (!items.length) fail("This booking has no services.");
-
-    const start = new Date(Math.min(...items.map((i) => new Date(i.start_time).getTime())));
-    const end = new Date(Math.max(...items.map((i) => new Date(i.end_time).getTime())));
-    const tz = business.timezone ?? "Africa/Lagos";
-    const date = new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: tz }).format(start);
-    const clock = (d: Date) => new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: tz }).format(d);
-
-    const kind = `booking_${data.event}`;
-    const dedupe = data.event === "rescheduled" ? `${kind}:${appt.id}:${start.toISOString()}` : `${kind}:${appt.id}`;
-    const logId = await claim({ business_id: business.id, appointment_id: appt.id, kind, dedupe_key: dedupe });
+    const key = AUTOMATION_FOR[data.event];
+    const logId = await core
+      .claim({
+        business_id: appt.business.id,
+        appointment_id: appt.id,
+        kind: key,
+        dedupe_key: core.automationKey(key, appt.id, appt.start),
+        notified_start: data.event === "cancelled" ? null : appt.start.toISOString(),
+      })
+      .catch((cause) => fail("Could not send the email.", cause));
     if (!logId) return { sent: false as const, reason: "already_sent" as const };
 
-    const app = appUrl();
-    const details: BookingDetails = {
-      salon: salonOf(business),
-      clientFirstName: client?.first_name || "there",
-      clientName: fullName(client) || "A client",
-      clientEmail: client?.email ?? null,
-      clientPhone: client?.phone ?? null,
-      when: { date, time: `${clock(start)} – ${clock(end)}` },
-      lines: items.map((i) => ({ service: i.services?.name ?? "Service", staff: fullName(i.team_members) || null, price: i.price === null ? null : Number(i.price) })),
-      total: items.reduce((sum, i) => sum + Number(i.price ?? 0), 0),
-      money: (n) => formatMoney(n, business.currency, business.country),
-      manageUrl: `${app}/book/manage/${appt.manage_token}`,
-      bookUrl: business.booking_slug ? `${app}/book/${business.booking_slug}` : null,
-      calendarUrl: `${app}/calendar?appointment=${appt.id}`,
-      notes: appt.notes,
-    };
-
-    const salonReply = details.salon.email ? { email: details.salon.email, name: business.name } : undefined;
+    const enabled = await core.automationsFor([appt.business.id]);
+    const text = automationByKey(key)!;
+    const client = appt.client;
     const sent: string[] = [];
     try {
-      if (client?.email) {
-        const content =
-          data.event === "confirmed"
-            ? templates.clientConfirmed(details)
-            : data.event === "cancelled"
-              ? templates.clientCancelled(details)
-              : templates.clientRescheduled(details);
+      if (client?.email && enabled(appt.business.id, key)) {
         await sendEmail({
-          to: { email: client.email, name: details.clientName },
-          fromName: business.name,
-          ...(salonReply ? { replyTo: salonReply } : {}),
-          ...content,
-          tags: [kind, "client"],
+          to: { email: client.email, name: appt.details.clientName },
+          fromName: appt.business.name,
+          ...(appt.details.salon.email ? { replyTo: { email: appt.details.salon.email, name: appt.business.name } } : {}),
+          ...templates.clientAutomation(key, text, appt.details, { reviewUrl: null }),
+          tags: [key, "client"],
         });
         sent.push(client.email);
       }
-      const inbox = await salonInbox(business);
+      const inbox = await core.salonInbox(appt.business);
       if (inbox) {
         await sendEmail({
-          to: { email: inbox, name: business.name },
+          to: { email: inbox, name: appt.business.name },
           fromName: "Bookly",
-          ...(client?.email ? { replyTo: { email: client.email, name: details.clientName } } : {}),
-          ...templates.salonAlert(data.event as BookingEvent, details),
-          tags: [kind, "salon"],
+          ...(client?.email ? { replyTo: { email: client.email, name: appt.details.clientName } } : {}),
+          ...templates.salonAlert(data.event, appt.details),
+          tags: [key, "salon"],
         });
         sent.push(inbox);
       }
     } catch (cause) {
       // Nothing (or only part) went out: free the key so it can be tried again.
-      if (!sent.length) await release(logId);
+      if (!sent.length) await core.release(logId);
       fail("Could not send the email.", cause);
     }
-    await recordRecipients(logId, sent);
-    return { sent: true as const, clientEmailed: Boolean(client?.email) };
+    await core.recordRecipients(logId, sent);
+    return { sent: true as const, clientEmailed: Boolean(client?.email && sent.includes(client.email)) };
   });
 
 const METHOD: Record<string, string> = { cash: "cash", card: "card", other: "other" };
@@ -227,6 +132,7 @@ export const sendReceiptEmail = createServerFn({ method: "POST" })
     if (!brevoConfigured()) return { sent: false as const, reason: "not_configured" as const };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const templates = await import("@/lib/email-templates");
+    const { appUrl, claim, fullName, recordRecipients, release, salonOf } = await import("@/lib/email-core.server");
 
     const { data: sale, error } = await supabaseAdmin
       .from("sales")
@@ -267,10 +173,12 @@ export const sendReceiptEmail = createServerFn({ method: "POST" })
       ...(total - giftPaid > 0.004 ? [{ label: method[0]!.toUpperCase() + method.slice(1), amount: total - giftPaid }] : []),
     ];
     const date = new Date(sale.sale_date);
-    const logoPath = (business as BusinessRow & { logo_path?: string | null }).logo_path;
+    const logoPath = business.logo_path;
     const app = appUrl();
 
-    const logId = await claim({ business_id: business.id, sale_id: sale.id, kind: "receipt", dedupe_key: null });
+    const logId = await claim({ business_id: business.id, sale_id: sale.id, kind: "receipt", dedupe_key: null }).catch((cause) =>
+      fail("Could not send the email.", cause),
+    );
     if (!logId) fail("Could not send the email.");
     try {
       await sendEmail({
